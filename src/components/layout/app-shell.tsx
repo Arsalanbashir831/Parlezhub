@@ -1,0 +1,83 @@
+"use client";
+
+import * as React from "react";
+import { usePathname, useRouter } from "next/navigation";
+import {
+	SidebarProvider,
+	SidebarInset,
+	SidebarTrigger,
+} from "@/components/ui/sidebar";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { useAuth } from "@/contexts/auth-context";
+import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
+import { AppSidebar } from "./app-sidebar";
+import type { NavItem } from "@/types/nav";
+
+interface AppShellProps {
+	children: React.ReactNode;
+	nav: NavItem[];
+	roleLabel?: string; // e.g., "Teacher" | "Student"
+}
+
+export const AppShell: React.FC<AppShellProps> = ({
+	children,
+	nav,
+	roleLabel = "User",
+}) => {
+	const pathname = usePathname();
+	const { user, logout } = useAuth();
+	const router = useRouter();
+
+	const activeTab = React.useMemo(
+		() => pathname.split("/")[2] || "dashboard",
+		[pathname]
+	);
+	const pageTitle = React.useMemo(
+		() => activeTab.replace(/-/g, " "),
+		[activeTab]
+	);
+
+	const handleLogout = React.useCallback(() => {
+		logout();
+		router.push("/login");
+	}, [logout, router]);
+
+	return (
+		<SidebarProvider>
+			<AppSidebar
+				nav={nav}
+				activeTab={activeTab}
+				roleLabel={roleLabel}
+				onLogout={handleLogout}
+			/>
+
+			<SidebarInset>
+				{/* Top bar */}
+				<header className="bg-white dark:bg-gray-800 shadow-sm border-gray-200 dark:border-gray-700">
+					<div className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
+						<SidebarTrigger className="-ml-1" />
+						<h1 className="text-xl font-semibold text-gray-900 dark:text-gray-100 capitalize">
+							{pageTitle}
+						</h1>
+						<div className="ml-auto flex items-center gap-4">
+							<ToggleThemeBtn />
+							<Avatar className="h-8 w-8">
+								<AvatarImage src={user?.avatar} />
+								<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200 text-sm">
+									{user?.name?.charAt(0).toUpperCase()}
+								</AvatarFallback>
+							</Avatar>
+						</div>
+					</div>
+				</header>
+
+				{/* Page content */}
+				<main className="flex flex-1 flex-col gap-4 p-4 sm:p-6 bg-gray-50 dark:bg-gray-900">
+					<div className="min-h-[100vh] flex-1 rounded-xl md:min-h-min">
+						{children}
+					</div>
+				</main>
+			</SidebarInset>
+		</SidebarProvider>
+	);
+};
