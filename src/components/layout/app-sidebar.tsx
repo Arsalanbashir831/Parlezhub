@@ -43,7 +43,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 			className="shadow-lg border-none bg-white dark:bg-gray-800">
 			<SidebarHeader
 				className={cn(
-					"border-b border-gray-200 dark:border-gray-700",
+					"border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800",
 					isCollapsed ? "py-4" : "p-4"
 				)}>
 				<Logo size="sm" isCollapsed={isCollapsed} />
@@ -51,7 +51,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
 			<SidebarContent
 				className={cn(
-					"border-b border-gray-200 dark:border-gray-700",
+					"border-b border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800",
 					!isCollapsed ? "px-2" : ""
 				)}>
 				<SidebarGroup>
@@ -86,7 +86,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 				</SidebarGroup>
 			</SidebarContent>
 
-			<SidebarFooter className="p-4">
+			<SidebarFooter className="p-4 bg-white dark:bg-gray-800">
 				<UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
 				<Button
 					variant="ghost"
