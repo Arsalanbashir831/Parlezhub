@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useRouter } from "next/navigation";
+import WelcomeSection from "@/components/common/welcome-section";
 
 export default function TeacherDashboardPage() {
 	const router = useRouter();
@@ -93,17 +94,11 @@ export default function TeacherDashboardPage() {
 
 	return (
 		<div className="space-y-8">
-			{/* Header */}
-			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-				<div>
-					<h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-						Teacher Dashboard
-					</h1>
-					<p className="text-gray-600 dark:text-gray-400 mt-2">
-						Welcome back! Here's your teaching overview.
-					</p>
-				</div>
-			</div>
+			{/* Welcome Section */}
+			<WelcomeSection
+				subtitle="Here's your teaching overview for today."
+				showButton={false}
+			/>
 
 			{/* Stats Grid */}
 			<div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">

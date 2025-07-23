@@ -1,6 +1,3 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import {
 	MessageSquare,
 	CalendarIcon,
@@ -11,11 +8,14 @@ import {
 	ArrowRight,
 	TrendingUp,
 } from "lucide-react";
-import { useRouter } from "next/navigation";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { formatDate } from "@/lib/utils";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
+import WelcomeSection from "@/components/common/welcome-section";
 
 // Mock data
 const mockStats = {
@@ -70,60 +70,10 @@ const upcomingMeetings = [
 ];
 
 export default function DashboardPage() {
-	const [currentTime, setCurrentTime] = useState(new Date());
-	const router = useRouter();
-
-	useEffect(() => {
-		const timer = setInterval(() => setCurrentTime(new Date()), 1000);
-		return () => clearInterval(timer);
-	}, []);
-
-	const formatTime = (date: Date) => {
-		return date.toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-	};
-
-	const formatDate = (dateString: string) => {
-		return new Date(dateString).toLocaleDateString([], {
-			month: "short",
-			day: "numeric",
-			hour: "2-digit",
-			minute: "2-digit",
-		});
-	};
-
 	return (
 		<div className="space-y-8">
 			{/* Welcome Section */}
-			<div className="bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 rounded-3xl p-8 text-white relative overflow-hidden">
-				<div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full -translate-y-32 translate-x-32"></div>
-				<div className="absolute bottom-0 left-0 w-48 h-48 bg-white/5 rounded-full translate-y-24 -translate-x-24"></div>
-				<div className="relative z-10">
-					<div className="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-6">
-						<div className="space-y-2">
-							<h1 className="text-3xl lg:text-4xl font-bold">
-								Welcome back! 👋
-							</h1>
-							<p className="text-primary-100 text-lg">
-								Ready to continue your language learning journey?
-							</p>
-						</div>
-						<div className="flex flex-col sm:flex-row gap-4">
-							<Button
-								size="lg"
-								variant="secondary"
-								className="bg-white text-primary-600 hover:bg-white/90 font-semibold"
-								onClick={() => router.push("/dashboard/ai-tutor")}>
-								<Plus className="h-5 w-5 mr-2" />
-								Start AI Session
-							</Button>
-							<div className="text-right lg:text-left">
-								<p className="text-primary-100 text-sm">Current Time</p>
-								<p className="text-2xl font-bold">{formatTime(currentTime)}</p>
-							</div>
-						</div>
-					</div>
-				</div>
-			</div>
+			<WelcomeSection />
 
 			{/* Bento Grid Layout */}
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
@@ -227,13 +177,14 @@ export default function DashboardPage() {
 									<BookOpen className="h-5 w-5 text-primary-600" />
 									<CardTitle className="text-lg">Your Languages</CardTitle>
 								</div>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => router.push("/dashboard/ai-tutor")}
-									className="text-primary-600 hover:text-primary-700">
-									<ArrowRight className="h-4 w-4" />
-								</Button>
+								<Link href={ROUTES.STUDENT.AI_TUTOR}>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-primary-600 hover:text-primary-700">
+										<ArrowRight className="h-4 w-4" />
+									</Button>
+								</Link>
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -259,13 +210,14 @@ export default function DashboardPage() {
 									</div>
 								</div>
 							))}
-							<Button
-								variant="outline"
-								className="w-full mt-4 border-dashed border-2 border-gray-300 hover:border-primary-300 hover:bg-primary-50 bg-transparent"
-								onClick={() => router.push("/dashboard/ai-tutor")}>
-								<Plus className="h-4 w-4 mr-2" />
-								Add Language
-							</Button>
+							<Link href={ROUTES.STUDENT.AI_TUTOR}>
+								<Button
+									variant="outline"
+									className="w-full mt-4 border-dashed border-2 border-gray-300 hover:border-primary-300 hover:bg-primary-50 bg-transparent">
+									<Plus className="h-4 w-4 mr-2" />
+									Add Language
+								</Button>
+							</Link>
 						</CardContent>
 					</Card>
 				</div>
@@ -276,13 +228,14 @@ export default function DashboardPage() {
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-lg">Recent Sessions</CardTitle>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => router.push("/dashboard/conversations")}
-									className="text-primary-600 hover:text-primary-700">
-									<ArrowRight className="h-4 w-4" />
-								</Button>
+								<Link href={ROUTES.STUDENT.CONVERSATIONS}>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-primary-600 hover:text-primary-700">
+										<ArrowRight className="h-4 w-4" />
+									</Button>
+								</Link>
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -310,12 +263,13 @@ export default function DashboardPage() {
 									</Badge>
 								</div>
 							))}
-							<Button
-								variant="outline"
-								className="w-full mt-4 bg-transparent"
-								onClick={() => router.push("/dashboard/conversations")}>
-								View All Sessions
-							</Button>
+							<Link href={ROUTES.STUDENT.CONVERSATIONS}>
+								<Button
+									variant="outline"
+									className="w-full mt-4 bg-transparent">
+									View All Sessions
+								</Button>
+							</Link>
 						</CardContent>
 					</Card>
 				</div>
@@ -326,13 +280,14 @@ export default function DashboardPage() {
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-lg">Upcoming Meetings</CardTitle>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => router.push("/dashboard/meetings")}
-									className="text-primary-600 hover:text-primary-700">
-									<ArrowRight className="h-4 w-4" />
-								</Button>
+								<Link href={ROUTES.STUDENT.MEETINGS}>
+									<Button
+										variant="ghost"
+										size="sm"
+										className="text-primary-600 hover:text-primary-700">
+										<ArrowRight className="h-4 w-4" />
+									</Button>
+								</Link>
 							</div>
 						</CardHeader>
 						<CardContent className="space-y-4">
@@ -362,12 +317,13 @@ export default function DashboardPage() {
 									</div>
 								</div>
 							))}
-							<Button
-								variant="outline"
-								className="w-full mt-4 bg-transparent"
-								onClick={() => router.push("/dashboard/meetings")}>
-								View All Meetings
-							</Button>
+							<Link href={ROUTES.STUDENT.MEETINGS}>
+								<Button
+									variant="outline"
+									className="w-full mt-4 bg-transparent">
+									View All Meetings
+								</Button>
+							</Link>
 						</CardContent>
 					</Card>
 				</div>
