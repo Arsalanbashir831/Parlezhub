@@ -1,0 +1,75 @@
+"use client";
+
+import React from "react";
+import { ArrowLeft, Download, Share, RotateCcw } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Badge } from "@/components/ui/badge";
+import Link from "next/link";
+import { ROUTES } from "@/constants/routes";
+
+interface ReportHeaderProps {
+	sessionData: {
+		language: string;
+		topic: string;
+		date: string;
+		score: number;
+		status: string;
+	};
+	onDownload: () => void;
+	onShare: () => void;
+}
+
+const getScoreColor = (score: number) => {
+	if (score >= 90) return "text-green-600 bg-green-100";
+	if (score >= 80) return "text-blue-600 bg-blue-100";
+	if (score >= 70) return "text-yellow-600 bg-yellow-100";
+	return "text-red-600 bg-red-100";
+};
+
+export const ReportHeader = React.memo<ReportHeaderProps>(
+	({ sessionData, onDownload, onShare }) => {
+		return (
+			<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-6">
+				<div className="flex flex-col gap-4">
+					<Link href={ROUTES.STUDENT.HISTORY}>
+						<Button variant="outline" size="sm" className="gap-2">
+							<ArrowLeft className="h-4 w-4" />
+							Back to History
+						</Button>
+					</Link>
+					<div>
+						<h1 className="text-2xl font-bold text-gray-900">Session Report</h1>
+						<div className="flex items-center gap-2 mt-1">
+							<span className="text-gray-600">
+								{sessionData.language} • {sessionData.topic}
+							</span>
+							<Badge className={getScoreColor(sessionData.score)}>
+								{sessionData.score}%
+							</Badge>
+						</div>
+					</div>
+				</div>
+				<div className="flex gap-2">
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={onShare}
+						className="gap-2">
+						<Share className="h-4 w-4" />
+						Share
+					</Button>
+					<Button
+						variant="outline"
+						size="sm"
+						onClick={onDownload}
+						className="gap-2">
+						<Download className="h-4 w-4" />
+						Download
+					</Button>
+				</div>
+			</div>
+		);
+	}
+);
+
+ReportHeader.displayName = "ReportHeader";

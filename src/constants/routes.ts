@@ -12,7 +12,6 @@ export const ROUTES = {
 		CHAT: "/student/chat",
 		MEETINGS: "/student/meetings",
 		HISTORY: "/student/history",
-		REPORTS: "/student/reports",
 		SESSION_REPORT: "/student/session-report",
 		SETTINGS: "/student/settings",
 	},
