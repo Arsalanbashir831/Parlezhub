@@ -78,7 +78,7 @@ export default function DashboardPage() {
 			{/* Bento Grid Layout */}
 			<div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
 				{/* Stats Cards - Top Row */}
-				<div className="lg:col-span-3">
+				<div className="lg:col-span-6">
 					<Card className="h-full bg-gradient-to-br from-blue-50 to-blue-100 border-blue-200">
 						<CardContent className="p-6">
 							<div className="flex items-center justify-between mb-4">
@@ -100,29 +100,7 @@ export default function DashboardPage() {
 					</Card>
 				</div>
 
-				<div className="lg:col-span-3">
-					<Card className="h-full bg-gradient-to-br from-green-50 to-green-100 border-green-200">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-4">
-								<div className="p-3 bg-green-500 rounded-xl">
-									<Clock className="h-6 w-6 text-white" />
-								</div>
-								<TrendingUp className="h-5 w-5 text-green-600" />
-							</div>
-							<div className="space-y-1">
-								<p className="text-sm font-medium text-green-700">
-									Practice Time
-								</p>
-								<p className="text-3xl font-bold text-green-900">
-									{mockStats.totalMinutes}m
-								</p>
-								<p className="text-xs text-green-600">This month</p>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-
-				<div className="lg:col-span-3">
+				<div className="lg:col-span-6">
 					<Card className="h-full bg-gradient-to-br from-purple-50 to-purple-100 border-purple-200">
 						<CardContent className="p-6">
 							<div className="flex items-center justify-between mb-4">
@@ -146,89 +124,13 @@ export default function DashboardPage() {
 					</Card>
 				</div>
 
-				<div className="lg:col-span-3">
-					<Card className="h-full bg-gradient-to-br from-orange-50 to-orange-100 border-orange-200">
-						<CardContent className="p-6">
-							<div className="flex items-center justify-between mb-4">
-								<div className="p-3 bg-orange-500 rounded-xl">
-									<Award className="h-6 w-6 text-white" />
-								</div>
-								<TrendingUp className="h-5 w-5 text-orange-600" />
-							</div>
-							<div className="space-y-1">
-								<p className="text-sm font-medium text-orange-700">
-									Current Streak
-								</p>
-								<p className="text-3xl font-bold text-orange-900">
-									{mockStats.currentStreak} days
-								</p>
-								<p className="text-xs text-orange-600">Keep it up! 🔥</p>
-							</div>
-						</CardContent>
-					</Card>
-				</div>
-
-				{/* Languages Learning - Left Column */}
-				<div className="lg:col-span-4">
-					<Card className="h-full">
-						<CardHeader className="pb-4">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-2">
-									<BookOpen className="h-5 w-5 text-primary-600" />
-									<CardTitle className="text-lg">Your Languages</CardTitle>
-								</div>
-								<Link href={ROUTES.STUDENT.AI_TUTOR}>
-									<Button
-										variant="ghost"
-										size="sm"
-										className="text-primary-600 hover:text-primary-700">
-										<ArrowRight className="h-4 w-4" />
-									</Button>
-								</Link>
-							</div>
-						</CardHeader>
-						<CardContent className="space-y-4">
-							{mockStats.languagesLearning.map((language) => (
-								<div key={language.name} className="space-y-3">
-									<div className="flex items-center justify-between">
-										<div>
-											<p className="font-semibold text-gray-900">
-												{language.name}
-											</p>
-											<p className="text-sm text-gray-600">{language.level}</p>
-										</div>
-										<Badge
-											variant="secondary"
-											className="bg-primary-100 text-primary-700">
-											{language.progress}%
-										</Badge>
-									</div>
-									<div className="w-full bg-gray-200 rounded-full h-2">
-										<div
-											className="bg-primary-500 h-2 rounded-full transition-all duration-300"
-											style={{ width: `${language.progress}%` }}></div>
-									</div>
-								</div>
-							))}
-							<Link href={ROUTES.STUDENT.AI_TUTOR}>
-								<Button
-									variant="outline"
-									className="w-full mt-4 border-dashed border-2 border-gray-300 hover:border-primary-300 hover:bg-primary-50 bg-transparent">
-									<Plus className="h-4 w-4 mr-2" />
-									Add Language
-								</Button>
-							</Link>
-						</CardContent>
-					</Card>
-				</div>
-
 				{/* Recent Conversations - Middle Column */}
-				<div className="lg:col-span-4">
+				<div className="lg:col-span-6">
 					<Card className="h-full">
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">
 								<CardTitle className="text-lg">Recent Sessions</CardTitle>
-								<Link href={ROUTES.STUDENT.CONVERSATIONS}>
+								<Link href={ROUTES.STUDENT.HISTORY}>
 									<Button
 										variant="ghost"
 										size="sm"
@@ -263,7 +165,7 @@ export default function DashboardPage() {
 									</Badge>
 								</div>
 							))}
-							<Link href={ROUTES.STUDENT.CONVERSATIONS}>
+							<Link href={ROUTES.STUDENT.HISTORY}>
 								<Button
 									variant="outline"
 									className="w-full mt-4 bg-transparent">
@@ -275,7 +177,7 @@ export default function DashboardPage() {
 				</div>
 
 				{/* Upcoming Meetings - Right Column */}
-				<div className="lg:col-span-4">
+				<div className="lg:col-span-6">
 					<Card className="h-full">
 						<CardHeader className="pb-4">
 							<div className="flex items-center justify-between">

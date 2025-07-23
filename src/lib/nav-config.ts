@@ -9,6 +9,7 @@ import {
 	Settings,
 	Users,
 	Bot,
+	History,
 } from "lucide-react";
 import type { NavItem } from "@/types/nav";
 import { ROUTES } from "@/constants/routes";
@@ -56,6 +57,12 @@ export const studentNav: NavItem[] = [
 		href: ROUTES.STUDENT.AI_TUTOR,
 	},
 	{
+		id: "history",
+		label: "History",
+		icon: History,
+		href: ROUTES.STUDENT.HISTORY,
+	},
+	{
 		id: "messages",
 		label: "Messages",
 		icon: MessageCircle,
@@ -67,18 +74,6 @@ export const studentNav: NavItem[] = [
 		label: "Meetings",
 		icon: Calendar,
 		href: ROUTES.STUDENT.MEETINGS,
-	},
-	{
-		id: "conversations",
-		label: "Conversations",
-		icon: MessageCircle,
-		href: ROUTES.STUDENT.CONVERSATIONS,
-	},
-	{
-		id: "reports",
-		label: "Reports",
-		icon: FileText,
-		href: ROUTES.STUDENT.REPORTS,
 	},
 	{
 		id: "settings",

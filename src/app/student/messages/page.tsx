@@ -23,7 +23,7 @@ import {
 	DialogHeader,
 	DialogTitle,
 } from "@/components/ui/dialog";
-import { cn } from "@/lib/utils";
+import { cn, formatMessageTime } from "@/lib/utils";
 
 // Mock conversation data
 const mockConversations = [
@@ -118,22 +118,6 @@ export default function MessagesPage() {
 	const [messages, setMessages] = useState(mockMessages);
 	const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
-	const formatTime = (timestamp: string) => {
-		const date = new Date(timestamp);
-		const now = new Date();
-		const diffInHours = Math.floor(
-			(now.getTime() - date.getTime()) / (1000 * 60 * 60)
-		);
-
-		if (diffInHours < 1) {
-			return "Just now";
-		} else if (diffInHours < 24) {
-			return `${diffInHours}h ago`;
-		} else {
-			return date.toLocaleDateString([], { month: "short", day: "numeric" });
-		}
-	};
-
 	const handleSendMessage = () => {
 		if (newMessage.trim()) {
 			const userMessage = {
@@ -209,7 +193,7 @@ export default function MessagesPage() {
 								</div>
 
 								<ScrollArea className="h-[calc(100%-5rem)]">
-									<div className="p-2">
+									<div className="p-2 max-w-80">
 										{filteredConversations.map((conversation) => (
 											<div
 												key={conversation.id}
@@ -242,7 +226,7 @@ export default function MessagesPage() {
 															{conversation.name}
 														</p>
 														<span className="text-xs text-gray-500">
-															{formatTime(conversation.timestamp)}
+															{formatMessageTime(conversation.timestamp)}
 														</span>
 													</div>
 													<p className="text-sm text-gray-600 truncate mt-1">
@@ -304,9 +288,6 @@ export default function MessagesPage() {
 												Book a Call
 											</Button>
 										)}
-										<Button variant="ghost" size="sm">
-											<MoreVertical className="h-4 w-4" />
-										</Button>
 									</div>
 								</div>
 
@@ -359,9 +340,6 @@ export default function MessagesPage() {
 								{/* Message Input */}
 								<div className="p-4 border-t bg-white">
 									<div className="flex items-center gap-2">
-										<Button variant="ghost" size="sm">
-											<Paperclip className="h-4 w-4" />
-										</Button>
 										<div className="flex-1 relative">
 											<Input
 												placeholder="Type a message..."
@@ -372,12 +350,6 @@ export default function MessagesPage() {
 												}
 												className="pr-10"
 											/>
-											<Button
-												variant="ghost"
-												size="sm"
-												className="absolute right-1 top-1/2 transform -translate-y-1/2">
-												<Smile className="h-4 w-4" />
-											</Button>
 										</div>
 										<Button
 											onClick={handleSendMessage}

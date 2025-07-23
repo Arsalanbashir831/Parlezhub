@@ -11,7 +11,7 @@ export const ROUTES = {
 		AI_TUTOR: "/student/ai-tutor",
 		MESSAGES: "/student/messages",
 		MEETINGS: "/student/meetings",
-		CONVERSATIONS: "/student/conversations",
+		HISTORY: "/student/history",
 		REPORTS: "/student/reports",
 		SESSION_REPORT: "/student/session-report",
 		SETTINGS: "/student/settings",
