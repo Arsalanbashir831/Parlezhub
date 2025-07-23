@@ -37,8 +37,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 	const { state } = useSidebar();
 	const isCollapsed = state === "collapsed";
 
-	console.log({ activeTab, nav });
-
 	return (
 		<Sidebar
 			collapsible="icon"

@@ -64,7 +64,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 							<Avatar className="h-8 w-8">
 								<AvatarImage src={user?.avatar} />
 								<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200 text-sm">
-									{user?.name?.charAt(0).toUpperCase()}
+									{user?.firstName?.charAt(0).toUpperCase()}
 								</AvatarFallback>
 							</Avatar>
 						</div>

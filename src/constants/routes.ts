@@ -20,6 +20,6 @@ export const ROUTES = {
 		DASHBOARD: "/teacher/dashboard",
 		CHAT: "/teacher/chat",
 		MEETINGS: "/teacher/meetings",
-		PROFILE: "/teacher/profile",
+		SETTINGS: "/teacher/settings",
 	},
 };

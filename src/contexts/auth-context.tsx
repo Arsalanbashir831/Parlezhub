@@ -53,7 +53,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 			// For demo purposes, we'll simulate
 			const mockUser: User = {
 				id: "1",
-				name: "John Doe",
+				firstName: "John",
+				lastName: "Doe",
 				email,
 				role: "student",
 				city: "New York",

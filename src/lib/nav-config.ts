@@ -34,7 +34,12 @@ export const teacherNav: NavItem[] = [
 		icon: Calendar,
 		href: ROUTES.TEACHER.MEETINGS,
 	},
-	{ id: "profile", label: "Profile", icon: User, href: ROUTES.TEACHER.PROFILE },
+	{
+		id: "settings",
+		label: "Settings",
+		icon: User,
+		href: ROUTES.TEACHER.SETTINGS,
+	},
 ];
 
 export const studentNav: NavItem[] = [
