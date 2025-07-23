@@ -1,431 +1,319 @@
 "use client";
 
-import { useState } from "react";
-import {
-	Search,
-	Phone,
-	Video,
-	MoreHorizontal,
-	Send,
-	Paperclip,
-	Smile,
-} from "lucide-react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
+import { useCallback, useState } from "react";
+
+import { Card, CardContent } from "@/components/ui/card";
+import ConversationList from "@/components/chat/conversation-list";
+import MessageList from "@/components/chat/message-list";
+import MessageInput from "@/components/chat/message-input";
+import { useChat } from "@/hooks/useChat";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Separator } from "@/components/ui/separator";
+import ChatHeader from "@/components/chat/chat-header";
+import BookingDialog from "@/components/chat/booking-dialog";
 
-interface Conversation {
-	id: string;
-	student: {
-		name: string;
-		avatar: string;
-		isOnline: boolean;
-	};
-	lastMessage: {
+// Mock conversation data - Teacher's perspective (chatting with students)
+const mockConversations = [
+	{
+		id: "1",
+		name: "Alex Johnson",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "Thank you for the feedback! I'll practice more this week.",
+		timestamp: "2024-01-15T14:30:00Z",
+		unreadCount: 2,
+		isOnline: true,
+		type: "student",
+		calendlyLink: null,
+	},
+	{
+		id: "2",
+		name: "Sarah Chen",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "Could you please send me the homework materials?",
+		timestamp: "2024-01-15T10:15:00Z",
+		unreadCount: 1,
+		isOnline: false,
+		type: "student",
+		calendlyLink: null,
+	},
+	{
+		id: "3",
+		name: "Michael Brown",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "I'm ready for our next lesson. See you tomorrow!",
+		timestamp: "2024-01-14T16:45:00Z",
+		unreadCount: 0,
+		isOnline: true,
+		type: "student",
+		calendlyLink: null,
+	},
+	{
+		id: "4",
+		name: "Emma Wilson",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "The pronunciation exercises are really helpful!",
+		timestamp: "2024-01-14T12:20:00Z",
+		unreadCount: 0,
+		isOnline: false,
+		type: "student",
+		calendlyLink: null,
+	},
+	{
+		id: "5",
+		name: "Support Team",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "How can we help you today?",
+		timestamp: "2024-01-13T09:15:00Z",
+		unreadCount: 0,
+		isOnline: true,
+		type: "support",
+		calendlyLink: null,
+	},
+];
+
+// Mock messages for each conversation - Teacher's perspective
+const mockMessagesByConversation: Record<
+	string,
+	Array<{
+		id: string;
+		senderId: string;
+		senderName: string;
 		content: string;
-		timestamp: Date;
-		isFromTeacher: boolean;
-	};
-	unreadCount: number;
-	language: string;
-	level: string;
-}
-
-interface Message {
-	id: string;
-	content: string;
-	timestamp: Date;
-	isFromTeacher: boolean;
-	type: "text" | "image" | "file";
-}
-
-export default function TeacherChatPage() {
-	const [selectedConversation, setSelectedConversation] = useState<
-		string | null
-	>("1");
-	const [searchQuery, setSearchQuery] = useState("");
-	const [newMessage, setNewMessage] = useState("");
-
-	// Mock data
-	const conversations: Conversation[] = [
+		timestamp: string;
+		type: string;
+	}>
+> = {
+	"1": [
 		{
 			id: "1",
-			student: {
-				name: "Sarah Johnson",
-				avatar: "/placeholder.svg?height=40&width=40",
-				isOnline: true,
-			},
-			lastMessage: {
-				content:
-					"Thank you for the great lesson yesterday! When can we schedule the next one?",
-				timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000), // 2 hours ago
-				isFromTeacher: false,
-			},
-			unreadCount: 2,
-			language: "Spanish",
-			level: "Intermediate",
+			senderId: "teacher-1",
+			senderName: "You",
+			content: "Hello Alex! How did the pronunciation exercises go this week?",
+			timestamp: "2024-01-15T13:00:00Z",
+			type: "text",
 		},
 		{
 			id: "2",
-			student: {
-				name: "Mike Chen",
-				avatar: "/placeholder.svg?height=40&width=40",
-				isOnline: false,
-			},
-			lastMessage: {
-				content: "I'll send you the homework exercises by tomorrow.",
-				timestamp: new Date(Date.now() - 5 * 60 * 60 * 1000), // 5 hours ago
-				isFromTeacher: true,
-			},
-			unreadCount: 0,
-			language: "Spanish",
-			level: "Advanced",
+			senderId: "student-1",
+			senderName: "Alex Johnson",
+			content:
+				"Hi! I've been practicing every day. I feel more confident with conversations now.",
+			timestamp: "2024-01-15T13:05:00Z",
+			type: "text",
 		},
 		{
 			id: "3",
-			student: {
-				name: "Emma Wilson",
-				avatar: "/placeholder.svg?height=40&width=40",
-				isOnline: true,
-			},
-			lastMessage: {
-				content: "Could we focus more on pronunciation in our next session?",
-				timestamp: new Date(Date.now() - 1 * 24 * 60 * 60 * 1000), // 1 day ago
-				isFromTeacher: false,
-			},
-			unreadCount: 1,
-			language: "Spanish",
-			level: "Beginner",
+			senderId: "teacher-1",
+			senderName: "You",
+			content:
+				"That's wonderful to hear! Your progress has been really impressive.",
+			timestamp: "2024-01-15T13:10:00Z",
+			type: "text",
 		},
 		{
 			id: "4",
-			student: {
-				name: "Alex Rodriguez",
-				avatar: "/placeholder.svg?height=40&width=40",
-				isOnline: false,
-			},
-			lastMessage: {
-				content: "Perfect! See you next Tuesday at 3 PM.",
-				timestamp: new Date(Date.now() - 2 * 24 * 60 * 60 * 1000), // 2 days ago
-				isFromTeacher: true,
-			},
-			unreadCount: 0,
-			language: "Spanish",
-			level: "Intermediate",
+			senderId: "student-1",
+			senderName: "Alex Johnson",
+			content:
+				"Thank you! I'd like to focus on business conversations in our next session.",
+			timestamp: "2024-01-15T13:15:00Z",
+			type: "text",
 		},
-	];
+		{
+			id: "5",
+			senderId: "teacher-1",
+			senderName: "You",
+			content:
+				"Perfect! I'll prepare some business scenarios for our next lesson.",
+			timestamp: "2024-01-15T14:00:00Z",
+			type: "text",
+		},
+		{
+			id: "6",
+			senderId: "student-1",
+			senderName: "Alex Johnson",
+			content: "Thank you for the feedback! I'll practice more this week.",
+			timestamp: "2024-01-15T14:30:00Z",
+			type: "text",
+		},
+	],
+	"2": [
+		{
+			id: "7",
+			senderId: "teacher-1",
+			senderName: "You",
+			content: "Hi Sarah! I've prepared some new vocabulary exercises for you.",
+			timestamp: "2024-01-15T09:00:00Z",
+			type: "text",
+		},
+		{
+			id: "8",
+			senderId: "student-2",
+			senderName: "Sarah Chen",
+			content: "Thank you! I'm excited to work on them.",
+			timestamp: "2024-01-15T09:15:00Z",
+			type: "text",
+		},
+		{
+			id: "9",
+			senderId: "student-2",
+			senderName: "Sarah Chen",
+			content: "Could you please send me the homework materials?",
+			timestamp: "2024-01-15T10:15:00Z",
+			type: "text",
+		},
+	],
+	"3": [
+		{
+			id: "10",
+			senderId: "student-3",
+			senderName: "Michael Brown",
+			content: "Good morning! Are we still on for tomorrow's lesson?",
+			timestamp: "2024-01-14T16:30:00Z",
+			type: "text",
+		},
+		{
+			id: "11",
+			senderId: "teacher-1",
+			senderName: "You",
+			content: "Yes, absolutely! See you at 3 PM tomorrow.",
+			timestamp: "2024-01-14T16:35:00Z",
+			type: "text",
+		},
+		{
+			id: "12",
+			senderId: "student-3",
+			senderName: "Michael Brown",
+			content: "I'm ready for our next lesson. See you tomorrow!",
+			timestamp: "2024-01-14T16:45:00Z",
+			type: "text",
+		},
+	],
+	"4": [
+		{
+			id: "13",
+			senderId: "teacher-1",
+			senderName: "You",
+			content: "Hi Emma! How are you finding the new pronunciation drills?",
+			timestamp: "2024-01-14T12:00:00Z",
+			type: "text",
+		},
+		{
+			id: "14",
+			senderId: "student-4",
+			senderName: "Emma Wilson",
+			content: "The pronunciation exercises are really helpful!",
+			timestamp: "2024-01-14T12:20:00Z",
+			type: "text",
+		},
+	],
+	"5": [
+		{
+			id: "15",
+			senderId: "support-1",
+			senderName: "Support Team",
+			content: "Hello! How can we help you today?",
+			timestamp: "2024-01-13T09:15:00Z",
+			type: "text",
+		},
+	],
+};
 
-	const messages: Record<string, Message[]> = {
-		"1": [
-			{
-				id: "1",
-				content: "Hi Sofia! I really enjoyed our lesson yesterday.",
-				timestamp: new Date(Date.now() - 3 * 60 * 60 * 1000),
-				isFromTeacher: false,
-				type: "text",
-			},
-			{
-				id: "2",
-				content:
-					"I'm so glad to hear that! You're making great progress with your conversational skills.",
-				timestamp: new Date(Date.now() - 2.5 * 60 * 60 * 1000),
-				isFromTeacher: true,
-				type: "text",
-			},
-			{
-				id: "3",
-				content:
-					"Thank you for the great lesson yesterday! When can we schedule the next one?",
-				timestamp: new Date(Date.now() - 2 * 60 * 60 * 1000),
-				isFromTeacher: false,
-				type: "text",
-			},
-			{
-				id: "4",
-				content:
-					"I have availability this Thursday at 2 PM or Friday at 10 AM. Which works better for you?",
-				timestamp: new Date(Date.now() - 1.5 * 60 * 60 * 1000),
-				isFromTeacher: true,
-				type: "text",
-			},
-		],
-	};
+export default function ChatPage() {
+	const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
-	const filteredConversations = conversations.filter((conv) =>
-		conv.student.name.toLowerCase().includes(searchQuery.toLowerCase())
-	);
+	// Initialize chat hook with mock data
+	const {
+		selectedConversation,
+		currentMessages,
+		newMessage,
+		searchQuery,
+		isLoading,
+		selectConversation,
+		sendMessage,
+		setNewMessage,
+		setSearchQuery,
+		filteredConversations,
+	} = useChat({
+		currentUserId: "teacher-1",
+		initialConversations: mockConversations,
+		initialMessages: mockMessagesByConversation,
+		simulateResponses: true,
+		responseDelay: 1500,
+	});
 
-	const selectedConv = conversations.find(
-		(conv) => conv.id === selectedConversation
-	);
-	const conversationMessages = selectedConversation
-		? messages[selectedConversation] || []
-		: [];
-
-	const handleSendMessage = () => {
-		if (newMessage.trim() && selectedConversation) {
-			// Here you would send the message to your backend
-			console.log("Sending message:", newMessage);
-			setNewMessage("");
-		}
-	};
-
-	const formatTime = (date: Date) => {
-		const now = new Date();
-		const diffInHours = (now.getTime() - date.getTime()) / (1000 * 60 * 60);
-
-		if (diffInHours < 1) {
-			return "Just now";
-		} else if (diffInHours < 24) {
-			return `${Math.floor(diffInHours)}h ago`;
+	const handleBookCall = useCallback(() => {
+		if (selectedConversation?.calendlyLink) {
+			window.open(selectedConversation.calendlyLink, "_blank");
 		} else {
-			return `${Math.floor(diffInHours / 24)}d ago`;
+			setIsBookingDialogOpen(true);
 		}
-	};
+	}, [selectedConversation?.calendlyLink]);
+
+	const handleBookingDialogClose = useCallback(() => {
+		setIsBookingDialogOpen(false);
+	}, []);
 
 	return (
-		<div className="h-[calc(100vh-8rem)] flex flex-col lg:flex-row gap-6">
-			{/* Conversations List */}
-			<Card className="w-full lg:w-80 dark:bg-gray-800 dark:border-gray-700">
-				<CardHeader className="pb-4">
-					<CardTitle className="dark:text-gray-100">Messages</CardTitle>
-					<div className="relative">
-						<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400" />
-						<Input
-							placeholder="Search conversations..."
-							value={searchQuery}
-							onChange={(e) => setSearchQuery(e.target.value)}
-							className="pl-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
-						/>
-					</div>
-				</CardHeader>
-				<CardContent className="p-0">
-					<ScrollArea className="h-[calc(100vh-16rem)]">
-						<div className="space-y-1 p-4 pt-0">
-							{filteredConversations.map((conversation) => (
-								<div
-									key={conversation.id}
-									onClick={() => setSelectedConversation(conversation.id)}
-									className={`flex items-center gap-3 p-3 rounded-lg cursor-pointer transition-colors ${
-										selectedConversation === conversation.id
-											? "bg-primary-50 dark:bg-primary-900/20 border border-primary-200 dark:border-primary-800"
-											: "hover:bg-gray-50 dark:hover:bg-gray-700"
-									}`}>
-									<div className="relative">
-										<Avatar>
-											<AvatarImage
-												src={conversation.student.avatar || "/placeholder.svg"}
-											/>
-											<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200">
-												{conversation.student.name
-													.split(" ")
-													.map((n) => n[0])
-													.join("")}
-											</AvatarFallback>
-										</Avatar>
-										{conversation.student.isOnline && (
-											<div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
-										)}
-									</div>
-									<div className="flex-1 min-w-0">
-										<div className="flex items-center justify-between">
-											<p className="font-medium text-gray-900 dark:text-gray-100 truncate">
-												{conversation.student.name}
-											</p>
-											<span className="text-xs text-gray-500 dark:text-gray-400">
-												{formatTime(conversation.lastMessage.timestamp)}
-											</span>
-										</div>
-										<div className="flex items-center gap-2 mt-1">
-											<Badge variant="secondary" className="text-xs">
-												{conversation.language}
-											</Badge>
-											<Badge variant="outline" className="text-xs">
-												{conversation.level}
-											</Badge>
-										</div>
-										<p className="text-sm text-gray-600 dark:text-gray-400 truncate mt-1">
-											{conversation.lastMessage.isFromTeacher ? "You: " : ""}
-											{conversation.lastMessage.content}
-										</p>
-									</div>
-									{conversation.unreadCount > 0 && (
-										<Badge className="bg-primary-500 text-white text-xs min-w-[1.25rem] h-5 flex items-center justify-center">
-											{conversation.unreadCount}
-										</Badge>
-									)}
-								</div>
-							))}
-						</div>
-					</ScrollArea>
-				</CardContent>
-			</Card>
+		<>
+			<div className="h-[calc(100vh-8rem)]">
+				<Card className="h-full">
+					<CardContent className="p-0 h-full">
+						<div className="flex h-full">
+							{/* Conversations List */}
+							<ConversationList
+								conversations={filteredConversations}
+								selectedConversationId={selectedConversation?.id || ""}
+								searchQuery={searchQuery}
+								onSearchChange={setSearchQuery}
+								onConversationSelect={selectConversation}
+							/>
 
-			{/* Chat Area */}
-			<Card className="flex-1 flex flex-col dark:bg-gray-800 dark:border-gray-700">
-				{selectedConv ? (
-					<>
-						{/* Chat Header */}
-						<CardHeader className="pb-4">
-							<div className="flex items-center justify-between">
-								<div className="flex items-center gap-3">
-									<div className="relative">
-										<Avatar>
-											<AvatarImage
-												src={selectedConv.student.avatar || "/placeholder.svg"}
-											/>
-											<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200">
-												{selectedConv.student.name
-													.split(" ")
-													.map((n) => n[0])
-													.join("")}
-											</AvatarFallback>
-										</Avatar>
-										{selectedConv.student.isOnline && (
-											<div className="absolute -bottom-1 -right-1 h-3 w-3 bg-green-500 border-2 border-white dark:border-gray-800 rounded-full" />
-										)}
-									</div>
-									<div>
-										<h3 className="font-semibold text-gray-900 dark:text-gray-100">
-											{selectedConv.student.name}
-										</h3>
-										<div className="flex items-center gap-2">
-											<Badge variant="secondary" className="text-xs">
-												{selectedConv.language}
-											</Badge>
-											<Badge variant="outline" className="text-xs">
-												{selectedConv.level}
-											</Badge>
-											<span className="text-xs text-gray-500 dark:text-gray-400">
-												{selectedConv.student.isOnline ? "Online" : "Offline"}
-											</span>
-										</div>
-									</div>
-								</div>
-								<div className="flex items-center gap-2">
-									<Button variant="outline" size="sm">
-										<Phone className="h-4 w-4" />
-									</Button>
-									<Button variant="outline" size="sm">
-										<Video className="h-4 w-4" />
-									</Button>
-									<Button variant="outline" size="sm">
-										<MoreHorizontal className="h-4 w-4" />
-									</Button>
-								</div>
-							</div>
-						</CardHeader>
-
-						<Separator />
-
-						{/* Messages */}
-						<CardContent className="flex-1 p-0">
-							<ScrollArea className="h-[calc(100vh-20rem)] p-4">
-								<div className="space-y-4">
-									{conversationMessages.map((message) => (
-										<div
-											key={message.id}
-											className={`flex gap-3 ${
-												message.isFromTeacher ? "justify-end" : "justify-start"
-											}`}>
-											{!message.isFromTeacher && (
-												<Avatar className="h-8 w-8 mt-1">
-													<AvatarImage
-														src={
-															selectedConv.student.avatar || "/placeholder.svg"
-														}
-													/>
-													<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200 text-sm">
-														{selectedConv.student.name
-															.split(" ")
-															.map((n) => n[0])
-															.join("")}
-													</AvatarFallback>
-												</Avatar>
-											)}
-											<div
-												className={`max-w-xs lg:max-w-md px-4 py-2 rounded-lg ${
-													message.isFromTeacher
-														? "bg-primary-500 text-white"
-														: "bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-												}`}>
-												<p className="text-sm">{message.content}</p>
-												<p
-													className={`text-xs mt-1 ${
-														message.isFromTeacher
-															? "text-primary-100"
-															: "text-gray-500 dark:text-gray-400"
-													}`}>
-													{message.timestamp.toLocaleTimeString([], {
-														hour: "2-digit",
-														minute: "2-digit",
-													})}
-												</p>
-											</div>
-											{message.isFromTeacher && (
-												<Avatar className="h-8 w-8 mt-1">
-													<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200 text-sm">
-														SM
-													</AvatarFallback>
-												</Avatar>
-											)}
-										</div>
-									))}
-								</div>
-							</ScrollArea>
-						</CardContent>
-
-						<Separator />
-
-						{/* Message Input */}
-						<div className="p-4">
-							<div className="flex items-center gap-2">
-								<Button variant="outline" size="sm">
-									<Paperclip className="h-4 w-4" />
-								</Button>
-								<div className="flex-1 relative">
-									<Input
-										placeholder="Type your message..."
-										value={newMessage}
-										onChange={(e) => setNewMessage(e.target.value)}
-										onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-										className="pr-10 dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+							{/* Chat Area */}
+							{selectedConversation && (
+								<div className="flex-1 flex flex-col">
+									{/* Simple Chat Header for Teachers */}
+									<ChatHeader
+										conversation={selectedConversation}
+										onBookCall={handleBookCall}
 									/>
-									<Button
-										variant="ghost"
-										size="sm"
-										className="absolute right-1 top-1/2 transform -translate-y-1/2 h-8 w-8 p-0">
-										<Smile className="h-4 w-4" />
-									</Button>
+
+									{/* Messages */}
+									<MessageList
+										messages={currentMessages}
+										currentUserId="teacher-1"
+									/>
+
+									{/* Message Input */}
+									<MessageInput
+										value={newMessage}
+										onChange={setNewMessage}
+										onSend={sendMessage}
+										disabled={isLoading}
+									/>
 								</div>
-								<Button
-									onClick={handleSendMessage}
-									disabled={!newMessage.trim()}>
-									<Send className="h-4 w-4" />
-								</Button>
-							</div>
+							)}
+
+							{/* No conversation selected state */}
+							{!selectedConversation && (
+								<div className="flex-1 flex items-center justify-center">
+									<div className="text-center text-gray-500">
+										<h3 className="text-lg font-medium mb-2">
+											No conversation selected
+										</h3>
+										<p>Select a conversation to start chatting</p>
+									</div>
+								</div>
+							)}
 						</div>
-					</>
-				) : (
-					<div className="flex-1 flex items-center justify-center">
-						<div className="text-center">
-							<div className="h-16 w-16 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
-								<Search className="h-8 w-8 text-gray-400" />
-							</div>
-							<h3 className="text-lg font-medium text-gray-900 dark:text-gray-100 mb-2">
-								Select a conversation
-							</h3>
-							<p className="text-gray-600 dark:text-gray-400">
-								Choose a conversation from the list to start messaging
-							</p>
-						</div>
-					</div>
-				)}
-			</Card>
-		</div>
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Booking Dialog */}
+			<BookingDialog
+				isOpen={isBookingDialogOpen}
+				onClose={handleBookingDialogClose}
+			/>
+		</>
 	);
 }
