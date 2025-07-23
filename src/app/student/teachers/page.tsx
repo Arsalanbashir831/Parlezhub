@@ -344,7 +344,7 @@ export default function TeachersPage() {
 
 							{/* Action Buttons */}
 							<div className="flex gap-2 pt-2">
-								<Link href={ROUTES.STUDENT.MESSAGES + "?teacher=" + teacher.id}>
+								<Link href={ROUTES.STUDENT.CHAT + "?teacher=" + teacher.id}>
 									<Button variant="outline" className="flex-1 bg-transparent">
 										<MessageCircle className="h-4 w-4 mr-2" />
 										Message

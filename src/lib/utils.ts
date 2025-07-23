@@ -33,3 +33,24 @@ export const formatDate = (dateString: string) => {
 		minute: "2-digit",
 	});
 };
+
+export const formatDateTime = (iso: string) => {
+	const date = new Date(iso);
+	const now = new Date();
+	const isToday = date.toDateString() === now.toDateString();
+	const isTomorrow =
+		date.toDateString() ===
+		new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString();
+
+	const dateLabel = isToday
+		? "Today"
+		: isTomorrow
+		? "Tomorrow"
+		: date.toLocaleDateString([], { month: "short", day: "numeric" });
+
+	const timeLabel = date.toLocaleTimeString([], {
+		hour: "2-digit",
+		minute: "2-digit",
+	});
+	return `${dateLabel} at ${timeLabel}`;
+};

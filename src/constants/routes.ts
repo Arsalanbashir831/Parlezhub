@@ -9,7 +9,7 @@ export const ROUTES = {
 		DASHBOARD: "/student/dashboard",
 		TEACHERS: "/student/teachers",
 		AI_TUTOR: "/student/ai-tutor",
-		MESSAGES: "/student/messages",
+		CHAT: "/student/chat",
 		MEETINGS: "/student/meetings",
 		HISTORY: "/student/history",
 		REPORTS: "/student/reports",

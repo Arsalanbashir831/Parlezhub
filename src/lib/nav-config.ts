@@ -23,7 +23,7 @@ export const teacherNav: NavItem[] = [
 	},
 	{
 		id: "chat",
-		label: "Messages",
+		label: "Chat",
 		icon: MessageCircle,
 		href: ROUTES.TEACHER.CHAT,
 		badge: 5,
@@ -63,10 +63,10 @@ export const studentNav: NavItem[] = [
 		href: ROUTES.STUDENT.HISTORY,
 	},
 	{
-		id: "messages",
-		label: "Messages",
+		id: "chat",
+		label: "Chat",
 		icon: MessageCircle,
-		href: ROUTES.STUDENT.MESSAGES,
+		href: ROUTES.STUDENT.CHAT,
 		badge: 3,
 	},
 	{

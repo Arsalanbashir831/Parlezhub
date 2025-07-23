@@ -1,18 +1,7 @@
 "use client";
 
-import { useState, useEffect, useRef } from "react";
-import { useSearchParams, useRouter } from "next/navigation";
-import {
-	Send,
-	Mic,
-	MicOff,
-	Volume2,
-	VolumeX,
-	MoreVertical,
-	ArrowLeft,
-	Pause,
-	Play,
-} from "lucide-react";
+import { useState } from "react";
+import { Search, Send, Calendar } from "lucide-react";
 
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
@@ -20,320 +9,370 @@ import { Input } from "@/components/ui/input";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
 import { ScrollArea } from "@/components/ui/scroll-area";
-import { cn } from "@/lib/utils";
+import {
+	Dialog,
+	DialogContent,
+	DialogDescription,
+	DialogHeader,
+	DialogTitle,
+} from "@/components/ui/dialog";
+import { cn, formatMessageTime } from "@/lib/utils";
 
-interface Message {
-	id: string;
-	sender: "user" | "ai";
-	content: string;
-	timestamp: Date;
-	type: "text" | "audio";
-}
+// Mock conversation data
+const mockConversations = [
+	{
+		id: "1",
+		name: "Maria Rodriguez",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "Great! Let's schedule our next lesson for tomorrow at 3 PM.",
+		timestamp: "2024-01-15T14:30:00Z",
+		unreadCount: 2,
+		isOnline: true,
+		type: "teacher",
+		calendlyLink: "https://calendly.com/maria-rodriguez/spanish-lesson",
+	},
+	{
+		id: "2",
+		name: "Jean Dubois",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage:
+			"I've prepared some exercises for French pronunciation. Check them out!",
+		timestamp: "2024-01-15T10:15:00Z",
+		unreadCount: 0,
+		isOnline: false,
+		type: "teacher",
+		calendlyLink: "https://calendly.com/jean-dubois/french-lesson",
+	},
+	{
+		id: "3",
+		name: "Support Team",
+		avatar: "/placeholder.svg?height=40&width=40",
+		lastMessage: "How can we help you today?",
+		timestamp: "2024-01-14T16:45:00Z",
+		unreadCount: 0,
+		isOnline: true,
+		type: "support",
+		calendlyLink: null,
+	},
+];
 
-export default function ChatPage() {
-	const searchParams = useSearchParams();
-	const router = useRouter();
-	const [messages, setMessages] = useState<Message[]>([]);
+const mockMessages = [
+	{
+		id: "1",
+		senderId: "teacher-1",
+		senderName: "Maria Rodriguez",
+		content: "Hello! How are you doing with your Spanish practice?",
+		timestamp: "2024-01-15T13:00:00Z",
+		type: "text",
+	},
+	{
+		id: "2",
+		senderId: "student-1",
+		senderName: "You",
+		content:
+			"Hi Maria! I've been practicing every day. I feel more confident with conversations now.",
+		timestamp: "2024-01-15T13:05:00Z",
+		type: "text",
+	},
+	{
+		id: "3",
+		senderId: "teacher-1",
+		senderName: "Maria Rodriguez",
+		content:
+			"That's wonderful to hear! Your pronunciation has improved significantly.",
+		timestamp: "2024-01-15T13:10:00Z",
+		type: "text",
+	},
+	{
+		id: "4",
+		senderId: "student-1",
+		senderName: "You",
+		content:
+			"Thank you! I'd like to focus on business Spanish in our next session.",
+		timestamp: "2024-01-15T13:15:00Z",
+		type: "text",
+	},
+	{
+		id: "5",
+		senderId: "teacher-1",
+		senderName: "Maria Rodriguez",
+		content: "Great! Let's schedule our next lesson for tomorrow at 3 PM.",
+		timestamp: "2024-01-15T14:30:00Z",
+		type: "text",
+	},
+];
+
+export default function MessagesPage() {
+	const [selectedConversation, setSelectedConversation] = useState(
+		mockConversations[0]
+	);
 	const [newMessage, setNewMessage] = useState("");
-	const [isRecording, setIsRecording] = useState(false);
-	const [isMuted, setIsMuted] = useState(false);
-	const [sessionData, setSessionData] = useState<any>(null);
-	const [isTyping, setIsTyping] = useState(false);
-	const [sessionTime, setSessionTime] = useState(0);
-	const [isPaused, setIsPaused] = useState(false);
-	const messagesEndRef = useRef<HTMLDivElement>(null);
-	const timerRef = useRef<NodeJS.Timeout>();
+	const [searchQuery, setSearchQuery] = useState("");
+	const [messages, setMessages] = useState(mockMessages);
+	const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
 
-	useEffect(() => {
-		const sessionParam = searchParams.get("session");
-		if (sessionParam) {
-			try {
-				const data = JSON.parse(decodeURIComponent(sessionParam));
-				setSessionData(data);
-
-				// Start with a welcome message from AI
-				const welcomeMessage: Message = {
-					id: "welcome",
-					sender: "ai",
-					content: `Hello! I'm excited to practice ${
-						data.language
-					} with you today. ${
-						data.topic
-							? `Let's talk about ${data.topic.toLowerCase()}.`
-							: "What would you like to talk about?"
-					} How are you feeling today?`,
-					timestamp: new Date(),
-					type: "text",
-				};
-				setMessages([welcomeMessage]);
-			} catch (error) {
-				console.error("Failed to parse session data:", error);
-				router.push("/dashboard/ai-tutor");
-			}
-		}
-	}, [searchParams, router]);
-
-	useEffect(() => {
-		// Start session timer
-		if (!isPaused) {
-			timerRef.current = setInterval(() => {
-				setSessionTime((prev) => prev + 1);
-			}, 1000);
-		}
-
-		return () => {
-			if (timerRef.current) {
-				clearInterval(timerRef.current);
-			}
-		};
-	}, [isPaused]);
-
-	useEffect(() => {
-		messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-	}, [messages]);
-
-	const formatTime = (seconds: number) => {
-		const mins = Math.floor(seconds / 60);
-		const secs = seconds % 60;
-		return `${mins.toString().padStart(2, "0")}:${secs
-			.toString()
-			.padStart(2, "0")}`;
-	};
-
-	const handleSendMessage = async () => {
-		if (!newMessage.trim()) return;
-
-		const userMessage: Message = {
-			id: Date.now().toString(),
-			sender: "user",
-			content: newMessage,
-			timestamp: new Date(),
-			type: "text",
-		};
-
-		setMessages((prev) => [...prev, userMessage]);
-		setNewMessage("");
-		setIsTyping(true);
-
-		// Simulate AI response
-		setTimeout(() => {
-			const aiResponses = [
-				"That's interesting! Can you tell me more about that?",
-				"I understand. How do you feel about that situation?",
-				"Great! Your pronunciation is improving. Let's continue.",
-				"That's a good point. What do you think about this topic?",
-				"Excellent! I can see you're making progress with your vocabulary.",
-				"Let me help you with that grammar structure. Try saying it this way...",
-				"Perfect! Your fluency is getting better with each conversation.",
-			];
-
-			const aiMessage: Message = {
-				id: (Date.now() + 1).toString(),
-				sender: "ai",
-				content: aiResponses[Math.floor(Math.random() * aiResponses.length)],
-				timestamp: new Date(),
+	const handleSendMessage = () => {
+		if (newMessage.trim()) {
+			const userMessage = {
+				id: Date.now().toString(),
+				senderId: "student-1",
+				senderName: "You",
+				content: newMessage,
+				timestamp: new Date().toISOString(),
 				type: "text",
 			};
 
-			setMessages((prev) => [...prev, aiMessage]);
-			setIsTyping(false);
-		}, 1500 + Math.random() * 1000);
+			setMessages((prev) => [...prev, userMessage]);
+			setNewMessage("");
+
+			// Simulate teacher response
+			setTimeout(() => {
+				const teacherResponses = [
+					"Thanks for your message! I'll get back to you soon.",
+					"That sounds great! Let me know if you have any questions.",
+					"I'm glad to hear about your progress. Keep up the good work!",
+					"Perfect! I'll prepare some materials for our next session.",
+					"That's a great question. Let me explain that in our next lesson.",
+				];
+
+				const teacherMessage = {
+					id: (Date.now() + 1).toString(),
+					senderId: "teacher-1",
+					senderName: selectedConversation.name,
+					content:
+						teacherResponses[
+							Math.floor(Math.random() * teacherResponses.length)
+						],
+					timestamp: new Date().toISOString(),
+					type: "text",
+				};
+
+				setMessages((prev) => [...prev, teacherMessage]);
+			}, 1500);
+		}
 	};
 
-	const handleVoiceToggle = () => {
-		setIsRecording(!isRecording);
-		// Implement voice recording logic here
+	const handleBookCall = () => {
+		if (selectedConversation.calendlyLink) {
+			window.open(selectedConversation.calendlyLink, "_blank");
+		} else {
+			setIsBookingDialogOpen(true);
+		}
 	};
 
-	const handleEndSession = () => {
-		// Navigate to session report
-		router.push(`/dashboard/reports?session=${sessionData?.timestamp}`);
-	};
-
-	const togglePause = () => {
-		setIsPaused(!isPaused);
-	};
-
-	if (!sessionData) {
-		return <div>Loading...</div>;
-	}
+	const filteredConversations = mockConversations.filter((conv) =>
+		conv.name.toLowerCase().includes(searchQuery.toLowerCase())
+	);
 
 	return (
-		<div className="h-[calc(100vh-8rem)]">
-			<Card className="h-full">
-				<CardContent className="p-0 h-full flex flex-col">
-					{/* Chat Header */}
-					<div className="p-4 border-b bg-white flex items-center justify-between">
-						<div className="flex items-center gap-3">
-							<Button variant="ghost" size="sm" onClick={() => router.back()}>
-								<ArrowLeft className="h-4 w-4" />
-							</Button>
-							<Avatar className="h-10 w-10">
-								<AvatarImage src="/placeholder.svg" />
-								<AvatarFallback className="bg-primary-100 text-primary-700">
-									AI
-								</AvatarFallback>
-							</Avatar>
-							<div>
-								<h3 className="font-semibold">AI Language Session</h3>
-								<p className="text-sm text-gray-500">
-									{sessionData.language} • {sessionData.sessionType}
-								</p>
-							</div>
-						</div>
-
-						<div className="flex items-center gap-4">
-							<div className="text-center">
-								<div className="text-lg font-mono font-semibold">
-									{formatTime(sessionTime)}
-								</div>
-								<div className="text-xs text-gray-500">Session Time</div>
-							</div>
-							<div className="flex items-center gap-2">
-								<Button variant="ghost" size="sm" onClick={togglePause}>
-									{isPaused ? (
-										<Play className="h-4 w-4" />
-									) : (
-										<Pause className="h-4 w-4" />
-									)}
-								</Button>
-								<Button
-									variant="ghost"
-									size="sm"
-									onClick={() => setIsMuted(!isMuted)}>
-									{isMuted ? (
-										<VolumeX className="h-4 w-4" />
-									) : (
-										<Volume2 className="h-4 w-4" />
-									)}
-								</Button>
-								<Button variant="ghost" size="sm">
-									<MoreVertical className="h-4 w-4" />
-								</Button>
-							</div>
-						</div>
-					</div>
-
-					{/* Session Info */}
-					<div className="p-3 bg-blue-50 border-b">
-						<div className="flex items-center justify-between">
-							<div className="flex items-center gap-2">
-								<Badge variant="secondary">{sessionData.sessionType}</Badge>
-								{sessionData.topic && (
-									<Badge variant="outline">{sessionData.topic}</Badge>
-								)}
-							</div>
-							<Button variant="outline" size="sm" onClick={handleEndSession}>
-								End Session
-							</Button>
-						</div>
-					</div>
-
-					{/* Messages */}
-					<ScrollArea className="flex-1 p-4">
-						<div className="space-y-4">
-							{messages.map((message) => (
-								<div
-									key={message.id}
-									className={cn(
-										"flex gap-3",
-										message.sender === "user" && "flex-row-reverse"
-									)}>
-									<Avatar className="h-8 w-8">
-										<AvatarFallback className="bg-primary-100 text-primary-700 text-xs">
-											{message.sender === "user" ? "Y" : "AI"}
-										</AvatarFallback>
-									</Avatar>
-									<div
-										className={cn(
-											"max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
-											message.sender === "user"
-												? "bg-primary-500 text-white"
-												: "bg-gray-100 text-gray-900"
-										)}>
-										<p className="text-sm">{message.content}</p>
-										<p
-											className={cn(
-												"text-xs mt-1",
-												message.sender === "user"
-													? "text-primary-100"
-													: "text-gray-500"
-											)}>
-											{message.timestamp.toLocaleTimeString([], {
-												hour: "2-digit",
-												minute: "2-digit",
-											})}
-										</p>
+		<>
+			<div className="h-[calc(100vh-8rem)]">
+				<Card className="h-full">
+					<CardContent className="p-0 h-full">
+						<div className="flex h-full">
+							{/* Conversations List */}
+							<div className="w-80 border-r bg-gray-50">
+								<div className="p-4 border-b bg-white">
+									<h2 className="text-lg font-semibold mb-3">Messages</h2>
+									<div className="relative">
+										<Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+										<Input
+											placeholder="Search conversations..."
+											value={searchQuery}
+											onChange={(e) => setSearchQuery(e.target.value)}
+											className="pl-10"
+										/>
 									</div>
 								</div>
-							))}
 
-							{isTyping && (
-								<div className="flex gap-3">
-									<Avatar className="h-8 w-8">
-										<AvatarFallback className="bg-primary-100 text-primary-700 text-xs">
-											AI
-										</AvatarFallback>
-									</Avatar>
-									<div className="bg-gray-100 text-gray-900 px-4 py-2 rounded-lg">
-										<div className="flex space-x-1">
-											<div className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"></div>
+								<ScrollArea className="h-[calc(100%-5rem)]">
+									<div className="p-2 max-w-80">
+										{filteredConversations.map((conversation) => (
 											<div
-												className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-												style={{ animationDelay: "0.1s" }}></div>
-											<div
-												className="w-2 h-2 bg-gray-400 rounded-full animate-bounce"
-												style={{ animationDelay: "0.2s" }}></div>
+												key={conversation.id}
+												onClick={() => setSelectedConversation(conversation)}
+												className={cn(
+													"flex items-center gap-3 p-3 rounded-lg cursor-pointer hover:bg-white transition-colors",
+													selectedConversation.id === conversation.id &&
+														"bg-white shadow-sm"
+												)}>
+												<div className="relative">
+													<Avatar className="h-12 w-12">
+														<AvatarImage
+															src={conversation.avatar || "/placeholder.svg"}
+														/>
+														<AvatarFallback className="bg-primary-100 text-primary-700">
+															{conversation.name
+																.split(" ")
+																.map((n) => n[0])
+																.join("")}
+														</AvatarFallback>
+													</Avatar>
+													{conversation.isOnline && (
+														<div className="absolute -bottom-1 -right-1 w-3 h-3 bg-green-500 border-2 border-white rounded-full"></div>
+													)}
+												</div>
+
+												<div className="flex-1 min-w-0">
+													<div className="flex items-center justify-between">
+														<p className="font-medium text-sm truncate">
+															{conversation.name}
+														</p>
+														<span className="text-xs text-gray-500">
+															{formatMessageTime(conversation.timestamp)}
+														</span>
+													</div>
+													<p className="text-sm text-gray-600 truncate mt-1">
+														{conversation.lastMessage}
+													</p>
+													<div className="flex items-center justify-between mt-1">
+														<Badge variant="outline" className="text-xs">
+															{conversation.type}
+														</Badge>
+														{conversation.unreadCount > 0 && (
+															<Badge className="bg-primary-500 text-white text-xs">
+																{conversation.unreadCount}
+															</Badge>
+														)}
+													</div>
+												</div>
+											</div>
+										))}
+									</div>
+								</ScrollArea>
+							</div>
+
+							{/* Chat Area */}
+							<div className="flex-1 flex flex-col">
+								{/* Chat Header */}
+								<div className="p-4 border-b bg-white flex items-center justify-between">
+									<div className="flex items-center gap-3">
+										<Avatar className="h-10 w-10">
+											<AvatarImage
+												src={selectedConversation.avatar || "/placeholder.svg"}
+											/>
+											<AvatarFallback className="bg-primary-100 text-primary-700">
+												{selectedConversation.name
+													.split(" ")
+													.map((n) => n[0])
+													.join("")}
+											</AvatarFallback>
+										</Avatar>
+										<div>
+											<h3 className="font-semibold">
+												{selectedConversation.name}
+											</h3>
+											<p className="text-sm text-gray-500">
+												{selectedConversation.isOnline
+													? "Online"
+													: "Last seen recently"}
+											</p>
 										</div>
 									</div>
-								</div>
-							)}
-							<div ref={messagesEndRef} />
-						</div>
-					</ScrollArea>
 
-					{/* Message Input */}
-					<div className="p-4 border-t bg-white">
-						<div className="flex items-center gap-2">
-							<Button
-								variant={isRecording ? "default" : "ghost"}
-								size="sm"
-								onClick={handleVoiceToggle}
-								className={
-									isRecording ? "bg-red-500 hover:bg-red-600 text-white" : ""
-								}>
-								{isRecording ? (
-									<MicOff className="h-4 w-4" />
-								) : (
-									<Mic className="h-4 w-4" />
-								)}
-							</Button>
-							<div className="flex-1 relative">
-								<Input
-									placeholder="Type your message..."
-									value={newMessage}
-									onChange={(e) => setNewMessage(e.target.value)}
-									onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-									disabled={isPaused}
-								/>
+									<div className="flex items-center gap-2">
+										{selectedConversation.type === "teacher" && (
+											<Button
+												variant="outline"
+												size="sm"
+												onClick={handleBookCall}
+												className="bg-primary-500 text-white hover:bg-primary-600">
+												<Calendar className="h-4 w-4 mr-2" />
+												Book a Call
+											</Button>
+										)}
+									</div>
+								</div>
+
+								{/* Messages */}
+								<ScrollArea className="flex-1 p-4">
+									<div className="space-y-4">
+										{messages.map((message) => (
+											<div
+												key={message.id}
+												className={cn(
+													"flex gap-3",
+													message.senderId === "student-1" && "flex-row-reverse"
+												)}>
+												<Avatar className="h-8 w-8">
+													<AvatarFallback className="bg-primary-100 text-primary-700 text-xs">
+														{message.senderName === "You"
+															? "Y"
+															: message.senderName.charAt(0)}
+													</AvatarFallback>
+												</Avatar>
+												<div
+													className={cn(
+														"max-w-xs lg:max-w-md px-4 py-2 rounded-lg",
+														message.senderId === "student-1"
+															? "bg-primary-500 text-white"
+															: "bg-gray-100 text-gray-900"
+													)}>
+													<p className="text-sm">{message.content}</p>
+													<p
+														className={cn(
+															"text-xs mt-1",
+															message.senderId === "student-1"
+																? "text-primary-100"
+																: "text-gray-500"
+														)}>
+														{new Date(message.timestamp).toLocaleTimeString(
+															[],
+															{
+																hour: "2-digit",
+																minute: "2-digit",
+															}
+														)}
+													</p>
+												</div>
+											</div>
+										))}
+									</div>
+								</ScrollArea>
+
+								{/* Message Input */}
+								<div className="p-4 border-t bg-white">
+									<div className="flex items-center gap-2">
+										<div className="flex-1 relative">
+											<Input
+												placeholder="Type a message..."
+												value={newMessage}
+												onChange={(e) => setNewMessage(e.target.value)}
+												onKeyPress={(e) =>
+													e.key === "Enter" && handleSendMessage()
+												}
+												className="pr-10"
+											/>
+										</div>
+										<Button
+											onClick={handleSendMessage}
+											disabled={!newMessage.trim()}
+											className="bg-primary-500 hover:bg-primary-600">
+											<Send className="h-4 w-4" />
+										</Button>
+									</div>
+								</div>
 							</div>
-							<Button
-								onClick={handleSendMessage}
-								disabled={!newMessage.trim() || isPaused}
-								className="bg-primary-500 hover:bg-primary-600">
-								<Send className="h-4 w-4" />
-							</Button>
 						</div>
-						{isRecording && (
-							<div className="mt-2 text-center">
-								<Badge variant="destructive" className="animate-pulse">
-									Recording... Speak now
-								</Badge>
-							</div>
-						)}
+					</CardContent>
+				</Card>
+			</div>
+
+			{/* Booking Dialog */}
+			<Dialog open={isBookingDialogOpen} onOpenChange={setIsBookingDialogOpen}>
+				<DialogContent>
+					<DialogHeader>
+						<DialogTitle>Book a Call</DialogTitle>
+						<DialogDescription>
+							This feature is not available for this contact. Please contact
+							support for assistance.
+						</DialogDescription>
+					</DialogHeader>
+					<div className="flex justify-end">
+						<Button onClick={() => setIsBookingDialogOpen(false)}>Close</Button>
 					</div>
-				</CardContent>
-			</Card>
-		</div>
+				</DialogContent>
+			</Dialog>
+		</>
 	);
 }
