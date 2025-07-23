@@ -224,18 +224,6 @@ export default function MeetingTabs() {
 													</div>
 												)}
 											</div>
-											<Link
-												href={
-													isTeacher
-														? ROUTES.TEACHER.DASHBOARD
-														: ROUTES.STUDENT.TEACHERS +
-														  "?teacher=" +
-														  personInfo.name
-												}>
-												<Button variant="outline" size="sm">
-													{isTeacher ? "View Details" : "Book Again"}
-												</Button>
-											</Link>
 										</div>
 									</div>
 								</CardContent>
@@ -293,18 +281,6 @@ export default function MeetingTabs() {
 											<Badge className={cn(getStatusColor(meeting.status))}>
 												Cancelled
 											</Badge>
-											<Link
-												href={
-													isTeacher
-														? ROUTES.TEACHER.DASHBOARD
-														: ROUTES.STUDENT.TEACHERS +
-														  "?teacher=" +
-														  personInfo.name
-												}>
-												<Button variant="outline" size="sm">
-													{isTeacher ? "View Details" : "Rebook"}
-												</Button>
-											</Link>
 										</div>
 									</div>
 								</CardContent>
