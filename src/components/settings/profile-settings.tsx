@@ -1,6 +1,6 @@
 "use client";
 
-import React, { memo } from "react";
+import React, { memo, useState } from "react";
 import { User, Edit2 } from "lucide-react";
 import {
 	Card,
@@ -15,6 +15,7 @@ import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Separator } from "@/components/ui/separator";
+import { Badge } from "@/components/ui/badge";
 
 interface ProfileData {
 	firstName: string;
@@ -24,6 +25,12 @@ interface ProfileData {
 	bio: string;
 	city: string;
 	country: string;
+	// Teacher-specific fields (optional for students)
+	teachingExperience?: string;
+	hourlyRate?: number;
+	education?: string;
+	languages?: string[];
+	specialties?: string[];
 }
 
 interface ProfileSettingsProps {
@@ -35,6 +42,7 @@ interface ProfileSettingsProps {
 	onToggleEditMode: () => void;
 	userAvatar?: string;
 	userName?: string;
+	userRole?: "student" | "teacher"; // Role-based configuration
 }
 
 const ProfileSettings = memo(
@@ -47,11 +55,68 @@ const ProfileSettings = memo(
 		onToggleEditMode,
 		userAvatar,
 		userName,
+		userRole = "student",
 	}: ProfileSettingsProps) => {
+		const [newLanguage, setNewLanguage] = useState("");
+		const [newSpecialty, setNewSpecialty] = useState("");
+
 		const handleFieldChange = (field: keyof ProfileData, value: string) => {
+			let processedValue: any = value;
+
+			// Handle number fields for teachers
+			if (field === "hourlyRate" && value !== "") {
+				processedValue = Number(value);
+			}
+
 			onProfileChange({
 				...profileData,
-				[field]: value,
+				[field]: processedValue,
+			});
+		};
+
+		const handleAddLanguage = (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.key === "Enter" && newLanguage.trim()) {
+				e.preventDefault();
+				const languages = profileData.languages || [];
+				if (!languages.includes(newLanguage.trim())) {
+					onProfileChange({
+						...profileData,
+						languages: [...languages, newLanguage.trim()],
+					});
+				}
+				setNewLanguage("");
+			}
+		};
+
+		const handleAddSpecialty = (e: React.KeyboardEvent<HTMLInputElement>) => {
+			if (e.key === "Enter" && newSpecialty.trim()) {
+				e.preventDefault();
+				const specialties = profileData.specialties || [];
+				if (!specialties.includes(newSpecialty.trim())) {
+					onProfileChange({
+						...profileData,
+						specialties: [...specialties, newSpecialty.trim()],
+					});
+				}
+				setNewSpecialty("");
+			}
+		};
+
+		const handleRemoveLanguage = (index: number) => {
+			const newLanguages = profileData.languages?.filter((_, i) => i !== index);
+			onProfileChange({
+				...profileData,
+				languages: newLanguages,
+			});
+		};
+
+		const handleRemoveSpecialty = (index: number) => {
+			const newSpecialties = profileData.specialties?.filter(
+				(_, i) => i !== index
+			);
+			onProfileChange({
+				...profileData,
+				specialties: newSpecialties,
 			});
 		};
 
@@ -218,6 +283,135 @@ const ProfileSettings = memo(
 							/>
 						</div>
 					</div>
+
+					{/* Teacher-specific fields */}
+					{userRole === "teacher" && (
+						<>
+							<Separator className="dark:bg-gray-700" />
+
+							<div className="space-y-4">
+								<h3 className="text-lg font-medium dark:text-gray-100">
+									Professional Information
+								</h3>
+
+								<div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+									<div className="space-y-2">
+										<Label
+											htmlFor="teachingExperience"
+											className="dark:text-gray-200">
+											Teaching Experience
+										</Label>
+										<Input
+											id="teachingExperience"
+											value={profileData.teachingExperience || ""}
+											onChange={(e) =>
+												handleFieldChange("teachingExperience", e.target.value)
+											}
+											disabled={!isEditMode}
+											placeholder="e.g., 5 years"
+											className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+										/>
+									</div>
+									<div className="space-y-2">
+										<Label htmlFor="hourlyRate" className="dark:text-gray-200">
+											Hourly Rate (USD)
+										</Label>
+										<Input
+											id="hourlyRate"
+											type="number"
+											value={profileData.hourlyRate || ""}
+											onChange={(e) =>
+												handleFieldChange("hourlyRate", e.target.value)
+											}
+											disabled={!isEditMode}
+											placeholder="25"
+											className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+										/>
+									</div>
+								</div>
+
+								<div className="space-y-2">
+									<Label htmlFor="education" className="dark:text-gray-200">
+										Education
+									</Label>
+									<Input
+										id="education"
+										value={profileData.education || ""}
+										onChange={(e) =>
+											handleFieldChange("education", e.target.value)
+										}
+										disabled={!isEditMode}
+										placeholder="Your educational background"
+										className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+									/>
+								</div>
+
+								{/* Languages */}
+								<div className="space-y-2">
+									<Label className="dark:text-gray-200">Languages</Label>
+									<div className="flex flex-wrap gap-2">
+										{(profileData.languages || []).map((language, index) => (
+											<Badge
+												key={index}
+												variant="secondary"
+												className="bg-primary-100 text-primary-800 dark:bg-primary-800 dark:text-primary-200">
+												{language}
+												{isEditMode && (
+													<button
+														onClick={() => handleRemoveLanguage(index)}
+														className="ml-2 text-xs hover:text-red-500"
+														type="button">
+														×
+													</button>
+												)}
+											</Badge>
+										))}
+									</div>
+									{isEditMode && (
+										<Input
+											value={newLanguage}
+											onChange={(e) => setNewLanguage(e.target.value)}
+											onKeyDown={handleAddLanguage}
+											placeholder="Type a language and press Enter to add..."
+											className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+										/>
+									)}
+								</div>
+
+								{/* Specialties */}
+								<div className="space-y-2">
+									<Label className="dark:text-gray-200">Specialties</Label>
+									<div className="flex flex-wrap gap-2">
+										{(profileData.specialties || []).map((specialty, index) => (
+											<Badge
+												key={index}
+												variant="secondary"
+												className="bg-green-100 text-green-800 dark:bg-green-800 dark:text-green-200">
+												{specialty}
+												{isEditMode && (
+													<button
+														onClick={() => handleRemoveSpecialty(index)}
+														className="ml-2 text-xs hover:text-red-500"
+														type="button">
+														×
+													</button>
+												)}
+											</Badge>
+										))}
+									</div>
+									{isEditMode && (
+										<Input
+											value={newSpecialty}
+											onChange={(e) => setNewSpecialty(e.target.value)}
+											onKeyDown={handleAddSpecialty}
+											placeholder="Type a specialty and press Enter to add..."
+											className="dark:bg-gray-700 dark:border-gray-600 dark:text-gray-100"
+										/>
+									)}
+								</div>
+							</div>
+						</>
+					)}
 
 					{isEditMode && (
 						<div className="flex justify-end gap-2">

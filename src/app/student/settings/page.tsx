@@ -28,7 +28,7 @@ export default function SettingsPage() {
 		handleSaveSecurity,
 		togglePasswordVisibility,
 		toggleEditMode,
-	} = useSettings(user);
+	} = useSettings("student", user); // Pass role as "student"
 
 	return (
 		<div className="space-y-8">
@@ -51,6 +51,7 @@ export default function SettingsPage() {
 						onToggleEditMode={toggleEditMode}
 						userAvatar={user?.avatar}
 						userName={`${profileData.firstName} ${profileData.lastName}`.trim()}
+						userRole="student"
 					/>
 
 					{/* Security Settings */}
@@ -68,17 +69,18 @@ export default function SettingsPage() {
 				<div className="space-y-8">
 					{/* Account Status */}
 					<AccountStatus
+						memberSince="March 2023"
 						accountType="Student"
 						verificationStatus="verified"
-						memberSince="Jan 2024"
 					/>
 
-					{/* Notifications */}
+					{/* Notification Settings */}
 					<NotificationSettings
 						notificationData={notifications}
 						onNotificationChange={setNotifications}
 						onSave={handleSaveNotifications}
 						isLoading={isLoading}
+						userRole="student"
 					/>
 				</div>
 			</div>

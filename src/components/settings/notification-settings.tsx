@@ -12,7 +12,8 @@ interface NotificationData {
 	pushNotifications: boolean;
 	sessionReminders: boolean;
 	weeklyReports: boolean;
-	teacherMessages: boolean;
+	teacherMessages?: boolean; // For students
+	studentMessages?: boolean; // For teachers
 	marketingEmails: boolean;
 }
 
@@ -21,6 +22,7 @@ interface NotificationSettingsProps {
 	onNotificationChange: (data: NotificationData) => void;
 	onSave: () => void;
 	isLoading: boolean;
+	userRole?: "student" | "teacher"; // Role-based configuration
 }
 
 const NotificationSettings = memo(
@@ -29,6 +31,7 @@ const NotificationSettings = memo(
 		onNotificationChange,
 		onSave,
 		isLoading,
+		userRole = "student",
 	}: NotificationSettingsProps) => {
 		const handleToggle = (field: keyof NotificationData, checked: boolean) => {
 			onNotificationChange({
@@ -37,38 +40,58 @@ const NotificationSettings = memo(
 			});
 		};
 
-		const notificationOptions = [
-			{
-				key: "emailNotifications" as const,
-				label: "Email Notifications",
-				description: "Receive updates via email",
-			},
-			{
-				key: "pushNotifications" as const,
-				label: "Push Notifications",
-				description: "Browser notifications",
-			},
-			{
-				key: "sessionReminders" as const,
-				label: "Session Reminders",
-				description: "Reminders for scheduled sessions",
-			},
-			{
-				key: "weeklyReports" as const,
-				label: "Weekly Reports",
-				description: "Progress summaries",
-			},
-			{
-				key: "teacherMessages" as const,
-				label: "Teacher Messages",
-				description: "Messages from your teachers",
-			},
-			{
+		// Role-based notification options
+		const getNotificationOptions = () => {
+			const baseOptions = [
+				{
+					key: "emailNotifications" as const,
+					label: "Email Notifications",
+					description: "Receive updates via email",
+				},
+				{
+					key: "pushNotifications" as const,
+					label: "Push Notifications",
+					description: "Browser notifications",
+				},
+				{
+					key: "sessionReminders" as const,
+					label: "Session Reminders",
+					description: "Reminders for scheduled sessions",
+				},
+				{
+					key: "weeklyReports" as const,
+					label: "Weekly Reports",
+					description:
+						userRole === "teacher"
+							? "Teaching performance summaries"
+							: "Progress summaries",
+				},
+			];
+
+			// Role-specific message notification
+			const messageOption =
+				userRole === "teacher"
+					? {
+							key: "studentMessages" as const,
+							label: "Student Messages",
+							description: "Messages from your students",
+					  }
+					: {
+							key: "teacherMessages" as const,
+							label: "Teacher Messages",
+							description: "Messages from your teachers",
+					  };
+
+			const marketingOption = {
 				key: "marketingEmails" as const,
 				label: "Marketing Emails",
 				description: "Updates about new features and offers",
-			},
-		];
+			};
+
+			return [...baseOptions, messageOption, marketingOption];
+		};
+
+		const notificationOptions = getNotificationOptions();
 
 		return (
 			<Card className="dark:bg-gray-800 dark:border-gray-700">

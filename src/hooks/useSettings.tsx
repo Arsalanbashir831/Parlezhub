@@ -10,6 +10,12 @@ interface ProfileData {
 	bio: string;
 	city: string;
 	country: string;
+	// Teacher-specific fields (optional for students)
+	teachingExperience?: string;
+	hourlyRate?: number;
+	education?: string;
+	languages?: string[];
+	specialties?: string[];
 }
 
 interface NotificationData {
@@ -17,7 +23,8 @@ interface NotificationData {
 	pushNotifications: boolean;
 	sessionReminders: boolean;
 	weeklyReports: boolean;
-	teacherMessages: boolean;
+	teacherMessages?: boolean; // For students
+	studentMessages?: boolean; // For teachers
 	marketingEmails: boolean;
 }
 
@@ -28,6 +35,7 @@ interface SecurityData {
 }
 
 export const useSettings = (
+	userRole: "student" | "teacher" = "student",
 	user?: {
 		firstName?: string;
 		lastName?: string;
@@ -35,6 +43,12 @@ export const useSettings = (
 		phoneNumber?: string;
 		city?: string;
 		country?: string;
+		// Teacher-specific initial data
+		teachingExperience?: string;
+		hourlyRate?: number;
+		education?: string;
+		languages?: string[];
+		specialties?: string[];
 	} | null
 ) => {
 	const [isLoading, setIsLoading] = useState(false);
@@ -50,17 +64,43 @@ export const useSettings = (
 		bio: "",
 		city: user?.city || "",
 		country: user?.country || "",
+		// Teacher-specific fields
+		...(userRole === "teacher" && {
+			teachingExperience: user?.teachingExperience || "",
+			hourlyRate: user?.hourlyRate || 0,
+			education: user?.education || "",
+			languages: user?.languages || [],
+			specialties: user?.specialties || [],
+		}),
 	});
 
+	// Role-based notification settings
+	const getInitialNotifications = (): NotificationData => {
+		const baseNotifications = {
+			emailNotifications: true,
+			pushNotifications: true,
+			sessionReminders: true,
+			weeklyReports: true,
+			marketingEmails: false,
+		};
+
+		if (userRole === "teacher") {
+			return {
+				...baseNotifications,
+				studentMessages: true,
+			};
+		} else {
+			return {
+				...baseNotifications,
+				teacherMessages: true,
+			};
+		}
+	};
+
 	// Notification Settings
-	const [notifications, setNotifications] = useState<NotificationData>({
-		emailNotifications: true,
-		pushNotifications: true,
-		sessionReminders: true,
-		weeklyReports: true,
-		teacherMessages: true,
-		marketingEmails: false,
-	});
+	const [notifications, setNotifications] = useState<NotificationData>(
+		getInitialNotifications()
+	);
 
 	// Security Settings
 	const [security, setSecurity] = useState<SecurityData>({
