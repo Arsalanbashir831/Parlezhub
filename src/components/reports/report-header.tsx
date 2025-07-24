@@ -49,24 +49,6 @@ export const ReportHeader = React.memo<ReportHeaderProps>(
 						</div>
 					</div>
 				</div>
-				<div className="flex gap-2">
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={onShare}
-						className="gap-2">
-						<Share className="h-4 w-4" />
-						Share
-					</Button>
-					<Button
-						variant="outline"
-						size="sm"
-						onClick={onDownload}
-						className="gap-2">
-						<Download className="h-4 w-4" />
-						Download
-					</Button>
-				</div>
 			</div>
 		);
 	}

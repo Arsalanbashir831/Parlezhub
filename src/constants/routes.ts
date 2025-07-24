@@ -21,4 +21,9 @@ export const ROUTES = {
 		MEETINGS: "/teacher/meetings",
 		SETTINGS: "/teacher/settings",
 	},
+	AI_SESSION: {
+		ROOT: "/ai-session",
+		START: "/ai-session/start",
+		SETUP: "/ai-session/setup",
+	},
 };
