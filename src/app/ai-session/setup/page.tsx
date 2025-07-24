@@ -61,10 +61,10 @@ function SessionSetupContent() {
 			<AiSessionHeader>
 				<div className="flex justify-center">
 					<div className="text-center">
-						<h1 className="text-xl font-bold text-gray-900 dark:text-white">
+						<h1 className="text-sm sm:text-base md:text-xl font-bold text-gray-900 dark:text-white">
 							{SETUP_STEPS[currentStep].title}
 						</h1>
-						<p className="text-sm text-gray-600 dark:text-gray-400">
+						<p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
 							Step {currentStep + 1} of {SETUP_STEPS.length}
 						</p>
 					</div>

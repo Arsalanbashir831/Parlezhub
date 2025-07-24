@@ -41,18 +41,18 @@ export default function SessionControls({
 				return (
 					<>
 						<Button
-							onClick={onPause}
-							variant="secondary"
-							size="lg"
-							className="rounded-full px-6 py-4 bg-orange-600/20 dark:bg-orange-600/30 text-orange-500 dark:text-orange-300 hover:bg-orange-600/30 dark:hover:bg-orange-600/40 border-orange-500/50 shadow-lg shadow-orange-500/25 hover:text-orange-600">
-							<Pause className="h-7 w-7" />
-						</Button>
-						<Button
 							onClick={onStop}
 							variant="destructive"
 							size="lg"
 							className="bg-black/60 hover:bg-black/70 text-white rounded-full shadow-2xl shadow-black/30 border border-white/20 backdrop-blur-sm px-6 py-4">
 							<Square className="h-7 w-7" />
+						</Button>
+						<Button
+							onClick={onPause}
+							variant="secondary"
+							size="lg"
+							className="rounded-full px-6 py-4 bg-orange-600/20 dark:bg-orange-600/30 text-orange-500 dark:text-orange-300 hover:bg-orange-600/30 dark:hover:bg-orange-600/40 border-orange-500/50 shadow-lg shadow-orange-500/25 hover:text-orange-600">
+							<Pause className="h-7 w-7" />
 						</Button>
 					</>
 				);
@@ -61,18 +61,17 @@ export default function SessionControls({
 				return (
 					<>
 						<Button
-							onClick={onResume}
-							size="lg"
-							className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white px-10 py-5 rounded-full shadow-2xl shadow-orange-500/30 border border-white/20 backdrop-blur-sm">
-							<Play className="h-7 w-7 mr-3" />
-							Resume
-						</Button>
-						<Button
 							onClick={onStop}
 							variant="destructive"
 							size="lg"
 							className="bg-black/60 hover:bg-black/70 text-white rounded-full shadow-2xl shadow-black/30 border border-white/20 backdrop-blur-sm px-6 py-4">
 							<Square className="h-7 w-7" />
+						</Button>
+						<Button
+							onClick={onResume}
+							size="lg"
+							className="bg-gradient-to-r from-orange-600 to-orange-700 hover:from-orange-700 hover:to-orange-800 text-white rounded-full shadow-2xl shadow-orange-500/30 border border-white/20 backdrop-blur-sm px-6 py-4">
+							<Play className="h-7 w-7" />
 						</Button>
 					</>
 				);
