@@ -7,7 +7,6 @@ import {
 	DashboardStatsCards,
 	RecentSessions,
 	UpcomingMeetings,
-	DashboardSkeleton,
 } from "@/components/dashboard";
 
 export default function DashboardPage() {
