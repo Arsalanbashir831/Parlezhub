@@ -50,48 +50,51 @@ export const ConversationCard = React.memo<ConversationCardProps>(
 
 		return (
 			<Card className="hover:shadow-md transition-shadow">
-				<CardContent className="p-6">
-					<div className="flex items-center justify-between">
-						<div className="flex items-center gap-4">
-							<Avatar className="h-12 w-12">
+				<CardContent className="p-3 sm:p-4 lg:p-6">
+					<div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+						<div className="flex items-start sm:items-center gap-3 sm:gap-4 flex-1 min-w-0">
+							<Avatar className="h-10 w-10 sm:h-12 sm:w-12 flex-shrink-0">
 								<AvatarImage src="/placeholder.svg" />
 								<AvatarFallback className="bg-primary-100 text-primary-700">
 									AI
 								</AvatarFallback>
 							</Avatar>
-							<div>
-								<h3 className="font-semibold text-lg">{conversation.topic}</h3>
-								<p className="text-gray-600">
+							<div className="flex-1 min-w-0">
+								<h3 className="font-semibold text-base sm:text-lg truncate">
+									{conversation.topic}
+								</h3>
+								<p className="text-gray-600 text-sm truncate">
 									{conversation.language} • {formatDate(conversation.date)}
 								</p>
-								<div className="flex items-center gap-4 mt-2 text-sm text-gray-500">
+								<div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-4 mt-2 text-xs sm:text-sm text-gray-500">
 									<span className="flex items-center gap-1">
-										<Clock className="h-4 w-4" />
+										<Clock className="h-3 w-3 sm:h-4 sm:w-4" />
 										{conversation.duration} min
 									</span>
-									<span>{conversation.wordsSpoken} words</span>
+									<span className="text-xs sm:text-sm">
+										{conversation.wordsSpoken} words
+									</span>
 								</div>
 							</div>
 						</div>
 
-						<div className="flex items-center gap-3">
+						<div className="flex flex-row sm:flex-col lg:flex-row items-center justify-between sm:justify-end gap-3 flex-shrink-0">
 							<Badge
 								className={cn(
-									"font-semibold",
+									"font-semibold text-xs sm:text-sm",
 									getScoreColor(conversation.score)
 								)}>
 								{conversation.score}%
 							</Badge>
-							<div className="flex gap-2">
-								<Button
-									variant="outline"
-									size="sm"
-									onClick={handleViewReport}
-									disabled={!conversation.hasReport}>
-									<FileText className="h-4 w-4 mr-1" />
-									Report
-								</Button>
-							</div>
+							<Button
+								variant="outline"
+								size="sm"
+								className="text-xs sm:text-sm px-2 sm:px-3"
+								onClick={handleViewReport}
+								disabled={!conversation.hasReport}>
+								<FileText className="h-3 w-3 sm:h-4 sm:w-4 sm:mr-1" />
+								<span className="hidden sm:inline">Report</span>
+							</Button>
 						</div>
 					</div>
 				</CardContent>

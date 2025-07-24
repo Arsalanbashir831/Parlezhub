@@ -40,7 +40,7 @@ export default function AiSessionHeader({
 
 				{/* Right side - User profile and theme toggle */}
 				<div className="flex items-center gap-1 sm:gap-2 lg:gap-3 flex-shrink-0">
-					<ToggleThemeBtn className="hover:bg-black/5 h-8 w-8 sm:h-10 sm:w-10" />
+					{/* <ToggleThemeBtn className="hover:bg-black/5 h-8 w-8 sm:h-10 sm:w-10" /> */}
 
 					<div className="flex items-center gap-2 sm:gap-3 bg-black/5 dark:bg-white/10 backdrop-blur-sm rounded-full px-2 sm:px-3 lg:px-4 py-1 sm:py-2 border border-gray-200 dark:border-white/20">
 						<Avatar className="h-6 w-6 sm:h-8 sm:w-8">

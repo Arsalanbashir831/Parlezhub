@@ -60,7 +60,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 							{pageTitle}
 						</h1>
 						<div className="ml-auto flex items-center gap-4">
-							<ToggleThemeBtn />
+							{/* <ToggleThemeBtn /> */}
 							<Avatar className="h-8 w-8">
 								<AvatarImage src={user?.avatar} />
 								<AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200 text-sm">

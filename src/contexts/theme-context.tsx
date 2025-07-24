@@ -22,10 +22,11 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
 		if (saved) {
 			setThemeState(saved);
 		} else {
-			const sys = window.matchMedia("(prefers-color-scheme: dark)").matches
-				? "dark"
-				: "light";
-			setThemeState(sys);
+			// const sys = window.matchMedia("(prefers-color-scheme: dark)").matches
+			// 	? "dark"
+			// 	: "light";
+			// setThemeState(sys);
+			setThemeState("light"); // Default to light theme
 		}
 	}, []);
 
