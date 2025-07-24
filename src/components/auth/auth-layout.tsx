@@ -9,10 +9,10 @@ interface AuthLayoutProps {
 
 export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 	return (
-		<div className="min-h-screen gradient-bg flex items-center justify-center p-4">
-			<div className="w-full max-w-md">
-				<div className="text-center mb-8">
-					<Logo className="justify-center mb-4" size="lg" />
+		<div className="min-h-screen bg-gray-100 flex items-center justify-center p-4">
+			<div className="w-full max-w-lg bg-white rounded-2xl shadow-lg p-6">
+				<div className="text-center">
+					<Logo className="justify-center mt-4 mb-8" size="lg" />
 					<h1 className="text-2xl font-bold text-gray-900 mb-2">{title}</h1>
 					{subtitle && <p className="text-gray-600">{subtitle}</p>}
 				</div>
@@ -21,9 +21,9 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 					{children}
 				</div>
 
-				<div className="text-center mt-6">
+				<div className="text-center">
 					<p className="text-sm text-gray-500">
-						© 2024 LinkguaFlex. All rights reserved.
+						© {new Date().getFullYear()} LinkguaFlex. All rights reserved.
 					</p>
 				</div>
 			</div>
