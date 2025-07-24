@@ -8,21 +8,31 @@ import Link from "next/link";
 
 type Props = {
 	children: React.ReactNode;
+	backButtonText?: string;
+	backButtonHref?: string;
+	showBackButton?: boolean;
 };
 
-export default function AiSessionHeader({ children }: Props) {
+export default function AiSessionHeader({
+	children,
+	backButtonText = "Back to AI Tutor",
+	backButtonHref = ROUTES.STUDENT.AI_TUTOR,
+	showBackButton = true,
+}: Props) {
 	return (
 		<div className="border-b border-gray-200 dark:border-gray-700 bg-white/50 dark:bg-black/20 backdrop-blur-sm w-full text-black dark:text-white">
 			<div className="flex items-center justify-between p-6">
 				{/* Left side - Back button */}
-				<Link href={ROUTES.STUDENT.AI_TUTOR}>
-					<Button
-						variant="ghost"
-						className="text-gray-700 dark:text-white hover:bg-black/5 dark:hover:bg-white/10">
-						<ArrowLeft className="h-4 w-4 mr-2" />
-						Back to AI Tutor
-					</Button>
-				</Link>
+				{showBackButton && (
+					<Link href={backButtonHref}>
+						<Button
+							variant="ghost"
+							className="text-gray-700 dark:text-white hover:bg-black/5 dark:hover:bg-white/10">
+							<ArrowLeft className="h-4 w-4 mr-2" />
+							{backButtonText}
+						</Button>
+					</Link>
+				)}
 
 				{children}
 
