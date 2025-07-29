@@ -1,14 +1,14 @@
-"use client";
+'use client';
 
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 export function useCurrentTime(intervalMs = 1000) {
-	const [now, setNow] = useState<Date>(() => new Date());
+  const [now, setNow] = useState<Date>(() => new Date());
 
-	useEffect(() => {
-		const id = setInterval(() => setNow(new Date()), intervalMs);
-		return () => clearInterval(id);
-	}, [intervalMs]);
+  useEffect(() => {
+    const id = setInterval(() => setNow(new Date()), intervalMs);
+    return () => clearInterval(id);
+  }, [intervalMs]);
 
-	return now;
+  return now;
 }

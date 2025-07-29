@@ -1,25 +1,23 @@
-"use client";
+'use client';
 
-import React from "react";
-import { ConversationCard, ConversationData } from "./conversation-card";
+import React from 'react';
+
+import { ConversationCard, ConversationData } from './conversation-card';
 
 interface ConversationListProps {
-	conversations: ConversationData[];
+  conversations: ConversationData[];
 }
 
 export const ConversationList = React.memo<ConversationListProps>(
-	({ conversations }) => {
-		return (
-			<div className="space-y-4">
-				{conversations.map((conversation) => (
-					<ConversationCard
-						key={conversation.id}
-						conversation={conversation}
-					/>
-				))}
-			</div>
-		);
-	}
+  ({ conversations }) => {
+    return (
+      <div className="space-y-4">
+        {conversations.map((conversation) => (
+          <ConversationCard key={conversation.id} conversation={conversation} />
+        ))}
+      </div>
+    );
+  }
 );
 
-ConversationList.displayName = "ConversationList";
+ConversationList.displayName = 'ConversationList';

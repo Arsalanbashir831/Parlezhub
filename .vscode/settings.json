@@ -1,0 +1,13 @@
+{
+  "[typescriptreact]": {
+    "editor.formatOnSave": true,
+    "prettier.singleQuote": false,
+    "editor.codeActionsOnSave": {
+      "source.organizeImports": "explicit",
+      "source.fixAll": "explicit",
+      "source.fixAll.eslint": "always"
+    }
+  },
+  "javascript.preferences.quoteStyle": "auto",
+  "typescript.preferences.quoteStyle": "auto"
+}

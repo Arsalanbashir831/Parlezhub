@@ -1,45 +1,45 @@
 export interface SessionConfig {
-	sessionType?: "tutor" | "chirologist";
-	nativeLanguage: string;
-	language: string;
-	gender: "male" | "female" | "neutral";
-	accent: string;
-	topic: string;
-	// Chirologist specific fields
-	palmType?: string;
-	readingFocus?: string;
-	experience?: string;
+  nativeLanguage: string;
+  learningLanguage: string;
+  topic: string;
+  sessionType?: "tutor" | "chirologist";
+  // Chirologist specific fields
+  palmType?: string;
+  readingFocus?: string;
+  experience?: string;
 }
 
-export type SessionState = "idle" | "active" | "paused" | "completed";
+export interface SessionState {
+  isActive: boolean;
+  isPaused: boolean;
+  isRecording: boolean;
+  audioLevel: number;
+  timer: SessionTimer;
+}
 
 export interface Language {
-	value: string;
-	label: string;
-	flag: string;
+  code: string;
+  name: string;
+  accent: string;
 }
 
 export interface Level {
-	value: string;
-	label: string;
-	description: string;
+  code: string;
+  name: string;
+  description: string;
 }
 
 export interface SetupStep {
-	title: string;
-	description: string;
-	icon: any; // LucideIcon type
+  id: string;
+  title: string;
+  description: string;
+  completed: boolean;
 }
 
-export interface SessionStatus {
-	isUserSpeaking: boolean;
-	isAISpeaking: boolean;
-	audioLevel: number;
-	timeRemaining: number;
-}
+export type SessionStatus = "idle" | "starting" | "active" | "paused" | "ending" | "completed";
 
 export interface SessionTimer {
-	duration: number;
-	remaining: number;
-	isActive: boolean;
+  minutes: number;
+  seconds: number;
+  totalSeconds: number;
 }

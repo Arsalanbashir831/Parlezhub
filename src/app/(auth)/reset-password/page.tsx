@@ -1,202 +1,140 @@
-"use client";
+'use client';
 
-import { useState, useEffect, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
-import Link from "next/link";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { ArrowLeft, CheckCircle, AlertCircle } from "lucide-react";
+import { zodResolver } from '@hookform/resolvers/zod';
+import Link from 'next/link';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { Suspense } from 'react';
+import { useForm } from 'react-hook-form';
+import { z } from 'zod';
 
-import { AuthLayout } from "@/components/auth/auth-layout";
-import { PasswordField, ConfirmPasswordField } from "@/components/auth/form-fields";
-import { ErrorMessage, SuccessMessage, InfoMessage } from "@/components/auth/status-messages";
-import { AuthButton } from "@/components/auth/auth-button";
-import { useAuth } from "@/contexts/auth-context";
+import { AuthButton } from '@/components/auth/auth-button';
+import { AuthLayout } from '@/components/auth/auth-layout';
+import { ConfirmPasswordField, PasswordField } from '@/components/auth/specialized-fields';
+import { ErrorMessage, SuccessMessage } from '@/components/auth/status-messages';
+import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
 
 const resetPasswordSchema = z
-	.object({
-		password: z.string().min(6, "Password must be at least 6 characters"),
-		confirmPassword: z.string(),
-	})
-	.refine((data) => data.password === data.confirmPassword, {
-		message: "Passwords don't match",
-		path: ["confirmPassword"],
-	});
+  .object({
+    password: z.string().min(6, 'Password must be at least 6 characters'),
+    confirmPassword: z.string(),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Passwords don't match",
+    path: ['confirmPassword'],
+  });
 
-type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
+type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordContent() {
-	const [showPassword, setShowPassword] = useState(false);
-	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
-	const [isLoading, setIsLoading] = useState(false);
-	const [isSuccess, setIsSuccess] = useState(false);
-	const [tokenError, setTokenError] = useState<string | null>(null);
-	const { resetPassword } = useAuth();
-	const router = useRouter();
-	const searchParams = useSearchParams();
-	const token = searchParams.get("token");
+  const { resetPassword, isLoading, error } = useAuth();
+  const router = useRouter();
+  const searchParams = useSearchParams();
+  const token = searchParams.get('token');
 
-	const {
-		register,
-		handleSubmit,
-		formState: { errors },
-		setError,
-	} = useForm<ResetPasswordForm>({
-		resolver: zodResolver(resetPasswordSchema),
-	});
+  const {
+    register,
+    handleSubmit,
+    formState: { errors, isSubmitSuccessful },
+  } = useForm<ResetPasswordFormData>({
+    resolver: zodResolver(resetPasswordSchema),
+  });
 
-	// Validate token on component mount
-	useEffect(() => {
-		if (!token) {
-			setTokenError("Invalid or missing reset token. Please request a new password reset link.");
-		}
-	}, [token]);
+  const onSubmit = async (data: ResetPasswordFormData) => {
+    if (!token) return;
 
-	const onSubmit = async (data: ResetPasswordForm) => {
-		if (!token) {
-			setTokenError("Invalid reset token. Please request a new password reset link.");
-			return;
-		}
+    const success = await resetPassword(token, data.password);
+    router.push(ROUTES.AUTH.LOGIN);
+  };
 
-		setIsLoading(true);
-		try {
-			await resetPassword(token, data.password);
-			setIsSuccess(true);
-		} catch (error) {
-			setError("root", {
-				message: "Failed to reset password. The link may have expired. Please request a new reset link.",
-			});
-		} finally {
-			setIsLoading(false);
-		}
-	};
+  if (!token) {
+    return (
+      <AuthLayout
+        title="Invalid Reset Link"
+        subtitle="The password reset link is invalid or has expired"
+      >
+        <div className="space-y-6">
+          <ErrorMessage message="This password reset link is invalid or has expired. Please request a new one." />
+          <div className="text-center">
+            <Link
+              href={ROUTES.AUTH.FORGOT_PASSWORD}
+              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+            >
+              Request new reset link
+            </Link>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
 
-	// Show success state
-	if (isSuccess) {
-		return (
-			<AuthLayout
-				title="Password Reset Successful"
-				subtitle="Your password has been updated successfully">
-				<div className="text-center space-y-6">
-					<div className="flex justify-center">
-						<div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center">
-							<CheckCircle className="w-8 h-8 text-green-600" />
-						</div>
-					</div>
+  if (isSubmitSuccessful && !error) {
+    return (
+      <AuthLayout
+        title="Password Reset Successful"
+        subtitle="Your password has been successfully updated"
+      >
+        <div className="space-y-6">
+          <SuccessMessage message="Your password has been successfully reset. You can now sign in with your new password." />
+          <div className="text-center">
+            <AuthButton onClick={() => router.push(ROUTES.AUTH.LOGIN)}>
+              Continue to Sign In
+            </AuthButton>
+          </div>
+        </div>
+      </AuthLayout>
+    );
+  }
 
-					<SuccessMessage 
-						message="Your password has been successfully reset. You can now sign in with your new password."
-						icon={CheckCircle}
-					/>
+  return (
+    <AuthLayout
+      title="Reset your password"
+      subtitle="Enter your new password below"
+    >
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
+        <PasswordField
+          placeholder="Enter your new password"
+          register={register('password')}
+          error={errors.password}
+        />
 
-					<Link href="/login">
-						<AuthButton type="button">
-							Sign In Now
-						</AuthButton>
-					</Link>
-				</div>
-			</AuthLayout>
-		);
-	}
+        <ConfirmPasswordField
+          register={register('confirmPassword')}
+          error={errors.confirmPassword}
+        />
 
-	// Show token error state
-	if (tokenError) {
-		return (
-			<AuthLayout
-				title="Invalid Reset Link"
-				subtitle="There was a problem with your password reset link">
-				<div className="text-center space-y-6">
-					<div className="flex justify-center">
-						<div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center">
-							<AlertCircle className="w-8 h-8 text-red-600" />
-						</div>
-					</div>
+        {error && <ErrorMessage message={error} />}
 
-					<ErrorMessage message={tokenError} />
+        <AuthButton type="submit" isLoading={isLoading}>
+          Reset Password
+        </AuthButton>
 
-					<InfoMessage message="Password reset links expire after 24 hours for security reasons. Please request a new reset link." />
-
-					<div className="space-y-3">
-						<Link href="/forgot-password">
-							<AuthButton type="button">
-								Request New Reset Link
-							</AuthButton>
-						</Link>
-
-						<Link href="/login">
-							<AuthButton
-								type="button"
-								variant="ghost"
-								icon={ArrowLeft}>
-								Back to Sign In
-							</AuthButton>
-						</Link>
-					</div>
-				</div>
-			</AuthLayout>
-		);
-	}
-
-	// Show reset password form
-	return (
-		<AuthLayout
-			title="Reset Your Password"
-			subtitle="Enter your new password below">
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-				<div className="space-y-4">
-					<PasswordField
-						placeholder="Enter your new password"
-						register={register("password")}
-						error={errors.password}
-						showPassword={showPassword}
-						setShowPassword={setShowPassword}
-					/>
-
-					<ConfirmPasswordField
-						placeholder="Confirm your new password"
-						register={register("confirmPassword")}
-						error={errors.confirmPassword}
-						showPassword={showConfirmPassword}
-						setShowPassword={setShowConfirmPassword}
-					/>
-				</div>
-
-				{errors.root && <ErrorMessage message={errors.root.message} />}
-
-				<InfoMessage message="Choose a strong password with at least 6 characters for better security." />
-
-				<AuthButton
-					isLoading={isLoading}
-					loadingText="Resetting Password...">
-					Reset Password
-				</AuthButton>
-
-				<div className="text-center">
-					<Link
-						href="/login"
-						className="inline-flex items-center text-sm text-primary-600 hover:text-primary-500 font-medium">
-						<ArrowLeft className="w-4 h-4 mr-1" />
-						Back to Sign In
-					</Link>
-				</div>
-			</form>
-		</AuthLayout>
-	);
+        <div className="text-center">
+          <Link
+            href={ROUTES.AUTH.LOGIN}
+            className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+          >
+            Back to sign in
+          </Link>
+        </div>
+      </form>
+    </AuthLayout>
+  );
 }
 
 export default function ResetPasswordPage() {
-	return (
-		<Suspense fallback={
-			<AuthLayout
-				title="Loading..."
-				subtitle="Please wait while we load the reset form">
-				<div className="flex justify-center py-8">
-					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
-				</div>
-			</AuthLayout>
-		}>
-			<ResetPasswordContent />
-		</Suspense>
-	);
-} 
+  return (
+    <Suspense fallback={
+      <AuthLayout
+        title="Reset Password"
+        subtitle="Loading..."
+      >
+        <div className="flex justify-center">
+          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+        </div>
+      </AuthLayout>
+    }>
+      <ResetPasswordContent />
+    </Suspense>
+  );
+}

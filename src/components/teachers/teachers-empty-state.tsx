@@ -1,39 +1,40 @@
-"use client";
+'use client';
 
-import React from "react";
-import { Search } from "lucide-react";
-import { Card, CardContent } from "@/components/ui/card";
-import { Button } from "@/components/ui/button";
+import React from 'react';
+import { Search } from 'lucide-react';
+
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
 
 interface TeachersEmptyStateProps {
-	onClearFilters: () => void;
+  onClearFilters: () => void;
 }
 
 export const TeachersEmptyState = React.memo<TeachersEmptyStateProps>(
-	({ onClearFilters }) => {
-		return (
-			<Card className="text-center py-12">
-				<CardContent>
-					<div className="flex flex-col items-center gap-4">
-						<div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center">
-							<Search className="h-8 w-8 text-gray-400" />
-						</div>
-						<div>
-							<h3 className="text-lg font-semibold text-gray-900">
-								No teachers found
-							</h3>
-							<p className="text-gray-600 mt-1">
-								Try adjusting your search criteria or filters
-							</p>
-						</div>
-						<Button variant="outline" onClick={onClearFilters}>
-							Clear All Filters
-						</Button>
-					</div>
-				</CardContent>
-			</Card>
-		);
-	}
+  ({ onClearFilters }) => {
+    return (
+      <Card className="py-12 text-center">
+        <CardContent>
+          <div className="flex flex-col items-center gap-4">
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
+              <Search className="h-8 w-8 text-gray-400" />
+            </div>
+            <div>
+              <h3 className="text-lg font-semibold text-gray-900">
+                No teachers found
+              </h3>
+              <p className="mt-1 text-gray-600">
+                Try adjusting your search criteria or filters
+              </p>
+            </div>
+            <Button variant="outline" onClick={onClearFilters}>
+              Clear All Filters
+            </Button>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
 );
 
-TeachersEmptyState.displayName = "TeachersEmptyState";
+TeachersEmptyState.displayName = 'TeachersEmptyState';

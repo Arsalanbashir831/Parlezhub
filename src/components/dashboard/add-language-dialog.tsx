@@ -1,217 +1,145 @@
-"use client";
+'use client';
 
-import { useState } from "react";
-import { useForm } from "react-hook-form";
-import { zodResolver } from "@hookform/resolvers/zod";
-import { z } from "zod";
-import { Globe, Volume2 } from "lucide-react";
+import { Plus, X } from 'lucide-react';
+import React, { useState } from 'react';
 
+import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import {
-	DialogContent,
-	DialogDescription,
-	DialogHeader,
-	DialogTitle,
-} from "@/components/ui/dialog";
-import { Button } from "@/components/ui/button";
-import { Label } from "@/components/ui/label";
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import {
-	Select,
-	SelectContent,
-	SelectItem,
-	SelectTrigger,
-	SelectValue,
-} from "@/components/ui/select";
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
-const addLanguageSchema = z.object({
-	language: z.string().min(1, "Please select a language"),
-	accent: z.string().min(1, "Please select an accent"),
-});
-
-type AddLanguageForm = z.infer<typeof addLanguageSchema>;
-
-interface AddLanguageDialogProps {
-	onClose: () => void;
-	onSuccess: (newLanguage: any) => void;
-	existingLanguages: string[];
+interface Language {
+  name: string;
+  level: string;
 }
 
-const languages = [
-	{
-		value: "spanish",
-		label: "Spanish",
-		accents: ["Mexican", "Spanish", "Argentinian", "Colombian"],
-	},
-	{
-		value: "french",
-		label: "French",
-		accents: ["Parisian", "Canadian", "Belgian", "Swiss"],
-	},
-	{
-		value: "german",
-		label: "German",
-		accents: ["Standard", "Austrian", "Swiss"],
-	},
-	{
-		value: "italian",
-		label: "Italian",
-		accents: ["Standard", "Roman", "Milanese"],
-	},
-	{
-		value: "portuguese",
-		label: "Portuguese",
-		accents: ["Brazilian", "European"],
-	},
-	{
-		value: "japanese",
-		label: "Japanese",
-		accents: ["Tokyo", "Kansai", "Kyushu"],
-	},
-	{ value: "korean", label: "Korean", accents: ["Seoul", "Busan"] },
-	{ value: "chinese", label: "Chinese", accents: ["Mandarin", "Cantonese"] },
-	{ value: "russian", label: "Russian", accents: ["Moscow", "St. Petersburg"] },
-	{
-		value: "arabic",
-		label: "Arabic",
-		accents: ["Modern Standard", "Egyptian", "Levantine"],
-	},
-];
+export default function AddLanguageDialog() {
+  const [open, setOpen] = useState(false);
+  const [languages, setLanguages] = useState<Language[]>([]);
+  const [currentLanguage, setCurrentLanguage] = useState('');
+  const [currentLevel, setCurrentLevel] = useState('');
 
-export function AddLanguageDialog({
-	onClose,
-	onSuccess,
-	existingLanguages,
-}: AddLanguageDialogProps) {
-	const [isLoading, setIsLoading] = useState(false);
+  const levels = [
+    'Beginner (A1)',
+    'Elementary (A2)',
+    'Intermediate (B1)',
+    'Upper-Intermediate (B2)',
+    'Advanced (C1)',
+    'Proficient (C2)',
+  ];
 
-	const {
-		watch,
-		setValue,
-		handleSubmit,
-		formState: { errors },
-	} = useForm<AddLanguageForm>({
-		resolver: zodResolver(addLanguageSchema),
-	});
+  const handleAddLanguage = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+    if (currentLanguage && currentLevel) {
+      const newLanguage: Language = {
+        name: currentLanguage,
+        level: currentLevel,
+      };
+      setLanguages([...languages, newLanguage]);
+      setCurrentLanguage('');
+      setCurrentLevel('');
+    }
+  };
 
-	const selectedLanguage = watch("language");
-	const selectedLanguageData = languages.find(
-		(lang) => lang.value === selectedLanguage
-	);
-	const availableLanguages = languages.filter(
-		(lang) => !existingLanguages.includes(lang.value)
-	);
+  const handleRemoveLanguage = (index: number) => {
+    setLanguages(languages.filter((_, i) => i !== index));
+  };
 
-	const onSubmit = async (data: AddLanguageForm) => {
-		setIsLoading(true);
-		try {
-			const selectedLang = languages.find(
-				(lang) => lang.value === data.language
-			);
-			const newLanguage = {
-				code: data.language,
-				name: selectedLang?.label || data.language,
-				accent: data.accent,
-				level: "Beginner",
-				conversationCount: 0,
-				lastUsed: new Date().toISOString(),
-				totalMinutes: 0,
-			};
+  const handleSave = () => {
+    // Here you would typically save to your backend
+    console.log('Saving languages:', languages);
+    setOpen(false);
+    setLanguages([]);
+  };
 
-			// Simulate API delay
-			await new Promise((resolve) => setTimeout(resolve, 1000));
-			onSuccess(newLanguage);
-		} catch (error) {
-			console.error("Failed to add language:", error);
-		} finally {
-			setIsLoading(false);
-		}
-	};
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm">
+          <Plus className="mr-2 h-4 w-4" />
+          Add Language
+        </Button>
+      </DialogTrigger>
+      <DialogContent className="sm:max-w-[425px]">
+        <DialogHeader>
+          <DialogTitle>Add Languages</DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4">
+          <form onSubmit={handleAddLanguage} className="space-y-4">
+            <div>
+              <Label htmlFor="language">Language</Label>
+              <Input
+                id="language"
+                value={currentLanguage}
+                onChange={(e) => setCurrentLanguage(e.target.value)}
+                placeholder="e.g., Spanish, French, German"
+              />
+            </div>
+            <div>
+              <Label htmlFor="level">Proficiency Level</Label>
+              <Select value={currentLevel} onValueChange={setCurrentLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Select your level" />
+                </SelectTrigger>
+                <SelectContent>
+                  {levels.map((level) => (
+                    <SelectItem key={level} value={level}>
+                      {level}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <Button type="submit" className="w-full">
+              Add Language
+            </Button>
+          </form>
 
-	return (
-		<DialogContent className="sm:max-w-[400px]">
-			<DialogHeader>
-				<DialogTitle>Add New Language</DialogTitle>
-				<DialogDescription>
-					Choose a new language to practice with your AI tutor
-				</DialogDescription>
-			</DialogHeader>
+          {languages.length > 0 && (
+            <div className="space-y-2">
+              <Label>Added Languages</Label>
+              <div className="flex flex-wrap gap-2">
+                {languages.map((lang, index) => (
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="flex items-center gap-1"
+                  >
+                    {lang.name} ({lang.level})
+                    <X
+                      className="h-3 w-3 cursor-pointer hover:text-red-500"
+                      onClick={() => handleRemoveLanguage(index)}
+                    />
+                  </Badge>
+                ))}
+              </div>
+            </div>
+          )}
 
-			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-				{/* Language Selection */}
-				<div>
-					<Label htmlFor="language">Language</Label>
-					<div className="relative mt-1">
-						<Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
-						<Select onValueChange={(value) => setValue("language", value)}>
-							<SelectTrigger className="pl-10">
-								<SelectValue placeholder="Select a language" />
-							</SelectTrigger>
-							<SelectContent>
-								{availableLanguages.map((language) => (
-									<SelectItem key={language.value} value={language.value}>
-										{language.label}
-									</SelectItem>
-								))}
-							</SelectContent>
-						</Select>
-					</div>
-					{errors.language && (
-						<p className="text-sm text-red-600 mt-1">
-							{errors.language.message}
-						</p>
-					)}
-				</div>
-
-				{/* Accent Selection */}
-				{selectedLanguageData && (
-					<div>
-						<Label htmlFor="accent">Accent</Label>
-						<div className="relative mt-1">
-							<Volume2 className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4 z-10" />
-							<Select onValueChange={(value) => setValue("accent", value)}>
-								<SelectTrigger className="pl-10">
-									<SelectValue placeholder="Select an accent" />
-								</SelectTrigger>
-								<SelectContent>
-									{selectedLanguageData.accents.map((accent) => (
-										<SelectItem key={accent} value={accent}>
-											{accent}
-										</SelectItem>
-									))}
-								</SelectContent>
-							</Select>
-						</div>
-						{errors.accent && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.accent.message}
-							</p>
-						)}
-					</div>
-				)}
-
-				{availableLanguages.length === 0 && (
-					<div className="text-center py-4">
-						<p className="text-gray-600">
-							You're already learning all available languages! 🎉
-						</p>
-					</div>
-				)}
-
-				<div className="flex gap-3">
-					<Button
-						type="button"
-						variant="outline"
-						onClick={onClose}
-						className="flex-1 bg-transparent">
-						Cancel
-					</Button>
-					<Button
-						type="submit"
-						disabled={isLoading || availableLanguages.length === 0}
-						className="flex-1 bg-primary-500 hover:bg-primary-600">
-						{isLoading ? "Adding..." : "Add Language"}
-					</Button>
-				</div>
-			</form>
-		</DialogContent>
-	);
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={() => setOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={handleSave} disabled={languages.length === 0}>
+              Save Languages
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
 }
