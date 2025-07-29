@@ -5,19 +5,19 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Search } from "lucide-react";
 import { useSession } from "@/contexts/session-context";
-import { NATIVE_LANGUAGES } from "@/constants/ai-session";
+import { LANGUAGES } from "@/constants/ai-session";
 
-export default function NativeLanguageSelection() {
+export default function TargetLanguageSelection() {
 	const { config, updateConfig } = useSession();
 	const [searchQuery, setSearchQuery] = useState("");
 
 	// Filter languages based on search query
 	const filteredLanguages = useMemo(() => {
 		if (!searchQuery.trim()) {
-			return NATIVE_LANGUAGES;
+			return LANGUAGES;
 		}
 
-		return NATIVE_LANGUAGES.filter((language) =>
+		return LANGUAGES.filter((language) =>
 			language.label.toLowerCase().includes(searchQuery.toLowerCase())
 		);
 	}, [searchQuery]);
@@ -25,9 +25,9 @@ export default function NativeLanguageSelection() {
 	return (
 		<div className="space-y-6">
 			<div className="text-center">
-				<h2 className="text-2xl font-bold mb-2">Your Native Language</h2>
+				<h2 className="text-2xl font-bold mb-2">Language to Learn</h2>
 				<p className="text-gray-600 dark:text-gray-400">
-					What is your first language?
+					Which language would you like to practice today?
 				</p>
 			</div>
 
@@ -51,11 +51,11 @@ export default function NativeLanguageSelection() {
 						<Card
 							key={language.value}
 							className={`cursor-pointer transition-all hover:shadow-md ${
-								config.nativeLanguage === language.value
+								config.language === language.value
 									? "ring-2 ring-primary-500 bg-primary-50 dark:bg-primary-900/20"
 									: ""
 							}`}
-							onClick={() => updateConfig("nativeLanguage", language.value)}>
+							onClick={() => updateConfig("language", language.value)}>
 							<CardContent className="p-6 text-center">
 								<div className="text-4xl mb-2">{language.flag}</div>
 								<h3 className="font-semibold">{language.label}</h3>
@@ -72,4 +72,4 @@ export default function NativeLanguageSelection() {
 			</div>
 		</div>
 	);
-}
+} 

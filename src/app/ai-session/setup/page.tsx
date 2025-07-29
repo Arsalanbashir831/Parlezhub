@@ -12,8 +12,8 @@ import { ROUTES } from "@/constants/routes";
 import { SETUP_STEPS } from "@/constants/ai-session";
 import { saveSessionConfig } from "@/lib/ai-session-utils";
 import {
-	LanguageSelection,
-	TutorSettings,
+	NativeLanguageSelection,
+	TargetLanguageSelection,
 	SessionDetails,
 	SessionSummary,
 	SetupStepper,
@@ -44,9 +44,9 @@ function SessionSetupContent() {
 	const renderStepContent = () => {
 		switch (currentStep) {
 			case 0:
-				return <LanguageSelection />;
+				return <NativeLanguageSelection />;
 			case 1:
-				return <TutorSettings />;
+				return <TargetLanguageSelection />;
 			case 2:
 				return <SessionDetails />;
 			case 3:
@@ -57,7 +57,7 @@ function SessionSetupContent() {
 	};
 
 	return (
-		<div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-center">
+		<div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-start">
 			<AiSessionHeader>
 				<div className="flex justify-center">
 					<div className="text-center">

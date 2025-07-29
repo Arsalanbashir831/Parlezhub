@@ -1,10 +1,9 @@
 export interface SessionConfig {
+	nativeLanguage: string;
 	language: string;
 	gender: "male" | "female" | "neutral";
 	accent: string;
-	context: string;
 	topic: string;
-	level: string;
 }
 
 export type SessionState = "idle" | "active" | "paused" | "completed";

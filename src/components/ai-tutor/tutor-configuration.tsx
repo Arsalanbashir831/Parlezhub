@@ -13,7 +13,6 @@ import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Textarea } from "@/components/ui/textarea";
 import {
 	Select,
 	SelectContent,
@@ -25,13 +24,11 @@ import { AITutorSettings } from "@/types/ai-tutor";
 
 interface TutorConfigurationProps {
 	settings: AITutorSettings;
-	isEditing: boolean;
 	onSettingChange: (key: keyof AITutorSettings, value: string) => void;
 }
 
 export default function TutorConfiguration({
 	settings,
-	isEditing,
 	onSettingChange,
 }: TutorConfigurationProps) {
 	const fileInputRef = useRef<HTMLInputElement>(null);
@@ -55,7 +52,7 @@ export default function TutorConfiguration({
 					Tutor Configuration
 				</CardTitle>
 				<CardDescription>
-					Customize your AI tutor's appearance and personality
+					Customize your AI tutor's appearance
 				</CardDescription>
 			</CardHeader>
 			<CardContent className="space-y-6">
@@ -84,8 +81,7 @@ export default function TutorConfiguration({
 						/>
 					</div>
 					<p className="text-xs text-gray-500 text-center">
-						Upload a profile picture for your AI tutor. This will be used in the
-						chat interface.
+						Upload a profile picture for your AI tutor
 					</p>
 				</div>
 
@@ -98,7 +94,6 @@ export default function TutorConfiguration({
 						onChange={(e) => onSettingChange("name", e.target.value)}
 						placeholder="Enter tutor name"
 						maxLength={20}
-						disabled={!isEditing}
 					/>
 				</div>
 
@@ -108,7 +103,7 @@ export default function TutorConfiguration({
 					<Select
 						value={settings.gender}
 						onValueChange={(value) => onSettingChange("gender", value)}>
-						<SelectTrigger disabled={!isEditing}>
+						<SelectTrigger>
 							<SelectValue placeholder="Select gender" />
 						</SelectTrigger>
 						<SelectContent>
@@ -117,24 +112,6 @@ export default function TutorConfiguration({
 							<SelectItem value="neutral">Neutral</SelectItem>
 						</SelectContent>
 					</Select>
-				</div>
-
-				{/* Context */}
-				<div className="space-y-2">
-					<Label htmlFor="context">Tutor Context & Personality</Label>
-					<Textarea
-						id="context"
-						value={settings.context}
-						onChange={(e) => onSettingChange("context", e.target.value)}
-						placeholder="Describe how you want your AI tutor to behave..."
-						rows={4}
-						maxLength={500}
-						disabled={!isEditing}
-					/>
-					<p className="text-xs text-gray-500">
-						This helps the AI understand your preferred teaching style and
-						personality
-					</p>
 				</div>
 			</CardContent>
 		</Card>

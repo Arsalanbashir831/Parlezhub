@@ -3,11 +3,12 @@
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Label } from "@/components/ui/label";
 import { useSession } from "@/contexts/session-context";
-import { LANGUAGES } from "@/constants/ai-session";
+import { LANGUAGES, NATIVE_LANGUAGES } from "@/constants/ai-session";
 
 export default function SessionSummary() {
 	const { config } = useSession();
 	const selectedLanguage = LANGUAGES.find((l) => l.value === config.language);
+	const selectedNativeLanguage = NATIVE_LANGUAGES.find((l) => l.value === config.nativeLanguage);
 
 	return (
 		<div className="space-y-6">
@@ -25,11 +26,22 @@ export default function SessionSummary() {
 				<CardContent className="space-y-4">
 					<div className="grid grid-cols-1 md:grid-cols-2 gap-4">
 						<div className="space-y-2">
-							<Label className="font-semibold">Language</Label>
+							<Label className="font-semibold">Your Native Language</Label>
+							<div className="flex items-center gap-2">
+								<span className="text-2xl">{selectedNativeLanguage?.flag}</span>
+								<span>{selectedNativeLanguage?.label}</span>
+							</div>
+						</div>
+						<div className="space-y-2">
+							<Label className="font-semibold">Learning Language</Label>
 							<div className="flex items-center gap-2">
 								<span className="text-2xl">{selectedLanguage?.flag}</span>
 								<span>{selectedLanguage?.label}</span>
 							</div>
+						</div>
+						<div className="space-y-2">
+							<Label className="font-semibold">Topic</Label>
+							<p>{config.topic}</p>
 						</div>
 						<div className="space-y-2">
 							<Label className="font-semibold">Voice</Label>
@@ -37,20 +49,6 @@ export default function SessionSummary() {
 								{config.gender} • {config.accent}
 							</p>
 						</div>
-						<div className="space-y-2">
-							<Label className="font-semibold">Topic</Label>
-							<p>{config.topic}</p>
-						</div>
-						<div className="space-y-2">
-							<Label className="font-semibold">Level</Label>
-							<p className="capitalize">{config.level}</p>
-						</div>
-					</div>
-					<div className="space-y-2">
-						<Label className="font-semibold">Tutor Context</Label>
-						<p className="text-sm text-gray-600 dark:text-gray-400 line-clamp-3">
-							{config.context}
-						</p>
 					</div>
 				</CardContent>
 			</Card>

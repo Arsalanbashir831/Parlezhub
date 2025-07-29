@@ -2,7 +2,7 @@ import { User, ArrowLeft } from "lucide-react";
 
 import { Button } from "@/components/ui/button";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import ToggleThemeBtn from "../common/toggle-theme-btn";
+// import ToggleThemeBtn from "../common/toggle-theme-btn";
 import { ROUTES } from "@/constants/routes";
 import Link from "next/link";
 
@@ -29,7 +29,7 @@ export default function AiSessionHeader({
 							variant="ghost"
 							size="sm"
 							className="text-gray-700 dark:text-white hover:bg-black/5 dark:hover:bg-white/10 flex-shrink-0">
-							<ArrowLeft className="h-4 w-4 sm:mr-2 p-0 sm:px-3" />
+							<ArrowLeft className="h-4 w-4 sm:mr-2 text-gray-700 hover:text-black dark:text-white" />
 							<span className="hidden sm:inline">{backButtonText}</span>
 						</Button>
 					</Link>

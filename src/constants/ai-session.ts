@@ -1,4 +1,4 @@
-import { Globe, User, MessageCircle, Play } from "lucide-react";
+import { Globe, User, MessageCircle, Play, Languages } from "lucide-react";
 import { Language, Level, SetupStep } from "@/types/ai-session";
 
 export const LANGUAGES: Language[] = [
@@ -8,6 +8,20 @@ export const LANGUAGES: Language[] = [
 	{ value: "italian", label: "Italian", flag: "🇮🇹" },
 	{ value: "japanese", label: "Japanese", flag: "🇯🇵" },
 	{ value: "mandarin", label: "Mandarin", flag: "🇨🇳" },
+];
+
+// Native languages (user's first language)
+export const NATIVE_LANGUAGES: Language[] = [
+	{ value: "english", label: "English", flag: "🇺🇸" },
+	{ value: "spanish", label: "Spanish", flag: "🇪🇸" },
+	{ value: "french", label: "French", flag: "🇫🇷" },
+	{ value: "german", label: "German", flag: "🇩🇪" },
+	{ value: "italian", label: "Italian", flag: "🇮🇹" },
+	{ value: "japanese", label: "Japanese", flag: "🇯🇵" },
+	{ value: "mandarin", label: "Mandarin", flag: "🇨🇳" },
+	{ value: "portuguese", label: "Portuguese", flag: "🇵🇹" },
+	{ value: "russian", label: "Russian", flag: "🇷🇺" },
+	{ value: "arabic", label: "Arabic", flag: "🇸🇦" },
 ];
 
 export const ACCENTS: Record<string, string[]> = {
@@ -42,18 +56,18 @@ export const LEVELS: Level[] = [
 
 export const SETUP_STEPS: SetupStep[] = [
 	{
-		title: "Choose Language",
-		description: "Select the language you want to practice",
-		icon: Globe,
-	},
-	{
-		title: "AI Tutor Settings",
-		description: "Customize your AI tutor's voice and personality",
+		title: "Your Native Language",
+		description: "Select your first language",
 		icon: User,
 	},
 	{
+		title: "Language to Learn",
+		description: "Choose the language you want to practice",
+		icon: Languages,
+	},
+	{
 		title: "Session Details",
-		description: "Set your conversation topic and level",
+		description: "Set your conversation topic",
 		icon: MessageCircle,
 	},
 	{
@@ -64,6 +78,7 @@ export const SETUP_STEPS: SetupStep[] = [
 ];
 
 export const DEFAULT_SESSION_CONFIG = {
+	nativeLanguage: "english",
 	language: "spanish",
 	gender: "neutral" as const,
 	accent: "Neutral",

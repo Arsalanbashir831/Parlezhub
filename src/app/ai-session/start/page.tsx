@@ -6,7 +6,9 @@ import { useRouter } from "next/navigation";
 import { ROUTES } from "@/constants/routes";
 import AiSessionHeader from "@/components/ai-session/ai-session-header";
 import { SessionConfig, SessionState } from "@/types/ai-session";
+import { AITutorSettings } from "@/types/ai-tutor";
 import { loadSessionConfig } from "@/lib/ai-session-utils";
+import { loadAITutorSettings } from "@/lib/ai-tutor-utils";
 import { useSessionTimer } from "@/hooks/useSessionTimer";
 import { useAudioSimulation } from "@/hooks/useAudioSimulation";
 import {
@@ -21,6 +23,7 @@ export default function AISessionPage() {
 	const router = useRouter();
 	const [sessionState, setSessionState] = useState<SessionState>("idle");
 	const [config, setConfig] = useState<SessionConfig | null>(null);
+	const [tutorSettings, setTutorSettings] = useState<AITutorSettings | null>(null);
 
 	const { timeRemaining } = useSessionTimer(sessionState);
 	const {
@@ -32,15 +35,19 @@ export default function AISessionPage() {
 		getStatusText,
 	} = useAudioSimulation(sessionState);
 
-	// Load session config on mount
+	// Load session config and tutor settings on mount
 	useEffect(() => {
 		const savedConfig = loadSessionConfig();
+		const savedTutorSettings = loadAITutorSettings();
+		
 		if (savedConfig) {
 			setConfig(savedConfig);
 		} else {
 			// Redirect back to setup if no config
 			router.push(ROUTES.AI_SESSION.SETUP);
 		}
+		
+		setTutorSettings(savedTutorSettings);
 	}, [router]);
 
 	// Auto-complete session when time runs out
@@ -70,7 +77,7 @@ export default function AISessionPage() {
 		}, 2000);
 	};
 
-	if (!config) {
+	if (!config || !tutorSettings) {
 		return (
 			<div className="min-h-screen flex items-center justify-center">
 				<div className="animate-spin rounded-full h-32 w-32 border-b-2 border-primary-500"></div>
@@ -108,6 +115,7 @@ export default function AISessionPage() {
 					isAISpeaking={isAISpeaking}
 					audioLevel={audioLevel}
 					statusText={getStatusText()}
+					tutorSettings={tutorSettings}
 				/>
 
 				<SessionControls

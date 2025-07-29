@@ -1,7 +1,9 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SessionState } from "@/types/ai-session";
+import { AITutorSettings } from "@/types/ai-tutor";
 
 interface SessionBlobProps {
 	sessionState: SessionState;
@@ -9,6 +11,7 @@ interface SessionBlobProps {
 	isAISpeaking: boolean;
 	audioLevel: number;
 	statusText: string;
+	tutorSettings: AITutorSettings;
 }
 
 export default function SessionBlob({
@@ -17,6 +20,7 @@ export default function SessionBlob({
 	isAISpeaking,
 	audioLevel,
 	statusText,
+	tutorSettings,
 }: SessionBlobProps) {
 	const blobRef = useRef<HTMLDivElement>(null);
 	const isActive = sessionState === "active";
@@ -44,6 +48,17 @@ export default function SessionBlob({
 						  }px rgba(255,69,0,0.3), inset 0 0 60px rgba(255,255,255,0.1)`
 						: "0 0 20px rgba(107,114,128,0.2)",
 				}}>
+				
+				{/* AI Agent Avatar - Always visible in center */}
+				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
+					<Avatar className="h-52 w-52">
+						<AvatarImage src={tutorSettings.avatar || "/placeholder.svg"} />
+						<AvatarFallback className="bg-white/10 text-white text-4xl font-bold backdrop-blur-sm">
+							{tutorSettings.name.charAt(0)}
+						</AvatarFallback>
+					</Avatar>
+				</div>
+
 				{/* Multiple pulsating rings for recording effect */}
 				{isActive && (
 					<>
@@ -52,21 +67,18 @@ export default function SessionBlob({
 							className="absolute inset-16 rounded-full animate-ping"
 							style={{
 								background:
-									"radial-gradient(circle, rgba(255,255,255,0.8) 0%, rgba(255,138,0,0.6) 50%, transparent 100%)",
+									"radial-gradient(circle, rgba(255,255,255,0.3) 0%, rgba(255,138,0,0.2) 50%, transparent 100%)",
 								animationDuration: "2s",
 							}}
 						/>
 
-						{/* Audio level responsive center dot */}
+						{/* Audio level responsive outer ring */}
 						{(isUserSpeaking || isAISpeaking) && (
 							<div
-								className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 rounded-full animate-pulse"
+								className="absolute inset-8 rounded-full animate-pulse border-2"
 								style={{
-									width: `${20 + audioLevel / 5}px`,
-									height: `${20 + audioLevel / 5}px`,
-									background:
-										"radial-gradient(circle, rgba(255,255,255,1) 0%, rgba(255,138,0,0.8) 100%)",
-									boxShadow: "0 0 20px rgba(255,255,255,0.8)",
+									borderColor: "rgba(255,255,255,0.4)",
+									boxShadow: "0 0 20px rgba(255,255,255,0.3)",
 									animationDuration: "0.5s",
 								}}
 							/>

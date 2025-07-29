@@ -1,7 +1,7 @@
 "use client";
 
 import { createContext, useContext, useState, ReactNode } from "react";
-import { SessionConfig, SessionState } from "@/types/ai-session";
+import { SessionConfig } from "@/types/ai-session";
 import { DEFAULT_SESSION_CONFIG } from "@/constants/ai-session";
 
 interface SessionContextType {
