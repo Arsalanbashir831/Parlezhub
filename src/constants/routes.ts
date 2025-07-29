@@ -21,6 +21,9 @@ export const ROUTES = {
 		DASHBOARD: "/teacher/dashboard",
 		CHAT: "/teacher/chat",
 		MEETINGS: "/teacher/meetings",
+		SERVICES: "/teacher/services",
+		CREATE_SERVICE: "/teacher/services/create",
+		EDIT_SERVICE: "/teacher/services/edit",
 		SETTINGS: "/teacher/settings",
 	},
 	AI_SESSION: {

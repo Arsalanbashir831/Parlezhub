@@ -1,9 +1,9 @@
 "use client";
 
-import { useRouter } from "next/navigation";
 import WelcomeSection from "@/components/common/welcome-section";
 import { TeacherStatsCards, TeacherMeetings } from "@/components/dashboard";
 import { useMeetings } from "@/hooks/useMeetings";
+import { ROUTES } from "@/constants/routes";
 
 export default function TeacherDashboardPage() {
 	const { meetings } = useMeetings();
@@ -13,7 +13,8 @@ export default function TeacherDashboardPage() {
 			{/* Welcome Section */}
 			<WelcomeSection
 				subtitle="Here's your teaching overview for today."
-				showButton={false}
+				buttonText="Create Service"
+				buttonLink={ROUTES.TEACHER.CREATE_SERVICE}
 			/>
 
 			{/* Main Content Grid */}

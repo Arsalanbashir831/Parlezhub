@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { useForm } from "react-hook-form";
@@ -26,7 +26,7 @@ const resetPasswordSchema = z
 
 type ResetPasswordForm = z.infer<typeof resetPasswordSchema>;
 
-export default function ResetPasswordPage() {
+function ResetPasswordContent() {
 	const [showPassword, setShowPassword] = useState(false);
 	const [showConfirmPassword, setShowConfirmPassword] = useState(false);
 	const [isLoading, setIsLoading] = useState(false);
@@ -87,9 +87,10 @@ export default function ResetPasswordPage() {
 
 					<SuccessMessage 
 						message="Your password has been successfully reset. You can now sign in with your new password."
+						icon={CheckCircle}
 					/>
 
-					<Link href="/login" className="block">
+					<Link href="/login">
 						<AuthButton type="button">
 							Sign In Now
 						</AuthButton>
@@ -116,18 +117,17 @@ export default function ResetPasswordPage() {
 
 					<InfoMessage message="Password reset links expire after 24 hours for security reasons. Please request a new reset link." />
 
-					<div className="space-y-6">
-						<Link href="/forgot-password" className="block">
+					<div className="space-y-3">
+						<Link href="/forgot-password">
 							<AuthButton type="button">
 								Request New Reset Link
 							</AuthButton>
 						</Link>
 
-						<Link href="/login" className="block">
+						<Link href="/login">
 							<AuthButton
 								type="button"
 								variant="ghost"
-								className="bg-white w-full"
 								icon={ArrowLeft}>
 								Back to Sign In
 							</AuthButton>
@@ -182,5 +182,21 @@ export default function ResetPasswordPage() {
 				</div>
 			</form>
 		</AuthLayout>
+	);
+}
+
+export default function ResetPasswordPage() {
+	return (
+		<Suspense fallback={
+			<AuthLayout
+				title="Loading..."
+				subtitle="Please wait while we load the reset form">
+				<div className="flex justify-center py-8">
+					<div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary-500"></div>
+				</div>
+			</AuthLayout>
+		}>
+			<ResetPasswordContent />
+		</Suspense>
 	);
 } 
