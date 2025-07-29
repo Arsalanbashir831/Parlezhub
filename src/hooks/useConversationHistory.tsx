@@ -16,7 +16,7 @@ const mockConversations: ConversationData[] = [
 		score: 85,
 		wordsSpoken: 245,
 		status: "completed",
-		hasReport: true,
+		hasTranscript: true,
 	},
 	{
 		id: "2",
@@ -27,7 +27,7 @@ const mockConversations: ConversationData[] = [
 		score: 92,
 		wordsSpoken: 312,
 		status: "completed",
-		hasReport: true,
+		hasTranscript: true,
 	},
 	{
 		id: "3",
@@ -38,7 +38,7 @@ const mockConversations: ConversationData[] = [
 		score: 78,
 		wordsSpoken: 189,
 		status: "completed",
-		hasReport: true,
+		hasTranscript: true,
 	},
 	{
 		id: "4",
@@ -49,7 +49,7 @@ const mockConversations: ConversationData[] = [
 		score: 88,
 		wordsSpoken: 356,
 		status: "completed",
-		hasReport: true,
+		hasTranscript: true,
 	},
 	{
 		id: "5",
@@ -60,7 +60,7 @@ const mockConversations: ConversationData[] = [
 		score: 81,
 		wordsSpoken: 267,
 		status: "completed",
-		hasReport: true,
+		hasTranscript: true,
 	},
 ];
 
@@ -121,15 +121,6 @@ export const useConversationHistory = () => {
 	);
 
 	// Handlers
-	const handleViewReport = useCallback(
-		(conversationId: string) => {
-			router.push(
-				`${ROUTES.STUDENT.SESSION_REPORT}?conversation=${conversationId}`
-			);
-		},
-		[router]
-	);
-
 	const handleStartNewConversation = useCallback(() => {
 		router.push(ROUTES.STUDENT.AI_TUTOR);
 	}, [router]);
@@ -167,7 +158,6 @@ export const useConversationHistory = () => {
 		sortBy,
 
 		// Handlers
-		handleViewReport,
 		handleStartNewConversation,
 		handleLoadMore,
 		handleSearchChange,

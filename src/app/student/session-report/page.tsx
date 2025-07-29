@@ -15,10 +15,8 @@ export default function SessionReportPage() {
 	const {
 		reportData,
 		isLoading,
-		conversationId,
 		handleDownload,
 		handleShare,
-		handleRetry,
 		handleStartRecommendation,
 	} = useSessionReport();
 

@@ -82,7 +82,8 @@ export default function AISessionPage() {
 		setSessionState("completed");
 		// Navigate to session report after a short delay
 		setTimeout(() => {
-			router.push(`${ROUTES.STUDENT.SESSION_REPORT}?conversation=${999}`);
+			// router.push(`${ROUTES.STUDENT.SESSION_REPORT}?conversation=${999}`);
+			router.push(`${ROUTES.STUDENT.HISTORY}`);
 		}, 2000);
 	};
 

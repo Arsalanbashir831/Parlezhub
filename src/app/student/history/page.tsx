@@ -18,7 +18,6 @@ export default function ConversationsPage() {
 		searchQuery,
 		selectedLanguage,
 		sortBy,
-		handleViewReport,
 		handleStartNewConversation,
 		handleLoadMore,
 		handleSearchChange,
@@ -61,7 +60,6 @@ export default function ConversationsPage() {
 				<>
 					<ConversationList
 						conversations={conversations}
-						onViewReport={handleViewReport}
 					/>
 					<LoadMore
 						onLoadMore={handleLoadMore}
