@@ -6,7 +6,8 @@ import Link from "next/link";
 import { Mail, CheckCircle, RefreshCw } from "lucide-react";
 
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Button } from "@/components/ui/button";
+import { InfoMessage, SuccessMessage } from "@/components/auth/status-messages";
+import { AuthButton } from "@/components/auth/auth-button";
 import { useAuth } from "@/contexts/auth-context";
 
 export default function VerifyEmailPage() {
@@ -53,45 +54,42 @@ export default function VerifyEmailPage() {
 					)}
 				</div>
 
-				<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-					<p className="text-sm text-blue-800">
-						<strong>Didn't receive the email?</strong>
-						<br />
-						Check your spam folder or click the resend button below.
-					</p>
-				</div>
+				<InfoMessage 
+					message={
+						<>
+							<strong>Didn't receive the email?</strong>
+							<br />
+							Check your spam folder or click the resend button below.
+						</>
+					}
+				/>
 
 				{resendCount > 0 && (
-					<div className="bg-green-50 border border-green-200 rounded-lg p-3">
-						<div className="flex items-center justify-center text-green-800">
-							<CheckCircle className="w-4 h-4 mr-2" />
-							<span className="text-sm">
-								Verification email sent successfully!
-							</span>
-						</div>
-					</div>
+					<SuccessMessage 
+						message="Verification email sent successfully!"
+						icon={CheckCircle}
+					/>
 				)}
 
 				<div className="space-y-3">
-					<Button
-						onClick={handleResendEmail}
-						disabled={isLoading || !email}
+					<AuthButton
+						type="button"
 						variant="outline"
+						isLoading={isLoading}
+						disabled={!email}
+						loadingText="Sending..."
+						icon={isLoading ? RefreshCw : undefined}
+						onClick={handleResendEmail}
 						className="w-full bg-transparent">
-						{isLoading ? (
-							<>
-								<RefreshCw className="w-4 h-4 mr-2 animate-spin" />
-								Sending...
-							</>
-						) : (
-							"Resend Verification Email"
-						)}
-					</Button>
+						{isLoading ? "Sending..." : "Resend Verification Email"}
+					</AuthButton>
 
 					<Link href="/login">
-						<Button variant="ghost" className="w-full">
+						<AuthButton
+							type="button"
+							variant="ghost">
 							Back to Sign In
-						</Button>
+						</AuthButton>
 					</Link>
 				</div>
 

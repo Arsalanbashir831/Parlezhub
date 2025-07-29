@@ -5,14 +5,13 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Mail, ArrowLeft, CheckCircle } from "lucide-react";
+import { ArrowLeft, CheckCircle } from "lucide-react";
 
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
+import { EmailField } from "@/components/auth/form-fields";
+import { ErrorMessage, InfoMessage } from "@/components/auth/status-messages";
+import { AuthButton } from "@/components/auth/auth-button";
 import { useAuth } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
 
 const forgotPasswordSchema = z.object({
 	email: z.string().email("Please enter a valid email address"),
@@ -68,26 +67,23 @@ export default function ForgotPasswordPage() {
 						<p className="font-medium text-gray-900">{getValues("email")}</p>
 					</div>
 
-					<div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-						<p className="text-sm text-blue-800">
-							Didn't receive the email? Check your spam folder or try again in a
-							few minutes.
-						</p>
-					</div>
+					<InfoMessage message="Didn't receive the email? Check your spam folder or try again in a few minutes." />
 
 					<div className="space-y-3">
-						<Button
-							onClick={() => setIsSuccess(false)}
+						<AuthButton
+							type="button"
 							variant="outline"
-							className="w-full">
+							onClick={() => setIsSuccess(false)}>
 							Try Different Email
-						</Button>
+						</AuthButton>
 
 						<Link href="/login">
-							<Button variant="ghost" className="w-full">
-								<ArrowLeft className="w-4 h-4 mr-2" />
+							<AuthButton
+								type="button"
+								variant="ghost"
+								icon={ArrowLeft}>
 								Back to Sign In
-							</Button>
+							</AuthButton>
 						</Link>
 					</div>
 				</div>
@@ -100,38 +96,18 @@ export default function ForgotPasswordPage() {
 			title="Forgot Password"
 			subtitle="Enter your email address and we'll send you a reset link">
 			<form onSubmit={handleSubmit(onSubmit)} className="space-y-6">
-				<div>
-					<Label htmlFor="email">Email Address</Label>
-					<div className="relative mt-1">
-						<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-						<Input
-							id="email"
-							type="email"
-							placeholder="Enter your email"
-							className={cn(
-								"pl-10",
-								errors.email && "border-red-500 focus:border-red-500"
-							)}
-							{...register("email")}
-						/>
-					</div>
-					{errors.email && (
-						<p className="text-sm text-red-600 mt-1">{errors.email.message}</p>
-					)}
-				</div>
+				<EmailField
+					register={register("email")}
+					error={errors.email}
+				/>
 
-				{errors.root && (
-					<div className="bg-red-50 border border-red-200 rounded-lg p-3">
-						<p className="text-sm text-red-600">{errors.root.message}</p>
-					</div>
-				)}
+				{errors.root && <ErrorMessage message={errors.root.message || ""} />}
 
-				<Button
-					type="submit"
-					className="w-full bg-primary-500 hover:bg-primary-600"
-					disabled={isLoading}>
-					{isLoading ? "Sending..." : "Send Reset Link"}
-				</Button>
+				<AuthButton
+					isLoading={isLoading}
+					loadingText="Sending...">
+					Send Reset Link
+				</AuthButton>
 
 				<div className="text-center">
 					<Link

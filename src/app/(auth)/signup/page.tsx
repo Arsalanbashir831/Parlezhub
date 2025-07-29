@@ -6,12 +6,8 @@ import Link from "next/link";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { z } from "zod";
-import { Eye, EyeOff, Mail, Lock, User, MapPin, Globe } from "lucide-react";
 
 import { AuthLayout } from "@/components/auth/auth-layout";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
 	Select,
 	SelectContent,
@@ -19,9 +15,16 @@ import {
 	SelectTrigger,
 	SelectValue,
 } from "@/components/ui/select";
-import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import {
+	EmailField,
+	PasswordField,
+	ConfirmPasswordField,
+	NameField,
+} from "@/components/auth/form-fields";
+import { ErrorMessage } from "@/components/auth/status-messages";
+import { AuthButton } from "@/components/auth/auth-button";
 import { useAuth } from "@/contexts/auth-context";
-import { cn } from "@/lib/utils";
 import type { UserRole } from "@/lib/types";
 import { ROUTES } from "@/constants/routes";
 
@@ -32,10 +35,6 @@ const signupSchema = z
 		password: z.string().min(6, "Password must be at least 6 characters"),
 		confirmPassword: z.string(),
 		role: z.enum(["student", "teacher"] as const),
-		city: z.string().min(2, "City is required"),
-		country: z.string().min(2, "Country is required"),
-		postalCode: z.string().min(3, "Postal code is required"),
-		address: z.string().min(10, "Please enter a complete address"),
 		qualification: z.string().optional(),
 	})
 	.refine((data) => data.password === data.confirmPassword, {
@@ -118,235 +117,40 @@ export default function SignupPage() {
 						)}
 					</div>
 
-					{/* Name */}
-					<div>
-						<Label htmlFor="name">Full Name</Label>
-						<div className="relative mt-1">
-							<User className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-							<Input
-								id="name"
-								type="text"
-								placeholder="Enter your full name"
-								className={cn(
-									"pl-10",
-									errors.name && "border-red-500 focus:border-red-500"
-								)}
-								{...register("name")}
-							/>
-						</div>
-						{errors.name && (
-							<p className="text-sm text-red-600 mt-1">{errors.name.message}</p>
-						)}
-					</div>
+					<NameField
+						id="name"
+						register={register("name")}
+						error={errors.name}
+					/>
 
-					{/* Email */}
-					<div>
-						<Label htmlFor="email">Email Address</Label>
-						<div className="relative mt-1">
-							<Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-							<Input
-								id="email"
-								type="email"
-								placeholder="Enter your email"
-								className={cn(
-									"pl-10",
-									errors.email && "border-red-500 focus:border-red-500"
-								)}
-								{...register("email")}
-							/>
-						</div>
-						{errors.email && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.email.message}
-							</p>
-						)}
-					</div>
+					<EmailField
+						register={register("email")}
+						error={errors.email}
+					/>
 
-					{/* Password */}
-					<div>
-						<Label htmlFor="password">Password</Label>
-						<div className="relative mt-1">
-							<Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-							<Input
-								id="password"
-								type={showPassword ? "text" : "password"}
-								placeholder="Create a password"
-								className={cn(
-									"pl-10 pr-10",
-									errors.password && "border-red-500 focus:border-red-500"
-								)}
-								{...register("password")}
-							/>
-							<button
-								type="button"
-								onClick={() => setShowPassword(!showPassword)}
-								className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-								{showPassword ? (
-									<EyeOff className="h-4 w-4" />
-								) : (
-									<Eye className="h-4 w-4" />
-								)}
-							</button>
-						</div>
-						{errors.password && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.password.message}
-							</p>
-						)}
-					</div>
+					<PasswordField
+						placeholder="Create a password"
+						register={register("password")}
+						error={errors.password}
+						showPassword={showPassword}
+						setShowPassword={setShowPassword}
+					/>
 
-					{/* Confirm Password */}
-					<div>
-						<Label htmlFor="confirmPassword">Confirm Password</Label>
-						<div className="relative mt-1">
-							<Lock className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-							<Input
-								id="confirmPassword"
-								type={showConfirmPassword ? "text" : "password"}
-								placeholder="Confirm your password"
-								className={cn(
-									"pl-10 pr-10",
-									errors.confirmPassword &&
-										"border-red-500 focus:border-red-500"
-								)}
-								{...register("confirmPassword")}
-							/>
-							<button
-								type="button"
-								onClick={() => setShowConfirmPassword(!showConfirmPassword)}
-								className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600">
-								{showConfirmPassword ? (
-									<EyeOff className="h-4 w-4" />
-								) : (
-									<Eye className="h-4 w-4" />
-								)}
-							</button>
-						</div>
-						{errors.confirmPassword && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.confirmPassword.message}
-							</p>
-						)}
-					</div>
-
-					{/* Location Fields */}
-					<div className="grid grid-cols-2 gap-4">
-						<div>
-							<Label htmlFor="city">City</Label>
-							<div className="relative mt-1">
-								<MapPin className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-								<Input
-									id="city"
-									type="text"
-									placeholder="Your city"
-									className={cn(
-										"pl-10",
-										errors.city && "border-red-500 focus:border-red-500"
-									)}
-									{...register("city")}
-								/>
-							</div>
-							{errors.city && (
-								<p className="text-sm text-red-600 mt-1">
-									{errors.city.message}
-								</p>
-							)}
-						</div>
-
-						<div>
-							<Label htmlFor="country">Country</Label>
-							<div className="relative mt-1">
-								<Globe className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
-								<Input
-									id="country"
-									type="text"
-									placeholder="Your country"
-									className={cn(
-										"pl-10",
-										errors.country && "border-red-500 focus:border-red-500"
-									)}
-									{...register("country")}
-								/>
-							</div>
-							{errors.country && (
-								<p className="text-sm text-red-600 mt-1">
-									{errors.country.message}
-								</p>
-							)}
-						</div>
-					</div>
-
-					<div>
-						<Label htmlFor="postalCode">Postal Code</Label>
-						<Input
-							id="postalCode"
-							type="text"
-							placeholder="Enter postal code"
-							className={cn(
-								"mt-1",
-								errors.postalCode && "border-red-500 focus:border-red-500"
-							)}
-							{...register("postalCode")}
-						/>
-						{errors.postalCode && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.postalCode.message}
-							</p>
-						)}
-					</div>
-
-					<div>
-						<Label htmlFor="address">Address</Label>
-						<Textarea
-							id="address"
-							placeholder="Enter your complete address"
-							className={cn(
-								"mt-1",
-								errors.address && "border-red-500 focus:border-red-500"
-							)}
-							{...register("address")}
-						/>
-						{errors.address && (
-							<p className="text-sm text-red-600 mt-1">
-								{errors.address.message}
-							</p>
-						)}
-					</div>
-
-					{/* Teacher Qualification */}
-					{selectedRole === "teacher" && (
-						<div>
-							<Label htmlFor="qualification">Qualification</Label>
-							<Textarea
-								id="qualification"
-								placeholder="Describe your teaching qualifications, certifications, and experience"
-								className={cn(
-									"mt-1",
-									errors.qualification && "border-red-500 focus:border-red-500"
-								)}
-								{...register("qualification")}
-							/>
-							{errors.qualification && (
-								<p className="text-sm text-red-600 mt-1">
-									{errors.qualification.message}
-								</p>
-							)}
-						</div>
-					)}
+					<ConfirmPasswordField
+						register={register("confirmPassword")}
+						error={errors.confirmPassword}
+						showPassword={showConfirmPassword}
+						setShowPassword={setShowConfirmPassword}
+					/>
 				</div>
 
-				{errors.root && (
-					<div className="bg-red-50 border border-red-200 rounded-lg p-3">
-						<p className="text-sm text-red-600">{errors.root.message}</p>
-					</div>
-				)}
+				{errors.root && <ErrorMessage message={errors.root.message} />}
 
-				<Button
-					type="submit"
-					className="w-full bg-primary-500 hover:bg-primary-600"
-					disabled={isLoading}>
-					{isLoading ? "Creating Account..." : "Create Account"}
-				</Button>
+				<AuthButton
+					isLoading={isLoading}
+					loadingText="Creating Account...">
+					Create Account
+				</AuthButton>
 
 				<div className="text-center">
 					<p className="text-sm text-gray-600">
