@@ -3,9 +3,9 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { SESSION_DURATION } from '@/constants/ai-session';
 
-import { SessionState, SessionStatus } from '@/types/ai-session';
+import { SessionStatus } from '@/types/ai-session';
 
-export function useSessionTimer(sessionState: SessionState) {
+export function useSessionTimer(sessionState: SessionStatus) {
   const [timeRemaining, setTimeRemaining] = useState(SESSION_DURATION);
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 

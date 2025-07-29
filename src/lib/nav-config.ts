@@ -10,7 +10,6 @@ import {
   Home,
   MessageCircle,
   Settings,
-  User,
   Users,
   Zap,
 } from 'lucide-react';
@@ -67,12 +66,6 @@ export const studentNav: NavItem[] = [
     label: 'History',
     icon: History,
     href: ROUTES.STUDENT.HISTORY,
-  },
-  {
-    id: 'session-report',
-    label: 'Session Report',
-    icon: FileText,
-    href: ROUTES.STUDENT.SESSION_REPORT,
   },
   {
     id: 'settings',

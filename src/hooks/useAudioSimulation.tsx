@@ -2,9 +2,9 @@
 
 import { useEffect, useRef, useState } from 'react';
 
-import { SessionState } from '@/types/ai-session';
+import { SessionStatus } from '@/types/ai-session';
 
-export function useAudioSimulation(sessionState: SessionState) {
+export function useAudioSimulation(sessionState: SessionStatus) {
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [audioLevel, setAudioLevel] = useState(0);
@@ -31,7 +31,7 @@ export function useAudioSimulation(sessionState: SessionState) {
             500 + Math.random() * 1500
           );
         }
-      }, 200);
+      }, 2000);
     } else {
       if (simulationRef.current) {
         clearInterval(simulationRef.current);
@@ -45,6 +45,7 @@ export function useAudioSimulation(sessionState: SessionState) {
     return () => {
       if (simulationRef.current) {
         clearInterval(simulationRef.current);
+        simulationRef.current = null;
       }
     };
   }, [sessionState]);
@@ -54,32 +55,23 @@ export function useAudioSimulation(sessionState: SessionState) {
   };
 
   const getStatusText = () => {
-    switch (sessionState) {
-      case 'idle':
-        return 'Ready to begin your conversation';
-      case 'active':
-        if (isAISpeaking && isUserSpeaking) {
-          return 'Both speaking';
-        } else if (isAISpeaking) {
-          return 'AI is speaking';
-        } else if (isUserSpeaking) {
-          return 'You are speaking';
-        } else {
-          return 'Listening...';
-        }
-      case 'paused':
-        return 'Session paused';
-      case 'completed':
-        return 'Session completed!';
-      default:
-        return '';
+    if (sessionState === 'idle') return 'Ready to start';
+    if (sessionState === 'starting') return 'Starting session...';
+    if (sessionState === 'active') {
+      if (isAISpeaking) return 'AI is speaking...';
+      if (isUserSpeaking) return 'You are speaking...';
+      return 'Listening...';
     }
+    if (sessionState === 'paused') return 'Session paused';
+    if (sessionState === 'ending') return 'Ending session...';
+    if (sessionState === 'completed') return 'Session completed';
+    return 'Unknown status';
   };
 
   return {
     isUserSpeaking,
     isAISpeaking,
-    audioLevel,
+    audioLevel: isMuted ? 0 : audioLevel,
     isMuted,
     toggleMute,
     getStatusText,

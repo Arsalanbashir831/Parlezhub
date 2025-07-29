@@ -2,11 +2,11 @@
 
 import { Pause, Play, Square, Volume2, VolumeX } from 'lucide-react';
 
-import { SessionState } from '@/types/ai-session';
+import { SessionStatus } from '@/types/ai-session';
 import { Button } from '@/components/ui/button';
 
 interface SessionControlsProps {
-  sessionState: SessionState;
+  sessionState: SessionStatus;
   isMuted: boolean;
   onStart: () => void;
   onPause: () => void;

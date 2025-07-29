@@ -3,12 +3,12 @@
 import { useEffect, useRef } from 'react';
 
 import { AIChirologistSettings } from '@/types/ai-chirologist';
-import { SessionState } from '@/types/ai-session';
+import { SessionStatus } from '@/types/ai-session';
 import { AITutorSettings } from '@/types/ai-tutor';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface SessionBlobProps {
-  sessionState: SessionState;
+  sessionState: SessionStatus;
   isUserSpeaking: boolean;
   isAISpeaking: boolean;
   audioLevel: number;

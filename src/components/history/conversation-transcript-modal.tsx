@@ -1,11 +1,10 @@
 'use client';
 
 import React from 'react';
-import { Bot, User, X } from 'lucide-react';
+import { Bot, User } from 'lucide-react';
 
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
@@ -190,14 +189,6 @@ export const ConversationTranscriptModal: React.FC<
                 </div>
               </div>
             </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onClose}
-              className="ml-4 flex-shrink-0"
-            >
-              <X className="h-4 w-4" />
-            </Button>
           </div>
         </DialogHeader>
 

@@ -1,11 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 
 import { AIChirologistSettings } from '@/types/ai-chirologist';
-import { SessionConfig, SessionState } from '@/types/ai-session';
+import { SessionConfig, SessionStatus } from '@/types/ai-session';
 import { AITutorSettings } from '@/types/ai-tutor';
 import { loadAIChirologistSettings } from '@/lib/ai-chirologist-utils';
 import { loadSessionConfig } from '@/lib/ai-session-utils';
@@ -23,7 +23,7 @@ import {
 
 export default function AISessionPage() {
   const router = useRouter();
-  const [sessionState, setSessionState] = useState<SessionState>('idle');
+  const [sessionState, setSessionState] = useState<SessionStatus>('idle');
   const [config, setConfig] = useState<SessionConfig | null>(null);
   const [aiSettings, setAiSettings] = useState<
     AITutorSettings | AIChirologistSettings | null
@@ -38,6 +38,15 @@ export default function AISessionPage() {
     toggleMute,
     getStatusText,
   } = useAudioSimulation(sessionState);
+
+  const handleStopSession = useCallback(() => {
+    setSessionState('completed');
+    // Navigate to session report after a short delay
+    setTimeout(() => {
+      // router.push(`${ROUTES.STUDENT.SESSION_REPORT}?conversation=${999}`);
+      router.push(`${ROUTES.STUDENT.HISTORY}`);
+    }, 2000);
+  }, [router]);
 
   // Load session config and appropriate AI settings on mount
   useEffect(() => {
@@ -66,7 +75,7 @@ export default function AISessionPage() {
     if (timeRemaining <= 0 && sessionState === 'active') {
       handleStopSession();
     }
-  }, [timeRemaining, sessionState]);
+  }, [timeRemaining, sessionState, handleStopSession]);
 
   const handleStartSession = () => {
     setSessionState('active');
@@ -78,15 +87,6 @@ export default function AISessionPage() {
 
   const handleResumeSession = () => {
     setSessionState('active');
-  };
-
-  const handleStopSession = () => {
-    setSessionState('completed');
-    // Navigate to session report after a short delay
-    setTimeout(() => {
-      // router.push(`${ROUTES.STUDENT.SESSION_REPORT}?conversation=${999}`);
-      router.push(`${ROUTES.STUDENT.HISTORY}`);
-    }, 2000);
   };
 
   if (!config || !aiSettings) {
