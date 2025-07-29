@@ -2,7 +2,7 @@
 
 import * as React from "react";
 import Link from "next/link";
-import { LogOut } from "lucide-react";
+import { LogOut, ChevronDown, ChevronRight } from "lucide-react";
 import {
 	Sidebar,
 	SidebarContent,
@@ -13,8 +13,16 @@ import {
 	SidebarMenu,
 	SidebarMenuItem,
 	SidebarMenuButton,
+	SidebarMenuSub,
+	SidebarMenuSubItem,
+	SidebarMenuSubButton,
 	useSidebar,
 } from "@/components/ui/sidebar";
+import {
+	Collapsible,
+	CollapsibleContent,
+	CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import { Button } from "@/components/ui/button";
 import { Logo } from "@/components/ui/logo";
 import type { NavItem } from "@/types/nav";
@@ -36,6 +44,146 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 }) => {
 	const { state } = useSidebar();
 	const isCollapsed = state === "collapsed";
+	
+	// Initialize dropdown state based on active tab
+	const [openDropdowns, setOpenDropdowns] = React.useState<Set<string>>(() => {
+		const initialOpen = new Set<string>();
+		
+		// Check if any sub-item is active and open its parent dropdown
+		nav.forEach(item => {
+			if (item.subItems?.some(subItem => subItem.id === activeTab)) {
+				initialOpen.add(item.id);
+			}
+		});
+		
+		return initialOpen;
+	});
+
+	// Update dropdown state when activeTab changes
+	React.useEffect(() => {
+		setOpenDropdowns(prev => {
+			const newSet = new Set(prev);
+			
+			// Check if any sub-item is active and ensure its parent dropdown is open
+			nav.forEach(item => {
+				if (item.subItems?.some(subItem => subItem.id === activeTab)) {
+					newSet.add(item.id);
+				}
+			});
+			
+			return newSet;
+		});
+	}, [activeTab, nav]);
+
+	const toggleDropdown = (itemId: string) => {
+		setOpenDropdowns(prev => {
+			const newSet = new Set(prev);
+			if (newSet.has(itemId)) {
+				newSet.delete(itemId);
+			} else {
+				newSet.add(itemId);
+			}
+			return newSet;
+		});
+	};
+
+	const isSubItemActive = (item: NavItem): boolean => {
+		if (!item.subItems) return false;
+		return item.subItems.some(subItem => activeTab === subItem.id);
+	};
+
+	const renderMenuItem = (item: NavItem) => {
+		const isActive = activeTab === item.id;
+		const hasSubItems = item.subItems && item.subItems.length > 0;
+		const isDropdownOpen = openDropdowns.has(item.id);
+		const isParentActive = isSubItemActive(item);
+
+		if (hasSubItems) {
+			return (
+				<Collapsible
+					key={item.id}
+					open={isDropdownOpen}
+					onOpenChange={() => toggleDropdown(item.id)}>
+					<SidebarMenuItem>
+						<CollapsibleTrigger asChild>
+							<SidebarMenuButton
+								tooltip={isCollapsed ? item.label : undefined}
+								className={cn(
+									"hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white py-6 px-4",
+									isParentActive &&
+										"bg-gradient-to-br from-primary-500 to-primary-600 text-white"
+								)}>
+								<item.icon className="shrink-0" />
+								{!isCollapsed && (
+									<>
+										<span>{item.label}</span>
+										{isDropdownOpen ? (
+											<ChevronDown className="ml-auto h-4 w-4" />
+										) : (
+											<ChevronRight className="ml-auto h-4 w-4" />
+										)}
+									</>
+								)}
+							</SidebarMenuButton>
+						</CollapsibleTrigger>
+						{!isCollapsed && (
+							<CollapsibleContent>
+								<SidebarMenuSub>
+									{item.subItems?.map((subItem) => {
+										const isSubActive = activeTab === subItem.id;
+										return (
+											<SidebarMenuSubItem key={subItem.id}>
+												<SidebarMenuSubButton
+													asChild
+													isActive={isSubActive}
+													className={cn(
+														"hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white py-6 px-4",
+														isSubActive &&
+															"bg-gradient-to-br from-primary-500 to-primary-600 text-white"
+													)}>
+													<Link href={subItem.href!}>
+														<subItem.icon className="shrink-0" />
+														<span>{subItem.label}</span>
+													</Link>
+												</SidebarMenuSubButton>
+											</SidebarMenuSubItem>
+										);
+									})}
+								</SidebarMenuSub>
+							</CollapsibleContent>
+						)}
+					</SidebarMenuItem>
+				</Collapsible>
+			);
+		}
+
+		// Regular menu item without sub-items
+		return (
+			<SidebarMenuItem key={item.id}>
+				<SidebarMenuButton
+					asChild
+					isActive={isActive}
+					tooltip={isCollapsed ? item.label : undefined}
+					className={cn(
+						"hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white py-6 px-4",
+						isActive &&
+							"bg-gradient-to-br from-primary-500 to-primary-600 text-white"
+					)}>
+					<Link
+						href={item.href!}
+						className={cn(isCollapsed && "justify-center")}>
+						<item.icon className="shrink-0" />
+						{!isCollapsed && <span>{item.label}</span>}
+						{/* {!isCollapsed && item.badge && (
+							<span className="ml-auto bg-primary-100 text-primary-600 dark:bg-primary-800 dark:text-primary-300 px-2 py-0.5 rounded-full text-xs font-medium">
+								{item.badge}
+							</span>
+						)} */}
+					</Link>
+				</SidebarMenuButton>
+			</SidebarMenuItem>
+		);
+	};
 
 	return (
 		<Sidebar
@@ -57,30 +205,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 				<SidebarGroup>
 					<SidebarGroupContent>
 						<SidebarMenu>
-							{nav.map((item) => {
-								const isActive = activeTab === item.id;
-								return (
-									<SidebarMenuItem key={item.id}>
-										<SidebarMenuButton
-											asChild
-											isActive={isActive}
-											tooltip={isCollapsed ? item.label : undefined}
-											// if isActive, add active class
-											className={cn(
-												"hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white py-6 px-4",
-												isActive &&
-													"bg-gradient-to-br from-primary-500 to-primary-600 text-white"
-											)}>
-											<Link
-												href={item.href}
-												className={cn(isCollapsed && "justify-center")}>
-												<item.icon className="shrink-0" />
-												{!isCollapsed && <span>{item.label}</span>}
-											</Link>
-										</SidebarMenuButton>
-									</SidebarMenuItem>
-								);
-							})}
+							{nav.map(renderMenuItem)}
 						</SidebarMenu>
 					</SidebarGroupContent>
 				</SidebarGroup>

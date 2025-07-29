@@ -4,6 +4,7 @@ import { useEffect, useRef } from "react";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { SessionState } from "@/types/ai-session";
 import { AITutorSettings } from "@/types/ai-tutor";
+import { AIChirologistSettings } from "@/types/ai-chirologist";
 
 interface SessionBlobProps {
 	sessionState: SessionState;
@@ -11,7 +12,7 @@ interface SessionBlobProps {
 	isAISpeaking: boolean;
 	audioLevel: number;
 	statusText: string;
-	tutorSettings: AITutorSettings;
+	aiSettings: AITutorSettings | AIChirologistSettings;
 }
 
 export default function SessionBlob({
@@ -20,7 +21,7 @@ export default function SessionBlob({
 	isAISpeaking,
 	audioLevel,
 	statusText,
-	tutorSettings,
+	aiSettings,
 }: SessionBlobProps) {
 	const blobRef = useRef<HTMLDivElement>(null);
 	const isActive = sessionState === "active";
@@ -52,9 +53,9 @@ export default function SessionBlob({
 				{/* AI Agent Avatar - Always visible in center */}
 				<div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-10">
 					<Avatar className="h-52 w-52">
-						<AvatarImage src={tutorSettings.avatar || "/placeholder.svg"} />
+						<AvatarImage src={aiSettings.avatar || "/placeholder.svg"} />
 						<AvatarFallback className="bg-white/10 text-white text-4xl font-bold backdrop-blur-sm">
-							{tutorSettings.name.charAt(0)}
+							{aiSettings.name.charAt(0)}
 						</AvatarFallback>
 					</Avatar>
 				</div>

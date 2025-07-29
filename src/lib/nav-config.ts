@@ -10,6 +10,8 @@ import {
 	Users,
 	Bot,
 	History,
+	Zap,
+	Hand,
 } from "lucide-react";
 import type { NavItem } from "@/types/nav";
 import { ROUTES } from "@/constants/routes";
@@ -56,10 +58,23 @@ export const studentNav: NavItem[] = [
 		href: ROUTES.STUDENT.TEACHERS,
 	},
 	{
-		id: "ai-tutor",
-		label: "AI Tutor",
+		id: "ai-agents",
+		label: "AI Agents",
 		icon: Bot,
-		href: ROUTES.STUDENT.AI_TUTOR,
+		subItems: [
+			{
+				id: "ai-tutor",
+				label: "AI Tutor",
+				icon: Zap,
+				href: ROUTES.STUDENT.AI_TUTOR,
+			},
+			{
+				id: "ai-chirologist",
+				label: "AI Chirologist",
+				icon: Hand,
+				href: ROUTES.STUDENT.AI_CHIROLOGIST,
+			},
+		],
 	},
 	{
 		id: "history",
@@ -72,7 +87,7 @@ export const studentNav: NavItem[] = [
 		label: "Chat",
 		icon: MessageCircle,
 		href: ROUTES.STUDENT.CHAT,
-		badge: 3,
+		// badge: 3,
 	},
 	{
 		id: "meetings",

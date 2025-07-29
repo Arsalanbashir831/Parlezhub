@@ -1,9 +1,14 @@
 export interface SessionConfig {
+	sessionType?: "tutor" | "chirologist";
 	nativeLanguage: string;
 	language: string;
 	gender: "male" | "female" | "neutral";
 	accent: string;
 	topic: string;
+	// Chirologist specific fields
+	palmType?: string;
+	readingFocus?: string;
+	experience?: string;
 }
 
 export type SessionState = "idle" | "active" | "paused" | "completed";

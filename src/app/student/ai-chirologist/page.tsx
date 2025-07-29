@@ -1,23 +1,23 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useAITutor } from "@/hooks/useAITutor";
+import { useAIChirologist } from "@/hooks/useAIChirologist";
 import { ROUTES } from "@/constants/routes";
-import { DEFAULT_SESSION_CONFIG } from "@/constants/ai-session";
+import { DEFAULT_CHIROLOGIST_SESSION_CONFIG } from "@/constants/ai-chirologist-session";
 import { saveSessionConfig } from "@/lib/ai-session-utils";
 import {
-	TutorConfiguration,
-	TutorPreview,
-	TutorActions,
-} from "@/components/ai-tutor";
+	ChirologistConfiguration,
+	ChirologistPreview,
+	ChirologistActions,
+} from "@/components/ai-chirologist";
 
-export default function AITutorPage() {
+export default function AIChirologistPage() {
 	const router = useRouter();
-	const { settings, updateTempSetting } = useAITutor();
+	const { settings, updateTempSetting } = useAIChirologist();
 
 	const handleStartSession = () => {
-		// Save tutor session config before navigating
-		saveSessionConfig(DEFAULT_SESSION_CONFIG);
+		// Save chirologist session config before navigating
+		saveSessionConfig(DEFAULT_CHIROLOGIST_SESSION_CONFIG);
 		router.push(ROUTES.AI_SESSION.SETUP);
 	};
 
@@ -34,18 +34,18 @@ export default function AITutorPage() {
 			{/* Header */}
 			<div className="text-center space-y-2">
 				<h1 className="text-xl sm:text-2xl lg:text-3xl font-bold text-gray-900 dark:text-gray-100">
-					AI Language Tutor
+					AI Chirologist
 				</h1>
 				<p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
-					Configure and start practicing with your personalized AI tutor
+					Configure and start your personalized palm reading session
 				</p>
 			</div>
 
-			{/* AI Tutor Configuration */}
+			{/* AI Chirologist Configuration */}
 			<div className="grid grid-cols-1 xl:grid-cols-2 gap-4 sm:gap-6">
-				{/* Tutor Configuration */}
+				{/* Chirologist Configuration */}
 				<div className="order-2 xl:order-1">
-					<TutorConfiguration 
+					<ChirologistConfiguration 
 						settings={settings} 
 						onSettingChange={updateTempSetting}
 					/>
@@ -53,14 +53,14 @@ export default function AITutorPage() {
 
 				{/* Session Preview */}
 				<div className="space-y-4 sm:space-y-6 order-1 xl:order-2">
-					<TutorPreview settings={settings} />
+					<ChirologistPreview settings={settings} />
 				</div>
 			</div>
 
 			{/* Action Button */}
 			<div className="flex justify-center pt-4">
-				<TutorActions onStartSession={handleStartSession} />
+				<ChirologistActions onStartSession={handleStartSession} />
 			</div>
 		</div>
 	);
-}
+} 

@@ -9,7 +9,7 @@ import {
 } from "@/components/ui/sidebar";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { useAuth } from "@/contexts/auth-context";
-import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
+// import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
 import { AppSidebar } from "./app-sidebar";
 import type { NavItem } from "@/types/nav";
 
@@ -28,14 +28,43 @@ export const AppShell: React.FC<AppShellProps> = ({
 	const { user, logout } = useAuth();
 	const router = useRouter();
 
-	const activeTab = React.useMemo(
-		() => pathname.split("/")[2] || "dashboard",
-		[pathname]
-	);
-	const pageTitle = React.useMemo(
-		() => activeTab.replace(/-/g, " "),
-		[activeTab]
-	);
+	const activeTab = React.useMemo(() => {
+		const pathSegment = pathname.split("/")[2] || "dashboard";
+		
+		// Check if the current path matches any direct nav item
+		const directMatch = nav.find(item => item.id === pathSegment);
+		if (directMatch) {
+			return pathSegment;
+		}
+
+		// Check if the current path matches any sub-item
+		for (const navItem of nav) {
+			if (navItem.subItems) {
+				const subItemMatch = navItem.subItems.find(subItem => subItem.id === pathSegment);
+				if (subItemMatch) {
+					return pathSegment; // Return the sub-item id as active
+				}
+			}
+		}
+
+		return pathSegment;
+	}, [pathname, nav]);
+
+	const pageTitle = React.useMemo(() => {
+		// First check sub-items for a more specific title
+		for (const navItem of nav) {
+			if (navItem.subItems) {
+				const subItem = navItem.subItems.find(sub => sub.id === activeTab);
+				if (subItem) {
+					return subItem.label;
+				}
+			}
+		}
+
+		// Fall back to main nav item or formatted path segment
+		const mainNavItem = nav.find(item => item.id === activeTab);
+		return mainNavItem?.label || activeTab.replace(/-/g, " ");
+	}, [activeTab, nav]);
 
 	const handleLogout = React.useCallback(() => {
 		logout();

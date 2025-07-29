@@ -78,14 +78,12 @@ export const SETUP_STEPS: SetupStep[] = [
 ];
 
 export const DEFAULT_SESSION_CONFIG = {
+	sessionType: "tutor" as const,
 	nativeLanguage: "english",
 	language: "spanish",
 	gender: "neutral" as const,
 	accent: "Neutral",
-	context:
-		"You are a friendly and patient language tutor who helps students practice conversation skills.",
 	topic: "Daily Conversation",
-	level: "intermediate",
 };
 
 export const SESSION_DURATION = 300; // 5 minutes in seconds

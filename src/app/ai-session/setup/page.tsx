@@ -10,6 +10,7 @@ import AiSessionHeader from "@/components/ai-session/ai-session-header";
 import { SessionProvider, useSession } from "@/contexts/session-context";
 import { ROUTES } from "@/constants/routes";
 import { SETUP_STEPS } from "@/constants/ai-session";
+import { CHIROLOGIST_SETUP_STEPS } from "@/constants/ai-chirologist-session";
 import { saveSessionConfig } from "@/lib/ai-session-utils";
 import {
 	NativeLanguageSelection,
@@ -17,15 +18,35 @@ import {
 	SessionDetails,
 	SessionSummary,
 	SetupStepper,
+	// Chirologist components
+	PalmSelection,
+	ReadingFocus,
+	ExperienceLevel,
+	ChirologistSessionSummary,
 } from "@/components/ai-session/setup";
 
 function SessionSetupContent() {
 	const router = useRouter();
 	const { config } = useSession();
 	const [currentStep, setCurrentStep] = useState(0);
+	
+	// Determine if this is a chirologist session
+	const isChirologistSession = config.sessionType === "chirologist";
+	const steps = isChirologistSession ? CHIROLOGIST_SETUP_STEPS : SETUP_STEPS;
+
+	// Dynamic back button configuration based on session type
+	const backButtonConfig = isChirologistSession 
+		? {
+			text: "Back to AI Chirologist",
+			href: ROUTES.STUDENT.AI_CHIROLOGIST
+		}
+		: {
+			text: "Back to AI Tutor", 
+			href: ROUTES.STUDENT.AI_TUTOR
+		};
 
 	const handleNext = () => {
-		if (currentStep < SETUP_STEPS.length - 1) {
+		if (currentStep < steps.length - 1) {
 			setCurrentStep(currentStep + 1);
 		}
 	};
@@ -42,30 +63,49 @@ function SessionSetupContent() {
 	};
 
 	const renderStepContent = () => {
-		switch (currentStep) {
-			case 0:
-				return <NativeLanguageSelection />;
-			case 1:
-				return <TargetLanguageSelection />;
-			case 2:
-				return <SessionDetails />;
-			case 3:
-				return <SessionSummary />;
-			default:
-				return null;
+		if (isChirologistSession) {
+			// Chirologist session flow
+			switch (currentStep) {
+				case 0:
+					return <PalmSelection />;
+				case 1:
+					return <ReadingFocus />;
+				case 2:
+					return <ExperienceLevel />;
+				case 3:
+					return <ChirologistSessionSummary />;
+				default:
+					return null;
+			}
+		} else {
+			// Tutor session flow
+			switch (currentStep) {
+				case 0:
+					return <NativeLanguageSelection />;
+				case 1:
+					return <TargetLanguageSelection />;
+				case 2:
+					return <SessionDetails />;
+				case 3:
+					return <SessionSummary />;
+				default:
+					return null;
+			}
 		}
 	};
 
 	return (
 		<div className="min-h-screen bg-gradient-to-br from-primary-50 to-blue-50 dark:from-gray-900 dark:to-gray-800 flex flex-col items-center justify-start">
-			<AiSessionHeader>
+			<AiSessionHeader
+				backButtonText={backButtonConfig.text}
+				backButtonHref={backButtonConfig.href}>
 				<div className="flex justify-center">
 					<div className="text-center">
 						<h1 className="text-sm sm:text-base md:text-xl font-bold text-gray-900 dark:text-white">
-							{SETUP_STEPS[currentStep].title}
+							{steps[currentStep].title}
 						</h1>
 						<p className="text-xs md:text-sm text-gray-600 dark:text-gray-400">
-							Step {currentStep + 1} of {SETUP_STEPS.length}
+							Step {currentStep + 1} of {steps.length}
 						</p>
 					</div>
 				</div>
@@ -90,7 +130,7 @@ function SessionSetupContent() {
 						Previous
 					</Button>
 
-					{currentStep === SETUP_STEPS.length - 1 ? (
+					{currentStep === steps.length - 1 ? (
 						<Button
 							onClick={handleStartSession}
 							size="lg"

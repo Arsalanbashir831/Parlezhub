@@ -1,8 +1,9 @@
 "use client";
 
-import { createContext, useContext, useState, ReactNode } from "react";
+import { createContext, useContext, useState, useEffect, ReactNode } from "react";
 import { SessionConfig } from "@/types/ai-session";
 import { DEFAULT_SESSION_CONFIG } from "@/constants/ai-session";
+import { loadSessionConfig } from "@/lib/ai-session-utils";
 
 interface SessionContextType {
 	config: SessionConfig;
@@ -21,6 +22,14 @@ export function SessionProvider({ children }: SessionProviderProps) {
 	const [config, setConfigState] = useState<SessionConfig>(
 		DEFAULT_SESSION_CONFIG
 	);
+
+	// Load saved session config on mount
+	useEffect(() => {
+		const savedConfig = loadSessionConfig();
+		if (savedConfig) {
+			setConfigState(savedConfig);
+		}
+	}, []);
 
 	const updateConfig = (key: keyof SessionConfig, value: string) => {
 		setConfigState((prev) => ({
