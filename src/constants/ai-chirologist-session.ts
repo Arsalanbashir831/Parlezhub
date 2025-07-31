@@ -51,24 +51,32 @@ export const CHIROLOGIST_EXPERIENCE = [
 // Chirologist setup steps
 export const CHIROLOGIST_SETUP_STEPS: SetupStep[] = [
   {
+    id: 'palm-selection',
     title: 'Palm Selection',
     description: 'Choose which hand to read',
     icon: HandMetal,
+    completed: false,
   },
   {
+    id: 'reading-focus',
     title: 'Reading Focus',
     description: 'What aspect interests you most?',
     icon: Focus,
+    completed: false,
   },
   {
+    id: 'experience',
     title: 'Your Experience',
     description: 'Your familiarity with palm reading',
     icon: User,
+    completed: false,
   },
   {
+    id: 'ready-to-start',
     title: 'Ready to Start',
     description: 'Review your preferences and begin',
     icon: Play,
+    completed: false,
   },
 ];
 

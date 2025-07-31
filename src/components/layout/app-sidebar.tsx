@@ -220,7 +220,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </SidebarContent>
 
       <SidebarFooter className="bg-white p-4 dark:bg-gray-800">
-        <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+        {roleLabel !== 'Agent' && (
+          <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+        )}
         <Button
           variant="ghost"
           className={cn(

@@ -1,17 +1,22 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
-import { ConfirmPasswordField, EmailField, NameField, PasswordField } from '@/components/auth/specialized-fields';
+import {
+  ConfirmPasswordField,
+  EmailField,
+  NameField,
+  PasswordField,
+} from '@/components/auth/specialized-fields';
 import { ErrorMessage } from '@/components/auth/status-messages';
-import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
 
 const signupSchema = z
   .object({
@@ -54,7 +59,10 @@ export default function SignupPage() {
 
         <EmailField register={register('email')} error={errors.email} />
 
-        <PasswordField register={register('password')} error={errors.password} />
+        <PasswordField
+          register={register('password')}
+          error={errors.password}
+        />
 
         <ConfirmPasswordField
           register={register('confirmPassword')}

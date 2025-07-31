@@ -8,13 +8,30 @@ import {
   Hand,
   History,
   Home,
+  Languages,
   MessageCircle,
   Settings,
+  Telescope,
   Users,
   Zap,
 } from 'lucide-react';
 
 import { NavItem } from '@/types/nav';
+
+export const agentNav: NavItem[] = [
+  {
+    id: 'language',
+    label: 'Language',
+    icon: Languages,
+    href: ROUTES.AGENT.LANGUAGE,
+  },
+  {
+    id: 'astrology',
+    label: 'Astrology',
+    icon: Telescope,
+    href: ROUTES.AGENT.ASTROLOGY,
+  },
+];
 
 export const studentNav: NavItem[] = [
   {

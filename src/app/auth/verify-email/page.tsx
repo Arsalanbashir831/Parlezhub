@@ -1,10 +1,10 @@
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
-import { CheckCircle, Mail, RefreshCw } from 'lucide-react';
+import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
-import { useState } from 'react';
+import { useAuth } from '@/contexts/auth-context';
+import { CheckCircle, Mail, RefreshCw } from 'lucide-react';
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';

@@ -1,10 +1,14 @@
 export const ROUTES = {
   AUTH: {
-    LOGIN: '/login',
-    SIGNUP: '/signup',
-    FORGOT_PASSWORD: '/forgot-password',
-    RESET_PASSWORD: '/reset-password',
-    VERIFY_EMAIL: '/verify-email',
+    LOGIN: '/auth/login',
+    SIGNUP: '/auth/signup',
+    FORGOT_PASSWORD: '/auth/forgot-password',
+    RESET_PASSWORD: '/auth/reset-password',
+    VERIFY_EMAIL: '/auth/verify-email',
+  },
+  AGENT: {
+    LANGUAGE: '/language',
+    ASTROLOGY: '/astrology',
   },
   STUDENT: {
     DASHBOARD: '/student/dashboard',

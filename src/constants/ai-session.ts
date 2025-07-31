@@ -57,24 +57,32 @@ export const LEVELS: Level[] = [
 
 export const SETUP_STEPS: SetupStep[] = [
   {
+    id: 'native-language',
     title: 'Your Native Language',
     description: 'Select your first language',
     icon: User,
+    completed: false,
   },
   {
+    id: 'target-language',
     title: 'Language to Learn',
     description: 'Choose the language you want to practice',
     icon: Languages,
+    completed: false,
   },
   {
+    id: 'session-details',
     title: 'Session Details',
     description: 'Set your conversation topic',
     icon: MessageCircle,
+    completed: false,
   },
   {
+    id: 'ready-to-start',
     title: 'Ready to Start',
     description: 'Review your settings and begin',
     icon: Play,
+    completed: false,
   },
 ];
 

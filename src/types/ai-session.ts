@@ -1,8 +1,12 @@
+import React from 'react';
+
 export interface SessionConfig {
+  sessionType?: 'tutor' | 'chirologist';
   nativeLanguage: string;
-  learningLanguage: string;
+  language: string;
+  gender?: 'male' | 'female' | 'neutral';
+  accent?: string;
   topic: string;
-  sessionType?: "tutor" | "chirologist";
   // Chirologist specific fields
   palmType?: string;
   readingFocus?: string;
@@ -18,14 +22,14 @@ export interface SessionState {
 }
 
 export interface Language {
-  code: string;
-  name: string;
-  accent: string;
+  value: string;
+  label: string;
+  flag: string;
 }
 
 export interface Level {
-  code: string;
-  name: string;
+  value: string;
+  label: string;
   description: string;
 }
 
@@ -34,9 +38,16 @@ export interface SetupStep {
   title: string;
   description: string;
   completed: boolean;
+  icon?: React.ComponentType<{ className?: string }>;
 }
 
-export type SessionStatus = "idle" | "starting" | "active" | "paused" | "ending" | "completed";
+export type SessionStatus =
+  | 'idle'
+  | 'starting'
+  | 'active'
+  | 'paused'
+  | 'ending'
+  | 'completed';
 
 export interface SessionTimer {
   minutes: number;

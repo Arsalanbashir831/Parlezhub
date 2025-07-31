@@ -1,18 +1,24 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
+import { Suspense } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { Suspense } from 'react';
+import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
-import { ConfirmPasswordField, PasswordField } from '@/components/auth/specialized-fields';
-import { ErrorMessage, SuccessMessage } from '@/components/auth/status-messages';
-import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
+import {
+  ConfirmPasswordField,
+  PasswordField,
+} from '@/components/auth/specialized-fields';
+import {
+  ErrorMessage,
+  SuccessMessage,
+} from '@/components/auth/status-messages';
 
 const resetPasswordSchema = z
   .object({
@@ -124,16 +130,15 @@ function ResetPasswordContent() {
 
 export default function ResetPasswordPage() {
   return (
-    <Suspense fallback={
-      <AuthLayout
-        title="Reset Password"
-        subtitle="Loading..."
-      >
-        <div className="flex justify-center">
-          <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-        </div>
-      </AuthLayout>
-    }>
+    <Suspense
+      fallback={
+        <AuthLayout title="Reset Password" subtitle="Loading...">
+          <div className="flex justify-center">
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+          </div>
+        </AuthLayout>
+      }
+    >
       <ResetPasswordContent />
     </Suspense>
   );

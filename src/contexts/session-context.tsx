@@ -3,6 +3,7 @@
 import {
   createContext,
   ReactNode,
+  useCallback,
   useContext,
   useEffect,
   useState,
@@ -38,20 +39,23 @@ export function SessionProvider({ children }: SessionProviderProps) {
     }
   }, []);
 
-  const updateConfig = (key: keyof SessionConfig, value: string) => {
-    setConfigState((prev) => ({
-      ...prev,
-      [key]: value,
-    }));
-  };
+  const updateConfig = useCallback(
+    (key: keyof SessionConfig, value: string) => {
+      setConfigState((prev) => ({
+        ...prev,
+        [key]: value,
+      }));
+    },
+    []
+  );
 
-  const setConfig = (newConfig: SessionConfig) => {
+  const setConfig = useCallback((newConfig: SessionConfig) => {
     setConfigState(newConfig);
-  };
+  }, []);
 
-  const resetConfig = () => {
+  const resetConfig = useCallback(() => {
     setConfigState(DEFAULT_SESSION_CONFIG);
-  };
+  }, []);
 
   return (
     <SessionContext.Provider

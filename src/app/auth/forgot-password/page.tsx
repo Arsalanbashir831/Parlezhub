@@ -1,7 +1,9 @@
 'use client';
 
-import { zodResolver } from '@hookform/resolvers/zod';
 import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
@@ -9,8 +11,6 @@ import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { EmailField } from '@/components/auth/specialized-fields';
 import { ErrorMessage, InfoMessage } from '@/components/auth/status-messages';
-import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
 
 const forgotPasswordSchema = z.object({
   email: z.string().email('Please enter a valid email address'),

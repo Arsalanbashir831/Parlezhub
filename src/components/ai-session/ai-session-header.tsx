@@ -11,6 +11,7 @@ type Props = {
   backButtonText?: string;
   backButtonHref?: string;
   showBackButton?: boolean;
+  onBackClick?: () => void;
 };
 
 export default function AiSessionHeader({
@@ -18,23 +19,32 @@ export default function AiSessionHeader({
   backButtonText = 'Back to AI Tutor',
   backButtonHref = ROUTES.STUDENT.AI_TUTOR,
   showBackButton = true,
+  onBackClick,
 }: Props) {
+  const BackButton = () => (
+    <Button
+      variant="ghost"
+      size="sm"
+      className="flex-shrink-0 text-gray-700 hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
+      onClick={onBackClick}
+    >
+      <ArrowLeft className="h-4 w-4 text-gray-700 hover:text-black dark:text-white sm:mr-2" />
+      <span className="hidden sm:inline">{backButtonText}</span>
+    </Button>
+  );
+
   return (
     <div className="w-full border-b border-gray-200 bg-white/50 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-black/20 dark:text-white">
       <div className="flex items-center justify-between p-3 sm:p-4 lg:p-6">
         {/* Left side - Back button */}
-        {showBackButton && (
-          <Link href={backButtonHref}>
-            <Button
-              variant="ghost"
-              size="sm"
-              className="flex-shrink-0 text-gray-700 hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
-            >
-              <ArrowLeft className="h-4 w-4 text-gray-700 hover:text-black dark:text-white sm:mr-2" />
-              <span className="hidden sm:inline">{backButtonText}</span>
-            </Button>
-          </Link>
-        )}
+        {showBackButton &&
+          (onBackClick ? (
+            <BackButton />
+          ) : (
+            <Link href={backButtonHref}>
+              <BackButton />
+            </Link>
+          ))}
 
         {/* Center content - responsive container */}
         <div className="flex flex-1 justify-center sm:px-4">{children}</div>

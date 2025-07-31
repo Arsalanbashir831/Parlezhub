@@ -39,9 +39,9 @@ export default function MeetingTabs({
     console.log('Tab changed to:', value);
   };
 
-  const upcomingMeetings = meetings.filter(m => m.status === 'upcoming');
-  const completedMeetings = meetings.filter(m => m.status === 'completed');
-  const cancelledMeetings = meetings.filter(m => m.status === 'cancelled');
+  const upcomingMeetings = meetings?.filter((m) => m.status === 'upcoming');
+  const completedMeetings = meetings?.filter((m) => m.status === 'completed');
+  const cancelledMeetings = meetings?.filter((m) => m.status === 'cancelled');
 
   const getStatusIcon = (status: Meeting['status']) => {
     switch (status) {
@@ -85,7 +85,9 @@ export default function MeetingTabs({
         <div className="space-y-2">
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="h-4 w-4" />
-            <span>{meeting.date} at {meeting.time}</span>
+            <span>
+              {meeting.date} at {meeting.time}
+            </span>
             <span>({meeting.duration} min)</span>
           </div>
 
@@ -137,26 +139,27 @@ export default function MeetingTabs({
     <Tabs defaultValue="upcoming" onValueChange={handleTabChange}>
       <TabsList className="grid w-full grid-cols-3">
         <TabsTrigger value="upcoming">
-          Upcoming ({upcomingMeetings.length})
+          Upcoming ({upcomingMeetings?.length})
         </TabsTrigger>
         <TabsTrigger value="completed">
-          Completed ({completedMeetings.length})
+          Completed ({completedMeetings?.length})
         </TabsTrigger>
         <TabsTrigger value="cancelled">
-          Cancelled ({cancelledMeetings.length})
+          Cancelled ({cancelledMeetings?.length})
         </TabsTrigger>
       </TabsList>
 
       <TabsContent value="upcoming" className="mt-6">
-        {upcomingMeetings.length > 0 ? (
-          upcomingMeetings.map(renderMeetingCard)
+        {upcomingMeetings?.length > 0 ? (
+          upcomingMeetings?.map(renderMeetingCard)
         ) : (
           <Card>
             <CardContent className="py-8 text-center">
-              <Clock className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No upcoming meetings</h3>
+              <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+              <h3 className="mb-2 text-lg font-medium">No upcoming meetings</h3>
               <p className="text-gray-600">
-                Schedule a meeting to get started with your language learning journey.
+                Schedule a meeting to get started with your language learning
+                journey.
               </p>
             </CardContent>
           </Card>
@@ -164,13 +167,15 @@ export default function MeetingTabs({
       </TabsContent>
 
       <TabsContent value="completed" className="mt-6">
-        {completedMeetings.length > 0 ? (
-          completedMeetings.map(renderMeetingCard)
+        {completedMeetings?.length > 0 ? (
+          completedMeetings?.map(renderMeetingCard)
         ) : (
           <Card>
             <CardContent className="py-8 text-center">
-              <CheckCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No completed meetings</h3>
+              <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+              <h3 className="mb-2 text-lg font-medium">
+                No completed meetings
+              </h3>
               <p className="text-gray-600">
                 Your completed meetings will appear here.
               </p>
@@ -180,13 +185,15 @@ export default function MeetingTabs({
       </TabsContent>
 
       <TabsContent value="cancelled" className="mt-6">
-        {cancelledMeetings.length > 0 ? (
-          cancelledMeetings.map(renderMeetingCard)
+        {cancelledMeetings?.length > 0 ? (
+          cancelledMeetings?.map(renderMeetingCard)
         ) : (
           <Card>
             <CardContent className="py-8 text-center">
-              <XCircle className="mx-auto h-12 w-12 text-gray-400 mb-4" />
-              <h3 className="text-lg font-medium mb-2">No cancelled meetings</h3>
+              <XCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+              <h3 className="mb-2 text-lg font-medium">
+                No cancelled meetings
+              </h3>
               <p className="text-gray-600">
                 Cancelled meetings will appear here.
               </p>

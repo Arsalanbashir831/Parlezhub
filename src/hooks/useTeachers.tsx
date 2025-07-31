@@ -124,6 +124,7 @@ export const useTeachers = () => {
     null
   );
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
 
   // Get available languages from teachers
   const availableLanguages = useMemo(() => {
@@ -194,10 +195,16 @@ export const useTeachers = () => {
   const handleSelectTeacher = useCallback((teacher: TeacherData) => {
     setSelectedTeacher(teacher);
     setIsDetailsPanelOpen(true);
+    setIsModalOpen(true);
   }, []);
 
   const handleClosDetailsPanel = useCallback(() => {
-    setIsDetailsPanelOpen(false);
+    setIsModalOpen(false);
+    setSelectedTeacher(null);
+  }, []);
+
+  const handleCloseModal = useCallback(() => {
+    setIsModalOpen(false);
     setSelectedTeacher(null);
   }, []);
 
@@ -216,6 +223,7 @@ export const useTeachers = () => {
     // Teacher details panel
     selectedTeacher,
     isDetailsPanelOpen,
+    isModalOpen,
 
     // Handlers
     handleSearchChange,
@@ -225,6 +233,7 @@ export const useTeachers = () => {
     handleClearFilters,
     handleSelectTeacher,
     handleClosDetailsPanel,
+    handleCloseModal,
     refreshTeachers,
   };
 };
