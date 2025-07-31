@@ -34,11 +34,11 @@ const ConversationItem = memo(
       <div
         onClick={handleClick}
         className={cn(
-          'flex cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-white',
+          'flex w-full max-w-full cursor-pointer items-center gap-3 rounded-lg p-3 transition-colors hover:bg-white',
           isSelected && 'bg-white shadow-sm'
         )}
       >
-        <div className="relative">
+        <div className="relative flex-shrink-0">
           <Avatar className="h-12 w-12">
             <AvatarImage src={conversation.avatar || '/placeholder.svg'} />
             <AvatarFallback className="bg-primary-100 text-primary-700">
@@ -53,22 +53,24 @@ const ConversationItem = memo(
           )}
         </div>
 
-        <div className="min-w-0 flex-1">
-          <div className="flex items-center justify-between">
-            <p className="truncate text-sm font-medium">{conversation.name}</p>
-            <span className="text-xs text-gray-500">
+        <div className="min-w-0 flex-1 overflow-hidden">
+          <div className="flex items-center justify-between gap-2">
+            <p className="flex-1 truncate text-sm font-medium">
+              {conversation.name}
+            </p>
+            <span className="flex-shrink-0 text-xs text-gray-500">
               {formatMessageTime(conversation.timestamp)}
             </span>
           </div>
-          <p className="mt-1 truncate text-sm text-gray-600">
+          <p className="mt-1 line-clamp-1 text-sm text-gray-600">
             {conversation.lastMessage}
           </p>
-          <div className="mt-1 flex items-center justify-between">
-            <Badge variant="outline" className="text-xs">
+          <div className="mt-1 flex items-center justify-between gap-2">
+            <Badge variant="outline" className="flex-shrink-0 text-xs">
               {conversation.type}
             </Badge>
             {conversation.unreadCount > 0 && (
-              <Badge className="bg-primary-500 text-xs text-white">
+              <Badge className="flex-shrink-0 bg-primary-500 text-xs text-white">
                 {conversation.unreadCount}
               </Badge>
             )}

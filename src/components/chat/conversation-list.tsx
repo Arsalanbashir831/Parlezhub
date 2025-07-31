@@ -43,7 +43,7 @@ const ConversationList = memo(
     }, [conversations, searchQuery]);
 
     return (
-      <div className="w-80 overflow-hidden border-r bg-gray-50 pb-8">
+      <div className="w-full min-w-0 overflow-hidden border-r bg-gray-50 md:w-80 md:min-w-80 md:max-w-80">
         <div className="border-b bg-white p-4">
           <h2 className="mb-3 text-lg font-semibold">Messages</h2>
           <div className="relative">
@@ -52,13 +52,13 @@ const ConversationList = memo(
               placeholder="Search conversations..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="pl-10"
+              className="w-full pl-10"
             />
           </div>
         </div>
 
         <ScrollArea className="h-[calc(100%-5rem)]">
-          <div className="max-w-80 p-2">
+          <div className="space-y-1 p-2">
             {filteredConversations.map((conversation) => (
               <ConversationItem
                 key={conversation.id}

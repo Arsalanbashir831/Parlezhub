@@ -2,6 +2,7 @@
 
 import { useCallback, useState } from 'react';
 
+import { Conversation } from '@/types/chat';
 import { useChat } from '@/hooks/useChat';
 import { Card, CardContent } from '@/components/ui/card';
 import BookingDialog from '@/components/chat/booking-dialog';
@@ -154,6 +155,7 @@ const mockMessagesByConversation: Record<
 
 export default function ChatPage() {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
+  const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
   // Initialize chat hook with mock data
   const {
@@ -187,28 +189,48 @@ export default function ChatPage() {
     setIsBookingDialogOpen(false);
   }, []);
 
+  const handleConversationSelect = useCallback(
+    (conversation: Conversation) => {
+      selectConversation(conversation);
+      setShowChatOnMobile(true);
+    },
+    [selectConversation]
+  );
+
+  const handleBackToList = useCallback(() => {
+    setShowChatOnMobile(false);
+  }, []);
+
   return (
     <>
-      <div className="h-[calc(100vh-8rem)]">
+      <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
         <Card className="h-full">
           <CardContent className="h-full p-0">
             <div className="flex h-full">
-              {/* Conversations List */}
-              <ConversationList
-                conversations={filteredConversations}
-                selectedConversationId={selectedConversation?.id || ''}
-                searchQuery={searchQuery}
-                onSearchChange={setSearchQuery}
-                onConversationSelect={selectConversation}
-              />
+              {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
+              <div
+                className={`${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedConversation ? 'md:flex' : 'flex'}`}
+              >
+                <ConversationList
+                  conversations={filteredConversations}
+                  selectedConversationId={selectedConversation?.id || ''}
+                  searchQuery={searchQuery}
+                  onSearchChange={setSearchQuery}
+                  onConversationSelect={handleConversationSelect}
+                />
+              </div>
 
-              {/* Chat Area */}
+              {/* Chat Area - Desktop: show when selected, Mobile: show only when showChatOnMobile is true */}
               {selectedConversation && (
-                <div className="flex flex-1 flex-col">
+                <div
+                  className={`${showChatOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}
+                >
                   {/* Chat Header */}
                   <ChatHeader
                     conversation={selectedConversation}
                     onBookCall={handleBookCall}
+                    onBack={handleBackToList}
+                    showBackButton={true}
                   />
 
                   {/* Messages */}
@@ -227,9 +249,9 @@ export default function ChatPage() {
                 </div>
               )}
 
-              {/* No conversation selected state */}
+              {/* No conversation selected state - Desktop only */}
               {!selectedConversation && (
-                <div className="flex flex-1 items-center justify-center">
+                <div className="hidden flex-1 items-center justify-center md:flex">
                   <div className="text-center text-gray-500">
                     <h3 className="mb-2 text-lg font-medium">
                       No conversation selected

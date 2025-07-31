@@ -63,7 +63,7 @@ export default function AgentSession({
   const aiSettings = {
     name: 'Language Tutor',
     gender: 'neutral' as const,
-    avatar: '/placeholder.svg',
+    avatar: '/placeholders/avatar.jpg',
     context: config.topic || prompt,
   };
 
