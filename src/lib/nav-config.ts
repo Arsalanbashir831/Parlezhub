@@ -41,30 +41,37 @@ export const studentNav: NavItem[] = [
     href: ROUTES.STUDENT.DASHBOARD,
   },
   {
+    id: 'language',
+    label: 'AI-Tutors',
+    icon: Zap,
+    href: ROUTES.AGENT.LANGUAGE,
+  },
+  {
     id: 'teachers',
     label: 'Teachers',
     icon: Users,
     href: ROUTES.STUDENT.TEACHERS,
   },
-  {
-    id: 'ai-agents',
-    label: 'AI-Agents',
-    icon: Zap,
-    subItems: [
-      {
-        id: 'ai-tutor',
-        label: 'AI Tutor',
-        icon: Zap,
-        href: ROUTES.STUDENT.AI_TUTOR,
-      },
-      {
-        id: 'ai-chirologist',
-        label: 'AI Chirologist',
-        icon: Hand,
-        href: ROUTES.STUDENT.AI_CHIROLOGIST,
-      },
-    ],
-  },
+
+  // {
+  //   id: 'ai-agents',
+  //   label: 'AI-Agents',
+  //   icon: Zap,
+  //   subItems: [
+  //     {
+  //       id: 'ai-tutor',
+  //       label: 'AI Tutor',
+  //       icon: Zap,
+  //       href: ROUTES.STUDENT.AI_TUTOR,
+  //     },
+  //     {
+  //       id: 'ai-chirologist',
+  //       label: 'AI Chirologist',
+  //       icon: Hand,
+  //       href: ROUTES.STUDENT.AI_CHIROLOGIST,
+  //     },
+  //   ],
+  // },
   {
     id: 'chat',
     label: 'Chat',

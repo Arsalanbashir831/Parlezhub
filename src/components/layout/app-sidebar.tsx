@@ -2,7 +2,8 @@
 
 import * as React from 'react';
 import Link from 'next/link';
-import { ChevronDown, ChevronRight, LogOut } from 'lucide-react';
+import { ROUTES } from '@/constants/routes';
+import { ChevronDown, ChevronRight, Home, LogOut } from 'lucide-react';
 
 import type { NavItem } from '@/types/nav';
 import { cn } from '@/lib/utils';
@@ -220,8 +221,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </SidebarContent>
 
       <SidebarFooter className="bg-white p-4 dark:bg-gray-800">
-        {roleLabel !== 'Agent' && (
+        {roleLabel !== 'Agent' ? (
           <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+        ) : (
+          <SidebarMenu>
+            {renderMenuItem({
+              id: 'dashboard',
+              label: 'Dashboard',
+              href: ROUTES.STUDENT.DASHBOARD,
+              icon: Home,
+            })}
+          </SidebarMenu>
         )}
         <Button
           variant="ghost"
