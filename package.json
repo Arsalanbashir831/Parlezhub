@@ -74,6 +74,7 @@
     "@types/node": "^22",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@types/react-virtualized": "^9.22.2",
     "eslint": "^9.32.0",
     "eslint-config-next": "^15.4.4",
     "eslint-config-prettier": "^10.1.8",

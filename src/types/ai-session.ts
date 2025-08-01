@@ -7,6 +7,7 @@ export interface SessionConfig {
   gender?: 'male' | 'female' | 'neutral';
   accent?: string;
   topic: string;
+  userName?: string;
   // Chirologist specific fields
   palmType?: string;
   readingFocus?: string;

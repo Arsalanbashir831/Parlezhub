@@ -93,6 +93,7 @@ export const DEFAULT_SESSION_CONFIG = {
   gender: 'neutral' as const,
   accent: 'Neutral',
   topic: 'Daily Conversation',
+  userName: '',
 };
 
 export const SESSION_DURATION = 300; // 5 minutes in seconds

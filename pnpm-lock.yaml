@@ -189,6 +189,9 @@ importers:
       '@types/react-dom':
         specifier: ^19
         version: 19.1.6(@types/react@19.1.8)
+      '@types/react-virtualized':
+        specifier: ^9.22.2
+        version: 9.22.2
       eslint:
         specifier: ^9.32.0
         version: 9.32.0(jiti@1.21.7)
@@ -1302,10 +1305,16 @@ packages:
   '@types/node@22.16.4':
     resolution: {integrity: sha512-PYRhNtZdm2wH/NT2k/oAJ6/f2VD2N2Dag0lGlx2vWgMSJXGNmlce5MiTQzoWAiIJtso30mjnfQCOKVH+kAQC/g==}
 
+  '@types/prop-types@15.7.15':
+    resolution: {integrity: sha512-F6bEyamV9jKGAFBEmlQnesRPGOQqS2+Uwi0Em15xenOxHaf2hv6L8YCVn3rPdPJOiJfPiCnLIRyvwVaqMY3MIw==}
+
   '@types/react-dom@19.1.6':
     resolution: {integrity: sha512-4hOiT/dwO8Ko0gV1m/TJZYk3y0KBnY9vzDh7W+DH17b2HFSOGgdj33dhihPeuy3l0q23+4e+hoXHV6hCC4dCXw==}
     peerDependencies:
       '@types/react': ^19.0.0
+
+  '@types/react-virtualized@9.22.2':
+    resolution: {integrity: sha512-0Eg/ME3OHYWGxs+/n4VelfYrhXssireZaa1Uqj5SEkTpSaBu5ctFGOCVxcOqpGXRiEdrk/7uho9tlZaryCIjHA==}
 
   '@types/react@19.1.8':
     resolution: {integrity: sha512-AwAfQ2Wa5bCx9WP8nZL2uMZWod7J7/JSplxbTmBQ5ms6QpqNYm672H0Vu9ZVKVngQ+ii4R/byguVEUZQyeg44g==}
@@ -4555,8 +4564,15 @@ snapshots:
     dependencies:
       undici-types: 6.21.0
 
+  '@types/prop-types@15.7.15': {}
+
   '@types/react-dom@19.1.6(@types/react@19.1.8)':
     dependencies:
+      '@types/react': 19.1.8
+
+  '@types/react-virtualized@9.22.2':
+    dependencies:
+      '@types/prop-types': 15.7.15
       '@types/react': 19.1.8
 
   '@types/react@19.1.8':
