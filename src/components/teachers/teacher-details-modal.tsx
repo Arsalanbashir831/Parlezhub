@@ -48,7 +48,9 @@ export const TeacherDetailsModal = React.memo<TeacherDetailsModalProps>(
             <div className="flex items-start gap-4">
               <div className="relative">
                 <Avatar className="h-20 w-20">
-                  <AvatarImage src={teacher.avatar || '/placeholder.svg'} />
+                  <AvatarImage
+                    src={teacher.avatar || '/placeholders/avatar.jpg'}
+                  />
                   <AvatarFallback className="bg-primary-100 text-lg text-primary-700">
                     {teacher.name
                       .split(' ')

@@ -63,7 +63,7 @@ export const ConversationCard = React.memo<ConversationCardProps>(
             <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
               <div className="flex min-w-0 flex-1 items-start gap-3 sm:items-center sm:gap-4">
                 <Avatar className="h-10 w-10 flex-shrink-0 sm:h-12 sm:w-12">
-                  <AvatarImage src="/placeholder.svg" />
+                  <AvatarImage src="/placeholders/avatar.jpg" />
                   <AvatarFallback className="bg-primary-100 text-primary-700">
                     AI
                   </AvatarFallback>

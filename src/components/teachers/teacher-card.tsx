@@ -1,12 +1,10 @@
 'use client';
 
 import React from 'react';
-import cn from 'classnames';
-import { ChevronRight, Heart, MapPin, Star } from 'lucide-react';
+import { ChevronRight, MapPin, Star } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export interface TeacherData {
@@ -51,7 +49,9 @@ export const TeacherCard = React.memo<TeacherCardProps>(
             <div className="flex items-center gap-3">
               <div className="relative">
                 <Avatar className="h-12 w-12">
-                  <AvatarImage src={teacher.avatar || '/placeholder.svg'} />
+                  <AvatarImage
+                    src={teacher.avatar || '/placeholders/avatar.jpg'}
+                  />
                   <AvatarFallback className="bg-primary-100 text-primary-700">
                     {teacher.name
                       .split(' ')

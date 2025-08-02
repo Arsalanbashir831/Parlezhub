@@ -44,7 +44,7 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
             >
               <Avatar className="h-12 w-12">
                 <AvatarImage
-                  src={meeting.teacherAvatar || '/placeholder.svg'}
+                  src={meeting.teacherAvatar || '/placeholders/avatar.jpg'}
                 />
                 <AvatarFallback className="bg-primary-100 font-semibold text-primary-700 dark:bg-primary-800 dark:text-primary-200">
                   {meeting.teacherName

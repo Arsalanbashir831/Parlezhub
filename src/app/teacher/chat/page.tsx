@@ -16,7 +16,7 @@ const mockConversations = [
   {
     id: '1',
     name: 'Alex Johnson',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: "Thank you for the feedback! I'll practice more this week.",
     timestamp: '2024-01-15T14:30:00Z',
     unreadCount: 2,
@@ -27,7 +27,7 @@ const mockConversations = [
   {
     id: '2',
     name: 'Sarah Chen',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: 'Could you please send me the homework materials?',
     timestamp: '2024-01-15T10:15:00Z',
     unreadCount: 1,
@@ -38,7 +38,7 @@ const mockConversations = [
   {
     id: '3',
     name: 'Michael Brown',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: "I'm ready for our next lesson. See you tomorrow!",
     timestamp: '2024-01-14T16:45:00Z',
     unreadCount: 0,
@@ -49,7 +49,7 @@ const mockConversations = [
   {
     id: '4',
     name: 'Emma Wilson',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: 'The pronunciation exercises are really helpful!',
     timestamp: '2024-01-14T12:20:00Z',
     unreadCount: 0,
@@ -60,7 +60,7 @@ const mockConversations = [
   {
     id: '5',
     name: 'Support Team',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: 'How can we help you today?',
     timestamp: '2024-01-13T09:15:00Z',
     unreadCount: 0,

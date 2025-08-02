@@ -32,7 +32,7 @@ const mockStudentMeetings = [
   {
     id: '1',
     teacherName: 'Maria Rodriguez',
-    teacherAvatar: '/placeholder.svg?height=40&width=40',
+    teacherAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Grammar Review',
     date: '2025-07-30T15:00:00Z', // Future date
     duration: 60,
@@ -46,7 +46,7 @@ const mockStudentMeetings = [
   {
     id: '2',
     teacherName: 'Jean Dubois',
-    teacherAvatar: '/placeholder.svg?height=40&width=40',
+    teacherAvatar: '/placeholders/avatar.jpg',
     subject: 'French Pronunciation',
     date: '2025-08-02T10:00:00Z', // Future date
     duration: 45,
@@ -60,7 +60,7 @@ const mockStudentMeetings = [
   {
     id: '3',
     teacherName: 'Hans Mueller',
-    teacherAvatar: '/placeholder.svg?height=40&width=40',
+    teacherAvatar: '/placeholders/avatar.jpg',
     subject: 'German Business Conversation',
     date: '2025-08-05T14:30:00Z', // Future date
     duration: 90,
@@ -74,7 +74,7 @@ const mockStudentMeetings = [
   {
     id: '4',
     teacherName: 'Maria Rodriguez',
-    teacherAvatar: '/placeholder.svg?height=40&width=40',
+    teacherAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Conversation Practice',
     date: '2024-01-10T15:00:00Z',
     duration: 60,
@@ -89,7 +89,7 @@ const mockStudentMeetings = [
   {
     id: '5',
     teacherName: 'Jean Dubois',
-    teacherAvatar: '/placeholder.svg?height=40&width=40',
+    teacherAvatar: '/placeholders/avatar.jpg',
     subject: 'French Literature Discussion',
     date: '2024-01-08T16:00:00Z',
     duration: 75,
@@ -107,7 +107,7 @@ const mockTeacherMeetings = [
   {
     id: 't1',
     studentName: 'Alex Johnson',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Grammar Review',
     date: '2025-07-30T15:00:00Z', // Future date
     duration: 60,
@@ -122,7 +122,7 @@ const mockTeacherMeetings = [
   {
     id: 't2',
     studentName: 'Sarah Chen',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Conversation Practice',
     date: '2025-08-01T14:00:00Z', // Future date
     duration: 45,
@@ -136,7 +136,7 @@ const mockTeacherMeetings = [
   {
     id: 't3',
     studentName: 'Mike Wilson',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Business Vocabulary',
     date: '2025-08-03T16:30:00Z', // Future date
     duration: 90,
@@ -150,7 +150,7 @@ const mockTeacherMeetings = [
   {
     id: 't4',
     studentName: 'Emma Davis',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Pronunciation',
     date: '2024-01-10T15:00:00Z',
     duration: 60,
@@ -165,7 +165,7 @@ const mockTeacherMeetings = [
   {
     id: 't5',
     studentName: 'David Kim',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Culture Discussion',
     date: '2024-01-08T16:00:00Z',
     duration: 75,
@@ -180,7 +180,7 @@ const mockTeacherMeetings = [
   {
     id: 't6',
     studentName: 'Lisa Brown',
-    studentAvatar: '/placeholder.svg?height=40&width=40',
+    studentAvatar: '/placeholders/avatar.jpg',
     subject: 'Spanish Grammar Basics',
     date: '2024-01-05T11:00:00Z',
     duration: 45,

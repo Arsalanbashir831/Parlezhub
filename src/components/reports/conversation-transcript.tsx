@@ -38,7 +38,7 @@ export const ConversationTranscript = React.memo<ConversationTranscriptProps>(
               >
                 {message.type === 'ai' && (
                   <Avatar className="mt-1 h-8 w-8">
-                    <AvatarImage src="/placeholder.svg" />
+                    <AvatarImage src="/placeholders/avatar.jpg" />
                     <AvatarFallback className="bg-primary-100 text-sm text-primary-700">
                       <Bot className="h-4 w-4" />
                     </AvatarFallback>

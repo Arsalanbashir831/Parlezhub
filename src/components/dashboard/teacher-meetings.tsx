@@ -46,7 +46,7 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
               >
                 <Avatar className="h-12 w-12">
                   <AvatarImage
-                    src={meeting.studentAvatar || '/placeholder.svg'}
+                    src={meeting.studentAvatar || '/placeholders/avatar.jpg'}
                   />
                   <AvatarFallback className="bg-primary-100 font-semibold text-primary-700 dark:bg-primary-800 dark:text-primary-200">
                     {meeting.studentName

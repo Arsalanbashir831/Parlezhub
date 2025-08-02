@@ -40,7 +40,9 @@ const ConversationItem = memo(
       >
         <div className="relative flex-shrink-0">
           <Avatar className="h-12 w-12">
-            <AvatarImage src={conversation.avatar || '/placeholder.svg'} />
+            <AvatarImage
+              src={conversation.avatar || '/placeholders/avatar.jpg'}
+            />
             <AvatarFallback className="bg-primary-100 text-primary-700">
               {conversation.name
                 .split(' ')

@@ -9,7 +9,7 @@ const mockTeachers: TeacherData[] = [
   {
     id: '1',
     name: 'Maria Rodriguez',
-    avatar: '/placeholder.svg?height=80&width=80',
+    avatar: '',
     languages: ['Spanish', 'English'],
     specialties: ['Grammar', 'Conversation', 'Business Spanish'],
     rating: 4.9,
@@ -30,7 +30,7 @@ const mockTeachers: TeacherData[] = [
   {
     id: '2',
     name: 'Jean Dubois',
-    avatar: '/placeholder.svg?height=80&width=80',
+    avatar: '/placeholders/avatar.jpg',
     languages: ['French', 'English'],
     specialties: ['Pronunciation', 'Literature', 'Exam Prep'],
     rating: 4.8,
@@ -51,7 +51,7 @@ const mockTeachers: TeacherData[] = [
   {
     id: '3',
     name: 'Yuki Tanaka',
-    avatar: '/placeholder.svg?height=80&width=80',
+    avatar: '/placeholders/avatar.jpg',
     languages: ['Japanese', 'English'],
     specialties: ['Beginner Friendly', 'JLPT Prep', 'Cultural Context'],
     rating: 4.9,
@@ -72,7 +72,7 @@ const mockTeachers: TeacherData[] = [
   {
     id: '4',
     name: 'Alessandro Bianchi',
-    avatar: '/placeholder.svg?height=80&width=80',
+    avatar: '/placeholders/avatar.jpg',
     languages: ['Italian', 'English'],
     specialties: ['Culture', 'Travel Italian', 'Business'],
     rating: 4.7,
@@ -93,7 +93,7 @@ const mockTeachers: TeacherData[] = [
   {
     id: '5',
     name: 'Hans Mueller',
-    avatar: '/placeholder.svg?height=80&width=80',
+    avatar: '/placeholders/avatar.jpg',
     languages: ['German', 'English'],
     specialties: ['Technical German', 'Grammar', 'Certification Prep'],
     rating: 4.8,

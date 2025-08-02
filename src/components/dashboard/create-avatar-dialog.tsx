@@ -148,7 +148,9 @@ export function CreateAvatarDialog({ onClose }: CreateAvatarDialogProps) {
             {/* Avatar Image */}
             <div className="flex flex-col items-center gap-4">
               <Avatar className="h-24 w-24">
-                <AvatarImage src={selectedImage || '/placeholder.svg'} />
+                <AvatarImage
+                  src={selectedImage || '/placeholders/avatar.jpg'}
+                />
                 <AvatarFallback className="bg-primary-100 text-2xl text-primary-700">
                   {avatarName?.charAt(0)?.toUpperCase() || '?'}
                 </AvatarFallback>

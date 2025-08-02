@@ -16,7 +16,7 @@ const mockConversations = [
   {
     id: '1',
     name: 'Maria Rodriguez',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: "Great! Let's schedule our next lesson for tomorrow at 3 PM.",
     timestamp: '2024-01-15T14:30:00Z',
     unreadCount: 2,
@@ -27,7 +27,7 @@ const mockConversations = [
   {
     id: '2',
     name: 'Jean Dubois',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage:
       "I've prepared some exercises for French pronunciation. Check them out!",
     timestamp: '2024-01-15T10:15:00Z',
@@ -39,7 +39,7 @@ const mockConversations = [
   {
     id: '3',
     name: 'Support Team',
-    avatar: '/placeholder.svg?height=40&width=40',
+    avatar: '/placeholders/avatar.jpg',
     lastMessage: 'How can we help you today?',
     timestamp: '2024-01-14T16:45:00Z',
     unreadCount: 0,

@@ -1,8 +1,9 @@
 'use client';
 
-import { Settings, Upload } from 'lucide-react';
 import { useRef } from 'react';
+import { Settings, Upload } from 'lucide-react';
 
+import { AITutorSettings } from '@/types/ai-tutor';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import {
@@ -21,7 +22,6 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { AITutorSettings } from '@/types/ai-tutor';
 
 interface TutorConfigurationProps {
   settings: AITutorSettings;
@@ -52,14 +52,18 @@ export default function TutorConfiguration({
           <Settings className="h-5 w-5" />
           Tutor Configuration
         </CardTitle>
-        <CardDescription>Customize your AI tutor&rsquo;s appearance</CardDescription>
+        <CardDescription>
+          Customize your AI tutor&rsquo;s appearance
+        </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
         {/* Avatar Upload */}
         <div className="flex flex-col items-center space-y-4">
           <div className="relative">
             <Avatar className="h-24 w-24">
-              <AvatarImage src={settings.avatar || '/placeholder.svg'} />
+              <AvatarImage
+                src={settings.avatar || '/placeholders/avatar.jpg'}
+              />
               <AvatarFallback className="bg-primary-100 text-2xl text-primary-700 dark:bg-primary-800 dark:text-primary-200">
                 {settings.name.charAt(0)}
               </AvatarFallback>

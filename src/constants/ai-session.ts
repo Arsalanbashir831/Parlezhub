@@ -9,6 +9,19 @@ export const LANGUAGES: Language[] = [
   { value: 'italian', label: 'Italian', flag: '🇮🇹' },
   { value: 'japanese', label: 'Japanese', flag: '🇯🇵' },
   { value: 'mandarin', label: 'Mandarin', flag: '🇨🇳' },
+  { value: 'hindi', label: 'Hindi', flag: '🇮🇳' },
+  { value: 'urdu', label: 'Urdu', flag: '🇵🇰' },
+  { value: 'portuguese', label: 'Portuguese', flag: '🇵🇹' },
+  { value: 'arabic', label: 'Arabic', flag: '🇸🇦' },
+  { value: 'russian', label: 'Russian', flag: '🇷🇺' },
+  { value: 'korean', label: 'Korean', flag: '🇰🇷' },
+  { value: 'thai', label: 'Thai', flag: '🇹🇭' },
+  { value: 'vietnamese', label: 'Vietnamese', flag: '🇻🇳' },
+  { value: 'indonesian', label: 'Indonesian', flag: '🇮🇩' },
+  { value: 'malay', label: 'Malay', flag: '🇲🇾' },
+  { value: 'filipino', label: 'Filipino', flag: '🇵🇭' },
+  { value: 'turkish', label: 'Turkish', flag: '🇹🇷' },
+  { value: 'english', label: 'English', flag: '🇺🇸' },
 ];
 
 // Native languages (user's first language)
@@ -23,6 +36,8 @@ export const NATIVE_LANGUAGES: Language[] = [
   { value: 'portuguese', label: 'Portuguese', flag: '🇵🇹' },
   { value: 'russian', label: 'Russian', flag: '🇷🇺' },
   { value: 'arabic', label: 'Arabic', flag: '🇸🇦' },
+  { value: 'hindi', label: 'Hindi', flag: '🇮🇳' },
+  { value: 'urdu', label: 'Urdu', flag: '🇵🇰' },
 ];
 
 export const ACCENTS: Record<string, string[]> = {

@@ -48,7 +48,9 @@ const ChatHeader = memo(
         <div className="flex items-center justify-between border-b bg-white p-4 pt-0">
           <div className="flex w-full items-center gap-3">
             <Avatar className="h-10 w-10">
-              <AvatarImage src={conversation.avatar || '/placeholder.svg'} />
+              <AvatarImage
+                src={conversation.avatar || '/placeholders/avatar.jpg'}
+              />
               <AvatarFallback className="bg-primary-100 text-primary-700">
                 {conversation.name
                   .split(' ')
