@@ -12,6 +12,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@elevenlabs/react": "^0.4.5",
     "@hookform/resolvers": "latest",
     "@humeai/voice-react": "^0.2.2",
     "@radix-ui/react-accordion": "1.2.2",

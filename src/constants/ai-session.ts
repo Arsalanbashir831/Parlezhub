@@ -2,42 +2,78 @@ import { Globe, Languages, MessageCircle, Play, User } from 'lucide-react';
 
 import { Language, Level, SetupStep } from '@/types/ai-session';
 
+// ElevenLabs supported languages mapped to proper names and flags
 export const LANGUAGES: Language[] = [
-  { value: 'spanish', label: 'Spanish', flag: '🇪🇸' },
-  { value: 'french', label: 'French', flag: '🇫🇷' },
-  { value: 'german', label: 'German', flag: '🇩🇪' },
-  { value: 'italian', label: 'Italian', flag: '🇮🇹' },
-  { value: 'japanese', label: 'Japanese', flag: '🇯🇵' },
-  { value: 'mandarin', label: 'Mandarin', flag: '🇨🇳' },
-  { value: 'hindi', label: 'Hindi', flag: '🇮🇳' },
-  { value: 'urdu', label: 'Urdu', flag: '🇵🇰' },
-  { value: 'portuguese', label: 'Portuguese', flag: '🇵🇹' },
-  { value: 'arabic', label: 'Arabic', flag: '🇸🇦' },
-  { value: 'russian', label: 'Russian', flag: '🇷🇺' },
-  { value: 'korean', label: 'Korean', flag: '🇰🇷' },
-  { value: 'thai', label: 'Thai', flag: '🇹🇭' },
-  { value: 'vietnamese', label: 'Vietnamese', flag: '🇻🇳' },
-  { value: 'indonesian', label: 'Indonesian', flag: '🇮🇩' },
-  { value: 'malay', label: 'Malay', flag: '🇲🇾' },
-  { value: 'filipino', label: 'Filipino', flag: '🇵🇭' },
-  { value: 'turkish', label: 'Turkish', flag: '🇹🇷' },
-  { value: 'english', label: 'English', flag: '🇺🇸' },
+  { value: 'en', label: 'English', flag: '🇺🇸' },
+  { value: 'ja', label: 'Japanese', flag: '🇯🇵' },
+  { value: 'zh', label: 'Chinese', flag: '🇨🇳' },
+  { value: 'de', label: 'German', flag: '🇩🇪' },
+  { value: 'hi', label: 'Hindi', flag: '🇮🇳' },
+  { value: 'fr', label: 'French', flag: '🇫🇷' },
+  { value: 'ko', label: 'Korean', flag: '🇰🇷' },
+  { value: 'pt', label: 'Portuguese', flag: '🇵🇹' },
+  { value: 'pt-br', label: 'Portuguese (Brazil)', flag: '🇧🇷' },
+  { value: 'it', label: 'Italian', flag: '🇮🇹' },
+  { value: 'es', label: 'Spanish', flag: '🇪🇸' },
+  { value: 'id', label: 'Indonesian', flag: '🇮🇩' },
+  { value: 'nl', label: 'Dutch', flag: '🇳🇱' },
+  { value: 'tr', label: 'Turkish', flag: '🇹🇷' },
+  { value: 'pl', label: 'Polish', flag: '🇵🇱' },
+  { value: 'sv', label: 'Swedish', flag: '🇸🇪' },
+  { value: 'bg', label: 'Bulgarian', flag: '🇧🇬' },
+  { value: 'ro', label: 'Romanian', flag: '🇷🇴' },
+  { value: 'ar', label: 'Arabic', flag: '🇸🇦' },
+  { value: 'cs', label: 'Czech', flag: '🇨🇿' },
+  { value: 'el', label: 'Greek', flag: '🇬🇷' },
+  { value: 'fi', label: 'Finnish', flag: '🇫🇮' },
+  { value: 'ms', label: 'Malay', flag: '🇲🇾' },
+  { value: 'da', label: 'Danish', flag: '🇩🇰' },
+  { value: 'ta', label: 'Tamil', flag: '🇮🇳' },
+  { value: 'uk', label: 'Ukrainian', flag: '🇺🇦' },
+  { value: 'ru', label: 'Russian', flag: '🇷🇺' },
+  { value: 'hu', label: 'Hungarian', flag: '🇭🇺' },
+  { value: 'hr', label: 'Croatian', flag: '🇭🇷' },
+  { value: 'sk', label: 'Slovak', flag: '🇸🇰' },
+  { value: 'no', label: 'Norwegian', flag: '🇳🇴' },
+  { value: 'vi', label: 'Vietnamese', flag: '🇻🇳' },
+  { value: 'tl', label: 'Tagalog', flag: '🇵🇭' },
 ];
 
-// Native languages (user's first language)
+// Native languages (user's first language) - same as target languages
 export const NATIVE_LANGUAGES: Language[] = [
-  { value: 'english', label: 'English', flag: '🇺🇸' },
-  { value: 'spanish', label: 'Spanish', flag: '🇪🇸' },
-  { value: 'french', label: 'French', flag: '🇫🇷' },
-  { value: 'german', label: 'German', flag: '🇩🇪' },
-  { value: 'italian', label: 'Italian', flag: '🇮🇹' },
-  { value: 'japanese', label: 'Japanese', flag: '🇯🇵' },
-  { value: 'mandarin', label: 'Mandarin', flag: '🇨🇳' },
-  { value: 'portuguese', label: 'Portuguese', flag: '🇵🇹' },
-  { value: 'russian', label: 'Russian', flag: '🇷🇺' },
-  { value: 'arabic', label: 'Arabic', flag: '🇸🇦' },
-  { value: 'hindi', label: 'Hindi', flag: '🇮🇳' },
-  { value: 'urdu', label: 'Urdu', flag: '🇵🇰' },
+  { value: 'en', label: 'English', flag: '🇺🇸' },
+  { value: 'ja', label: 'Japanese', flag: '🇯🇵' },
+  { value: 'zh', label: 'Chinese', flag: '🇨🇳' },
+  { value: 'de', label: 'German', flag: '🇩🇪' },
+  { value: 'hi', label: 'Hindi', flag: '🇮🇳' },
+  { value: 'fr', label: 'French', flag: '🇫🇷' },
+  { value: 'ko', label: 'Korean', flag: '🇰🇷' },
+  { value: 'pt', label: 'Portuguese', flag: '🇵🇹' },
+  { value: 'pt-br', label: 'Portuguese (Brazil)', flag: '🇧🇷' },
+  { value: 'it', label: 'Italian', flag: '🇮🇹' },
+  { value: 'es', label: 'Spanish', flag: '🇪🇸' },
+  { value: 'id', label: 'Indonesian', flag: '🇮🇩' },
+  { value: 'nl', label: 'Dutch', flag: '🇳🇱' },
+  { value: 'tr', label: 'Turkish', flag: '🇹🇷' },
+  { value: 'pl', label: 'Polish', flag: '🇵🇱' },
+  { value: 'sv', label: 'Swedish', flag: '🇸🇪' },
+  { value: 'bg', label: 'Bulgarian', flag: '🇧🇬' },
+  { value: 'ro', label: 'Romanian', flag: '🇷🇴' },
+  { value: 'ar', label: 'Arabic', flag: '🇸🇦' },
+  { value: 'cs', label: 'Czech', flag: '🇨🇿' },
+  { value: 'el', label: 'Greek', flag: '🇬🇷' },
+  { value: 'fi', label: 'Finnish', flag: '🇫🇮' },
+  { value: 'ms', label: 'Malay', flag: '🇲🇾' },
+  { value: 'da', label: 'Danish', flag: '🇩🇰' },
+  { value: 'ta', label: 'Tamil', flag: '🇮🇳' },
+  { value: 'uk', label: 'Ukrainian', flag: '🇺🇦' },
+  { value: 'ru', label: 'Russian', flag: '🇷🇺' },
+  { value: 'hu', label: 'Hungarian', flag: '🇭🇺' },
+  { value: 'hr', label: 'Croatian', flag: '🇭🇷' },
+  { value: 'sk', label: 'Slovak', flag: '🇸🇰' },
+  { value: 'no', label: 'Norwegian', flag: '🇳🇴' },
+  { value: 'vi', label: 'Vietnamese', flag: '🇻🇳' },
+  { value: 'tl', label: 'Tagalog', flag: '🇵🇭' },
 ];
 
 export const ACCENTS: Record<string, string[]> = {
@@ -103,8 +139,8 @@ export const SETUP_STEPS: SetupStep[] = [
 
 export const DEFAULT_SESSION_CONFIG = {
   sessionType: 'tutor' as const,
-  nativeLanguage: 'english',
-  language: 'spanish',
+  nativeLanguage: 'en',
+  language: 'es',
   gender: 'neutral' as const,
   accent: 'Neutral',
   topic: 'Daily Conversation',
@@ -112,3 +148,9 @@ export const DEFAULT_SESSION_CONFIG = {
 };
 
 export const SESSION_DURATION = 300; // 5 minutes in seconds
+
+// Helper function to get language name from language code
+export const getLanguageName = (languageCode: string): string => {
+  const language = LANGUAGES.find((lang) => lang.value === languageCode);
+  return language ? language.label : languageCode;
+};

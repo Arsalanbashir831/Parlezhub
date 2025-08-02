@@ -5,13 +5,7 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import { MainContent } from '@/components/agents/language/main-content';
 import { TeacherDetailsModal, TeachersList } from '@/components/teachers';
 
-interface LanguageClientWrapperProps {
-  accessToken: string | null;
-}
-
-export function LanguageClientWrapper({
-  accessToken,
-}: LanguageClientWrapperProps) {
+export function LanguageClientWrapper() {
   const {
     teachers,
     selectedTeacher,
@@ -23,7 +17,7 @@ export function LanguageClientWrapper({
   return (
     <div className="flex flex-1">
       <ScrollArea className="h-[calc(100vh-4rem)] w-3/4 flex-1">
-        <MainContent accessToken={accessToken} />
+        <MainContent />
       </ScrollArea>
       <ScrollArea className="hidden h-[calc(100vh-4rem)] w-1/4 max-w-96 border-l border-gray-200 bg-white p-6 lg:block">
         <TeachersList

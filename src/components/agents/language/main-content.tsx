@@ -15,12 +15,8 @@ import TargetLanguageSelection from './target-language-selection';
 
 type FlowStep = 'prompt' | 'native-language' | 'target-language' | 'session';
 
-interface MainContentProps {
-  accessToken: string | null;
-}
-
 // Main content component for language agent with multi-step flow
-export function MainContent({ accessToken }: MainContentProps) {
+export function MainContent() {
   const { updateConfig } = useSession();
   const [currentStep, setCurrentStep] = useState<FlowStep>('prompt');
   const [prompt, setPrompt] = useState('');
@@ -80,7 +76,6 @@ export function MainContent({ accessToken }: MainContentProps) {
         prompt={prompt}
         onBack={handleBack}
         onEnd={handleSessionEnd}
-        accessToken={accessToken}
       />
     );
   }
