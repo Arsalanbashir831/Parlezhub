@@ -1,5 +1,7 @@
 'use client';
 
+import { getLanguageName } from '@/constants/ai-session';
+
 import { SessionConfig, SessionStatus } from '@/types/ai-session';
 import { cn } from '@/lib/utils';
 
@@ -24,8 +26,7 @@ export default function SessionInfo({
   return (
     <div className="mb-12 text-center">
       <h1 className="mb-3 text-xl font-bold capitalize text-black dark:text-white sm:text-2xl md:text-3xl">
-        {config.language.charAt(0).toUpperCase() + config.language.slice(1)}{' '}
-        Conversation Practice
+        {getLanguageName(config.language)} Conversation Practice
       </h1>
       <p className="mb-4 text-sm font-medium text-gray-700 dark:text-gray-300 sm:text-lg md:text-xl">
         {config.topic}
