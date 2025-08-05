@@ -1,9 +1,9 @@
 'use client';
 
+import { useMemo, useState } from 'react';
 import { NATIVE_LANGUAGES } from '@/constants/ai-session';
 import { useSession } from '@/contexts/session-context';
 import { Search } from 'lucide-react';
-import { useMemo, useState } from 'react';
 
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -51,10 +51,11 @@ export default function NativeLanguageSelection() {
           filteredLanguages.map((language) => (
             <Card
               key={language.value}
-              className={`cursor-pointer transition-all hover:shadow-md ${config.nativeLanguage === language.value
-                ? 'bg-primary-50 ring-2 ring-primary-500 dark:bg-primary-900/20'
-                : ''
-                }`}
+              className={`cursor-pointer transition-all hover:shadow-md ${
+                config.nativeLanguage === language.value
+                  ? 'bg-primary-50 ring-2 ring-primary-500 dark:bg-primary-900/20'
+                  : ''
+              }`}
               onClick={() => updateConfig('nativeLanguage', language.value)}
             >
               <CardContent className="p-6 text-center">

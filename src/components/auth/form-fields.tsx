@@ -1,7 +1,7 @@
 'use client';
 
-import { Eye, EyeOff } from 'lucide-react';
 import React, { useState } from 'react';
+import { Eye, EyeOff } from 'lucide-react';
 import { FieldError, UseFormRegisterReturn } from 'react-hook-form';
 
 import { Button } from '@/components/ui/button';
@@ -39,7 +39,7 @@ export function FormField({
       <div>
         <Label htmlFor={fieldId} className="text-sm font-medium">
           {label}
-          {required && <span className="text-red-500 ml-1">*</span>}
+          {required && <span className="ml-1 text-red-500">*</span>}
         </Label>
         <div className="relative mt-1">
           {Icon && (
@@ -61,7 +61,7 @@ export function FormField({
     <div>
       <Label htmlFor={fieldId} className="text-sm font-medium">
         {label}
-        {required && <span className="text-red-500 ml-1">*</span>}
+        {required && <span className="ml-1 text-red-500">*</span>}
       </Label>
       <div className="relative mt-1">
         {Icon && (

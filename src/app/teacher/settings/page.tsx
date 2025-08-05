@@ -2,6 +2,7 @@
 
 import { useAuth } from '@/contexts/auth-context';
 
+import { useSettings } from '@/hooks/useSettings';
 import {
   AccountStatus,
   NotificationSettings,
@@ -9,7 +10,6 @@ import {
   SecuritySettings,
   SettingsHeader,
 } from '@/components/settings';
-import { useSettings } from '@/hooks/useSettings';
 
 export default function TeacherSettingsPage() {
   const { user } = useAuth();

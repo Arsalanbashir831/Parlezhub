@@ -26,10 +26,11 @@ export default function SessionDetails() {
           {TOPICS.map((topic) => (
             <Card
               key={topic}
-              className={`cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-800 ${config.topic === topic
+              className={`cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-800 ${
+                config.topic === topic
                   ? 'bg-primary-50 ring-2 ring-primary-500 dark:bg-primary-900/20'
                   : ''
-                }`}
+              }`}
               onClick={() => updateConfig('topic', topic)}
             >
               <CardContent className="p-4">

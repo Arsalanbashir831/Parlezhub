@@ -1,7 +1,7 @@
 'use client';
 
-import { Upload, X } from 'lucide-react';
 import React, { useState } from 'react';
+import { Upload, X } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
@@ -30,7 +30,9 @@ export default function EditAvatarDialog({
   onSave,
 }: EditAvatarDialogProps) {
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  const [previewUrl, setPreviewUrl] = useState<string | null>(currentAvatar || null);
+  const [previewUrl, setPreviewUrl] = useState<string | null>(
+    currentAvatar || null
+  );
   const [isUploading, setIsUploading] = useState(false);
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -53,7 +55,7 @@ export default function EditAvatarDialog({
       // In a real app, you would upload the file to your server/cloud storage
       // For now, we'll just use the preview URL
       const avatarUrl = previewUrl || '';
-      await new Promise(resolve => setTimeout(resolve, 1000)); // Simulate upload
+      await new Promise((resolve) => setTimeout(resolve, 1000)); // Simulate upload
       onSave(avatarUrl);
       onOpenChange(false);
     } catch (error) {
@@ -88,7 +90,7 @@ export default function EditAvatarDialog({
               {previewUrl && (
                 <button
                   onClick={handleRemoveAvatar}
-                  className="absolute -top-2 -right-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
+                  className="absolute -right-2 -top-2 rounded-full bg-red-500 p-1 text-white hover:bg-red-600"
                 >
                   <X className="h-3 w-3" />
                 </button>
@@ -110,7 +112,9 @@ export default function EditAvatarDialog({
               <Button
                 type="button"
                 variant="outline"
-                onClick={() => document.getElementById('avatar-upload')?.click()}
+                onClick={() =>
+                  document.getElementById('avatar-upload')?.click()
+                }
                 className="flex-1"
               >
                 <Upload className="mr-2 h-4 w-4" />
@@ -132,10 +136,7 @@ export default function EditAvatarDialog({
             <Button variant="outline" onClick={handleCancel}>
               Cancel
             </Button>
-            <Button
-              onClick={handleSave}
-              disabled={isUploading}
-            >
+            <Button onClick={handleSave} disabled={isUploading}>
               {isUploading ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>

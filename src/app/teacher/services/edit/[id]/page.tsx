@@ -1,16 +1,16 @@
 'use client';
 
+import { useEffect, useState } from 'react';
+import { useParams, useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { ArrowLeft } from 'lucide-react';
-import { useParams, useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
 
-import { ServiceForm } from '@/components/services';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
+import { Service, ServiceFormData } from '@/types/service';
 import { toast } from '@/hooks/use-toast';
 import { useServices } from '@/hooks/useServices';
-import { Service, ServiceFormData } from '@/types/service';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { ServiceForm } from '@/components/services';
 
 export default function EditServicePage() {
   const router = useRouter();
@@ -45,7 +45,7 @@ export default function EditServicePage() {
       } else {
         throw new Error('Failed to update service');
       }
-    } catch (error) {
+    } catch {
       toast({
         title: 'Error',
         description: 'Failed to update service. Please try again.',
@@ -77,8 +77,8 @@ export default function EditServicePage() {
           <CardContent className="py-12 text-center">
             <h3 className="mb-2 text-lg font-medium">Service Not Found</h3>
             <p className="mb-6 text-gray-600 dark:text-gray-400">
-              The service you&rsquo;re trying to edit doesn&rsquo;t exist or may have been
-              deleted.
+              The service you&rsquo;re trying to edit doesn&rsquo;t exist or may
+              have been deleted.
             </p>
             <Button onClick={handleCancel}>Back to Services</Button>
           </CardContent>

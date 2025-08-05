@@ -1,7 +1,7 @@
 'use client';
 
-import { Globe, Play, Volume2 } from 'lucide-react';
 import { useState } from 'react';
+import { Globe, Play, Volume2 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
 import {
@@ -169,10 +169,7 @@ export default function StartSessionDialog({
             <Button variant="outline" onClick={() => onOpenChange(false)}>
               Cancel
             </Button>
-            <Button
-              onClick={handleStartSession}
-              disabled={!isFormValid}
-            >
+            <Button onClick={handleStartSession} disabled={!isFormValid}>
               <Play className="mr-2 h-4 w-4" />
               Start Session
             </Button>

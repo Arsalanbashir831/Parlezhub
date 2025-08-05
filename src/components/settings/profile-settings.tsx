@@ -1,8 +1,9 @@
 'use client';
 
-import { Camera, Save, User } from 'lucide-react';
 import React from 'react';
+import { Camera, Save, User } from 'lucide-react';
 
+import { ProfileData } from '@/types/profile-data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -16,7 +17,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Textarea } from '@/components/ui/textarea';
-import { ProfileData } from '@/types/profile-data';
 
 interface ProfileSettingsProps {
   profileData: ProfileData;
@@ -27,7 +27,7 @@ interface ProfileSettingsProps {
   onToggleEditMode: () => void;
   userAvatar?: string;
   userName: string;
-  userRole: 'student' | 'teacher';
+  userRole?: 'student' | 'teacher';
 }
 
 const countries = [
@@ -63,16 +63,15 @@ export default function ProfileSettings({
   onToggleEditMode,
   userAvatar,
   userName,
-  userRole,
 }: ProfileSettingsProps) {
-  const handleInputChange = (field: keyof ProfileData) => (
-    e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>
-  ) => {
-    onProfileChange({
-      ...profileData,
-      [field]: e.target.value,
-    });
-  };
+  const handleInputChange =
+    (field: keyof ProfileData) =>
+    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      onProfileChange({
+        ...profileData,
+        [field]: e.target.value,
+      });
+    };
 
   const handleSelectChange = (field: keyof ProfileData) => (value: string) => {
     onProfileChange({
@@ -112,7 +111,10 @@ export default function ProfileSettings({
         {/* Avatar Section */}
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
-            <AvatarImage src={profileData.avatar || userAvatar} alt={userName} />
+            <AvatarImage
+              src={profileData.avatar || userAvatar}
+              alt={userName}
+            />
             <AvatarFallback>
               <User className="h-8 w-8" />
             </AvatarFallback>
@@ -134,7 +136,7 @@ export default function ProfileSettings({
                 onChange={handleAvatarChange}
                 className="hidden"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="mt-1 text-xs text-gray-500">
                 JPG, PNG or GIF. Max size 5MB.
               </p>
             </div>
@@ -142,7 +144,7 @@ export default function ProfileSettings({
         </div>
 
         {/* Form Fields */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor="username">Full Name</Label>
             <Input
@@ -220,7 +222,7 @@ export default function ProfileSettings({
             rows={4}
             disabled={!isEditMode}
           />
-          <p className="text-xs text-gray-500 mt-1">
+          <p className="mt-1 text-xs text-gray-500">
             {profileData.bio.length}/500 characters
           </p>
         </div>

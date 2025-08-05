@@ -1,9 +1,8 @@
 'use client';
 
-import { ProfileData } from '@/types/profile-data';
 import { useCallback, useState } from 'react';
 
-
+import { ProfileData } from '@/types/profile-data';
 
 interface NotificationData {
   emailNotifications: boolean;
@@ -161,4 +160,3 @@ export const useSettings = (
 };
 
 export type { NotificationData, ProfileData, SecurityData };
-
