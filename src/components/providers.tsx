@@ -8,12 +8,15 @@ import { TranscriptProvider } from '@/contexts/transcript-context';
 import { UserProvider } from '@/contexts/user-context';
 import { QueryProvider } from '@/providers/query-provider';
 
+import AuthFlowHandler from '@/components/auth/auth-flow-handler';
+
 export function Providers({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <ThemeProvider>
         <AuthProvider>
           <UserProvider>
+            <AuthFlowHandler />
             <SessionProvider>
               <TranscriptProvider>{children}</TranscriptProvider>
             </SessionProvider>

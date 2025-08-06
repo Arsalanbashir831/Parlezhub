@@ -2,8 +2,11 @@
 
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 import {
   authApi,
+  type ForgotPasswordRequest,
   type LoginRequest,
   type SignupRequest,
 } from '@/services/auth';
@@ -20,26 +23,71 @@ interface AuthContextType {
   verifyEmail: (token: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
+  isAuthenticated: boolean;
+  userRole: 'TEACHER' | 'STUDENT' | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+// Helper function to set cookies
+const setCookie = (name: string, value: string, days: number = 7) => {
+  const expires = new Date();
+  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
+  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
+};
+
+// Helper function to get cookies
+const getCookie = (name: string): string | null => {
+  if (typeof document === 'undefined') return null;
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
+  return null;
+};
+
+// Helper function to remove cookies
+const removeCookie = (name: string) => {
+  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
+};
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(null);
+  const router = useRouter();
+  const searchParams = useSearchParams();
 
   // TanStack Query mutations
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (data) => {
       console.log('Login successful:', data);
-      // Store tokens in localStorage
+
+      // Store tokens in localStorage and cookies
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
-      // Store only user role for profile fetching
       localStorage.setItem('user_role', data.user.role);
 
+      setCookie('access_token', data.access_token);
+      setCookie('refresh_token', data.refresh_token);
+      setCookie('user_role', data.user.role);
+
+      setIsAuthenticated(true);
+      setUserRole(data.user.role);
       setError(null);
+
+      // Redirect based on role
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        if (data.user.role === 'STUDENT') {
+          router.push(ROUTES.STUDENT.DASHBOARD);
+        } else if (data.user.role === 'TEACHER') {
+          router.push(ROUTES.TEACHER.DASHBOARD);
+        }
+      }
     },
     onError: (error: Error) => {
       console.error('Login failed:', error);
@@ -52,6 +100,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       console.log('Signup successful:', data);
       setError(null);
+      // Redirect to login after successful signup
+      router.push(ROUTES.AUTH.LOGIN);
     },
     onError: (error: Error) => {
       console.error('Signup failed:', error);
@@ -59,13 +109,30 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
+    onSuccess: (data) => {
+      console.log('Forgot password request successful:', data);
+      setError(null);
+    },
+    onError: (error: Error) => {
+      console.error('Forgot password failed:', error);
+      setError(error.message || 'Failed to send reset email');
+    },
+  });
+
   useEffect(() => {
     // Check for existing session
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('access_token');
-        if (!token) {
-          return;
+        const token =
+          localStorage.getItem('access_token') || getCookie('access_token');
+        const role =
+          localStorage.getItem('user_role') || getCookie('user_role');
+
+        if (token && role) {
+          setIsAuthenticated(true);
+          setUserRole(role as 'TEACHER' | 'STUDENT');
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -82,10 +149,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
+    // Clear localStorage
     localStorage.removeItem('access_token');
     localStorage.removeItem('refresh_token');
     localStorage.removeItem('user_role');
+
+    // Clear cookies
+    removeCookie('access_token');
+    removeCookie('refresh_token');
+    removeCookie('user_role');
+
+    setIsAuthenticated(false);
+    setUserRole(null);
     setError(null);
+
+    // Redirect to login
+    router.push(ROUTES.AUTH.LOGIN);
   };
 
   const signup = async (userData: Partial<User>, password: string) => {
@@ -101,28 +180,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const forgotPassword = async (email: string) => {
-    // API call to backend
-    console.log('Forgot password for:', email);
+    await forgotPasswordMutation.mutateAsync({ email });
   };
 
   const resetPassword = async (token: string, password: string) => {
-    // API call to backend
+    // Implementation for reset password
     console.log('Reset password with token:', token);
   };
 
   const verifyEmail = async (token: string) => {
-    // API call to backend
+    // Implementation for email verification
     console.log('Verify email with token:', token);
   };
-
-  // Combine loading states
-  const combinedLoading =
-    isLoading || loginMutation.isPending || signupMutation.isPending;
-  const combinedError =
-    error ||
-    loginMutation.error?.message ||
-    signupMutation.error?.message ||
-    null;
 
   return (
     <AuthContext.Provider
@@ -133,8 +202,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         forgotPassword,
         resetPassword,
         verifyEmail,
-        isLoading: combinedLoading,
-        error: combinedError,
+        isLoading:
+          isLoading ||
+          loginMutation.isPending ||
+          signupMutation.isPending ||
+          forgotPasswordMutation.isPending,
+        error:
+          error ||
+          loginMutation.error?.message ||
+          signupMutation.error?.message ||
+          forgotPasswordMutation.error?.message ||
+          null,
+        isAuthenticated,
+        userRole,
       }}
     >
       {children}

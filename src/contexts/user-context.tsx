@@ -125,6 +125,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const clearUser = () => {
     localStorage.removeItem('user_role');
+    // Remove cookie
+    document.cookie = 'user_role=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
     setUserRole(null);
     setUserState(null);
     // Invalidate user profile query
@@ -133,8 +135,12 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetUserRole = (role: 'TEACHER' | 'STUDENT') => {
     setUserRole(role);
-    // Store role in localStorage
+    // Store role in localStorage and cookies
     localStorage.setItem('user_role', role);
+    // Set cookie for middleware access
+    const expires = new Date();
+    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
+    document.cookie = `user_role=${role};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
     // Invalidate existing queries to trigger refetch
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
