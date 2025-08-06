@@ -2,11 +2,16 @@
 
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
+import {
+  authApi,
+  type LoginRequest,
+  type SignupRequest,
+} from '@/services/auth';
+import { useMutation } from '@tanstack/react-query';
 
 import type { User } from '../lib/types';
 
 interface AuthContextType {
-  user: User | null;
   login: (email: string, password: string) => Promise<void>;
   logout: () => void;
   signup: (userData: Partial<User>, password: string) => Promise<void>;
@@ -20,22 +25,47 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+
+  // TanStack Query mutations
+  const loginMutation = useMutation({
+    mutationFn: (data: LoginRequest) => authApi.login(data),
+    onSuccess: (data) => {
+      console.log('Login successful:', data);
+      // Store tokens in localStorage
+      localStorage.setItem('access_token', data.access_token);
+      localStorage.setItem('refresh_token', data.refresh_token);
+      // Store only user role for profile fetching
+      localStorage.setItem('user_role', data.user.role);
+
+      setError(null);
+    },
+    onError: (error: Error) => {
+      console.error('Login failed:', error);
+      setError(error.message || 'Login failed');
+    },
+  });
+
+  const signupMutation = useMutation({
+    mutationFn: (data: SignupRequest) => authApi.signup(data),
+    onSuccess: (data) => {
+      console.log('Signup successful:', data);
+      setError(null);
+    },
+    onError: (error: Error) => {
+      console.error('Signup failed:', error);
+      setError(error.message || 'Signup failed');
+    },
+  });
+
   useEffect(() => {
     // Check for existing session
     const checkAuth = async () => {
       try {
-        const token = localStorage.getItem('auth_token');
-        if (token) {
-          // Validate token and get user data
-          // This would be an API call to your backend
-          // For now, we'll simulate with localStorage
-          const userData = localStorage.getItem('user_data');
-          if (userData) {
-            setUser(JSON.parse(userData));
-          }
+        const token = localStorage.getItem('access_token');
+        if (!token) {
+          return;
         }
       } catch (error) {
         console.error('Auth check failed:', error);
@@ -48,51 +78,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []);
 
   const login = async (email: string, password: string) => {
-    setIsLoading(true);
-    try {
-      // API call to backend
-      // For demo purposes, we'll simulate
-      const mockUser: User = {
-        id: '1',
-        username: 'John Doe',
-        email,
-        role: 'student',
-        city: 'New York',
-        country: 'USA',
-        postalCode: '10001',
-        address: '123 Main St',
-        isVerified: true,
-        createdAt: new Date(),
-        updatedAt: new Date(),
-      };
-
-      localStorage.setItem('auth_token', 'mock_token');
-      localStorage.setItem('user_data', JSON.stringify(mockUser));
-      setUser(mockUser);
-    } catch (error) {
-      setError('Login failed');
-    } finally {
-      setIsLoading(false);
-    }
+    await loginMutation.mutateAsync({ email, password });
   };
 
   const logout = () => {
-    localStorage.removeItem('auth_token');
-    localStorage.removeItem('user_data');
-    setUser(null);
+    localStorage.removeItem('access_token');
+    localStorage.removeItem('refresh_token');
+    localStorage.removeItem('user_role');
+    setError(null);
   };
 
   const signup = async (userData: Partial<User>, password: string) => {
-    setIsLoading(true);
-    try {
-      // API call to backend
-      console.log('Signing up user:', userData);
-      // For demo, we'll just log the data
-    } catch (error) {
-      setError('Signup failed');
-    } finally {
-      setIsLoading(false);
-    }
+    const signupData: SignupRequest = {
+      email: userData.email || '',
+      password,
+      full_name: userData.username || '',
+      role:
+        (userData.role?.toUpperCase() as 'TEACHER' | 'STUDENT') || 'STUDENT',
+    };
+
+    await signupMutation.mutateAsync(signupData);
   };
 
   const forgotPassword = async (email: string) => {
@@ -110,18 +115,26 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     console.log('Verify email with token:', token);
   };
 
+  // Combine loading states
+  const combinedLoading =
+    isLoading || loginMutation.isPending || signupMutation.isPending;
+  const combinedError =
+    error ||
+    loginMutation.error?.message ||
+    signupMutation.error?.message ||
+    null;
+
   return (
     <AuthContext.Provider
       value={{
-        user,
         login,
         logout,
         signup,
         forgotPassword,
         resetPassword,
         verifyEmail,
-        isLoading,
-        error,
+        isLoading: combinedLoading,
+        error: combinedError,
       }}
     >
       {children}

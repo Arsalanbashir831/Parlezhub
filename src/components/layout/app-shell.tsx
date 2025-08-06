@@ -2,11 +2,13 @@
 
 import * as React from 'react';
 import { usePathname, useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
+import { useUser } from '@/contexts/user-context';
 
 import type { NavItem } from '@/types/nav';
-// import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
 import { cn } from '@/lib/utils';
+// import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   SidebarInset,
@@ -28,7 +30,8 @@ export const AppShell: React.FC<AppShellProps> = ({
   roleLabel = 'User',
 }) => {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
+  const { user } = useUser();
+  const { logout } = useAuth();
   const router = useRouter();
 
   const activeTab = React.useMemo(() => {
@@ -74,7 +77,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
   const handleLogout = React.useCallback(() => {
     logout();
-    router.push('/login');
+    router.push(ROUTES.AUTH.LOGIN);
   }, [logout, router]);
 
   return (
@@ -96,9 +99,9 @@ export const AppShell: React.FC<AppShellProps> = ({
             </h1>
             <div className="ml-auto flex items-center gap-4">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.avatar} />
+                <AvatarImage src={user?.profile_picture} />
                 <AvatarFallback className="bg-primary-100 text-sm text-primary-700 dark:bg-primary-800 dark:text-primary-200">
-                  {user?.username?.charAt(0).toUpperCase()}
+                  {user?.first_name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>
             </div>

@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Link from 'next/link';
 import { useSearchParams } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { CheckCircle, Mail, RefreshCw } from 'lucide-react';
 
@@ -86,7 +87,7 @@ export default function VerifyEmailPage() {
             {isLoading ? 'Sending...' : 'Resend Verification Email'}
           </AuthButton>
 
-          <Link href="/login">
+          <Link href={ROUTES.AUTH.LOGIN}>
             <AuthButton type="button" variant="ghost">
               Back to Sign In
             </AuthButton>

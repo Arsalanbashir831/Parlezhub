@@ -36,8 +36,15 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    await login(data.email, data.password);
-    router.push(ROUTES.STUDENT.DASHBOARD);
+    try {
+      await login(data.email, data.password);
+
+      // Redirect based on user role (you can enhance this logic)
+      router.push(ROUTES.STUDENT.DASHBOARD);
+    } catch (error) {
+      // Error is handled by the auth context
+      console.error('Login error:', error);
+    }
   };
 
   return (
