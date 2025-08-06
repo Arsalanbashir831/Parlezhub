@@ -1,7 +1,9 @@
 'use client';
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
+import { useUser } from '@/contexts/user-context';
 import { Camera, Save, User } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { ProfileData } from '@/types/profile-data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -19,14 +21,6 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 interface ProfileSettingsProps {
-  profileData: ProfileData;
-  onProfileChange: (data: ProfileData) => void;
-  onSave: () => Promise<void>;
-  isLoading: boolean;
-  isEditMode: boolean;
-  onToggleEditMode: () => void;
-  userAvatar?: string;
-  userName: string;
   userRole?: 'student' | 'teacher';
 }
 
@@ -54,47 +48,123 @@ const countries = [
   // Add more countries as needed
 ];
 
-export default function ProfileSettings({
-  profileData,
-  onProfileChange,
-  onSave,
-  isLoading,
-  isEditMode,
-  onToggleEditMode,
-  userAvatar,
-  userName,
-}: ProfileSettingsProps) {
+export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
+  const {
+    user,
+    updateStudentProfile,
+    updateTeacherProfile,
+    isUpdatingProfile,
+    uploadProfilePicture,
+  } = useUser();
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [profileData, setProfileData] = useState<ProfileData>({
+    username: '',
+    email: '',
+    phoneNumber: '',
+    city: '',
+    country: '',
+    bio: '',
+    avatar: '',
+  });
+
+  // Initialize profile data from user context
+  useEffect(() => {
+    if (user) {
+      setProfileData({
+        username: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+        email: user.email || '',
+        phoneNumber: user.phone_number || '',
+        city: user.city || '',
+        country: user.country || '',
+        bio: user.bio || '',
+        avatar: user.profile_picture || '',
+      });
+    }
+  }, [user]);
+
   const handleInputChange =
     (field: keyof ProfileData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      onProfileChange({
+      setProfileData({
         ...profileData,
         [field]: e.target.value,
       });
     };
 
   const handleSelectChange = (field: keyof ProfileData) => (value: string) => {
-    onProfileChange({
+    setProfileData({
       ...profileData,
       [field]: value,
     });
   };
 
-  const handleAvatarChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleAvatarChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        const result = event.target?.result;
-        if (typeof result === 'string') {
-          onProfileChange({
-            ...profileData,
-            avatar: result,
-          });
-        }
-      };
-      reader.readAsDataURL(file);
+      try {
+        const result = await uploadProfilePicture(file);
+        setProfileData((prev) => ({
+          ...prev,
+          avatar: result.profile_picture,
+        }));
+        toast.success('Profile picture updated!');
+      } catch (error) {
+        toast.error('Failed to upload profile picture.');
+        console.error('Profile picture upload error:', error);
+      }
     }
+  };
+
+  const handleSave = async () => {
+    try {
+      const nameParts = profileData.username.trim().split(' ');
+      const firstName = nameParts[0] || '';
+      const lastName = nameParts.slice(1).join(' ') || '';
+
+      if (userRole === 'student') {
+        await updateStudentProfile({
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: profileData.phoneNumber,
+          city: profileData.city,
+          country: profileData.country,
+          bio: profileData.bio,
+        });
+      } else if (userRole === 'teacher') {
+        await updateTeacherProfile({
+          first_name: firstName,
+          last_name: lastName,
+          phone_number: profileData.phoneNumber,
+          city: profileData.city,
+          country: profileData.country,
+          bio: profileData.bio,
+        });
+      }
+
+      toast.success('Profile updated successfully!');
+      setIsEditMode(false);
+    } catch (error) {
+      toast.error('Failed to update profile. Please try again.');
+      console.error('Profile update error:', error);
+    }
+  };
+
+  const handleToggleEditMode = () => {
+    if (isEditMode) {
+      // Reset to original data when canceling
+      if (user) {
+        setProfileData({
+          username: `${user.first_name || ''} ${user.last_name || ''}`.trim(),
+          email: user.email || '',
+          phoneNumber: user.phone_number || '',
+          city: user.city || '',
+          country: user.country || '',
+          bio: user.bio || '',
+          avatar: user.profile_picture || '',
+        });
+      }
+    }
+    setIsEditMode(!isEditMode);
   };
 
   return (
@@ -102,7 +172,7 @@ export default function ProfileSettings({
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle>Profile Information</CardTitle>
-          <Button variant="outline" onClick={onToggleEditMode}>
+          <Button variant="outline" onClick={handleToggleEditMode}>
             {isEditMode ? 'Cancel' : 'Edit Profile'}
           </Button>
         </div>
@@ -112,35 +182,33 @@ export default function ProfileSettings({
         <div className="flex items-center gap-4">
           <Avatar className="h-20 w-20">
             <AvatarImage
-              src={profileData.avatar || userAvatar}
-              alt={userName}
+              src={profileData.avatar || user?.profile_picture || undefined}
+              alt={user?.first_name + ' ' + user?.last_name}
             />
             <AvatarFallback>
               <User className="h-8 w-8" />
             </AvatarFallback>
           </Avatar>
-          {isEditMode && (
-            <div>
-              <Label htmlFor="avatar" className="cursor-pointer">
-                <Button variant="outline" size="sm" asChild>
-                  <span>
-                    <Camera className="mr-2 h-4 w-4" />
-                    Change Photo
-                  </span>
-                </Button>
-              </Label>
-              <Input
-                id="avatar"
-                type="file"
-                accept="image/*"
-                onChange={handleAvatarChange}
-                className="hidden"
-              />
-              <p className="mt-1 text-xs text-gray-500">
-                JPG, PNG or GIF. Max size 5MB.
-              </p>
-            </div>
-          )}
+          <div>
+            <Label htmlFor="avatar" className="cursor-pointer">
+              <Button variant="outline" size="sm" asChild>
+                <span>
+                  <Camera className="mr-2 h-4 w-4" />
+                  Change Photo
+                </span>
+              </Button>
+            </Label>
+            <Input
+              id="avatar"
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarChange}
+              className="hidden"
+            />
+            <p className="mt-1 text-xs text-gray-500">
+              JPG, PNG or GIF. Max size 5MB.
+            </p>
+          </div>
         </div>
 
         {/* Form Fields */}
@@ -164,7 +232,7 @@ export default function ProfileSettings({
               value={profileData.email}
               onChange={handleInputChange('email')}
               placeholder="Enter your email"
-              disabled={!isEditMode}
+              disabled={true}
             />
           </div>
 
@@ -230,9 +298,9 @@ export default function ProfileSettings({
         {/* Save Button */}
         {isEditMode && (
           <div className="flex justify-end">
-            <Button onClick={onSave} disabled={isLoading}>
+            <Button onClick={handleSave} disabled={isUpdatingProfile}>
               <Save className="mr-2 h-4 w-4" />
-              {isLoading ? 'Saving...' : 'Save Changes'}
+              {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
             </Button>
           </div>
         )}

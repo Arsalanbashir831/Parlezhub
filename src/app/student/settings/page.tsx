@@ -1,8 +1,7 @@
 'use client';
 
-import { useAuth } from '@/contexts/auth-context';
+import { useUser } from '@/contexts/user-context';
 
-import { useSettings } from '@/hooks/useSettings';
 import {
   AccountStatus,
   NotificationSettings,
@@ -12,23 +11,7 @@ import {
 } from '@/components/settings';
 
 export default function SettingsPage() {
-  const { user } = useAuth();
-  const {
-    profileData,
-    notifications,
-    security,
-    isLoading,
-    showPassword,
-    isEditMode,
-    setProfileData,
-    setNotifications,
-    setSecurity,
-    handleSaveProfile,
-    handleSaveNotifications,
-    handleSaveSecurity,
-    togglePasswordVisibility,
-    toggleEditMode,
-  } = useSettings('student', user); // Pass role as "student"
+  const { user } = useUser();
 
   return (
     <div className="space-y-8">
@@ -42,26 +25,20 @@ export default function SettingsPage() {
         {/* Profile Settings */}
         <div className="space-y-8 lg:col-span-2">
           {/* Profile Information */}
-          <ProfileSettings
-            profileData={profileData}
-            onProfileChange={setProfileData}
-            onSave={handleSaveProfile}
-            isLoading={isLoading}
-            isEditMode={isEditMode}
-            onToggleEditMode={toggleEditMode}
-            userAvatar={user?.avatar}
-            userName={profileData.username.trim()}
-            userRole="student"
-          />
+          <ProfileSettings userRole="student" />
 
           {/* Security Settings */}
           <SecuritySettings
-            securityData={security}
-            onSecurityChange={setSecurity}
-            onSave={handleSaveSecurity}
-            isLoading={isLoading}
-            showPassword={showPassword}
-            onTogglePasswordVisibility={togglePasswordVisibility}
+            securityData={{
+              currentPassword: '',
+              newPassword: '',
+              confirmPassword: '',
+            }}
+            onSecurityChange={() => {}}
+            onSave={async () => {}}
+            isLoading={false}
+            showPassword={false}
+            onTogglePasswordVisibility={() => {}}
           />
         </div>
 
@@ -69,17 +46,25 @@ export default function SettingsPage() {
         <div className="space-y-8">
           {/* Account Status */}
           <AccountStatus
-            memberSince="March 2023"
-            accountType="Student"
+            memberSince={user?.created_at || ''}
+            accountType={(user?.role as 'TEACHER' | 'STUDENT') || 'STUDENT'}
             verificationStatus="verified"
           />
 
           {/* Notification Settings */}
           <NotificationSettings
-            notificationData={notifications}
-            onNotificationChange={setNotifications}
-            onSave={handleSaveNotifications}
-            isLoading={isLoading}
+            notificationData={{
+              emailNotifications: true,
+              pushNotifications: true,
+              sessionReminders: false,
+              weeklyReports: false,
+              marketingEmails: false,
+              teacherMessages: false,
+              studentMessages: false,
+            }}
+            onNotificationChange={() => {}}
+            onSave={async () => {}}
+            isLoading={false}
             userRole="student"
           />
         </div>

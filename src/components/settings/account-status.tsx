@@ -1,12 +1,12 @@
 'use client';
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 interface AccountStatusProps {
-  accountType: string;
+  accountType: 'TEACHER' | 'STUDENT';
   verificationStatus: 'verified' | 'pending' | 'unverified';
   memberSince: string;
 }
@@ -38,6 +38,23 @@ const AccountStatus = memo(
       }
     };
 
+    const formatDate = (dateString: string) => {
+      if (!dateString) return 'N/A';
+
+      try {
+        const date = new Date(dateString);
+        if (isNaN(date.getTime())) return 'N/A';
+
+        return date.toLocaleDateString('en-US', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric',
+        });
+      } catch (error) {
+        return 'N/A';
+      }
+    };
+
     return (
       <Card className="dark:border-gray-700 dark:bg-gray-800">
         <CardHeader>
@@ -50,7 +67,9 @@ const AccountStatus = memo(
             <span className="text-sm font-medium dark:text-gray-200">
               Account Type
             </span>
-            <Badge variant="secondary">{accountType}</Badge>
+            <Badge variant="secondary" className="capitalize">
+              {accountType.toLowerCase()}
+            </Badge>
           </div>
           <div className="flex items-center justify-between">
             <span className="text-sm font-medium dark:text-gray-200">
@@ -63,7 +82,7 @@ const AccountStatus = memo(
               Member Since
             </span>
             <span className="text-sm text-gray-600 dark:text-gray-400">
-              {memberSince}
+              {formatDate(memberSince)}
             </span>
           </div>
         </CardContent>

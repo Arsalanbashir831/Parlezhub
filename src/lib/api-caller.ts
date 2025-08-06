@@ -85,15 +85,21 @@ const apiCaller = async (
       config.data = data;
       config.headers['Content-Type'] = 'application/json';
     } else if (dataType === 'formdata') {
-      const formData = new FormData();
-      Object.entries(data).forEach(([key, value]) => {
-        if (value instanceof File || value instanceof Blob) {
-          formData.append(key, value);
-        } else {
-          formData.append(key, String(value));
-        }
-      });
-      config.data = formData;
+      // If data is already FormData, use it directly
+      if (data instanceof FormData) {
+        config.data = data;
+      } else {
+        // Otherwise, convert object to FormData
+        const formData = new FormData();
+        Object.entries(data).forEach(([key, value]) => {
+          if (value instanceof File || value instanceof Blob) {
+            formData.append(key, value);
+          } else {
+            formData.append(key, String(value));
+          }
+        });
+        config.data = formData;
+      }
       delete config.headers['Content-Type'];
     }
   }

@@ -2,8 +2,13 @@
 
 import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
-import { userApi, type UserProfile } from '@/services/user';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
+import {
+  userApi,
+  type UpdateStudentProfileRequest,
+  type UpdateTeacherProfileRequest,
+  type UserProfile,
+} from '@/services/user';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 
 interface UserContextType {
   user: UserProfile | null;
@@ -12,6 +17,14 @@ interface UserContextType {
   refetchUser: () => void;
   clearUser: () => void;
   setUserRole: (role: 'TEACHER' | 'STUDENT') => void;
+  updateStudentProfile: (
+    data: UpdateStudentProfileRequest
+  ) => Promise<UserProfile>;
+  updateTeacherProfile: (
+    data: UpdateTeacherProfileRequest
+  ) => Promise<UserProfile>;
+  isUpdatingProfile: boolean;
+  uploadProfilePicture: (file: File) => Promise<{ profile_picture: string }>;
 }
 
 const UserContext = createContext<UserContextType | undefined>(undefined);
@@ -19,6 +32,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(null);
   const [isInitialized, setIsInitialized] = useState(false);
+  const [userState, setUserState] = useState<UserProfile | null>(null);
   const queryClient = useQueryClient();
 
   // Initialize user role from localStorage on mount
@@ -63,6 +77,41 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     retry: 2,
   });
 
+  // Keep userState in sync with query data
+  useEffect(() => {
+    if (user) setUserState(user);
+  }, [user]);
+
+  // Update student profile mutation
+  const updateStudentMutation = useMutation({
+    mutationFn: (data: UpdateStudentProfileRequest) =>
+      userApi.updateStudentProfile(data),
+    onSuccess: (updatedProfile) => {
+      // Update the user profile in the cache and local state
+      queryClient.setQueryData(['user-profile', userRole], updatedProfile);
+      setUserState(updatedProfile);
+      console.log('Student profile updated successfully:', updatedProfile);
+    },
+    onError: (error: Error) => {
+      console.error('Failed to update student profile:', error);
+    },
+  });
+
+  // Update teacher profile mutation
+  const updateTeacherMutation = useMutation({
+    mutationFn: (data: UpdateTeacherProfileRequest) =>
+      userApi.updateTeacherProfile(data),
+    onSuccess: (updatedProfile) => {
+      // Update the user profile in the cache and local state
+      queryClient.setQueryData(['user-profile', userRole], updatedProfile);
+      setUserState(updatedProfile);
+      console.log('Teacher profile updated successfully:', updatedProfile);
+    },
+    onError: (error: Error) => {
+      console.error('Failed to update teacher profile:', error);
+    },
+  });
+
   // Handle query errors
   useEffect(() => {
     if (error) {
@@ -77,6 +126,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const clearUser = () => {
     localStorage.removeItem('user_role');
     setUserRole(null);
+    setUserState(null);
     // Invalidate user profile query
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
@@ -89,15 +139,46 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
 
+  const updateStudentProfile = async (
+    data: UpdateStudentProfileRequest
+  ): Promise<UserProfile> => {
+    return updateStudentMutation.mutateAsync(data);
+  };
+
+  const updateTeacherProfile = async (
+    data: UpdateTeacherProfileRequest
+  ): Promise<UserProfile> => {
+    return updateTeacherMutation.mutateAsync(data);
+  };
+
+  const uploadProfilePicture = async (file: File) => {
+    const result = await userApi.uploadProfilePicture(file);
+    // Get the profile picture URL after upload
+    const urlResult = await userApi.getProfilePictureUrl();
+    // Update the user state with the new profile picture URL
+    if (userState) {
+      setUserState({
+        ...userState,
+        profile_picture: urlResult.profile_picture_url,
+      });
+    }
+    return result;
+  };
+
   return (
     <UserContext.Provider
       value={{
-        user: user || null,
+        user: userState,
         isLoading,
         error: error?.message || null,
         refetchUser,
         clearUser,
         setUserRole: handleSetUserRole,
+        updateStudentProfile,
+        updateTeacherProfile,
+        isUpdatingProfile:
+          updateStudentMutation.isPending || updateTeacherMutation.isPending,
+        uploadProfilePicture,
       }}
     >
       {children}
