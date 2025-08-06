@@ -1,6 +1,6 @@
 'use client';
 
-import { Suspense } from 'react';
+import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
@@ -36,7 +36,17 @@ function ResetPasswordContent() {
   const { resetPassword, isLoading, error } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const token = searchParams.get('token');
+  const [token, setToken] = useState<string | null>(null);
+
+  // Extract token from hash fragment
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hash = window.location.hash.substring(1); // Remove the # symbol
+      const params = new URLSearchParams(hash);
+      const accessToken = params.get('access_token');
+      setToken(accessToken);
+    }
+  }, []);
 
   const {
     register,
@@ -49,8 +59,13 @@ function ResetPasswordContent() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) return;
 
-    const success = await resetPassword(token, data.password);
-    router.push(ROUTES.AUTH.LOGIN);
+    try {
+      await resetPassword(token, data.password);
+      // The auth context will handle the redirect to login
+    } catch (error) {
+      // Error is already handled by the auth context
+      console.error('Reset password error:', error);
+    }
   };
 
   if (!token) {

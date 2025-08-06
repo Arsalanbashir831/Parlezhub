@@ -2,8 +2,8 @@ export const API_ROUTES = {
   AUTH: {
     SIGNUP: '/accounts/register/',
     LOGIN: '/login/',
-    FORGOT_PASSWORD: '/accounts/password/reset/',
-    RESET_PASSWORD: '/accounts/password/reset/confirm/',
+    FORGOT_PASSWORD: '/password-reset/',
+    RESET_PASSWORD: '/password-reset/confirm/',
     REFRESH_TOKEN: '/token/refresh/',
   },
   USER: {

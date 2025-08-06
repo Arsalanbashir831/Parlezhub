@@ -42,6 +42,23 @@ export interface LoginResponse {
   };
 }
 
+export interface ForgotPasswordRequest {
+  email: string;
+}
+
+export interface ForgotPasswordResponse {
+  message: string;
+}
+
+export interface ResetPasswordRequest {
+  token: string;
+  new_password: string;
+}
+
+export interface ResetPasswordResponse {
+  message: string;
+}
+
 export const authApi = {
   signup: async (data: SignupRequest): Promise<SignupResponse> => {
     const response = await apiCaller(
@@ -61,6 +78,32 @@ export const authApi = {
       data as unknown as Record<string, string>,
       {},
       false // Don't use auth token for login
+    );
+    return response.data;
+  },
+
+  forgotPassword: async (
+    data: ForgotPasswordRequest
+  ): Promise<ForgotPasswordResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.FORGOT_PASSWORD,
+      'POST',
+      data as unknown as Record<string, string>,
+      {},
+      false // Don't use auth token for forgot password
+    );
+    return response.data;
+  },
+
+  resetPassword: async (
+    data: ResetPasswordRequest
+  ): Promise<ResetPasswordResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.RESET_PASSWORD,
+      'POST',
+      data as unknown as Record<string, string>,
+      {},
+      false // Don't use auth token for reset password
     );
     return response.data;
   },

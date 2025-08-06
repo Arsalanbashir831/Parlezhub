@@ -8,6 +8,7 @@ import {
   authApi,
   type ForgotPasswordRequest,
   type LoginRequest,
+  type ResetPasswordRequest,
   type SignupRequest,
 } from '@/services/auth';
 import { useMutation } from '@tanstack/react-query';
@@ -121,6 +122,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
+    onSuccess: (data) => {
+      console.log('Password reset successful:', data);
+      setError(null);
+      // Redirect to login after successful password reset
+      router.push(ROUTES.AUTH.LOGIN);
+    },
+    onError: (error: Error) => {
+      console.error('Password reset failed:', error);
+      setError(error.message || 'Failed to reset password');
+    },
+  });
+
   useEffect(() => {
     // Check for existing session
     const checkAuth = async () => {
@@ -183,9 +198,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await forgotPasswordMutation.mutateAsync({ email });
   };
 
-  const resetPassword = async (token: string, password: string) => {
-    // Implementation for reset password
-    console.log('Reset password with token:', token);
+  const resetPassword = async (token: string, new_password: string) => {
+    await resetPasswordMutation.mutateAsync({ token, new_password });
   };
 
   const verifyEmail = async (token: string) => {
@@ -206,12 +220,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           isLoading ||
           loginMutation.isPending ||
           signupMutation.isPending ||
-          forgotPasswordMutation.isPending,
+          forgotPasswordMutation.isPending ||
+          resetPasswordMutation.isPending,
         error:
           error ||
           loginMutation.error?.message ||
           signupMutation.error?.message ||
           forgotPasswordMutation.error?.message ||
+          resetPasswordMutation.error?.message ||
           null,
         isAuthenticated,
         userRole,
