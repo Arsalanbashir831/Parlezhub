@@ -2,29 +2,21 @@
 
 import { memo } from 'react';
 
+import { ChatMessage } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
-interface MessageData {
-  id: string;
-  senderId: string;
-  senderName: string;
-  content: string;
-  timestamp: string;
-  type: string;
-}
-
-interface MessageProps {
-  message: MessageData;
+interface RealMessageProps {
+  message: ChatMessage;
   isOwnMessage: boolean;
 }
 
-const Message = memo(({ message, isOwnMessage }: MessageProps) => {
+const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
   return (
     <div className={cn('flex gap-3', isOwnMessage && 'flex-row-reverse')}>
       <Avatar className="h-8 w-8">
         <AvatarFallback className="bg-primary-100 text-xs text-primary-700">
-          {message.senderName === 'You' ? 'Y' : message.senderName.charAt(0)}
+          {isOwnMessage ? 'Y' : message.sender_name.charAt(0)}
         </AvatarFallback>
       </Avatar>
       <div
@@ -52,6 +44,6 @@ const Message = memo(({ message, isOwnMessage }: MessageProps) => {
   );
 });
 
-Message.displayName = 'Message';
+RealMessage.displayName = 'RealMessage';
 
-export default Message;
+export default RealMessage;

@@ -1,205 +1,83 @@
 'use client';
 
 import { useCallback, useState } from 'react';
+import { useUser } from '@/contexts/user-context';
 
-import { Conversation } from '@/types/chat';
-import { useChat } from '@/hooks/useChat';
+import { ChatRoom } from '@/types/chat';
+import { useRealChat } from '@/hooks/useRealChat';
 import { Card, CardContent } from '@/components/ui/card';
 import BookingDialog from '@/components/chat/booking-dialog';
-import ChatHeader from '@/components/chat/chat-header';
-import ConversationList from '@/components/chat/conversation-list';
 import MessageInput from '@/components/chat/message-input';
-import MessageList from '@/components/chat/message-list';
-
-// Mock conversation data
-const mockConversations = [
-  {
-    id: '1',
-    name: 'Maria Rodriguez',
-    avatar: '/placeholders/avatar.jpg',
-    lastMessage: "Great! Let's schedule our next lesson for tomorrow at 3 PM.",
-    timestamp: '2024-01-15T14:30:00Z',
-    unreadCount: 2,
-    isOnline: true,
-    type: 'teacher',
-    calendlyLink: 'https://calendly.com/maria-rodriguez/spanish-lesson',
-  },
-  {
-    id: '2',
-    name: 'Jean Dubois',
-    avatar: '/placeholders/avatar.jpg',
-    lastMessage:
-      "I've prepared some exercises for French pronunciation. Check them out!",
-    timestamp: '2024-01-15T10:15:00Z',
-    unreadCount: 0,
-    isOnline: false,
-    type: 'teacher',
-    calendlyLink: 'https://calendly.com/jean-dubois/french-lesson',
-  },
-  {
-    id: '3',
-    name: 'Support Team',
-    avatar: '/placeholders/avatar.jpg',
-    lastMessage: 'How can we help you today?',
-    timestamp: '2024-01-14T16:45:00Z',
-    unreadCount: 0,
-    isOnline: true,
-    type: 'support',
-    calendlyLink: null,
-  },
-];
-
-// Mock messages for each conversation
-const mockMessagesByConversation: Record<
-  string,
-  Array<{
-    id: string;
-    senderId: string;
-    senderName: string;
-    content: string;
-    timestamp: string;
-    type: string;
-  }>
-> = {
-  '1': [
-    {
-      id: '1',
-      senderId: 'teacher-1',
-      senderName: 'Maria Rodriguez',
-      content: 'Hello! How are you doing with your Spanish practice?',
-      timestamp: '2024-01-15T13:00:00Z',
-      type: 'text',
-    },
-    {
-      id: '2',
-      senderId: 'student-1',
-      senderName: 'You',
-      content:
-        "Hi Maria! I've been practicing every day. I feel more confident with conversations now.",
-      timestamp: '2024-01-15T13:05:00Z',
-      type: 'text',
-    },
-    {
-      id: '3',
-      senderId: 'teacher-1',
-      senderName: 'Maria Rodriguez',
-      content:
-        "That's wonderful to hear! Your pronunciation has improved significantly.",
-      timestamp: '2024-01-15T13:10:00Z',
-      type: 'text',
-    },
-    {
-      id: '4',
-      senderId: 'student-1',
-      senderName: 'You',
-      content:
-        "Thank you! I'd like to focus on business Spanish in our next session.",
-      timestamp: '2024-01-15T13:15:00Z',
-      type: 'text',
-    },
-    {
-      id: '5',
-      senderId: 'teacher-1',
-      senderName: 'Maria Rodriguez',
-      content: "Great! Let's schedule our next lesson for tomorrow at 3 PM.",
-      timestamp: '2024-01-15T14:30:00Z',
-      type: 'text',
-    },
-  ],
-  '2': [
-    {
-      id: '6',
-      senderId: 'teacher-2',
-      senderName: 'Jean Dubois',
-      content: 'Bonjour! How are your French studies going?',
-      timestamp: '2024-01-15T09:00:00Z',
-      type: 'text',
-    },
-    {
-      id: '7',
-      senderId: 'student-1',
-      senderName: 'You',
-      content: "Bonjour Jean! I'm making good progress with pronunciation.",
-      timestamp: '2024-01-15T09:15:00Z',
-      type: 'text',
-    },
-    {
-      id: '8',
-      senderId: 'teacher-2',
-      senderName: 'Jean Dubois',
-      content:
-        "I've prepared some exercises for French pronunciation. Check them out!",
-      timestamp: '2024-01-15T10:15:00Z',
-      type: 'text',
-    },
-  ],
-  '3': [
-    {
-      id: '9',
-      senderId: 'support-1',
-      senderName: 'Support Team',
-      content: 'Hello! How can we help you today?',
-      timestamp: '2024-01-14T16:45:00Z',
-      type: 'text',
-    },
-    {
-      id: '10',
-      senderId: 'student-1',
-      senderName: 'You',
-      content: 'Hi! I have a question about my subscription.',
-      timestamp: '2024-01-14T16:50:00Z',
-      type: 'text',
-    },
-  ],
-};
+import RealChatHeader from '@/components/chat/real-chat-header';
+import RealConversationList from '@/components/chat/real-conversation-list';
+import RealMessageList from '@/components/chat/real-message-list';
 
 export default function ChatPage() {
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
-  // Initialize chat hook with mock data
+  const { user } = useUser();
+
+  // Initialize real chat hook
   const {
-    selectedConversation,
+    chats,
+    selectedChat,
     currentMessages,
     newMessage,
     searchQuery,
     isLoading,
-    selectConversation,
+    isConnected,
+    isTyping,
+    selectChat,
     sendMessage,
     setNewMessage,
     setSearchQuery,
-    filteredConversations,
-  } = useChat({
-    currentUserId: 'student-1',
-    initialConversations: mockConversations,
-    initialMessages: mockMessagesByConversation,
-    simulateResponses: true,
-    responseDelay: 1500,
+    createChat,
+    filteredChats,
+  } = useRealChat({
+    currentUserId: user?.id || '',
+    currentUserRole: 'student',
   });
 
   const handleBookCall = useCallback(() => {
-    if (selectedConversation?.calendlyLink) {
-      window.open(selectedConversation.calendlyLink, '_blank');
-    } else {
-      setIsBookingDialogOpen(true);
-    }
-  }, [selectedConversation?.calendlyLink]);
+    // For now, show the booking dialog
+    // In the future, you can integrate with Calendly or other booking systems
+    setIsBookingDialogOpen(true);
+  }, []);
 
   const handleBookingDialogClose = useCallback(() => {
     setIsBookingDialogOpen(false);
   }, []);
 
-  const handleConversationSelect = useCallback(
-    (conversation: Conversation) => {
-      selectConversation(conversation);
+  const handleChatSelect = useCallback(
+    (chat: ChatRoom) => {
+      selectChat(chat);
       setShowChatOnMobile(true);
     },
-    [selectConversation]
+    [selectChat]
   );
 
   const handleBackToList = useCallback(() => {
     setShowChatOnMobile(false);
   }, []);
+
+  // Show loading state while user data is being fetched
+  if (!user) {
+    return (
+      <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
+        <Card className="h-full">
+          <CardContent className="h-full p-0">
+            <div className="flex h-full items-center justify-center">
+              <div className="text-center text-gray-500">
+                <h3 className="mb-2 text-lg font-medium">Loading...</h3>
+                <p>Please wait while we load your chat data</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -209,34 +87,38 @@ export default function ChatPage() {
             <div className="flex h-full">
               {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
               <div
-                className={`${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedConversation ? 'md:flex' : 'flex'}`}
+                className={`${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedChat ? 'md:flex' : 'flex'}`}
               >
-                <ConversationList
-                  conversations={filteredConversations}
-                  selectedConversationId={selectedConversation?.id || ''}
+                <RealConversationList
+                  chats={filteredChats}
+                  selectedChatId={selectedChat?.id || ''}
                   searchQuery={searchQuery}
+                  currentUserRole="student"
                   onSearchChange={setSearchQuery}
-                  onConversationSelect={handleConversationSelect}
+                  onChatSelect={handleChatSelect}
                 />
               </div>
 
               {/* Chat Area - Desktop: show when selected, Mobile: show only when showChatOnMobile is true */}
-              {selectedConversation && (
+              {selectedChat && (
                 <div
                   className={`${showChatOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}
                 >
                   {/* Chat Header */}
-                  <ChatHeader
-                    conversation={selectedConversation}
+                  <RealChatHeader
+                    chat={selectedChat}
+                    currentUserRole="student"
+                    isConnected={isConnected}
+                    isTyping={isTyping}
                     onBookCall={handleBookCall}
                     onBack={handleBackToList}
                     showBackButton={true}
                   />
 
                   {/* Messages */}
-                  <MessageList
+                  <RealMessageList
                     messages={currentMessages}
-                    currentUserId="student-1"
+                    currentUserId={user.id}
                   />
 
                   {/* Message Input */}
@@ -244,13 +126,13 @@ export default function ChatPage() {
                     value={newMessage}
                     onChange={setNewMessage}
                     onSend={sendMessage}
-                    disabled={isLoading}
+                    disabled={isLoading || !isConnected}
                   />
                 </div>
               )}
 
               {/* No conversation selected state - Desktop only */}
-              {!selectedConversation && (
+              {!selectedChat && (
                 <div className="hidden flex-1 items-center justify-center md:flex">
                   <div className="text-center text-gray-500">
                     <h3 className="mb-2 text-lg font-medium">

@@ -12,7 +12,6 @@ interface Conversation {
   avatar: string;
   lastMessage: string;
   timestamp: string;
-  unreadCount: number;
   isOnline: boolean;
   type: string;
   calendlyLink: string | null;

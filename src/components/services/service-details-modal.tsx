@@ -1,7 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/user-context';
+import { chatService } from '@/services/chat';
 import {
   Calendar,
   CheckCircle,
@@ -11,6 +13,7 @@ import {
   Tag,
   X,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { Service } from '@/types/service';
 import { getServiceTypeLabel } from '@/lib/service-utils';
@@ -37,6 +40,9 @@ export function ServiceDetailsModal({
   onClose,
   onEdit,
 }: ServiceDetailsModalProps) {
+  const router = useRouter();
+  const { user } = useUser();
+
   if (!service) return null;
 
   const formatDate = (dateString: string) => {
@@ -45,6 +51,31 @@ export function ServiceDetailsModal({
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleStartChat = async () => {
+    if (!user) {
+      toast.error('Please log in to start a chat');
+      return;
+    }
+
+    try {
+      // Create a new chat with the teacher
+      const newChat = await chatService.createChat({
+        student_id: user.id,
+        teacher_id: service.teacherId,
+      });
+
+      if (newChat) {
+        toast.success('Chat started successfully');
+        // Navigate to the chat page with the new chat
+        router.push(ROUTES.STUDENT.CHAT);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast.error('Failed to start chat. Please try again.');
+    }
   };
 
   return (
@@ -193,9 +224,11 @@ export function ServiceDetailsModal({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Link href={ROUTES.TEACHER.EDIT_SERVICE(service.id)}>
-              <Button>Edit Service</Button>
-            </Link>
+            {onEdit ? (
+              <Button onClick={() => onEdit(service)}>Edit Service</Button>
+            ) : (
+              <Button onClick={handleStartChat}>Chat with Teacher</Button>
+            )}
           </div>
         </div>
       </DialogContent>

@@ -27,4 +27,11 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
   },
+  CHAT: {
+    CREATE_CHAT: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}chats/start/`,
+    GET_CHATS: `/accounts/supabase/chats/`,
+    GET_CHAT_MESSAGES: (chatId: string) =>
+      `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}chats/${chatId}/messages/`,
+    WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}ws/chat/`,
+  },
 };

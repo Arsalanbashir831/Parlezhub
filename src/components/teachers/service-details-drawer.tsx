@@ -1,7 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/user-context';
+import { chatService } from '@/services/chat';
 import {
   CheckCircle,
   Clock,
@@ -10,6 +12,7 @@ import {
   Tag,
   User,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { getServiceTypeLabel } from '@/lib/service-utils';
 import { ServiceCardData } from '@/hooks/useTeachers';
@@ -35,6 +38,9 @@ export function ServiceDetailsDrawer({
   isOpen,
   onClose,
 }: ServiceDetailsDrawerProps) {
+  const router = useRouter();
+  const { user } = useUser();
+
   if (!serviceCard) return null;
 
   const {
@@ -53,6 +59,31 @@ export function ServiceDetailsDrawer({
       month: 'long',
       day: 'numeric',
     });
+  };
+
+  const handleStartChat = async () => {
+    if (!user) {
+      toast.error('Please log in to start a chat');
+      return;
+    }
+
+    try {
+      // Create a new chat with the teacher
+      const newChat = await chatService.createChat({
+        student_id: user.id,
+        teacher_id: service.teacherId,
+      });
+
+      if (newChat) {
+        toast.success(`Chat started with ${teacherName}`);
+        // Navigate to the chat page with the new chat
+        router.push(ROUTES.STUDENT.CHAT);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast.error('Failed to start chat. Please try again.');
+    }
   };
 
   return (
@@ -201,9 +232,7 @@ export function ServiceDetailsDrawer({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Link href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}>
-              <Button>Chat</Button>
-            </Link>
+            <Button onClick={handleStartChat}>Chat with {teacherName}</Button>
           </div>
         </div>
       </SheetContent>

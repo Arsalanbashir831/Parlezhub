@@ -45,8 +45,19 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
 
   useEffect(() => {
     if (session) {
-      session.on('history_added', historyHandlers.handleHistoryAdded);
-      session.on('history_updated', historyHandlers.handleHistoryUpdated);
+      // Type assertion to fix type mismatch between HistoryItem and RealtimeItem
+      session.on(
+        'history_added',
+        historyHandlers.handleHistoryAdded as (
+          item: realtime.RealtimeItem
+        ) => void
+      );
+      session.on(
+        'history_updated',
+        historyHandlers.handleHistoryUpdated as (
+          items: realtime.RealtimeItem[]
+        ) => void
+      );
       session.on('agent_tool_start', historyHandlers.handleAgentToolStart);
       session.on('agent_tool_end', historyHandlers.handleAgentToolEnd);
       session.on('guardrail_tripped', historyHandlers.handleGuardrailTripped);

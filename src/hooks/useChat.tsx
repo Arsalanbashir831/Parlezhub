@@ -30,7 +30,6 @@ export interface UseChatReturn {
 
   // Computed
   filteredConversations: Conversation[];
-  unreadCount: number;
   hasMessages: boolean;
 }
 
@@ -65,11 +64,6 @@ export const useChat = ({
       conv.name.toLowerCase().includes(searchQuery.toLowerCase())
     );
   }, [conversations, searchQuery]);
-
-  // Calculate total unread count
-  const unreadCount = useMemo(() => {
-    return conversations.reduce((total, conv) => total + conv.unreadCount, 0);
-  }, [conversations]);
 
   // Check if current conversation has messages
   const hasMessages = useMemo(() => {
@@ -143,13 +137,6 @@ export const useChat = ({
   // Select a conversation
   const selectConversation = useCallback((conversation: Conversation) => {
     setSelectedConversation(conversation);
-
-    // Mark conversation as read
-    setConversations((prev) =>
-      prev.map((conv) =>
-        conv.id === conversation.id ? { ...conv, unreadCount: 0 } : conv
-      )
-    );
   }, []);
 
   // Send a message
@@ -318,7 +305,6 @@ export const useChat = ({
 
     // Computed
     filteredConversations,
-    unreadCount,
     hasMessages,
   };
 };
