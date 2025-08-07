@@ -33,6 +33,7 @@ const PUBLIC_ROUTES = [
   '/auth/reset-password',
   '/auth/verify-email',
   '/ai-session',
+  '/placeholders',
 ];
 
 export function middleware(request: NextRequest) {
