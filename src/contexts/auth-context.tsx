@@ -12,6 +12,10 @@ import {
   type SignupRequest,
 } from '@/services/auth';
 import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
+import { getErrorMessage } from '@/lib/error-utils';
 
 import type { User } from '../lib/types';
 
@@ -30,27 +34,6 @@ interface AuthContextType {
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
-// Helper function to set cookies
-const setCookie = (name: string, value: string, days: number = 7) => {
-  const expires = new Date();
-  expires.setTime(expires.getTime() + days * 24 * 60 * 60 * 1000);
-  document.cookie = `${name}=${value};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
-};
-
-// Helper function to get cookies
-const getCookie = (name: string): string | null => {
-  if (typeof document === 'undefined') return null;
-  const value = `; ${document.cookie}`;
-  const parts = value.split(`; ${name}=`);
-  if (parts.length === 2) return parts.pop()?.split(';').shift() || null;
-  return null;
-};
-
-// Helper function to remove cookies
-const removeCookie = (name: string) => {
-  document.cookie = `${name}=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/`;
-};
-
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
@@ -65,11 +48,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       console.log('Login successful:', data);
 
-      // Store tokens in localStorage and cookies
-      localStorage.setItem('access_token', data.access_token);
-      localStorage.setItem('refresh_token', data.refresh_token);
-      localStorage.setItem('user_role', data.user.role);
-
+      // Store tokens in cookies only
       setCookie('access_token', data.access_token);
       setCookie('refresh_token', data.refresh_token);
       setCookie('user_role', data.user.role);
@@ -77,6 +56,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setIsAuthenticated(true);
       setUserRole(data.user.role);
       setError(null);
+
+      // Show success toast
+      toast.success(`Welcome back!`, {
+        description: `Redirecting to your ${data.user.role.toLowerCase()} dashboard...`,
+      });
 
       // Redirect based on role
       const redirectTo = searchParams.get('redirect');
@@ -90,9 +74,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         }
       }
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Login failed:', error);
-      setError(error.message || 'Login failed');
+      const errorMessage = getErrorMessage(error, 'login');
+      setError(errorMessage);
+      toast.error('Login Failed', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -101,12 +89,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       console.log('Signup successful:', data);
       setError(null);
+
+      // Show success toast
+      toast.success('Account Created Successfully!', {
+        description:
+          'Please check your email to verify your account before signing in.',
+      });
+
       // Redirect to login after successful signup
-      router.push(ROUTES.AUTH.LOGIN);
+      router.push(ROUTES.AUTH.VERIFY_EMAIL);
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Signup failed:', error);
-      setError(error.message || 'Signup failed');
+      const errorMessage = getErrorMessage(error, 'signup');
+      setError(errorMessage);
+      toast.error('Signup Failed', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -115,10 +114,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       console.log('Forgot password request successful:', data);
       setError(null);
+
+      // Show success toast
+      toast.success('Reset Email Sent!', {
+        description: 'Please check your email for password reset instructions.',
+      });
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Forgot password failed:', error);
-      setError(error.message || 'Failed to send reset email');
+      const errorMessage = getErrorMessage(error, 'forgot-password');
+      setError(errorMessage);
+      toast.error('Failed to Send Reset Email', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -127,12 +135,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: (data) => {
       console.log('Password reset successful:', data);
       setError(null);
+
+      // Show success toast
+      toast.success('Password Reset Successful!', {
+        description: 'You can now sign in with your new password.',
+      });
+
       // Redirect to login after successful password reset
       router.push(ROUTES.AUTH.LOGIN);
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Password reset failed:', error);
-      setError(error.message || 'Failed to reset password');
+      const errorMessage = getErrorMessage(error, 'reset-password');
+      setError(errorMessage);
+      toast.error('Password Reset Failed', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -140,10 +158,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     // Check for existing session
     const checkAuth = async () => {
       try {
-        const token =
-          localStorage.getItem('access_token') || getCookie('access_token');
-        const role =
-          localStorage.getItem('user_role') || getCookie('user_role');
+        const token = getCookie('access_token');
+        const role = getCookie('user_role');
 
         if (token && role) {
           setIsAuthenticated(true);
@@ -164,12 +180,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    // Clear localStorage
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_role');
-
-    // Clear cookies
+    // Clear cookies only
     removeCookie('access_token');
     removeCookie('refresh_token');
     removeCookie('user_role');
@@ -177,6 +188,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setIsAuthenticated(false);
     setUserRole(null);
     setError(null);
+
+    // Show logout toast
+    toast.success('Logged Out Successfully', {
+      description: 'You have been logged out of your account.',
+    });
 
     // Redirect to login
     router.push(ROUTES.AUTH.LOGIN);
@@ -198,8 +214,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await forgotPasswordMutation.mutateAsync({ email });
   };
 
-  const resetPassword = async (token: string, new_password: string) => {
-    await resetPasswordMutation.mutateAsync({ token, new_password });
+  const resetPassword = async (token: string, password: string) => {
+    await resetPasswordMutation.mutateAsync({ token, new_password: password });
   };
 
   const verifyEmail = async (token: string) => {
@@ -222,13 +238,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           signupMutation.isPending ||
           forgotPasswordMutation.isPending ||
           resetPasswordMutation.isPending,
-        error:
-          error ||
-          loginMutation.error?.message ||
-          signupMutation.error?.message ||
-          forgotPasswordMutation.error?.message ||
-          resetPasswordMutation.error?.message ||
-          null,
+        error,
         isAuthenticated,
         userRole,
       }}

@@ -59,13 +59,7 @@ function ResetPasswordContent() {
   const onSubmit = async (data: ResetPasswordFormData) => {
     if (!token) return;
 
-    try {
-      await resetPassword(token, data.password);
-      // The auth context will handle the redirect to login
-    } catch (error) {
-      // Error is already handled by the auth context
-      console.error('Reset password error:', error);
-    }
+    await resetPassword(token, data.password);
   };
 
   if (!token) {

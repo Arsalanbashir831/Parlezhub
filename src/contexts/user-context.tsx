@@ -9,6 +9,10 @@ import {
   type UserProfile,
 } from '@/services/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
+import { getErrorMessage } from '@/lib/error-utils';
 
 interface UserContextType {
   user: UserProfile | null;
@@ -35,11 +39,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [userState, setUserState] = useState<UserProfile | null>(null);
   const queryClient = useQueryClient();
 
-  // Initialize user role from localStorage on mount
+  // Initialize user role from cookies on mount
   useEffect(() => {
     const initializeUserRole = () => {
       try {
-        const role = localStorage.getItem('user_role');
+        const role = getCookie('user_role');
         if (role && (role === 'TEACHER' || role === 'STUDENT')) {
           setUserRole(role);
         }
@@ -91,9 +95,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
       setUserState(updatedProfile);
       console.log('Student profile updated successfully:', updatedProfile);
+
+      // Show success toast
+      toast.success('Profile Updated Successfully!', {
+        description: 'Your profile information has been saved.',
+      });
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Failed to update student profile:', error);
+      const errorMessage = getErrorMessage(error, 'profile-update');
+      toast.error('Profile Update Failed', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -106,9 +119,18 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
       setUserState(updatedProfile);
       console.log('Teacher profile updated successfully:', updatedProfile);
+
+      // Show success toast
+      toast.success('Profile Updated Successfully!', {
+        description: 'Your profile information has been saved.',
+      });
     },
-    onError: (error: Error) => {
+    onError: (error: unknown) => {
       console.error('Failed to update teacher profile:', error);
+      const errorMessage = getErrorMessage(error, 'profile-update');
+      toast.error('Profile Update Failed', {
+        description: errorMessage,
+      });
     },
   });
 
@@ -116,6 +138,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     if (error) {
       console.error('Failed to fetch user profile:', error);
+      const errorMessage = getErrorMessage(error, 'fetch-profile');
+      toast.error('Failed to Load Profile', {
+        description: errorMessage,
+      });
     }
   }, [error]);
 
@@ -124,9 +150,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const clearUser = () => {
-    localStorage.removeItem('user_role');
-    // Remove cookie
-    document.cookie = 'user_role=;expires=Thu, 01 Jan 1970 00:00:00 GMT;path=/';
+    // Clear cookies only
+    removeCookie('user_role');
     setUserRole(null);
     setUserState(null);
     // Invalidate user profile query
@@ -135,12 +160,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const handleSetUserRole = (role: 'TEACHER' | 'STUDENT') => {
     setUserRole(role);
-    // Store role in localStorage and cookies
-    localStorage.setItem('user_role', role);
-    // Set cookie for middleware access
-    const expires = new Date();
-    expires.setTime(expires.getTime() + 7 * 24 * 60 * 60 * 1000);
-    document.cookie = `user_role=${role};expires=${expires.toUTCString()};path=/;SameSite=Strict`;
+    // Store role in cookies only
+    setCookie('user_role', role);
     // Invalidate existing queries to trigger refetch
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
@@ -158,17 +179,32 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   };
 
   const uploadProfilePicture = async (file: File) => {
-    const result = await userApi.uploadProfilePicture(file);
-    // Get the profile picture URL after upload
-    const urlResult = await userApi.getProfilePictureUrl();
-    // Update the user state with the new profile picture URL
-    if (userState) {
-      setUserState({
-        ...userState,
-        profile_picture: urlResult.profile_picture_url,
+    try {
+      const result = await userApi.uploadProfilePicture(file);
+      // Get the profile picture URL after upload
+      const urlResult = await userApi.getProfilePictureUrl();
+      // Update the user state with the new profile picture URL
+      if (userState) {
+        setUserState({
+          ...userState,
+          profile_picture: urlResult.profile_picture_url,
+        });
+      }
+
+      // Show success toast
+      toast.success('Profile Picture Updated!', {
+        description: 'Your profile picture has been uploaded successfully.',
       });
+
+      return result;
+    } catch (error) {
+      console.error('Failed to upload profile picture:', error);
+      const errorMessage = getErrorMessage(error, 'profile-picture');
+      toast.error('Upload Failed', {
+        description: errorMessage,
+      });
+      throw error;
     }
-    return result;
   };
 
   return (

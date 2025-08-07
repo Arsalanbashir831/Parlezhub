@@ -8,6 +8,7 @@ import { TranscriptProvider } from '@/contexts/transcript-context';
 import { UserProvider } from '@/contexts/user-context';
 import { QueryProvider } from '@/providers/query-provider';
 
+import { Toaster } from '@/components/ui/sonner';
 import AuthFlowHandler from '@/components/auth/auth-flow-handler';
 
 export function Providers({ children }: { children: React.ReactNode }) {
@@ -22,6 +23,7 @@ export function Providers({ children }: { children: React.ReactNode }) {
             </SessionProvider>
           </UserProvider>
         </AuthProvider>
+        <Toaster richColors />
       </ThemeProvider>
     </QueryProvider>
   );

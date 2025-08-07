@@ -49,22 +49,14 @@ export default function SignupPage() {
   });
 
   const onSubmit = async (data: SignupFormData) => {
-    try {
-      await signup(
-        {
-          username: data.full_name,
-          email: data.email,
-          role: data.role.toLowerCase() as 'student' | 'teacher',
-        },
-        data.password
-      );
-
-      // Redirect to email verification page on success
-      router.push(ROUTES.AUTH.VERIFY_EMAIL);
-    } catch (error) {
-      // Error is handled by the auth context
-      console.error('Signup error:', error);
-    }
+    await signup(
+      {
+        username: data.full_name,
+        email: data.email,
+        role: data.role.toLowerCase() as 'student' | 'teacher',
+      },
+      data.password
+    );
   };
 
   return (

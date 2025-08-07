@@ -1,7 +1,6 @@
 'use client';
 
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -14,7 +13,6 @@ import {
   EmailField,
   PasswordField,
 } from '@/components/auth/specialized-fields';
-import { ErrorMessage } from '@/components/auth/status-messages';
 
 const loginSchema = z.object({
   email: z.string().email('Please enter a valid email address'),
@@ -24,8 +22,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isLoading, error } = useAuth();
-  const router = useRouter();
+  const { login, isLoading } = useAuth();
 
   const {
     register,
@@ -36,15 +33,7 @@ export default function LoginPage() {
   });
 
   const onSubmit = async (data: LoginFormData) => {
-    try {
-      await login(data.email, data.password);
-
-      // Redirect based on user role (you can enhance this logic)
-      router.push(ROUTES.STUDENT.DASHBOARD);
-    } catch (error) {
-      // Error is handled by the auth context
-      console.error('Login error:', error);
-    }
+    await login(data.email, data.password);
   };
 
   return (
@@ -59,8 +48,6 @@ export default function LoginPage() {
           register={register('password')}
           error={errors.password}
         />
-
-        {error && <ErrorMessage message={error} />}
 
         <AuthButton type="submit" isLoading={isLoading}>
           Sign In

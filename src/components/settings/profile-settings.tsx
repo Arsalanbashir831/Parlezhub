@@ -3,7 +3,6 @@
 import React, { useEffect, useState } from 'react';
 import { useUser } from '@/contexts/user-context';
 import { Camera, Save, User } from 'lucide-react';
-import { toast } from 'sonner';
 
 import { ProfileData } from '@/types/profile-data';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -65,6 +64,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
     country: '',
     bio: '',
     avatar: '',
+    qualification: '',
+    experience_years: 0,
   });
 
   // Initialize profile data from user context
@@ -78,6 +79,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
         country: user.country || '',
         bio: user.bio || '',
         avatar: user.profile_picture || '',
+        qualification: user.qualification || '',
+        experience_years: user.experience_years || 0,
       });
     }
   }, [user]);
@@ -85,9 +88,14 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
   const handleInputChange =
     (field: keyof ProfileData) =>
     (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+      const value =
+        field === 'experience_years'
+          ? parseInt(e.target.value) || 0
+          : e.target.value;
+
       setProfileData({
         ...profileData,
-        [field]: e.target.value,
+        [field]: value,
       });
     };
 
@@ -107,9 +115,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
           ...prev,
           avatar: result.profile_picture,
         }));
-        toast.success('Profile picture updated!');
       } catch (error) {
-        toast.error('Failed to upload profile picture.');
+        // Error is already handled by the user context with toast
         console.error('Profile picture upload error:', error);
       }
     }
@@ -138,13 +145,14 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
           city: profileData.city,
           country: profileData.country,
           bio: profileData.bio,
+          qualification: profileData.qualification,
+          experience_years: profileData.experience_years,
         });
       }
 
-      toast.success('Profile updated successfully!');
       setIsEditMode(false);
     } catch (error) {
-      toast.error('Failed to update profile. Please try again.');
+      // Error is already handled by the user context with toast
       console.error('Profile update error:', error);
     }
   };
@@ -161,6 +169,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
           country: user.country || '',
           bio: user.bio || '',
           avatar: user.profile_picture || '',
+          qualification: user.qualification || '',
+          experience_years: user.experience_years || 0,
         });
       }
     }
@@ -198,20 +208,17 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
                 </span>
               </Button>
             </Label>
-            <Input
+            <input
               id="avatar"
               type="file"
               accept="image/*"
               onChange={handleAvatarChange}
               className="hidden"
             />
-            <p className="mt-1 text-xs text-gray-500">
-              JPG, PNG or GIF. Max size 5MB.
-            </p>
           </div>
         </div>
 
-        {/* Form Fields */}
+        {/* Profile Fields */}
         <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
           <div>
             <Label htmlFor="username">Full Name</Label>
@@ -219,20 +226,18 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
               id="username"
               value={profileData.username}
               onChange={handleInputChange('username')}
-              placeholder="Enter your full name"
               disabled={!isEditMode}
+              placeholder="Enter your full name"
             />
           </div>
 
           <div>
-            <Label htmlFor="email">Email Address</Label>
+            <Label htmlFor="email">Email</Label>
             <Input
               id="email"
-              type="email"
               value={profileData.email}
-              onChange={handleInputChange('email')}
-              placeholder="Enter your email"
               disabled={true}
+              placeholder="Enter your email"
             />
           </div>
 
@@ -240,10 +245,10 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
             <Label htmlFor="phoneNumber">Phone Number</Label>
             <Input
               id="phoneNumber"
-              value={profileData.phoneNumber || ''}
+              value={profileData.phoneNumber}
               onChange={handleInputChange('phoneNumber')}
-              placeholder="Enter your phone number"
               disabled={!isEditMode}
+              placeholder="Enter your phone number"
             />
           </div>
 
@@ -253,8 +258,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
               id="city"
               value={profileData.city}
               onChange={handleInputChange('city')}
-              placeholder="Enter your city"
               disabled={!isEditMode}
+              placeholder="Enter your city"
             />
           </div>
 
@@ -266,7 +271,7 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
               disabled={!isEditMode}
             >
               <SelectTrigger>
-                <SelectValue placeholder="Select country" />
+                <SelectValue placeholder="Select your country" />
               </SelectTrigger>
               <SelectContent>
                 {countries.map((country) => (
@@ -277,27 +282,55 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
               </SelectContent>
             </Select>
           </div>
+
+          {/* Teacher-specific fields */}
+          {userRole === 'teacher' && (
+            <>
+              <div>
+                <Label htmlFor="qualification">Qualification</Label>
+                <Input
+                  id="qualification"
+                  value={profileData.qualification}
+                  onChange={handleInputChange('qualification')}
+                  disabled={!isEditMode}
+                  placeholder="e.g., Bachelor's in Education, TEFL Certificate"
+                />
+              </div>
+
+              <div>
+                <Label htmlFor="experience_years">Years of Experience</Label>
+                <Input
+                  id="experience_years"
+                  type="number"
+                  min="0"
+                  max="50"
+                  value={profileData.experience_years}
+                  onChange={handleInputChange('experience_years')}
+                  disabled={!isEditMode}
+                  placeholder="Enter years of teaching experience"
+                />
+              </div>
+            </>
+          )}
         </div>
 
-        {/* Bio Section */}
         <div>
           <Label htmlFor="bio">Bio</Label>
           <Textarea
             id="bio"
             value={profileData.bio}
             onChange={handleInputChange('bio')}
-            placeholder="Tell us a bit about yourself..."
-            rows={4}
             disabled={!isEditMode}
+            placeholder="Tell us about yourself..."
+            rows={4}
           />
-          <p className="mt-1 text-xs text-gray-500">
-            {profileData.bio.length}/500 characters
-          </p>
         </div>
 
-        {/* Save Button */}
         {isEditMode && (
-          <div className="flex justify-end">
+          <div className="flex justify-end gap-2">
+            <Button variant="outline" onClick={handleToggleEditMode}>
+              Cancel
+            </Button>
             <Button onClick={handleSave} disabled={isUpdatingProfile}>
               <Save className="mr-2 h-4 w-4" />
               {isUpdatingProfile ? 'Saving...' : 'Save Changes'}

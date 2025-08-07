@@ -1,5 +1,8 @@
 import { API_ROUTES } from '@/constants/api-routes';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
+import { toast } from 'sonner';
+
+import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
 
 type RequestData =
   | Record<string, string | number | boolean | File | Blob>
@@ -26,7 +29,7 @@ const processQueue = (error: unknown, token: string | null = null) => {
 
 const refreshToken = async (): Promise<string> => {
   try {
-    const refreshToken = localStorage.getItem('refresh_token');
+    const refreshToken = getCookie('refresh_token');
     if (!refreshToken) {
       throw new Error('No refresh token available');
     }
@@ -42,14 +45,20 @@ const refreshToken = async (): Promise<string> => {
     );
 
     const { access_token, refresh_token } = response.data;
-    localStorage.setItem('access_token', access_token);
-    localStorage.setItem('refresh_token', refresh_token);
+    setCookie('access_token', access_token);
+    setCookie('refresh_token', refresh_token);
     return access_token;
   } catch (error) {
     // If refresh fails, clear all tokens and redirect to login
-    localStorage.removeItem('access_token');
-    localStorage.removeItem('refresh_token');
-    localStorage.removeItem('user_role');
+    removeCookie('access_token');
+    removeCookie('refresh_token');
+    removeCookie('user_role');
+
+    // Show error toast
+    toast.error('Session Expired', {
+      description: 'Your session has expired. Please sign in again.',
+    });
+
     throw error;
   }
 };
@@ -74,7 +83,7 @@ const apiCaller = async (
   };
   config.headers = {};
   if (useAuth) {
-    const token = localStorage.getItem('access_token');
+    const token = getCookie('access_token');
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }

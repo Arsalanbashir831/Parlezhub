@@ -9,6 +9,8 @@ export interface ProfileData {
   address?: string;
   avatar?: string;
   // Teacher-specific fields (optional for students)
+  qualification?: string;
+  experience_years?: number;
   teachingExperience?: string;
   hourlyRate?: number;
   education?: string;
