@@ -13,6 +13,8 @@ const STUDENT_ROUTES = [
   '/student/history',
   '/student/session-report',
   '/student/settings',
+  '/language',
+  '/astrology',
 ];
 
 const TEACHER_ROUTES = [
@@ -30,8 +32,6 @@ const PUBLIC_ROUTES = [
   '/auth/forgot-password',
   '/auth/reset-password',
   '/auth/verify-email',
-  '/language',
-  '/astrology',
   '/ai-session',
 ];
 

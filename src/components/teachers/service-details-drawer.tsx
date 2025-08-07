@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 import {
   CheckCircle,
   Clock,
@@ -199,7 +201,9 @@ export function ServiceDetailsDrawer({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button>Chat</Button>
+            <Link href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}>
+              <Button>Chat</Button>
+            </Link>
           </div>
         </div>
       </SheetContent>

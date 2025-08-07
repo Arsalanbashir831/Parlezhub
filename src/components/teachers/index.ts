@@ -1,10 +1,8 @@
-export { TeacherCard, type TeacherData } from './teacher-card';
-export { TeacherDetailsPanel } from './teacher-details-panel';
-export { TeacherFilters } from './teacher-filters';
-export { TeachersEmptyState } from './teachers-empty-state';
-export { TeachersGrid } from './teachers-grid';
-export { TeachersHeader } from './teachers-header';
 export { ServiceCard } from './service-card';
 export { ServiceDetailsModal } from './service-details-modal';
 export { ServiceDetailsDrawer } from './service-details-drawer';
 export { ServicesGrid } from './services-grid';
+export { ServicesList } from './services-list';
+export { TeacherFilters } from './teacher-filters';
+export { TeachersEmptyState } from './teachers-empty-state';
+export { TeachersHeader } from './teachers-header';

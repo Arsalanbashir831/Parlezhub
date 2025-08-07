@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 import {
   Calendar,
   CheckCircle,
@@ -191,7 +193,9 @@ export function ServiceDetailsModal({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button>Chat</Button>
+            <Link href={ROUTES.TEACHER.EDIT_SERVICE(service.id)}>
+              <Button>Edit Service</Button>
+            </Link>
           </div>
         </div>
       </DialogContent>

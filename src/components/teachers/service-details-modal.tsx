@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+import { ROUTES } from '@/constants/routes';
 import {
   CheckCircle,
   Clock,
@@ -47,7 +49,7 @@ export function ServiceDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] max-w-sm overflow-y-auto rounded-lg">
+      <DialogContent className="max-h-[90vh] max-w-sm overflow-y-auto rounded-lg md:max-w-3xl">
         <DialogHeader>
           <div className="flex items-start justify-between">
             <div className="space-y-2">
@@ -190,7 +192,9 @@ export function ServiceDetailsModal({
             <Button variant="outline" onClick={onClose}>
               Close
             </Button>
-            <Button>Chat</Button>
+            <Link href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}>
+              <Button>Chat</Button>
+            </Link>
           </div>
         </div>
       </DialogContent>

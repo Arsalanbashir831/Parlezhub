@@ -16,6 +16,7 @@ export const ROUTES = {
     AI_TUTOR: '/student/ai-tutor',
     AI_CHIROLOGIST: '/student/ai-chirologist',
     CHAT: '/student/chat',
+    TEACHER_CHAT: (teacherId: string) => `/student/chat?teacherId=${teacherId}`,
     MEETINGS: '/student/meetings',
     HISTORY: '/student/history',
     SESSION_REPORT: '/student/session-report',
@@ -24,10 +25,11 @@ export const ROUTES = {
   TEACHER: {
     DASHBOARD: '/teacher/dashboard',
     CHAT: '/teacher/chat',
+    STUDENT_CHAT: (userId: string) => `/teacher/chat?userId=${userId}`,
     MEETINGS: '/teacher/meetings',
     SERVICES: '/teacher/services',
     CREATE_SERVICE: '/teacher/services/create',
-    EDIT_SERVICE: '/teacher/services/edit',
+    EDIT_SERVICE: (serviceId: string) => `/teacher/services/edit/${serviceId}`,
     SETTINGS: '/teacher/settings',
   },
   AI_SESSION: {
