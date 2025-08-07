@@ -1,6 +1,5 @@
 'use client';
 
-import React from 'react';
 import {
   Clock,
   DollarSign,
@@ -18,7 +17,6 @@ import {
   getServiceStatusColor,
   getServiceTypeLabel,
 } from '@/lib/service-utils';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
@@ -58,7 +56,7 @@ export default function ServiceCard({
     switch (service.status) {
       case 'active':
         return { label: 'Pause', icon: Pause };
-      case 'paused':
+      case 'inactive':
         return { label: 'Activate', icon: Play };
       default:
         return { label: 'Activate', icon: Play };
@@ -72,7 +70,7 @@ export default function ServiceCard({
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-xs">
+            <Badge variant="outline" className="text-xs capitalize">
               {getServiceTypeLabel(service.type)}
             </Badge>
             <Badge

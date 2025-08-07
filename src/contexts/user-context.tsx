@@ -9,6 +9,7 @@ import {
   type UserProfile,
 } from '@/services/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 
 import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
@@ -78,7 +79,22 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     },
     enabled: !!userRole && isInitialized, // Only run when role is available and context is initialized
     staleTime: 5 * 60 * 1000, // 5 minutes
-    retry: 2,
+    retry: (failureCount, error) => {
+      // Don't retry on network errors or server errors (5xx)
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status && axiosError.response?.status >= 500) {
+          console.log('Server error detected, not retrying');
+          return false;
+        }
+      }
+
+      // Only retry once for other errors
+      return failureCount < 1;
+    },
+    retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 30000), // Exponential backoff with max 30s
+    refetchOnWindowFocus: false, // Prevent refetch on window focus
+    refetchOnReconnect: true, // Only refetch when network reconnects
   });
 
   // Keep userState in sync with query data
@@ -139,11 +155,39 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     if (error) {
       console.error('Failed to fetch user profile:', error);
       const errorMessage = getErrorMessage(error, 'fetch-profile');
-      toast.error('Failed to Load Profile', {
-        description: errorMessage,
-      });
+
+      // Only show toast for non-server errors to avoid spam
+      if (error && typeof error === 'object' && 'response' in error) {
+        const axiosError = error as AxiosError;
+        if (axiosError.response?.status && axiosError.response?.status < 500) {
+          toast.error('Failed to Load Profile', {
+            description: errorMessage,
+            action: {
+              label: 'Retry',
+              onClick: () => refetch(),
+            },
+          });
+        } else {
+          // For server errors, show a more specific message
+          toast.error('Server Unavailable', {
+            description: 'Unable to load profile. Please try again later.',
+            action: {
+              label: 'Retry',
+              onClick: () => refetch(),
+            },
+          });
+        }
+      } else {
+        toast.error('Failed to Load Profile', {
+          description: errorMessage,
+          action: {
+            label: 'Retry',
+            onClick: () => refetch(),
+          },
+        });
+      }
     }
-  }, [error]);
+  }, [error, refetch]);
 
   const refetchUser = () => {
     refetch();

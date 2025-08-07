@@ -1,12 +1,10 @@
 'use client';
 
-import React from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { ArrowLeft } from 'lucide-react';
 
 import { ServiceFormData, ServiceType } from '@/types/service';
-import { toast } from '@/hooks/use-toast';
 import { useServices } from '@/hooks/useServices';
 import { Button } from '@/components/ui/button';
 import { ServiceForm } from '@/components/services';
@@ -16,7 +14,7 @@ export default function CreateServicePage() {
   const { createNewService, canCreateType, isLoading } = useServices();
 
   const getAvailableServiceTypes = (): ServiceType[] => {
-    const allTypes: ServiceType[] = ['consultancy', 'chirologist'];
+    const allTypes: ServiceType[] = ['language', 'astrology'];
     return allTypes.filter((type) => canCreateType(type));
   };
 
@@ -24,18 +22,11 @@ export default function CreateServicePage() {
 
   const handleSubmit = async (data: ServiceFormData) => {
     try {
-      const newService = await createNewService(data);
-      toast({
-        title: 'Success!',
-        description: 'Your service has been created successfully.',
-      });
+      await createNewService(data);
+      // Success toast is handled by the hook
       router.push(ROUTES.TEACHER.SERVICES);
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to create service. Please try again.',
-        variant: 'destructive',
-      });
+      // Error toast is handled by the hook
     }
   };
 

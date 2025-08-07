@@ -6,51 +6,54 @@ import { ROUTES } from '@/constants/routes';
 import { ArrowLeft } from 'lucide-react';
 
 import { Service, ServiceFormData } from '@/types/service';
-import { toast } from '@/hooks/use-toast';
 import { useServices } from '@/hooks/useServices';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { ServiceForm } from '@/components/services';
+import { ServiceForm, ServiceFormSkeleton } from '@/components/services';
 
 export default function EditServicePage() {
   const router = useRouter();
   const params = useParams();
   const serviceId = params.id as string;
-  const { updateExistingService, getService, isLoading } = useServices();
+  const { updateExistingService, loadService, isLoading } = useServices();
   const [service, setService] = useState<Service | null>(null);
   const [serviceNotFound, setServiceNotFound] = useState(false);
+  const [isLoadingService, setIsLoadingService] = useState(true);
 
   useEffect(() => {
-    if (serviceId) {
-      const foundService = getService(serviceId);
-      if (foundService) {
-        setService(foundService);
-      } else {
-        setServiceNotFound(true);
+    const loadServiceData = async () => {
+      if (serviceId) {
+        setIsLoadingService(true);
+        setServiceNotFound(false);
+
+        try {
+          const foundService = await loadService(serviceId);
+          if (foundService) {
+            setService(foundService);
+          } else {
+            setServiceNotFound(true);
+          }
+        } catch (error) {
+          console.error('Error loading service:', error);
+          setServiceNotFound(true);
+        } finally {
+          setIsLoadingService(false);
+        }
       }
-    }
-  }, [serviceId, getService]);
+    };
+
+    loadServiceData();
+  }, [serviceId, loadService]);
 
   const handleSubmit = async (data: ServiceFormData) => {
     if (!service) return;
 
     try {
-      const updatedService = await updateExistingService(service.id, data);
-      if (updatedService) {
-        toast({
-          title: 'Success!',
-          description: 'Your service has been updated successfully.',
-        });
-        router.push(ROUTES.TEACHER.SERVICES);
-      } else {
-        throw new Error('Failed to update service');
-      }
-    } catch {
-      toast({
-        title: 'Error',
-        description: 'Failed to update service. Please try again.',
-        variant: 'destructive',
-      });
+      await updateExistingService(service.id, data);
+      // Success toast is handled by the hook
+      router.push(ROUTES.TEACHER.SERVICES);
+    } catch (error) {
+      // Error toast is handled by the hook
     }
   };
 
@@ -87,7 +90,7 @@ export default function EditServicePage() {
     );
   }
 
-  if (!service) {
+  if (isLoadingService || !service) {
     return (
       <div className="space-y-8">
         <div className="flex items-center gap-4">
@@ -102,14 +105,7 @@ export default function EditServicePage() {
           </Button>
         </div>
 
-        <Card>
-          <CardContent className="py-12 text-center">
-            <div className="mx-auto mb-4 h-8 w-8 animate-spin rounded-full border-b-2 border-primary-500"></div>
-            <p className="text-gray-600 dark:text-gray-400">
-              Loading service details...
-            </p>
-          </CardContent>
-        </Card>
+        <ServiceFormSkeleton />
       </div>
     );
   }

@@ -1,25 +1,11 @@
 'use client';
 
-import React, { useState } from 'react';
-import Link from 'next/link';
+import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import {
-  Briefcase,
-  Edit3,
-  Eye,
-  Filter,
-  Plus,
-  Search,
-  Trash2,
-} from 'lucide-react';
+import { Briefcase, Filter, Plus, Search } from 'lucide-react';
 
 import { Service, ServiceStatus, ServiceType } from '@/types/service';
-import {
-  getServiceStatusColor,
-  getServiceTypeLabel,
-} from '@/lib/service-utils';
-import { toast } from '@/hooks/use-toast';
 import { useServices } from '@/hooks/useServices';
 import {
   AlertDialog,
@@ -31,7 +17,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -42,7 +27,12 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ServiceCard, ServiceStats } from '@/components/services';
+import {
+  ServiceCard,
+  ServiceCardSkeleton,
+  ServiceDetailsModal,
+  ServiceStats,
+} from '@/components/services';
 
 export default function ServicesPage() {
   const router = useRouter();
@@ -58,21 +48,28 @@ export default function ServicesPage() {
     setFilters,
     clearFilters,
     canCreateType,
+    refreshServices,
   } = useServices();
 
   const [deleteServiceId, setDeleteServiceId] = useState<string | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);
+  const [serviceToView, setServiceToView] = useState<Service | null>(null);
+
+  // Load services on mount
+  useEffect(() => {
+    refreshServices();
+  }, [refreshServices]);
 
   const handleCreateService = () => {
     router.push(ROUTES.TEACHER.CREATE_SERVICE);
   };
 
   const handleViewService = (service: Service) => {
-    // For now, just show a toast. In a real app, this would navigate to a detailed view
-    toast({
-      title: 'View Service',
-      description: `Viewing details for "${service.title}"`,
-    });
+    setServiceToView(service);
+  };
+
+  const handleCloseModal = () => {
+    setServiceToView(null);
   };
 
   const handleEditService = (service: Service) => {
@@ -88,25 +85,10 @@ export default function ServicesPage() {
 
     setIsDeleting(true);
     try {
-      const success = await deleteExistingService(deleteServiceId);
-      if (success) {
-        toast({
-          title: 'Success',
-          description: 'Service deleted successfully',
-        });
-      } else {
-        toast({
-          title: 'Error',
-          description: 'Failed to delete service',
-          variant: 'destructive',
-        });
-      }
+      await deleteExistingService(deleteServiceId);
+      // Success toast is handled by the hook
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to delete service',
-        variant: 'destructive',
-      });
+      // Error toast is handled by the hook
     } finally {
       setIsDeleting(false);
       setDeleteServiceId(null);
@@ -115,25 +97,18 @@ export default function ServicesPage() {
 
   const handleToggleStatus = async (service: Service) => {
     const newStatus: ServiceStatus =
-      service.status === 'active' ? 'paused' : 'active';
+      service.status === 'active' ? 'inactive' : 'active';
 
     try {
       await toggleServiceStatus(service.id, newStatus);
-      toast({
-        title: 'Success',
-        description: `Service ${newStatus === 'active' ? 'activated' : 'paused'} successfully`,
-      });
+      // Success toast is handled by the hook
     } catch (error) {
-      toast({
-        title: 'Error',
-        description: 'Failed to update service status',
-        variant: 'destructive',
-      });
+      // Error toast is handled by the hook
     }
   };
 
   const getAvailableServiceTypes = (): ServiceType[] => {
-    const allTypes: ServiceType[] = ['consultancy', 'chirologist'];
+    const allTypes: ServiceType[] = ['language', 'astrology'];
     return allTypes.filter((type) => canCreateType(type));
   };
 
@@ -214,8 +189,8 @@ export default function ServicesPage() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="consultancy">Consultancy</SelectItem>
-                <SelectItem value="chirologist">Chirologist</SelectItem>
+                <SelectItem value="language">Language Consultation</SelectItem>
+                <SelectItem value="astrology">Astrology Reading</SelectItem>
               </SelectContent>
             </Select>
 
@@ -234,7 +209,7 @@ export default function ServicesPage() {
               <SelectContent>
                 <SelectItem value="all">All Status</SelectItem>
                 <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="paused">Paused</SelectItem>
+                <SelectItem value="inactive">Pause</SelectItem>
               </SelectContent>
             </Select>
 
@@ -249,19 +224,7 @@ export default function ServicesPage() {
       {isLoading ? (
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
-            <Card key={i} className="h-96 animate-pulse">
-              <CardContent className="p-6">
-                <div className="space-y-4">
-                  <div className="h-4 w-3/4 rounded bg-gray-200"></div>
-                  <div className="h-32 rounded bg-gray-200"></div>
-                  <div className="h-4 w-1/2 rounded bg-gray-200"></div>
-                  <div className="space-y-2">
-                    <div className="h-3 rounded bg-gray-200"></div>
-                    <div className="h-3 w-5/6 rounded bg-gray-200"></div>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
+            <ServiceCardSkeleton key={i} />
           ))}
         </div>
       ) : filteredServices.length > 0 ? (
@@ -323,6 +286,14 @@ export default function ServicesPage() {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+
+      {/* Service Details Modal */}
+      <ServiceDetailsModal
+        service={serviceToView}
+        isOpen={!!serviceToView}
+        onClose={handleCloseModal}
+        onEdit={handleEditService}
+      />
     </div>
   );
 }

@@ -119,8 +119,11 @@ const apiCaller = async (
     return response;
   } catch (error: unknown) {
     if (axios.isAxiosError(error)) {
-      // Handle 403 Forbidden (token expired)
-      if (error.response?.status === 403 && useAuth) {
+      // Handle 401 Unauthorized or 403 Forbidden (token expired)
+      if (
+        (error.response?.status === 403 || error.response?.status === 401) &&
+        useAuth
+      ) {
         const originalRequest = {
           url,
           method,

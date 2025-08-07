@@ -1,6 +1,8 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { serviceApi, serviceUtils } from '@/services/service';
+import { toast } from 'sonner';
 
 import {
   Service,
@@ -10,16 +12,7 @@ import {
   ServiceStatus,
   ServiceType,
 } from '@/types/service';
-import {
-  canCreateServiceType,
-  createService,
-  deleteService,
-  getServiceById,
-  getServicesByTeacher,
-  loadServices,
-  updateService,
-  updateServiceStatus,
-} from '@/lib/service-utils';
+import { getErrorMessage } from '@/lib/error-utils';
 
 interface UseServicesReturn {
   services: Service[];
@@ -47,45 +40,53 @@ interface UseServicesReturn {
 
   // Utilities
   canCreateType: (type: ServiceType) => boolean;
-  getService: (serviceId: string) => Service | null;
+  getService: (serviceId: string) => Promise<Service | null>;
+  loadService: (serviceId: string) => Promise<Service | null>;
   refreshServices: () => void;
 }
-
-const TEACHER_ID = 'teacher-1'; // Mock teacher ID
 
 export function useServices(): UseServicesReturn {
   const [services, setServices] = useState<Service[]>([]);
   const [filters, setFiltersState] = useState<ServiceFilters>({});
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false); // Changed to false since we don't auto-load
   const [error, setError] = useState<string | null>(null);
 
-  // Load services on mount
-  useEffect(() => {
-    try {
-      setIsLoading(true);
-      const teacherServices = getServicesByTeacher(TEACHER_ID);
-      setServices(teacherServices);
-      setError(null);
-    } catch (err) {
-      setError('Failed to load services');
-      console.error('Error loading services:', err);
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  // Remove automatic loading on mount - let components decide when to load
+  // useEffect(() => {
+  //   refreshServices();
+  // }, []);
 
   // Create new service
   const createNewService = useCallback(
     async (formData: ServiceFormData): Promise<Service> => {
       try {
         setIsLoading(true);
-        const newService = createService(formData, TEACHER_ID);
-        setServices((prev) => [...prev, newService]);
         setError(null);
-        return newService;
+
+        // Convert form data to API request format
+        const apiRequest = serviceUtils.formDataToApiRequest(formData);
+
+        // Call API to create service
+        const apiResponse = await serviceApi.createService(apiRequest);
+
+        // Convert API response to frontend format
+        const newService = serviceUtils.apiResponseToService(apiResponse);
+
+        // Add to local state
+        setServices((prev) => [...prev, newService as Service]);
+
+        // Show success toast
+        toast.success('Service Created Successfully!', {
+          description: 'Your new service has been created and is now active.',
+        });
+
+        return newService as Service;
       } catch (err) {
-        const errorMessage = 'Failed to create service';
+        const errorMessage = getErrorMessage(err, 'service-creation');
         setError(errorMessage);
+        toast.error('Failed to Create Service', {
+          description: errorMessage,
+        });
         throw new Error(errorMessage);
       } finally {
         setIsLoading(false);
@@ -102,17 +103,41 @@ export function useServices(): UseServicesReturn {
     ): Promise<Service | null> => {
       try {
         setIsLoading(true);
-        const updatedService = updateService(serviceId, updates);
-        if (updatedService) {
-          setServices((prev) =>
-            prev.map((s) => (s.id === serviceId ? updatedService : s))
-          );
-          setError(null);
-        }
-        return updatedService;
+        setError(null);
+
+        // Convert updates to API request format
+        const apiRequest = serviceUtils.formDataToApiRequest(
+          updates as ServiceFormData
+        );
+
+        // Call API to update service
+        const apiResponse = await serviceApi.updateService(
+          serviceId,
+          apiRequest
+        );
+
+        // Convert API response to frontend format
+        const updatedService = serviceUtils.apiResponseToService(apiResponse);
+
+        // Update local state
+        setServices((prev) =>
+          prev.map((s) =>
+            s.id === serviceId ? (updatedService as Service) : s
+          )
+        );
+
+        // Show success toast
+        toast.success('Service Updated Successfully!', {
+          description: 'Your service has been updated.',
+        });
+
+        return updatedService as Service;
       } catch (err) {
-        const errorMessage = 'Failed to update service';
+        const errorMessage = getErrorMessage(err, 'service-update');
         setError(errorMessage);
+        toast.error('Failed to Update Service', {
+          description: errorMessage,
+        });
         throw new Error(errorMessage);
       } finally {
         setIsLoading(false);
@@ -126,15 +151,26 @@ export function useServices(): UseServicesReturn {
     async (serviceId: string): Promise<boolean> => {
       try {
         setIsLoading(true);
-        const success = deleteService(serviceId);
-        if (success) {
-          setServices((prev) => prev.filter((s) => s.id !== serviceId));
-          setError(null);
-        }
-        return success;
+        setError(null);
+
+        // Call API to delete service
+        await serviceApi.deleteService(serviceId);
+
+        // Remove from local state
+        setServices((prev) => prev.filter((s) => s.id !== serviceId));
+
+        // Show success toast
+        toast.success('Service Deleted Successfully!', {
+          description: 'Your service has been permanently deleted.',
+        });
+
+        return true;
       } catch (err) {
-        const errorMessage = 'Failed to delete service';
+        const errorMessage = getErrorMessage(err, 'service-deletion');
         setError(errorMessage);
+        toast.error('Failed to Delete Service', {
+          description: errorMessage,
+        });
         throw new Error(errorMessage);
       } finally {
         setIsLoading(false);
@@ -150,17 +186,39 @@ export function useServices(): UseServicesReturn {
       status: ServiceStatus
     ): Promise<Service | null> => {
       try {
-        const updatedService = updateServiceStatus(serviceId, status);
-        if (updatedService) {
-          setServices((prev) =>
-            prev.map((s) => (s.id === serviceId ? updatedService : s))
-          );
-          setError(null);
-        }
-        return updatedService;
+        setError(null);
+
+        // Convert status to API format
+        const apiStatus = status === 'active' ? 'active' : 'inactive';
+
+        // Call API to update service status
+        await serviceApi.updateServiceStatus(serviceId, apiStatus);
+
+        // Fetch the full service details after status update
+        const fullServiceResponse = await serviceApi.getServiceById(serviceId);
+        const updatedService =
+          serviceUtils.apiResponseToService(fullServiceResponse);
+
+        // Update local state
+        setServices((prev) =>
+          prev.map((s) =>
+            s.id === serviceId ? (updatedService as Service) : s
+          )
+        );
+
+        // Show success toast
+        const statusText = status === 'active' ? 'activated' : 'deactivated';
+        toast.success(`Service ${statusText}!`, {
+          description: `Your service has been ${statusText}.`,
+        });
+
+        return updatedService as Service;
       } catch (err) {
-        const errorMessage = 'Failed to update service status';
+        const errorMessage = getErrorMessage(err, 'service-status-update');
         setError(errorMessage);
+        toast.error('Failed to Update Service Status', {
+          description: errorMessage,
+        });
         throw new Error(errorMessage);
       }
     },
@@ -226,25 +284,97 @@ export function useServices(): UseServicesReturn {
     setFiltersState({});
   }, []);
 
-  // Check if can create service type
+  // Check if can create service type (simplified logic - can create any type)
   const canCreateType = useCallback((type: ServiceType): boolean => {
-    return canCreateServiceType(TEACHER_ID, type);
+    return true; // For now, allow creating any service type
   }, []);
 
   // Get single service
-  const getService = useCallback((serviceId: string): Service | null => {
-    return getServiceById(serviceId);
-  }, []);
+  const getService = useCallback(
+    async (serviceId: string): Promise<Service | null> => {
+      console.log('getService called with ID:', serviceId);
+      console.log('Current services in state:', services);
+
+      // First try to find in local state
+      const localService = services.find((s) => s.id === serviceId);
+      if (localService) {
+        console.log('Found service in local state:', localService);
+        return localService;
+      }
+
+      console.log('Service not found in local state, fetching from API...');
+      // If not found locally, fetch from API
+      try {
+        const apiResponse = await serviceApi.getServiceById(serviceId);
+        console.log('API response received:', apiResponse);
+        const fetchedService = serviceUtils.apiResponseToService(apiResponse);
+        console.log('Converted service:', fetchedService);
+
+        // Add to local state for future use
+        setServices((prev) => {
+          const exists = prev.some((s) => s.id === serviceId);
+          if (!exists) {
+            return [...prev, fetchedService as Service];
+          }
+          return prev;
+        });
+
+        return fetchedService as Service;
+      } catch (error) {
+        console.error('Failed to fetch service by ID:', error);
+        return null;
+      }
+    },
+    [services]
+  );
+
+  // Load individual service (for edit pages)
+  const loadService = useCallback(
+    async (serviceId: string): Promise<Service | null> => {
+      try {
+        setIsLoading(true);
+        setError(null);
+
+        const service = await getService(serviceId);
+        return service;
+      } catch (error) {
+        const errorMessage = getErrorMessage(error, 'fetch-service');
+        setError(errorMessage);
+        toast.error('Failed to Load Service', {
+          description: errorMessage,
+        });
+        return null;
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [getService]
+  );
 
   // Refresh services
-  const refreshServices = useCallback(() => {
+  const refreshServices = useCallback(async () => {
     try {
-      const teacherServices = getServicesByTeacher(TEACHER_ID);
-      setServices(teacherServices);
+      setIsLoading(true);
       setError(null);
+
+      // Call API to get services
+      const apiResponse = await serviceApi.getServices();
+
+      // Convert API responses to frontend format
+      const servicesList = (apiResponse.results || []).map(
+        serviceUtils.apiResponseToService
+      );
+
+      // Update local state
+      setServices(servicesList as Service[]);
     } catch (err) {
-      setError('Failed to refresh services');
-      console.error('Error refreshing services:', err);
+      const errorMessage = getErrorMessage(err, 'fetch-services');
+      setError(errorMessage);
+      toast.error('Failed to Load Services', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
     }
   }, []);
 
@@ -269,6 +399,7 @@ export function useServices(): UseServicesReturn {
     // Utilities
     canCreateType,
     getService,
+    loadService,
     refreshServices,
   };
 }

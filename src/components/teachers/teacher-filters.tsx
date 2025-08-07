@@ -78,16 +78,16 @@ export const TeacherFilters = React.memo<TeacherFiltersProps>(
             {showFilters && (
               <div className="grid grid-cols-1 gap-4 border-t pt-4 md:grid-cols-3">
                 <div>
-                  <Label>Language</Label>
+                  <Label>Category</Label>
                   <Select
                     value={selectedLanguage}
                     onValueChange={onLanguageChange}
                   >
                     <SelectTrigger className="mt-1">
-                      <SelectValue placeholder="All languages" />
+                      <SelectValue placeholder="All Categories" />
                     </SelectTrigger>
                     <SelectContent>
-                      <SelectItem value="all">All languages</SelectItem>
+                      <SelectItem value="all">All Categories</SelectItem>
                       {availableLanguages.map((language) => (
                         <SelectItem key={language} value={language}>
                           {language}

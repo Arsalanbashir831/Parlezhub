@@ -1,6 +1,7 @@
 'use client';
 
 import React from 'react';
+import { PublicService } from '@/services/service';
 import { ChevronRight, MapPin, Star } from 'lucide-react';
 
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -26,6 +27,7 @@ export interface TeacherData {
   completedLessons: number;
   responseTime: string;
   calendlyLink: string;
+  services?: PublicService[];
 }
 
 interface TeacherCardProps {

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import { useState } from 'react';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Clock, DollarSign, Plus, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
@@ -23,7 +23,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 const serviceFormSchema = z.object({
-  type: z.enum(['consultancy', 'chirologist']),
+  type: z.enum(['language', 'astrology']),
   title: z
     .string()
     .min(10, 'Title must be at least 10 characters')
@@ -54,6 +54,8 @@ const serviceFormSchema = z.object({
     .max(10, 'Maximum 10 service items allowed'),
 });
 
+type ServiceFormSchema = z.infer<typeof serviceFormSchema>;
+
 interface ServiceFormProps {
   initialData?: Partial<ServiceFormData>;
   onSubmit: (data: ServiceFormData) => Promise<void>;
@@ -69,7 +71,7 @@ export default function ServiceForm({
   onCancel,
   isLoading = false,
   mode = 'create',
-  availableTypes = ['consultancy', 'chirologist'],
+  availableTypes = ['language', 'astrology'],
 }: ServiceFormProps) {
   const [newTag, setNewTag] = useState('');
   const [newService, setNewService] = useState('');
@@ -81,10 +83,10 @@ export default function ServiceForm({
     watch,
     setValue,
     getValues,
-  } = useForm<ServiceFormData>({
+  } = useForm<ServiceFormSchema>({
     resolver: zodResolver(serviceFormSchema),
     defaultValues: {
-      type: 'consultancy',
+      type: 'language',
       title: '',
       description: '',
       shortDescription: '',
@@ -99,17 +101,15 @@ export default function ServiceForm({
   const watchedFields = watch();
 
   const addTag = () => {
-    if (newTag.trim() && watchedFields.tags.length < 5) {
-      const currentTags = getValues('tags');
-      if (!currentTags.includes(newTag.trim())) {
-        setValue('tags', [...currentTags, newTag.trim()]);
-        setNewTag('');
-      }
+    if (newTag.trim() && !watchedFields.tags?.includes(newTag.trim())) {
+      const currentTags = getValues('tags') || [];
+      setValue('tags', [...currentTags, newTag.trim()]);
+      setNewTag('');
     }
   };
 
   const removeTag = (tagToRemove: string) => {
-    const currentTags = getValues('tags');
+    const currentTags = getValues('tags') || [];
     setValue(
       'tags',
       currentTags.filter((tag) => tag !== tagToRemove)
@@ -117,27 +117,26 @@ export default function ServiceForm({
   };
 
   const addService = () => {
-    if (newService.trim() && watchedFields.whatYouProvide.length < 10) {
-      const currentServices = getValues('whatYouProvide');
+    if (
+      newService.trim() &&
+      !watchedFields.whatYouProvide?.includes(newService.trim())
+    ) {
+      const currentServices = getValues('whatYouProvide') || [];
       setValue('whatYouProvide', [...currentServices, newService.trim()]);
       setNewService('');
     }
   };
 
   const removeService = (index: number) => {
-    const currentServices = getValues('whatYouProvide');
+    const currentServices = getValues('whatYouProvide') || [];
     setValue(
       'whatYouProvide',
       currentServices.filter((_, i) => i !== index)
     );
   };
 
-  const onFormSubmit = async (data: ServiceFormData) => {
-    try {
-      await onSubmit(data);
-    } catch (error) {
-      console.error('Error submitting service form:', error);
-    }
+  const onFormSubmit = async (data: ServiceFormSchema) => {
+    await onSubmit(data as ServiceFormData);
   };
 
   return (

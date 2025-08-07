@@ -1,163 +1,116 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import {
+  serviceApi,
+  serviceUtils,
+  type PublicService,
+} from '@/services/service';
+import { toast } from 'sonner';
 
-import { TeacherData } from '../components/teachers/teacher-card';
+import { getErrorMessage } from '@/lib/error-utils';
 
-// Mock teacher data
-const mockTeachers: TeacherData[] = [
-  {
-    id: '1',
-    name: 'Maria Rodriguez',
-    avatar: '',
-    languages: ['Spanish', 'English'],
-    specialties: ['Grammar', 'Conversation', 'Business Spanish'],
-    rating: 4.9,
-    reviewCount: 127,
-    hourlyRate: 25,
-    location: 'Madrid, Spain',
-    timezone: 'CET',
-    experience: '5+ years',
-    description:
-      'Native Spanish speaker with extensive experience teaching business professionals. Specializes in conversational Spanish and grammar fundamentals.',
-    availability: 'Available now',
-    isOnline: true,
-    isFavorite: false,
-    completedLessons: 1250,
-    responseTime: 'Usually responds in 2 hours',
-    calendlyLink: 'https://calendly.com/maria-rodriguez/spanish-lesson',
-  },
-  {
-    id: '2',
-    name: 'Jean Dubois',
-    avatar: '/placeholders/avatar.jpg',
-    languages: ['French', 'English'],
-    specialties: ['Pronunciation', 'Literature', 'Exam Prep'],
-    rating: 4.8,
-    reviewCount: 89,
-    hourlyRate: 30,
-    location: 'Paris, France',
-    timezone: 'CET',
-    experience: '8+ years',
-    description:
-      'Certified French teacher with a passion for literature and culture. Helps students achieve fluency through immersive conversation practice.',
-    availability: 'Available tomorrow',
-    isOnline: false,
-    isFavorite: true,
-    completedLessons: 890,
-    responseTime: 'Usually responds in 1 hour',
-    calendlyLink: 'https://calendly.com/jean-dubois/french-lesson',
-  },
-  {
-    id: '3',
-    name: 'Yuki Tanaka',
-    avatar: '/placeholders/avatar.jpg',
-    languages: ['Japanese', 'English'],
-    specialties: ['Beginner Friendly', 'JLPT Prep', 'Cultural Context'],
-    rating: 4.9,
-    reviewCount: 156,
-    hourlyRate: 28,
-    location: 'Tokyo, Japan',
-    timezone: 'JST',
-    experience: '6+ years',
-    description:
-      'Patient and encouraging Japanese teacher who makes learning fun. Specializes in helping beginners build confidence in speaking.',
-    availability: 'Available now',
-    isOnline: true,
-    isFavorite: false,
-    completedLessons: 2100,
-    responseTime: 'Usually responds in 30 minutes',
-    calendlyLink: 'https://calendly.com/yuki-tanaka/japanese-lesson',
-  },
-  {
-    id: '4',
-    name: 'Alessandro Bianchi',
-    avatar: '/placeholders/avatar.jpg',
-    languages: ['Italian', 'English'],
-    specialties: ['Culture', 'Travel Italian', 'Business'],
-    rating: 4.7,
-    reviewCount: 203,
-    hourlyRate: 22,
-    location: 'Rome, Italy',
-    timezone: 'CET',
-    experience: '4+ years',
-    description:
-      'Enthusiastic Italian teacher who brings culture and passion to every lesson. Perfect for travelers and business professionals.',
-    availability: 'Available in 2 hours',
-    isOnline: true,
-    isFavorite: false,
-    completedLessons: 1680,
-    responseTime: 'Usually responds in 1 hour',
-    calendlyLink: 'https://calendly.com/alessandro-bianchi/italian-lesson',
-  },
-  {
-    id: '5',
-    name: 'Hans Mueller',
-    avatar: '/placeholders/avatar.jpg',
-    languages: ['German', 'English'],
-    specialties: ['Technical German', 'Grammar', 'Certification Prep'],
-    rating: 4.8,
-    reviewCount: 144,
-    hourlyRate: 35,
-    location: 'Berlin, Germany',
-    timezone: 'CET',
-    experience: '7+ years',
-    description:
-      'Experienced German instructor specializing in technical language and certification preparation. Great for professionals and academics.',
-    availability: 'Available now',
-    isOnline: true,
-    isFavorite: false,
-    completedLessons: 1456,
-    responseTime: 'Usually responds in 45 minutes',
-    calendlyLink: 'https://calendly.com/hans-mueller/german-lesson',
-  },
-];
+export interface ServiceCardData {
+  id: string;
+  service: PublicService;
+  teacherName: string;
+  teacherAvatar: string | null;
+  teacherQualification: string;
+  teacherExperience: number;
+  teacherBio: string;
+  teacherLocation: string;
+  teacherEmail: string;
+}
 
 export const useTeachers = () => {
-  const [teachers, setTeachers] = useState<TeacherData[]>(mockTeachers);
+  const [services, setServices] = useState<PublicService[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [showFilters, setShowFilters] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
-  const [selectedTeacher, setSelectedTeacher] = useState<TeacherData | null>(
-    null
-  );
+  const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [selectedService, setSelectedService] =
+    useState<ServiceCardData | null>(null);
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Get available languages from teachers
+  // Load public services on mount
+  useEffect(() => {
+    loadPublicServices();
+  }, []);
+
+  const loadPublicServices = useCallback(async () => {
+    try {
+      setIsLoading(true);
+      setError(null);
+
+      const apiResponse = await serviceApi.getPublicServices();
+      const publicServices = apiResponse.map(
+        serviceUtils.publicApiResponseToService
+      );
+      setServices(publicServices);
+    } catch (err) {
+      const errorMessage = getErrorMessage(err, 'fetch-public-services');
+      setError(errorMessage);
+      toast.error('Failed to Load Services', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
+
+  // Convert services to service card data format
+  const serviceCards = useMemo(() => {
+    return services.map((service) => ({
+      id: service.id,
+      service,
+      teacherName: service.teacherName,
+      teacherAvatar: service.teacherAvatar,
+      teacherQualification: service.teacherQualification,
+      teacherExperience: service.teacherExperience,
+      teacherBio: service.teacherBio,
+      teacherLocation: service.teacherLocation,
+      teacherEmail: service.teacherEmail || '',
+    }));
+  }, [services]);
+
+  // Get available languages from services
   const availableLanguages = useMemo(() => {
     const languages = new Set<string>();
-    teachers.forEach((teacher) => {
-      teacher.languages.forEach((language) => languages.add(language));
+    services.forEach((service) => {
+      languages.add(service.type === 'language' ? 'Language' : 'Astrology');
     });
     return Array.from(languages).sort();
-  }, [teachers]);
+  }, [services]);
 
-  // Filter teachers based on search criteria
-  const filteredTeachers = useMemo(() => {
-    return teachers.filter((teacher) => {
+  // Filter services based on search criteria
+  const filteredServices = useMemo(() => {
+    return serviceCards.filter((serviceCard) => {
+      const { service } = serviceCard;
+
       const matchesSearch =
-        teacher.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        teacher.languages.some((lang) =>
-          lang.toLowerCase().includes(searchQuery.toLowerCase())
-        ) ||
-        teacher.specialties.some((spec) =>
-          spec.toLowerCase().includes(searchQuery.toLowerCase())
+        service.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.shortDescription
+          .toLowerCase()
+          .includes(searchQuery.toLowerCase()) ||
+        service.tags.some((tag) =>
+          tag.toLowerCase().includes(searchQuery.toLowerCase())
         );
 
       const matchesLanguage =
         selectedLanguage === 'all' ||
-        teacher.languages.includes(selectedLanguage);
+        (selectedLanguage === 'Language' && service.type === 'language') ||
+        (selectedLanguage === 'Astrology' && service.type === 'astrology');
 
       const matchesPrice =
-        teacher.hourlyRate >= priceRange[0] &&
-        teacher.hourlyRate <= priceRange[1];
+        service.price >= priceRange[0] && service.price <= priceRange[1];
 
       return matchesSearch && matchesLanguage && matchesPrice;
     });
-  }, [teachers, searchQuery, selectedLanguage, priceRange]);
+  }, [serviceCards, searchQuery, selectedLanguage, priceRange]);
 
   // Handlers
   const handleSearchChange = useCallback((value: string) => {
@@ -184,35 +137,31 @@ export const useTeachers = () => {
   }, []);
 
   const refreshTeachers = useCallback(async () => {
-    setIsLoading(true);
-    // Simulate API call
-    setTimeout(() => {
-      // In a real app, this would fetch fresh data
-      setIsLoading(false);
-    }, 1000);
-  }, []);
+    await loadPublicServices();
+  }, [loadPublicServices]);
 
-  const handleSelectTeacher = useCallback((teacher: TeacherData) => {
-    setSelectedTeacher(teacher);
+  const handleSelectService = useCallback((serviceCard: ServiceCardData) => {
+    setSelectedService(serviceCard);
     setIsDetailsPanelOpen(true);
     setIsModalOpen(true);
   }, []);
 
-  const handleClosDetailsPanel = useCallback(() => {
+  const handleCloseDetailsPanel = useCallback(() => {
     setIsModalOpen(false);
-    setSelectedTeacher(null);
+    setSelectedService(null);
   }, []);
 
   const handleCloseModal = useCallback(() => {
     setIsModalOpen(false);
-    setSelectedTeacher(null);
+    setSelectedService(null);
   }, []);
 
   return {
     // Data
-    teachers: filteredTeachers,
+    services: filteredServices,
     availableLanguages,
     isLoading,
+    error,
 
     // Filter states
     searchQuery,
@@ -220,8 +169,8 @@ export const useTeachers = () => {
     priceRange,
     showFilters,
 
-    // Teacher details panel
-    selectedTeacher,
+    // Service details panel
+    selectedService,
     isDetailsPanelOpen,
     isModalOpen,
 
@@ -231,8 +180,8 @@ export const useTeachers = () => {
     handlePriceRangeChange,
     handleToggleFilters,
     handleClearFilters,
-    handleSelectTeacher,
-    handleClosDetailsPanel,
+    handleSelectService,
+    handleCloseDetailsPanel,
     handleCloseModal,
     refreshTeachers,
   };

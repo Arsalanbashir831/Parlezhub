@@ -1,6 +1,7 @@
-export type ServiceType = 'consultancy' | 'chirologist';
+export type ServiceCategory = 'language' | 'astrology';
+export type ServiceType = 'language' | 'astrology';
 
-export type ServiceStatus = 'active' | 'paused';
+export type ServiceStatus = 'active' | 'inactive';
 
 export interface Service {
   id: string;

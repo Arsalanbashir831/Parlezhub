@@ -133,13 +133,22 @@ export const getErrorMessage = (error: unknown, context?: string): string => {
 
   // Provide context-specific fallback messages
   const fallbackMessages: Record<string, string> = {
-    login: 'Failed to sign in. Please check your credentials and try again.',
-    signup: 'Failed to create account. Please try again.',
-    'forgot-password': 'Failed to send reset email. Please try again.',
+    login: 'Invalid email or password. Please try again.',
+    signup:
+      'Failed to create account. Please check your information and try again.',
+    'forgot-password':
+      'Failed to send reset email. Please check your email address.',
     'reset-password': 'Failed to reset password. Please try again.',
     'profile-update': 'Failed to update profile. Please try again.',
+    'fetch-profile': 'Failed to load profile. Please try again.',
     'profile-picture': 'Failed to upload profile picture. Please try again.',
-    'fetch-profile': 'Failed to load profile. Please refresh the page.',
+    'service-creation': 'Failed to create service. Please try again.',
+    'service-update': 'Failed to update service. Please try again.',
+    'service-deletion': 'Failed to delete service. Please try again.',
+    'service-status-update':
+      'Failed to update service status. Please try again.',
+    'fetch-services': 'Failed to load services. Please try again.',
+    'fetch-public-services': 'Failed to load teachers. Please try again.',
   };
 
   return context

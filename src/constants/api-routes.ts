@@ -6,10 +6,6 @@ export const API_ROUTES = {
     RESET_PASSWORD: '/password-reset/confirm/',
     REFRESH_TOKEN: '/token/refresh/',
   },
-  USER: {
-    UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
-    PROFILE_PICTURE_URL: '/user/profile-picture-url/',
-  },
   STUDENT: {
     PROFILE: '/accounts/profiles/me/',
     UPDATE_PROFILE: '/accounts/profiles/me/',
@@ -17,5 +13,18 @@ export const API_ROUTES = {
   TEACHER: {
     PROFILE: '/accounts/teachers/my-profile/',
     UPDATE_PROFILE: '/accounts/teachers/my-profile/',
+    CREATE_SERVICE: '/accounts/gigs/',
+    GET_YOUR_SERVICES: '/accounts/gigs/',
+    GET_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
+    UPDATE_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
+    DELETE_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
+    UPDATE_SERVICE_STATUS: (gigId: string) => `/accounts/gigs/${gigId}/status/`,
+  },
+  USER: {
+    UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
+    PROFILE_PICTURE_URL: '/user/profile-picture-url/',
+  },
+  PUBLIC: {
+    GET_ALL_SERVICES: '/accounts/gigs/public/',
   },
 };
