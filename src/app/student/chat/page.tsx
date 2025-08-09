@@ -107,10 +107,10 @@ export default function ChatPage() {
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
         <Card className="h-full">
           <CardContent className="h-full p-0">
-            <div className="flex h-full">
+            <div className="flex h-full w-full">
               {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
               <div
-                className={`${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedChat ? 'md:flex' : 'flex'}`}
+                className={`w-full md:w-auto ${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedChat ? 'md:flex' : 'flex'}`}
               >
                 <RealConversationList
                   chats={filteredChats}
