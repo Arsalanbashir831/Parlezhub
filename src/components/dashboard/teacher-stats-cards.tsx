@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarIcon, MessageSquare, Star, TrendingUp } from 'lucide-react';
+import { CalendarIcon, Star, TrendingUp } from 'lucide-react';
 
 import { Meeting } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
@@ -14,9 +14,9 @@ export default function TeacherStatsCards({
 }: TeacherStatsCardsProps) {
   const totalMeetings = meetings.length;
   const upcomingMeetings = meetings.filter(
-    (m) => m.status === 'scheduled'
+    (m) => m.status === 'CONFIRMED'
   ).length;
-  const completedMeetings = meetings.filter((m) => m.status === 'completed');
+  const completedMeetings = meetings.filter((m) => m.status === 'CONFIRMED');
 
   // Calculate average rating from completed meetings
   const averageRating =

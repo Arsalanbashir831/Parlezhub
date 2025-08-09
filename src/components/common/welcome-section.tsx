@@ -1,4 +1,3 @@
-import React from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { Plus } from 'lucide-react';
@@ -19,7 +18,7 @@ export default function WelcomeSection({
   subtitle = 'Ready to continue your language learning journey?',
   showButton = true,
   buttonText = 'Start AI Session',
-  buttonLink = ROUTES.STUDENT.AI_TUTOR,
+  buttonLink = ROUTES.AGENT.LANGUAGE,
 }: Props) {
   return (
     <div className="relative overflow-hidden rounded-3xl bg-gradient-to-br from-primary-500 via-primary-600 to-primary-700 p-8 text-white">

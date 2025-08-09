@@ -1,77 +1,74 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { voiceService, type VoiceConversationResponse } from '@/services/voice';
 
 import { ConversationData } from '../components/history/conversation-card';
 
-// Mock conversations data
-const mockConversations: ConversationData[] = [
-  {
-    id: '1',
-    language: 'Spanish',
-    topic: 'Restaurant Conversation',
-    date: '2024-01-15T10:30:00Z',
-    duration: 15,
-    score: 85,
-    wordsSpoken: 245,
+// Adapter: API -> UI model
+function mapApiToConversationData(
+  api: VoiceConversationResponse
+): ConversationData {
+  const words = Array.isArray(api.transcription?.messages)
+    ? api.transcription!.messages!.reduce(
+        (sum, m) => sum + (m?.text?.split(/\s+/).filter(Boolean).length || 0),
+        0
+      )
+    : 0;
+  const transcriptMessages = Array.isArray(api.transcription?.messages)
+    ? api.transcription!.messages!.map((m, idx) => ({
+        id: `${api.id}-${idx}`,
+        content: m.text || '',
+        sender: (m.role === 'assistant' ? 'ai' : 'user') as 'user' | 'ai',
+        timestamp: m.timestamp || '',
+      }))
+    : [];
+  return {
+    id: String(api.id),
+    language: api.target_language || 'Unknown',
+    topic: api.topic || 'Untitled',
+    date: api.created_at,
+    duration: api.duration_minutes ?? 0,
+    score: 0, // backend not providing score in sample; default to 0
+    wordsSpoken: words,
     status: 'completed',
-    hasTranscript: true,
-  },
-  {
-    id: '2',
-    language: 'French',
-    topic: 'Travel Planning',
-    date: '2024-01-14T14:15:00Z',
-    duration: 20,
-    score: 92,
-    wordsSpoken: 312,
-    status: 'completed',
-    hasTranscript: true,
-  },
-  {
-    id: '3',
-    language: 'Spanish',
-    topic: 'Daily Routine',
-    date: '2024-01-13T09:45:00Z',
-    duration: 12,
-    score: 78,
-    wordsSpoken: 189,
-    status: 'completed',
-    hasTranscript: true,
-  },
-  {
-    id: '4',
-    language: 'German',
-    topic: 'Job Interview Practice',
-    date: '2024-01-12T16:20:00Z',
-    duration: 25,
-    score: 88,
-    wordsSpoken: 356,
-    status: 'completed',
-    hasTranscript: true,
-  },
-  {
-    id: '5',
-    language: 'French',
-    topic: 'Shopping Experience',
-    date: '2024-01-11T11:10:00Z',
-    duration: 18,
-    score: 81,
-    wordsSpoken: 267,
-    status: 'completed',
-    hasTranscript: true,
-  },
-];
+    hasTranscript: transcriptMessages.length > 0,
+    transcriptMessages,
+  };
+}
 
 export const useConversationHistory = () => {
   const router = useRouter();
-  const [conversations] = useState<ConversationData[]>(mockConversations);
+  const [conversations, setConversations] = useState<ConversationData[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [sortBy, setSortBy] = useState('date');
   const [isLoading, setIsLoading] = useState(false);
+
+  // Load from API
+  useEffect(() => {
+    let cancelled = false;
+    const load = async () => {
+      setIsLoading(true);
+      try {
+        const apiList = await voiceService.listConversations();
+        if (!cancelled) {
+          const mapped = apiList.map(mapApiToConversationData);
+          setConversations(mapped);
+        }
+      } catch {
+        // Keep empty list on error
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    };
+    load();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   // Get available languages from conversations
   const availableLanguages = useMemo(() => {
@@ -108,13 +105,19 @@ export const useConversationHistory = () => {
   const totalStats = useMemo(
     () => ({
       totalConversations: conversations.length,
-      totalMinutes: conversations.reduce((sum, conv) => sum + conv.duration, 0),
-      averageScore: Math.round(
-        conversations.reduce((sum, conv) => sum + conv.score, 0) /
-          conversations.length
+      totalMinutes: conversations.reduce(
+        (sum, conv) => sum + (conv.duration || 0),
+        0
       ),
+      averageScore:
+        conversations.length > 0
+          ? Math.round(
+              conversations.reduce((sum, conv) => sum + (conv.score || 0), 0) /
+                conversations.length
+            )
+          : 0,
       totalWords: conversations.reduce(
-        (sum, conv) => sum + conv.wordsSpoken,
+        (sum, conv) => sum + (conv.wordsSpoken || 0),
         0
       ),
     }),
@@ -123,7 +126,7 @@ export const useConversationHistory = () => {
 
   // Handlers
   const handleStartNewConversation = useCallback(() => {
-    router.push(ROUTES.STUDENT.AI_TUTOR);
+    router.push(ROUTES.AGENT.LANGUAGE);
   }, [router]);
 
   const handleLoadMore = useCallback(() => {

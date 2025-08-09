@@ -9,6 +9,7 @@ export const API_ROUTES = {
   STUDENT: {
     PROFILE: '/accounts/profiles/me/',
     UPDATE_PROFILE: '/accounts/profiles/me/',
+    GET_ALL_BOOKINGS: '/bookings/bookings/my/',
   },
   TEACHER: {
     PROFILE: '/accounts/teachers/my-profile/',
@@ -23,6 +24,9 @@ export const API_ROUTES = {
     UPDATE_AVAILABILITY: `/bookings/availability/replace/`,
     APPROVE_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/confirm/`,
+    GET_ALL_BOOKINGS: '/bookings/bookings/my/',
+    CANCEL_BOOKING: (bookingId: string | number) =>
+      `/bookings/bookings/${bookingId}/cancel/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
@@ -40,5 +44,8 @@ export const API_ROUTES = {
     GET_CHAT_MESSAGES: (chatId: string) =>
       `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/messages/${chatId}/`,
     WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}/ws/chat/`,
+  },
+  VOICE: {
+    CONVERSATIONS: '/accounts/voice-conversations/',
   },
 };

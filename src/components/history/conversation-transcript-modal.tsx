@@ -4,7 +4,6 @@ import React from 'react';
 import { Bot, User } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   Dialog,
   DialogContent,
@@ -29,112 +28,10 @@ interface ConversationTranscriptModalProps {
   conversationLanguage: string;
   conversationDuration: number;
   conversationScore: number;
+  transcriptMessages?: TranscriptMessage[];
 }
 
-// Mock transcript data - in a real app, this would come from an API
-const getMockTranscript = (conversationId: string): TranscriptMessage[] => {
-  const transcripts: Record<string, TranscriptMessage[]> = {
-    '1': [
-      {
-        id: '1',
-        content: "Hello! I'd like to practice ordering food at a restaurant.",
-        sender: 'user',
-        timestamp: '10:30:00',
-      },
-      {
-        id: '2',
-        content:
-          "¡Hola! I'd be happy to help you practice restaurant conversation in Spanish. Let's imagine you're at a nice restaurant in Madrid. I'll be your waiter. ¡Bienvenido! How can I help you today?",
-        sender: 'ai',
-        timestamp: '10:30:05',
-      },
-      {
-        id: '3',
-        content: 'Hola, me gustaría ver el menú, por favor.',
-        sender: 'user',
-        timestamp: '10:30:15',
-      },
-      {
-        id: '4',
-        content:
-          '¡Perfecto! Aquí tiene el menú. Today we have some excellent specials: paella valenciana, gazpacho andaluz, and cordero asado. What type of food are you in the mood for?',
-        sender: 'ai',
-        timestamp: '10:30:20',
-      },
-      {
-        id: '5',
-        content: 'La paella suena deliciosa. ¿Qué ingredientes tiene?',
-        sender: 'user',
-        timestamp: '10:30:35',
-      },
-      {
-        id: '6',
-        content:
-          'Excellent pronunciation! Our paella valenciana has rice, chicken, rabbit, green beans, lima beans, tomatoes, and saffron. It serves two people. Would you like to order it?',
-        sender: 'ai',
-        timestamp: '10:30:40',
-      },
-      {
-        id: '7',
-        content: 'La paella suena deliciosa. ¿Qué ingredientes tiene?',
-        sender: 'user',
-        timestamp: '10:30:35',
-      },
-      {
-        id: '8',
-        content:
-          'Excellent pronunciation! Our paella valenciana has rice, chicken, rabbit, green beans, lima beans, tomatoes, and saffron. It serves two people. Would you like to order it?',
-        sender: 'ai',
-        timestamp: '10:30:40',
-      },
-      {
-        id: '9',
-        content: 'La paella suena deliciosa. ¿Qué ingredientes tiene?',
-        sender: 'user',
-        timestamp: '10:30:35',
-      },
-      {
-        id: '10',
-        content:
-          'Excellent pronunciation! Our paella valenciana has rice, chicken, rabbit, green beans, lima beans, tomatoes, and saffron. It serves two people. Would you like to order it?',
-        sender: 'ai',
-        timestamp: '10:30:40',
-      },
-    ],
-    '2': [
-      {
-        id: '1',
-        content:
-          "I'm planning a trip to France and want to practice asking for directions.",
-        sender: 'user',
-        timestamp: '14:15:00',
-      },
-      {
-        id: '2',
-        content:
-          "Bonjour! That's wonderful that you're visiting France. I'd love to help you practice asking for directions. Let's pretend you're lost in Paris and need to find the Louvre Museum. Go ahead and ask me for directions in French!",
-        sender: 'ai',
-        timestamp: '14:15:05',
-      },
-      {
-        id: '3',
-        content:
-          'Bonjour, excusez-moi. Pouvez-vous me dire où se trouve le Louvre?',
-        sender: 'user',
-        timestamp: '14:15:20',
-      },
-      {
-        id: '4',
-        content:
-          "Bonjour! Bien sûr, je peux vous aider. Le Louvre n'est pas très loin d'ici. You need to go straight for about 200 meters, then turn left at the traffic light. Continue walking for about 5 minutes and you'll see the glass pyramid. You can't miss it!",
-        sender: 'ai',
-        timestamp: '14:15:25',
-      },
-    ],
-  };
-
-  return transcripts[conversationId] || [];
-};
+// Adapter: prefer provided transcript, fallback to none
 
 const formatTime = (timeString: string) => {
   return new Date(`2024-01-01T${timeString}`).toLocaleTimeString([], {
@@ -154,8 +51,9 @@ export const ConversationTranscriptModal: React.FC<
   conversationLanguage,
   conversationDuration,
   conversationScore,
+  transcriptMessages,
 }) => {
-  const transcript = getMockTranscript(conversationId);
+  const transcript = transcriptMessages || [];
 
   const getScoreColor = (score: number) => {
     if (score >= 90) return 'bg-green-100 text-green-800';
@@ -183,9 +81,9 @@ export const ConversationTranscriptModal: React.FC<
                   <span>{new Date(conversationDate).toLocaleDateString()}</span>
                   <span>•</span>
                   <span>{conversationDuration} minutes</span>
-                  <Badge className={getScoreColor(conversationScore)}>
-                    {conversationScore}% Score
-                  </Badge>
+                  {/* <Badge className={getScoreColor(conversationScore)}>
+                      {conversationScore}% Score
+                    </Badge> */}
                 </div>
               </div>
             </div>

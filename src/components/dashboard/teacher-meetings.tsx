@@ -17,7 +17,7 @@ interface TeacherMeetingsProps {
 
 export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
   const upcomingMeetings = meetings
-    .filter((m) => m.status === 'scheduled')
+    .filter((m) => m.status === 'CONFIRMED')
     .slice(0, 5);
 
   return (
@@ -62,9 +62,9 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
                     <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
                       {meeting.subject}
                     </p>
-                    <Badge variant="outline" className="text-xs">
+                    {/* <Badge variant="outline" className="text-xs">
                       {meeting.language}
-                    </Badge>
+                    </Badge> */}
                   </div>
                   <p className="text-xs text-gray-600 dark:text-gray-400">
                     with {meeting.studentName || 'Student'}
@@ -74,16 +74,16 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
                   </p>
                 </div>
                 <div className="text-right">
-                  <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
+                  {/* <p className="text-sm font-medium text-gray-900 dark:text-gray-100">
                     ${meeting.price}
-                  </p>
+                  </p> */}
                   <Badge
                     variant={
-                      meeting.status === 'scheduled' ? 'default' : 'secondary'
+                      meeting.status === 'CONFIRMED' ? 'default' : 'secondary'
                     }
                     className="text-xs"
                   >
-                    {meeting.status}
+                    {meeting.status === 'CONFIRMED' ? 'Upcoming' : 'Cancelled'}
                   </Badge>
                 </div>
               </div>

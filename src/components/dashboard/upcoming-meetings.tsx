@@ -15,8 +15,10 @@ interface UpcomingMeetingsProps {
 }
 
 export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
+  const now = new Date();
   const upcomingMeetings = meetings
-    .filter((m) => m.status === 'scheduled')
+    .filter((m) => m.status === 'CONFIRMED' && new Date(m.date) > now)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
     .slice(0, 5);
 
   return (

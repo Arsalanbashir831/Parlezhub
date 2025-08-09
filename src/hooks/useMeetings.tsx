@@ -1,12 +1,16 @@
 'use client';
 
-import { useCallback, useMemo, useState } from 'react';
-import { usePathname, useRouter } from 'next/navigation';
+import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/user-context';
+import { bookingService } from '@/services/availability';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { toast } from 'sonner';
 
 import { formatDateTime } from '@/lib/utils';
 
-export type MeetingStatus = 'scheduled' | 'completed' | 'cancelled';
+export type MeetingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 export interface Meeting {
   id: string;
   teacherName?: string; // Optional for teacher view
@@ -15,198 +19,188 @@ export interface Meeting {
   studentAvatar?: string; // For teacher view
   subject: string;
   date: string; // ISO string
+  endDate?: string; // ISO string (meeting end)
   duration: number; // minutes
   status: MeetingStatus;
   language: string;
   price: number;
   location: string;
-  meetingLink?: string;
+  meetingLink?: string; // deprecated: prefer joinLink/hostLink
+  joinLink?: string;
+  hostLink?: string;
   notes?: string;
   rating?: number;
   feedback?: string;
   cancelReason?: string;
 }
 
-// Mock meetings data for students (meetings they booked with teachers)
-const mockStudentMeetings = [
-  {
-    id: '1',
-    teacherName: 'Maria Rodriguez',
-    teacherAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Grammar Review',
-    date: '2025-07-30T15:00:00Z', // Future date
-    duration: 60,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/abc123',
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    notes: 'Focus on past tense conjugations and subjunctive mood',
-  },
-  {
-    id: '2',
-    teacherName: 'Jean Dubois',
-    teacherAvatar: '/placeholders/avatar.jpg',
-    subject: 'French Pronunciation',
-    date: '2025-08-02T10:00:00Z', // Future date
-    duration: 45,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/def456',
-    language: 'French',
-    price: 30,
-    location: 'Online',
-    notes: 'Work on nasal vowels and liaison',
-  },
-  {
-    id: '3',
-    teacherName: 'Hans Mueller',
-    teacherAvatar: '/placeholders/avatar.jpg',
-    subject: 'German Business Conversation',
-    date: '2025-08-05T14:30:00Z', // Future date
-    duration: 90,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/ghi789',
-    language: 'German',
-    price: 35,
-    location: 'Online',
-    notes: 'Practice formal business presentations',
-  },
-  {
-    id: '4',
-    teacherName: 'Maria Rodriguez',
-    teacherAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Conversation Practice',
-    date: '2024-01-10T15:00:00Z',
-    duration: 60,
-    status: 'completed' as MeetingStatus,
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    rating: 5,
-    feedback:
-      'Excellent session! Maria helped me improve my conversational skills significantly.',
-  },
-  {
-    id: '5',
-    teacherName: 'Jean Dubois',
-    teacherAvatar: '/placeholders/avatar.jpg',
-    subject: 'French Literature Discussion',
-    date: '2024-01-08T16:00:00Z',
-    duration: 75,
-    status: 'completed' as MeetingStatus,
-    language: 'French',
-    price: 30,
-    location: 'Online',
-    rating: 4,
-    feedback: 'Great discussion about French poetry. Very insightful!',
-  },
-] as Meeting[];
-
-// Mock meetings data for teachers (students who booked sessions with them)
-const mockTeacherMeetings = [
-  {
-    id: 't1',
-    studentName: 'Alex Johnson',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Grammar Review',
-    date: '2025-07-30T15:00:00Z', // Future date
-    duration: 60,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/abc123',
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    notes:
-      'Student wants to focus on past tense conjugations and subjunctive mood',
-  },
-  {
-    id: 't2',
-    studentName: 'Sarah Chen',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Conversation Practice',
-    date: '2025-08-01T14:00:00Z', // Future date
-    duration: 45,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/def456',
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    notes: 'Intermediate level student, focus on fluency',
-  },
-  {
-    id: 't3',
-    studentName: 'Mike Wilson',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Business Vocabulary',
-    date: '2025-08-03T16:30:00Z', // Future date
-    duration: 90,
-    status: 'scheduled' as MeetingStatus,
-    meetingLink: 'https://meet.example.com/ghi789',
-    language: 'Spanish',
-    price: 35,
-    location: 'Online',
-    notes: 'Corporate client, advanced level',
-  },
-  {
-    id: 't4',
-    studentName: 'Emma Davis',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Pronunciation',
-    date: '2024-01-10T15:00:00Z',
-    duration: 60,
-    status: 'completed' as MeetingStatus,
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    rating: 5,
-    feedback:
-      'Great student! Very motivated and improved significantly during our session.',
-  },
-  {
-    id: 't5',
-    studentName: 'David Kim',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Culture Discussion',
-    date: '2024-01-08T16:00:00Z',
-    duration: 75,
-    status: 'completed' as MeetingStatus,
-    language: 'Spanish',
-    price: 30,
-    location: 'Online',
-    rating: 4,
-    feedback:
-      'Engaging conversation about Latin American culture. Student showed great interest.',
-  },
-  {
-    id: 't6',
-    studentName: 'Lisa Brown',
-    studentAvatar: '/placeholders/avatar.jpg',
-    subject: 'Spanish Grammar Basics',
-    date: '2024-01-05T11:00:00Z',
-    duration: 45,
-    status: 'cancelled' as MeetingStatus,
-    language: 'Spanish',
-    price: 25,
-    location: 'Online',
-    cancelReason: 'Student had a family emergency',
-  },
-] as Meeting[];
+// API response shape for bookings
+interface ApiBooking {
+  id: string | number;
+  teacher_name?: string;
+  student_name?: string;
+  start_time: string; // ISO
+  end_time?: string; // ISO
+  finish_time?: string; // ISO
+  duration_minutes?: number;
+  status?: string;
+  language?: string;
+  price?: number;
+  zoom_start_url?: string;
+  zoom_join_url?: string;
+  notes?: string;
+}
 
 export function useMeetings() {
   const router = useRouter();
-  const pathname = usePathname();
 
   // Determine if we're in teacher or student context
-  const isTeacher = pathname?.includes('/teacher/');
-  const mockData = isTeacher ? mockTeacherMeetings : mockStudentMeetings;
+  const { user } = useUser();
+  const queryClient = useQueryClient();
+
+  // console.log({ user });
 
   // UI state
-  const [meetings, setMeetings] = useState<Meeting[]>(mockData);
+  const [meetings, setMeetings] = useState<Meeting[]>([]);
+
+  // Load meetings from API
+  useQuery<ApiBooking[], Error, Meeting[], [string, string | undefined]>({
+    queryKey: ['bookings', user?.role],
+    queryFn: async () =>
+      bookingService.getMy(user?.role as 'TEACHER' | 'STUDENT'),
+    select: (data: ApiBooking[]) => {
+      const role = (user?.role || '').toLowerCase();
+      const mapped: Meeting[] = (data || []).map((b: ApiBooking) => {
+        const startIso = b.start_time;
+        const endIso = b.end_time || b.finish_time;
+        const durationMin =
+          b.duration_minutes ??
+          (startIso && endIso
+            ? Math.max(
+                0,
+                Math.round(
+                  (new Date(endIso).getTime() - new Date(startIso).getTime()) /
+                    60000
+                )
+              )
+            : 60);
+        return {
+          id: String(b.id),
+          teacherName: b.teacher_name,
+          studentName: b.student_name,
+          subject: 'Language Session',
+          date: startIso,
+          endDate: endIso,
+          duration: durationMin,
+          status: (b.status as MeetingStatus) || 'PENDING',
+          language: b.language || 'N/A',
+          price: b.price || 0,
+          location: 'Online',
+          meetingLink: role === 'teacher' ? b.zoom_start_url : b.zoom_join_url,
+          joinLink: b.zoom_join_url,
+          hostLink: b.zoom_start_url,
+          notes: b.notes,
+        };
+      });
+      return mapped;
+    },
+    enabled: Boolean(user?.id && user?.role),
+    staleTime: 60_000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Keep local state in sync with query result via a second query call
+  const localQuery = useQuery<
+    ApiBooking[],
+    Error,
+    Meeting[],
+    ['bookings-local', string | undefined]
+  >({
+    queryKey: ['bookings-local', user?.role],
+    queryFn: async () =>
+      bookingService.getMy(user?.role as 'TEACHER' | 'STUDENT'),
+    select: (data: ApiBooking[]) => {
+      const role = (user?.role || '').toLowerCase();
+      const mapped: Meeting[] = (data || []).map((b: ApiBooking) => ({
+        id: String(b.id),
+        teacherName: b.teacher_name,
+        studentName: b.student_name,
+        subject: 'Language Session',
+        date: b.start_time,
+        endDate: b.end_time || b.finish_time,
+        duration:
+          b.duration_minutes ??
+          (b.end_time
+            ? Math.max(
+                0,
+                Math.round(
+                  (new Date(b.end_time).getTime() -
+                    new Date(b.start_time).getTime()) /
+                    60000
+                )
+              )
+            : 60),
+        status: (b.status as MeetingStatus) || 'PENDING',
+        language: b.language || 'N/A',
+        price: b.price || 0,
+        location: 'Online',
+        meetingLink: role === 'teacher' ? b.zoom_start_url : b.zoom_join_url,
+        joinLink: b.zoom_join_url,
+        hostLink: b.zoom_start_url,
+        notes: b.notes,
+      }));
+      return mapped;
+    },
+    enabled: Boolean(user?.id && user?.role),
+    staleTime: 30_000,
+    refetchOnWindowFocus: false,
+  });
+
+  // Sync local state from the localQuery result whenever it changes
+  useEffect(() => {
+    if (localQuery.data) {
+      setMeetings(localQuery.data);
+    }
+  }, [localQuery.data]);
+
+  const cancelMutation = useMutation({
+    mutationFn: async ({
+      bookingId,
+      reason,
+    }: {
+      bookingId: string;
+      reason: string;
+    }) => bookingService.cancel(bookingId, reason),
+    onSuccess: async () => {
+      toast.success('Booking cancelled');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
+        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
+      ]);
+    },
+    onError: () => toast.error('Failed to cancel booking'),
+  });
+  const approveMutation = useMutation({
+    mutationFn: async (bookingId: string) => bookingService.approve(bookingId),
+    onSuccess: async () => {
+      toast.success('Booking approved');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
+        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
+      ]);
+    },
+    onError: () => toast.error('Failed to approve booking'),
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [activeTab, setActiveTab] = useState<
-    'upcoming' | 'completed' | 'cancelled'
+    'pending' | 'upcoming' | 'completed' | 'cancelled'
   >('upcoming');
+
+  // Normalized user role for consumers (e.g., UI components)
+  const userRole: 'teacher' | 'student' | '' = (
+    user?.role ? user.role.toLowerCase() : ''
+  ) as 'teacher' | 'student' | '';
 
   // Handlers
   const handleJoinMeeting = useCallback((meeting: Meeting) => {
@@ -215,7 +209,7 @@ export function useMeetings() {
 
   const handleMessageTeacher = useCallback(
     (personId: string) => {
-      if (isTeacher) {
+      if (user?.role === 'TEACHER') {
         // Teacher messaging a student
         router.push(ROUTES.TEACHER.CHAT + '?student=' + personId);
       } else {
@@ -223,16 +217,16 @@ export function useMeetings() {
         router.push(ROUTES.STUDENT.CHAT + '?teacher=' + personId);
       }
     },
-    [router, isTeacher]
+    [router, user?.role]
   );
 
   const getStatusColor = useCallback((status: MeetingStatus) => {
     switch (status) {
-      case 'scheduled':
+      case 'PENDING':
         return 'bg-blue-100 text-blue-800';
-      case 'completed':
+      case 'CONFIRMED':
         return 'bg-green-100 text-green-800';
-      case 'cancelled':
+      case 'CANCELLED':
         return 'bg-red-100 text-red-800';
       default:
         return 'bg-gray-100 text-gray-800';
@@ -244,7 +238,7 @@ export function useMeetings() {
     const q = searchQuery.toLowerCase();
     const now = new Date();
 
-    return meetings.filter((m) => {
+    const filtered = (meetings || []).filter((m) => {
       // Search matches both teacher and student names
       const matchesSearch =
         m.teacherName?.toLowerCase().includes(q) ||
@@ -256,46 +250,68 @@ export function useMeetings() {
         selectedLanguage === 'all' || m.language === selectedLanguage;
 
       let matchesTab = true;
-      if (activeTab === 'upcoming') {
-        matchesTab = m.status === 'scheduled' && new Date(m.date) > now;
+      if (activeTab === 'pending') {
+        matchesTab = m.status === 'PENDING';
+      } else if (activeTab === 'upcoming') {
+        matchesTab = m.status === 'CONFIRMED' && new Date(m.date) > now;
       } else if (activeTab === 'completed') {
-        matchesTab = m.status === 'completed';
+        // Completed only if confirmed and end time has passed
+        const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
+        matchesTab = m.status === 'CONFIRMED' && end <= now;
       } else if (activeTab === 'cancelled') {
-        matchesTab = m.status === 'cancelled';
+        matchesTab = m.status === 'CANCELLED';
       }
 
       return matchesSearch && matchesLanguage && matchesTab;
     });
+
+    // Sort ascending by start time
+    return filtered.sort(
+      (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
+    );
   }, [meetings, searchQuery, selectedLanguage, activeTab]);
 
   const counts = useMemo(() => {
     const now = new Date();
+    const pending = meetings.filter((m) => m.status === 'PENDING').length;
     const upcoming = meetings.filter(
-      (m) => m.status === 'scheduled' && new Date(m.date) > now
+      (m) => m.status === 'CONFIRMED' && new Date(m.date) > now
     ).length;
-    const completed = meetings.filter((m) => m.status === 'completed').length;
-    const cancelled = meetings.filter((m) => m.status === 'cancelled').length;
-    return { upcoming, completed, cancelled };
+    const completed = meetings.filter((m) => {
+      const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
+      return m.status === 'CONFIRMED' && end <= now;
+    }).length;
+    const cancelled = meetings.filter((m) => m.status === 'CANCELLED').length;
+    return { pending, upcoming, completed, cancelled };
   }, [meetings]);
 
   const totalCompletedHours = useMemo(() => {
+    const now = new Date();
     const mins = meetings
-      .filter((m) => m.status === 'completed')
+      .filter((m) => {
+        if (m.status !== 'CONFIRMED') return false;
+        const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
+        return end <= now;
+      })
       .reduce((sum, m) => sum + m.duration, 0);
     return Math.round(mins / 60);
   }, [meetings]);
 
   // Optional helper: next upcoming meeting label
   const nextUpcomingLabel = useMemo(() => {
+    const now = new Date();
     const next = meetings
-      .filter((m) => m.status === 'scheduled' && new Date(m.date) > new Date())
+      .filter((m) => m.status === 'CONFIRMED' && new Date(m.date) > now)
       .sort((a, b) => +new Date(a.date) - +new Date(b.date))[0];
     return next ? formatDateTime(next.date) : 'None scheduled';
   }, [meetings, formatDateTime]);
 
+  console.log({ meetings, filteredMeetings });
+
   return {
     meetings,
     setMeetings,
+    userRole,
     searchQuery,
     setSearchQuery,
     selectedLanguage,
@@ -309,5 +325,8 @@ export function useMeetings() {
     handleJoinMeeting,
     handleMessageTeacher,
     getStatusColor,
+    cancelBooking: (bookingId: string, reason: string) =>
+      cancelMutation.mutate({ bookingId, reason }),
+    approveBooking: (bookingId: string) => approveMutation.mutate(bookingId),
   };
 }

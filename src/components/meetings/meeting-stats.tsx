@@ -6,7 +6,8 @@ import { useMeetings } from '@/hooks/useMeetings';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
 export default function MeetingStats() {
-  const { counts, nextUpcomingLabel, totalCompletedHours } = useMeetings();
+  const { counts, nextUpcomingLabel, totalCompletedHours, userRole } =
+    useMeetings();
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       <Card>
@@ -42,7 +43,9 @@ export default function MeetingStats() {
         </CardHeader>
         <CardContent>
           <div className="text-2xl font-bold">{totalCompletedHours}h</div>
-          <p className="text-xs text-muted-foreground">Learning time</p>
+          <p className="text-xs text-muted-foreground">
+            {userRole === 'student' ? 'Learning time' : 'Teaching time'}
+          </p>
         </CardContent>
       </Card>
     </div>

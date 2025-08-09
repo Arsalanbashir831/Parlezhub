@@ -120,6 +120,27 @@ export const bookingService = {
     );
     return response.data;
   },
+  getMy: async (role: 'STUDENT' | 'TEACHER') => {
+    const endpoint =
+      role === 'TEACHER'
+        ? API_ROUTES.TEACHER.GET_ALL_BOOKINGS
+        : API_ROUTES.STUDENT.GET_ALL_BOOKINGS;
+    const response = await apiCaller(endpoint, 'GET', undefined, {}, true);
+    const data = response.data;
+    if (Array.isArray(data)) return data;
+    if (data && Array.isArray(data.results)) return data.results;
+    return [];
+  },
+  cancel: async (bookingId: string | number, reason: string) => {
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.CANCEL_BOOKING(bookingId),
+      'POST',
+      { reason } as unknown as Record<string, string>,
+      {},
+      true
+    );
+    return response.data;
+  },
 };
 
 // Helpers to map between UI schedule and API

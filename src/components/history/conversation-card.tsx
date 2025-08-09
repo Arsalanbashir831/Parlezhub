@@ -3,9 +3,7 @@
 import React, { useState } from 'react';
 import { Clock, MessageSquare } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
@@ -21,6 +19,12 @@ export interface ConversationData {
   wordsSpoken: number;
   status: string;
   hasTranscript: boolean;
+  transcriptMessages?: {
+    id: string;
+    content: string;
+    sender: 'user' | 'ai';
+    timestamp: string;
+  }[];
 }
 
 interface ConversationCardProps {
@@ -88,14 +92,14 @@ export const ConversationCard = React.memo<ConversationCardProps>(
               </div>
 
               <div className="flex flex-shrink-0 flex-row items-center justify-between gap-3 sm:flex-col sm:justify-end lg:flex-row">
-                <Badge
+                {/* <Badge
                   className={cn(
                     'text-xs font-semibold sm:text-sm',
                     getScoreColor(conversation.score)
                   )}
                 >
                   {conversation.score}%
-                </Badge>
+                </Badge> */}
                 <Button
                   variant="outline"
                   size="sm"
@@ -120,6 +124,7 @@ export const ConversationCard = React.memo<ConversationCardProps>(
           conversationLanguage={conversation.language}
           conversationDuration={conversation.duration}
           conversationScore={conversation.score}
+          transcriptMessages={conversation.transcriptMessages}
         />
       </>
     );

@@ -17,7 +17,7 @@ export default function DashboardStatsCards({
 }: DashboardStatsProps) {
   const totalConversations = conversations.length;
   const upcomingMeetings = meetings.filter(
-    (m) => m.status === 'scheduled'
+    (m) => m.status === 'CONFIRMED'
   ).length;
 
   return (

@@ -1,84 +1,125 @@
 'use client';
 
+import { useState } from 'react';
 import { Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
 
+import { Meeting, MeetingStatus, useMeetings } from '@/hooks/useMeetings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import CancelMeetingDialog from '@/components/meetings/cancel-meeting-dialog';
 
-interface Meeting {
-  id: string;
-  title: string;
-  date: string;
-  time: string;
-  duration: number;
-  status: 'upcoming' | 'completed' | 'cancelled';
-  studentName?: string;
-  teacherName?: string;
-  type: 'lesson' | 'consultation';
-}
+export default function MeetingTabs() {
+  const [cancelOpen, setCancelOpen] = useState(false);
+  const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
+  const [isCancelling, setIsCancelling] = useState(false);
+  const {
+    meetings,
+    filteredMeetings,
+    handleJoinMeeting,
+    cancelBooking,
+    counts,
+    activeTab,
+    setActiveTab,
+    approveBooking,
+    userRole,
+  } = useMeetings();
 
-interface MeetingTabsProps {
-  meetings: Meeting[];
-  userRole: 'student' | 'teacher';
-  onJoinMeeting?: (meetingId: string) => void;
-  onCancelMeeting?: (meetingId: string) => void;
-  onRescheduleMeeting?: (meetingId: string) => void;
-}
-
-export default function MeetingTabs({
-  meetings,
-  userRole,
-  onJoinMeeting,
-  onCancelMeeting,
-  onRescheduleMeeting,
-}: MeetingTabsProps) {
-  const handleTabChange = (value: string) => {
-    // Handle tab change logic here
-    console.log('Tab changed to:', value);
+  const openCancel = (id: string) => {
+    setCancelTargetId(id);
+    setCancelOpen(true);
   };
 
-  const upcomingMeetings = meetings?.filter((m) => m.status === 'upcoming');
-  const completedMeetings = meetings?.filter((m) => m.status === 'completed');
-  const cancelledMeetings = meetings?.filter((m) => m.status === 'cancelled');
+  const confirmCancel = async (reason: string) => {
+    if (!cancelTargetId) return;
+    setIsCancelling(true);
+    try {
+      await cancelBooking(cancelTargetId, reason);
+      setCancelOpen(false);
+      setCancelTargetId(null);
+    } finally {
+      setIsCancelling(false);
+    }
+  };
+  console.log({ filteredMeetings, meetings });
 
-  const getStatusIcon = (status: Meeting['status']) => {
+  // Use role from hook instead of heuristic
+  const handleTabChange = (value: string) => {
+    setActiveTab(value as 'upcoming' | 'completed' | 'cancelled');
+  };
+
+  const now = new Date();
+
+  const getStatusIcon = (status: MeetingStatus) => {
     switch (status) {
-      case 'upcoming':
+      case 'PENDING':
         return <Clock className="h-4 w-4 text-blue-500" />;
-      case 'completed':
+      case 'CONFIRMED':
         return <CheckCircle className="h-4 w-4 text-green-500" />;
-      case 'cancelled':
+      case 'CANCELLED':
         return <XCircle className="h-4 w-4 text-red-500" />;
       default:
         return null;
     }
   };
 
-  const getStatusBadge = (status: Meeting['status']) => {
-    const variants = {
-      upcoming: 'default',
-      completed: 'secondary',
-      cancelled: 'destructive',
-    } as const;
-
+  const getStatusBadge = (
+    status: MeetingStatus,
+    overrideLabel?: 'pending' | 'upcoming' | 'completed' | 'cancelled'
+  ) => {
+    const variant =
+      status === 'PENDING'
+        ? 'default'
+        : status === 'CONFIRMED'
+          ? 'secondary'
+          : 'destructive';
+    const label = overrideLabel
+      ? overrideLabel
+      : status === 'PENDING'
+        ? 'pending'
+        : status === 'CONFIRMED'
+          ? 'confirmed'
+          : 'cancelled';
     return (
-      <Badge variant={variants[status]} className="capitalize">
-        {status}
+      <Badge
+        variant={variant as 'default' | 'secondary' | 'destructive'}
+        className="capitalize"
+      >
+        {label}
       </Badge>
     );
   };
 
-  const renderMeetingCard = (meeting: Meeting) => (
+  const formatDate = (iso: string) =>
+    new Date(iso).toLocaleDateString([], {
+      year: 'numeric',
+      month: 'short',
+      day: '2-digit',
+    });
+  const formatTime = (iso: string) =>
+    new Date(iso).toLocaleTimeString([], {
+      hour: '2-digit',
+      minute: '2-digit',
+    });
+
+  const renderMeetingCard = (
+    meeting: Meeting,
+    overrideLabel?: 'pending' | 'upcoming' | 'completed' | 'cancelled'
+  ) => (
     <Card key={meeting.id} className="mb-4">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-2">
             {getStatusIcon(meeting.status)}
-            <CardTitle className="text-lg">{meeting.title}</CardTitle>
+            <CardTitle className="text-lg">
+              {meeting.subject ||
+                (userRole === 'student'
+                  ? `Lesson with ${meeting.teacherName ?? ''}`
+                  : `Lesson with ${meeting.studentName ?? ''}`)}
+            </CardTitle>
           </div>
-          {getStatusBadge(meeting.status)}
+          {getStatusBadge(meeting.status, overrideLabel)}
         </div>
       </CardHeader>
       <CardContent>
@@ -86,7 +127,7 @@ export default function MeetingTabs({
           <div className="flex items-center gap-2 text-sm text-gray-600">
             <Calendar className="h-4 w-4" />
             <span>
-              {meeting.date} at {meeting.time}
+              {formatDate(meeting.date)} at {formatTime(meeting.date)}
             </span>
             <span>({meeting.duration} min)</span>
           </div>
@@ -103,31 +144,32 @@ export default function MeetingTabs({
             </p>
           )}
 
-          {meeting.status === 'upcoming' && (
-            <div className="flex gap-2 pt-2">
-              {onJoinMeeting && (
-                <Button size="sm" onClick={() => onJoinMeeting(meeting.id)}>
+          {((meeting.status === 'PENDING' && new Date(meeting.date) > now) ||
+            meeting.status === 'CONFIRMED') && (
+            <div className="flex flex-wrap gap-2 pt-2">
+              {/* Only teachers can approve pending */}
+              {userRole === 'teacher' && meeting.status === 'PENDING' && (
+                <Button size="sm" onClick={() => approveBooking(meeting.id)}>
+                  Approve
+                </Button>
+              )}
+              {/* Join button visible only for confirmed */}
+              {meeting.status === 'CONFIRMED' && (
+                <Button
+                  size="sm"
+                  onClick={() => handleJoinMeeting(meeting)}
+                  disabled={new Date(meeting.date) > now}
+                >
                   Join Meeting
                 </Button>
               )}
-              {onRescheduleMeeting && (
-                <Button
-                  size="sm"
-                  variant="outline"
-                  onClick={() => onRescheduleMeeting(meeting.id)}
-                >
-                  Reschedule
-                </Button>
-              )}
-              {onCancelMeeting && (
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => onCancelMeeting(meeting.id)}
-                >
-                  Cancel
-                </Button>
-              )}
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={() => openCancel(meeting.id)}
+              >
+                Cancel
+              </Button>
             </div>
           )}
         </div>
@@ -136,71 +178,137 @@ export default function MeetingTabs({
   );
 
   return (
-    <Tabs defaultValue="upcoming" onValueChange={handleTabChange}>
-      <TabsList className="grid w-full grid-cols-3">
-        <TabsTrigger value="upcoming">
-          Upcoming ({upcomingMeetings?.length})
-        </TabsTrigger>
-        <TabsTrigger value="completed">
-          Completed ({completedMeetings?.length})
-        </TabsTrigger>
-        <TabsTrigger value="cancelled">
-          Cancelled ({cancelledMeetings?.length})
-        </TabsTrigger>
-      </TabsList>
+    <>
+      <Tabs defaultValue="upcoming" onValueChange={handleTabChange}>
+        <TabsList className="grid w-full grid-cols-4">
+          <TabsTrigger value="pending">Pending ({counts.pending})</TabsTrigger>
+          <TabsTrigger value="upcoming">
+            Upcoming ({counts.upcoming})
+          </TabsTrigger>
+          <TabsTrigger value="completed">
+            Completed ({counts.completed})
+          </TabsTrigger>
+          <TabsTrigger value="cancelled">
+            Cancelled ({counts.cancelled})
+          </TabsTrigger>
+        </TabsList>
+        <TabsContent value="pending" className="mt-6">
+          {activeTab === 'pending' && filteredMeetings?.length > 0 ? (
+            filteredMeetings?.map((m) => (
+              <Card key={m.id} className="mb-4">
+                <CardHeader className="pb-3">
+                  <div className="flex items-start justify-between">
+                    <div className="flex items-center gap-2">
+                      {getStatusIcon(m.status)}
+                      <CardTitle className="text-lg">
+                        {userRole === 'student'
+                          ? `Lesson with ${m.teacherName ?? ''}`
+                          : `Lesson with ${m.studentName ?? ''}`}
+                      </CardTitle>
+                    </div>
+                    {getStatusBadge(m.status, 'pending')}
+                  </div>
+                </CardHeader>
+                <CardContent>
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-gray-600">
+                      <Calendar className="h-4 w-4" />
+                      <span>
+                        {formatDate(m.date)} at {formatTime(m.date)}
+                      </span>
+                    </div>
+                    <div className="flex gap-2 pt-2">
+                      {userRole === 'teacher' && (
+                        <Button size="sm" onClick={() => approveBooking(m.id)}>
+                          Approve
+                        </Button>
+                      )}
+                      <Button
+                        size="sm"
+                        variant="destructive"
+                        onClick={() => openCancel(m.id)}
+                      >
+                        Cancel
+                      </Button>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium">
+                  No pending meetings
+                </h3>
+                <p className="text-gray-600">New requests will appear here.</p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-      <TabsContent value="upcoming" className="mt-6">
-        {upcomingMeetings?.length > 0 ? (
-          upcomingMeetings?.map(renderMeetingCard)
-        ) : (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium">No upcoming meetings</h3>
-              <p className="text-gray-600">
-                Schedule a meeting to get started with your language learning
-                journey.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </TabsContent>
+        <TabsContent value="upcoming" className="mt-6">
+          {activeTab === 'upcoming' && filteredMeetings?.length > 0 ? (
+            filteredMeetings?.map((m) => renderMeetingCard(m, 'upcoming'))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium">
+                  No upcoming meetings
+                </h3>
+                <p className="text-gray-600">
+                  Schedule a meeting to get started with your language learning
+                  journey.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-      <TabsContent value="completed" className="mt-6">
-        {completedMeetings?.length > 0 ? (
-          completedMeetings?.map(renderMeetingCard)
-        ) : (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium">
-                No completed meetings
-              </h3>
-              <p className="text-gray-600">
-                Your completed meetings will appear here.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </TabsContent>
+        <TabsContent value="completed" className="mt-6">
+          {activeTab === 'completed' && filteredMeetings?.length > 0 ? (
+            filteredMeetings?.map((m) => renderMeetingCard(m, 'completed'))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium">
+                  No completed meetings
+                </h3>
+                <p className="text-gray-600">
+                  Your completed meetings will appear here.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
 
-      <TabsContent value="cancelled" className="mt-6">
-        {cancelledMeetings?.length > 0 ? (
-          cancelledMeetings?.map(renderMeetingCard)
-        ) : (
-          <Card>
-            <CardContent className="py-8 text-center">
-              <XCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-              <h3 className="mb-2 text-lg font-medium">
-                No cancelled meetings
-              </h3>
-              <p className="text-gray-600">
-                Cancelled meetings will appear here.
-              </p>
-            </CardContent>
-          </Card>
-        )}
-      </TabsContent>
-    </Tabs>
+        <TabsContent value="cancelled" className="mt-6">
+          {activeTab === 'cancelled' && filteredMeetings?.length > 0 ? (
+            filteredMeetings?.map((m) => renderMeetingCard(m, 'cancelled'))
+          ) : (
+            <Card>
+              <CardContent className="py-8 text-center">
+                <XCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+                <h3 className="mb-2 text-lg font-medium">
+                  No cancelled meetings
+                </h3>
+                <p className="text-gray-600">
+                  Cancelled meetings will appear here.
+                </p>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
+      <CancelMeetingDialog
+        open={cancelOpen}
+        onOpenChange={setCancelOpen}
+        onConfirm={confirmCancel}
+        isSubmitting={isCancelling}
+      />
+    </>
   );
 }

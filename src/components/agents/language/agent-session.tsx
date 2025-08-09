@@ -1,11 +1,13 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
-import { getLanguageName } from '@/constants/ai-session';
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { getLanguageName, SESSION_DURATION } from '@/constants/ai-session';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
 import { getToken } from '@/services/openai/token';
+import voiceService from '@/services/voice';
 import { realtime } from '@openai/agents';
+import { toast } from 'sonner';
 
 import { useHandleSessionHistory } from '@/hooks/useHandleSessionHistory';
 import { useSessionTimer } from '@/hooks/useSessionTimer';
@@ -37,6 +39,10 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const { timeRemaining } = useSessionTimer(sessionState);
+  const sessionStartedAtRef = useRef<number | null>(null);
+  const hasPostedRef = useRef(false);
+  const hasUnmountPostedRef = useRef(false);
+  const hasEverStartedRef = useRef(false);
 
   // --- Remove all browser speech recognition code ---
 
@@ -96,6 +102,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
           console.error('Error closing session on unmount:', error);
         }
       }
+      // Do not auto-post on unmount; only post on explicit stop
       // if (recognitionRef.current) { // This line is removed as per the edit hint
       //   try {
       //     recognitionRef.current.stop();
@@ -105,6 +112,52 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       // }
     };
   }, [session]);
+
+  const postConversation = useCallback(
+    async (durationMinutes?: number) => {
+      console.log('🛑 postConversation invoked');
+      console.log('🛑 hasPostedRef.current:', hasPostedRef.current);
+      console.log('🛑 sessionState:', sessionState);
+      // Guard: only allow posting once, and only after session completion
+      // if (hasPostedRef.current || sessionState !== 'completed') return;
+      // hasPostedRef.current = true;
+      try {
+        const topic = (config.topic || prompt || '').toString();
+        const messages = transcriptItems
+          .filter((item) => item.type === 'MESSAGE')
+          .map((item) => ({
+            role: item.role,
+            text: item.title,
+            timestamp: item.timestamp,
+            status: item.status,
+          }));
+
+        // Avoid posting empty transcripts
+        if (!messages.length) {
+          console.log('🛑 Skipping post: no transcript messages');
+          return;
+        }
+
+        const payload = {
+          topic,
+          transcription: { messages },
+          native_language: getLanguageName(config.nativeLanguage),
+          target_language: getLanguageName(config.language),
+          ...(typeof durationMinutes === 'number'
+            ? { duration_minutes: durationMinutes }
+            : {}),
+        };
+
+        console.log('📤 Posting voice conversation payload:', payload);
+        await voiceService.createConversation(payload);
+        toast.success('Conversation saved');
+      } catch (error) {
+        console.error('Failed to save voice conversation:', error);
+        toast.error('Failed to save conversation');
+      }
+    },
+    [config, prompt, transcriptItems]
+  );
 
   const handleStartSession = useCallback(async () => {
     setIsConnecting(true);
@@ -202,6 +255,8 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
 
       setIsConnected(true);
       setSessionState('active');
+      sessionStartedAtRef.current = Date.now();
+      hasEverStartedRef.current = true;
       console.log('🔔 OpenAI session connected successfully!');
 
       // Trigger the agent to start speaking by sending a simple message
@@ -258,17 +313,21 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
   }, []);
 
   const handleStopSession = useCallback(async () => {
+    console.log('🛑 handleStopSession invoked');
+    // Persist conversation first, then mark completed and cleanup
+    // Prefer timer-derived duration to match UI timer
+    const elapsedSeconds = Math.max(0, SESSION_DURATION - timeRemaining);
+    const durationMinutes = Math.max(0, Math.ceil(elapsedSeconds / 60));
+    await postConversation(durationMinutes);
     setSessionState('completed');
 
     if (session) {
       try {
-        // Properly close the session using the close() method
         session.close();
         console.log('🔔 Session closed successfully');
       } catch (error) {
         console.error('Error closing session:', error);
       } finally {
-        // Clean up the session
         setSession(null);
         setIsConnected(false);
         setIsAISpeaking(false);
@@ -276,25 +335,19 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
       }
     }
 
-    // Log the final transcript from the transcript context
-    console.log('📝 Final Session Transcript:', transcriptItems);
-    console.log(
-      '📝 Final Session Messages:',
-      transcriptItems
-        .filter((item) => item.type === 'MESSAGE')
-        .map((item) => ({
-          role: item.role,
-          text: item.title,
-          timestamp: item.timestamp,
-          status: item.status,
-        }))
-    );
-
-    // Call onEnd after a short delay to show completion state
     setTimeout(() => {
       onEnd();
-    }, 2000);
-  }, [session, onEnd, transcriptItems]);
+    }, 500);
+  }, [session, onEnd, postConversation]);
+
+  // Auto-stop when timer hits zero
+  useEffect(() => {
+    if (sessionState === 'active' && timeRemaining === 0) {
+      void handleStopSession();
+    }
+  }, [sessionState, timeRemaining, handleStopSession]);
+
+  // No safety-net auto-posting; posting is triggered from handleStopSession only
 
   const handleToggleMute = useCallback(() => {
     // OpenAI doesn't have direct mute/unmute, but we can track state
@@ -302,6 +355,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
   }, []);
 
   const handleBack = useCallback(() => {
+    console.log('↩️ handleBack invoked');
     // Close session if it's active before going back
     if (session && (sessionState === 'active' || sessionState === 'paused')) {
       try {

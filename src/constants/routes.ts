@@ -13,7 +13,6 @@ export const ROUTES = {
   STUDENT: {
     DASHBOARD: '/student/dashboard',
     TEACHERS: '/student/teachers',
-    AI_TUTOR: '/student/ai-tutor',
     AI_CHIROLOGIST: '/student/ai-chirologist',
     CHAT: '/student/chat',
     TEACHER_CHAT: (teacherId: string) => `/student/chat?teacherId=${teacherId}`,

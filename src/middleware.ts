@@ -6,7 +6,6 @@ const STUDENT_ROUTES = [
   '/student',
   '/student/dashboard',
   '/student/teachers',
-  '/student/ai-tutor',
   '/student/ai-chirologist',
   '/student/chat',
   '/student/meetings',
