@@ -6,6 +6,8 @@ import { ChatMessage } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
+import MessageBody from './message-body';
+
 interface RealMessageProps {
   message: ChatMessage;
   isOwnMessage: boolean;
@@ -16,7 +18,7 @@ const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
     <div className={cn('flex gap-3', isOwnMessage && 'flex-row-reverse')}>
       <Avatar className="h-8 w-8">
         <AvatarFallback className="bg-primary-100 text-xs text-primary-700">
-          {isOwnMessage ? 'Y' : message.sender_name?.charAt(0) || 'U'}
+          {isOwnMessage ? 'Y' : 'U'}
         </AvatarFallback>
       </Avatar>
       <div
@@ -27,9 +29,7 @@ const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
             : 'bg-gray-100 text-gray-900'
         )}
       >
-        <p className="whitespace-pre-wrap break-words text-sm">
-          {message.content}
-        </p>
+        <MessageBody content={message.content} />
         <p
           className={cn(
             'mt-1 text-xs',

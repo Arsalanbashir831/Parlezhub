@@ -89,7 +89,7 @@ const RealChatHeader = memo(
                 </div>
 
                 <Badge variant="outline" className="text-xs">
-                  {currentUserRole === 'student' ? 'Teacher' : 'S tudent'}
+                  {currentUserRole === 'student' ? 'Teacher' : 'Student'}
                 </Badge>
               </div>
               <p className="text-sm text-gray-500">

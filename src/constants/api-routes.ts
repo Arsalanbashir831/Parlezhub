@@ -21,6 +21,8 @@ export const API_ROUTES = {
     UPDATE_SERVICE_STATUS: (gigId: string) => `/accounts/gigs/${gigId}/status/`,
     SET_AVAILABILITY: '/bookings/availability/bulk/',
     UPDATE_AVAILABILITY: `/bookings/availability/replace/`,
+    APPROVE_BOOKING: (bookingId: string | number) =>
+      `/bookings/bookings/${bookingId}/confirm/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
@@ -29,7 +31,8 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
     GET_TEACHER_AVAILABILITY: (teacherId: string) =>
-      `/bookings/availability/weekly/?teacher_id=${teacherId}/`,
+      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
+    SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {
     CREATE_CHAT: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/chats/start/`,
@@ -37,11 +40,5 @@ export const API_ROUTES = {
     GET_CHAT_MESSAGES: (chatId: string) =>
       `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/messages/${chatId}/`,
     WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}/ws/chat/`,
-  },
-  AVAILABILITY: {
-    SET_BULK: '/bookings/availability/bulk/',
-    REPLACE_ALL: '/bookings/availability/replace/',
-    GET_WEEKLY: (teacherId: string) =>
-      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
   },
 };

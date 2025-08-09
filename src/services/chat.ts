@@ -232,6 +232,21 @@ class ChatService {
     };
   }
 
+  // Append a local message into all handlers without sending over the socket
+  appendLocal(content: string, senderId?: string): void {
+    const localMessage: WebSocketMessage = {
+      type: 'message',
+      content,
+      sender_id: senderId,
+      timestamp: new Date().toISOString(),
+    };
+    try {
+      this.handleMessage(localMessage);
+    } catch (e) {
+      console.error('Failed to append local message', e);
+    }
+  }
+
   onConnectionChange(handler: (connected: boolean) => void): () => void {
     const id = Math.random().toString(36).substr(2, 9);
     this.connectionHandlers.set(id, handler);

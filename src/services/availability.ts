@@ -17,7 +17,7 @@ export const availabilityService = {
   // Create initial availability (bulk)
   setBulk: async (items: ApiAvailabilityItem[]) => {
     const response = await apiCaller(
-      API_ROUTES.AVAILABILITY.SET_BULK,
+      API_ROUTES.TEACHER.SET_AVAILABILITY,
       'POST',
       items as unknown as Record<string, string>,
       {},
@@ -29,7 +29,7 @@ export const availabilityService = {
   // Replace existing availability entirely
   replaceAll: async (items: ApiAvailabilityItem[]) => {
     const response = await apiCaller(
-      API_ROUTES.AVAILABILITY.REPLACE_ALL,
+      API_ROUTES.TEACHER.UPDATE_AVAILABILITY,
       'PUT',
       items as unknown as Record<string, string>,
       {},
@@ -41,7 +41,7 @@ export const availabilityService = {
   // Get teacher weekly availability
   getWeekly: async (teacherId: string): Promise<ApiAvailabilityItem[]> => {
     const response = await apiCaller(
-      API_ROUTES.AVAILABILITY.GET_WEEKLY(teacherId),
+      API_ROUTES.PUBLIC.GET_TEACHER_AVAILABILITY(teacherId),
       'GET',
       undefined,
       {},
@@ -86,6 +86,39 @@ export const availabilityService = {
       return items;
     }
     return [];
+  },
+};
+
+export interface CreateBookingRequest {
+  teacher: string; // teacher_id
+  start_time: string; // ISO string with Z
+  end_time: string; // ISO string with Z
+  session_type: 'video_call' | 'voice_call' | 'in_person';
+  notes?: string;
+}
+
+export const bookingService = {
+  schedule: async (payload: CreateBookingRequest) => {
+    const response = await apiCaller(
+      // Using PUBLIC.SCHEDULE_BOOKING per routes file
+      // If this should be a TEACHER or BOOKING namespace, adjust accordingly
+      API_ROUTES.PUBLIC.SCHEDULE_BOOKING,
+      'POST',
+      payload as unknown as Record<string, string>,
+      {},
+      true
+    );
+    return response.data;
+  },
+  approve: async (bookingId: string | number) => {
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.APPROVE_BOOKING(bookingId),
+      'POST',
+      {},
+      {},
+      true
+    );
+    return response.data;
   },
 };
 

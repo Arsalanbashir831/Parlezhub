@@ -172,6 +172,7 @@ export default function ChatPage() {
 
       {/* Booking Dialog */}
       <BookingDialog
+        teacherId={selectedChat?.teacher_id}
         isOpen={isBookingDialogOpen}
         onClose={handleBookingDialogClose}
       />
