@@ -76,8 +76,8 @@ export function ServiceDetailsDrawer({
 
       if (newChat) {
         toast.success(`Chat started with ${teacherName}`);
-        // Navigate to the chat page with the new chat
-        router.push(ROUTES.STUDENT.CHAT);
+        // Navigate to the chat page with chatId param
+        router.push(`${ROUTES.STUDENT.CHAT}?chatId=${newChat.id}`);
         onClose();
       }
     } catch (error) {

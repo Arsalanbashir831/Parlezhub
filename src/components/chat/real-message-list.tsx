@@ -21,6 +21,10 @@ const RealMessageList = memo(
       return messages.map((message) => ({
         ...message,
         isOwnMessage: message.sender_id === currentUserId,
+        // Normalize timestamp for rendering
+        timestamp: message.timestamp || new Date().toISOString(),
+        // Ensure content is string
+        content: message.content ?? '',
       }));
     }, [messages, currentUserId]);
 
@@ -53,9 +57,9 @@ const RealMessageList = memo(
               </div>
             </div>
           ) : (
-            memoizedMessages.map((message) => (
+            memoizedMessages.map((message, idx) => (
               <RealMessage
-                key={message.id}
+                key={message.id || `${message.timestamp}-${idx}`}
                 message={message}
                 isOwnMessage={message.isOwnMessage}
               />

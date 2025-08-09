@@ -35,7 +35,9 @@ export interface CreateChatRequest {
 
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'read' | 'error';
-  data: unknown;
+  content?: string;
+  sender_id?: string;
+  is_typing?: boolean;
   timestamp: string;
 }
 
@@ -122,6 +124,7 @@ class ChatService {
   }
 
   async getChatMessages(chatId: string): Promise<ChatMessage[]> {
+    // Fetch messages from chat server per API_ROUTES
     const response = await chatApiCaller(
       API_ROUTES.CHAT.GET_CHAT_MESSAGES(chatId),
       'GET'
@@ -199,7 +202,7 @@ class ChatService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const message: WebSocketMessage = {
         type: 'message',
-        data: { content },
+        content,
         timestamp: new Date().toISOString(),
       };
       this.ws.send(JSON.stringify(message));
@@ -212,7 +215,7 @@ class ChatService {
     if (this.ws && this.ws.readyState === WebSocket.OPEN) {
       const message: WebSocketMessage = {
         type: 'typing',
-        data: { is_typing: isTyping },
+        is_typing: isTyping,
         timestamp: new Date().toISOString(),
       };
       this.ws.send(JSON.stringify(message));

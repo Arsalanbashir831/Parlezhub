@@ -73,7 +73,7 @@ export default function ServicesPage() {
   };
 
   const handleEditService = (service: Service) => {
-    router.push(`${ROUTES.TEACHER.EDIT_SERVICE}/${service.id}`);
+    router.push(ROUTES.TEACHER.EDIT_SERVICE(service.id));
   };
 
   const handleDeleteService = (service: Service) => {

@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/contexts/user-context';
 
 import { ChatRoom } from '@/types/chat';
@@ -17,10 +18,12 @@ export default function ChatPage() {
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
   const { user } = useUser();
+  const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   // Initialize real chat hook
   const {
-    chats,
     selectedChat,
     currentMessages,
     newMessage,
@@ -32,7 +35,7 @@ export default function ChatPage() {
     sendMessage,
     setNewMessage,
     setSearchQuery,
-    createChat,
+    selectChatById,
     filteredChats,
   } = useRealChat({
     currentUserId: user?.id || '',
@@ -52,14 +55,34 @@ export default function ChatPage() {
   const handleChatSelect = useCallback(
     (chat: ChatRoom) => {
       selectChat(chat);
+      // Update URL with chatId param
+      const params = new URLSearchParams(searchParams.toString());
+      params.set('chatId', chat.id);
+      router.push(`${pathname}?${params.toString()}`);
       setShowChatOnMobile(true);
     },
-    [selectChat]
+    [selectChat, router, pathname, searchParams]
   );
 
   const handleBackToList = useCallback(() => {
     setShowChatOnMobile(false);
-  }, []);
+    // Remove chatId from URL
+    const params = new URLSearchParams(searchParams.toString());
+    params.delete('chatId');
+    const qs = params.toString();
+    router.push(qs ? `${pathname}?${qs}` : pathname);
+  }, [pathname, router, searchParams]);
+
+  // Auto-select chat from URL param if present
+  useEffect(() => {
+    const idFromUrl = searchParams.get('chatId');
+    if (idFromUrl) {
+      // Attempt selection via hook helper
+      selectChatById(idFromUrl);
+      setShowChatOnMobile(true);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [searchParams]);
 
   // Show loading state while user data is being fetched
   if (!user) {
