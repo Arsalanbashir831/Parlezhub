@@ -170,7 +170,7 @@ You have access to:
 
 START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student to speak first. Begin with a warm greeting and introduction.
 `,
-        voice: 'sage',
+        voice: 'alloy',
       });
 
       console.log('🤖 Creating OpenAI agent...');
