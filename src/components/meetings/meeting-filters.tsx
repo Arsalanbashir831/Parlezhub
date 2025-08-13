@@ -5,17 +5,10 @@ import { Search } from 'lucide-react';
 import { useMeetings } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 
 export default function MeetingFilters() {
-  const { searchQuery, setSearchQuery, selectedLanguage, setSelectedLanguage } =
-    useMeetings();
+  const { searchQuery, setSearchQuery } = useMeetings();
+
   return (
     <Card>
       <CardContent className="p-6">
@@ -29,18 +22,6 @@ export default function MeetingFilters() {
               className="pl-10"
             />
           </div>
-          <Select value={selectedLanguage} onValueChange={setSelectedLanguage}>
-            <SelectTrigger className="w-full md:w-48">
-              <SelectValue placeholder="All languages" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">All languages</SelectItem>
-              <SelectItem value="Spanish">Spanish</SelectItem>
-              <SelectItem value="French">French</SelectItem>
-              <SelectItem value="German">German</SelectItem>
-              <SelectItem value="Italian">Italian</SelectItem>
-            </SelectContent>
-          </Select>
         </div>
       </CardContent>
     </Card>

@@ -45,7 +45,7 @@ const RealMessageList = memo(
     }, [messages]);
 
     return (
-      <ScrollArea className="flex-1 px-4" ref={scrollAreaRef}>
+      <ScrollArea className="flex-1 px-4 pt-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {memoizedMessages.length === 0 ? (
             <div className="flex h-32 items-center justify-center text-center text-gray-500">

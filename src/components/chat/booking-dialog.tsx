@@ -103,8 +103,31 @@ const BookingDialog = memo(
         toast.error('Please select date, start and end time');
         return;
       }
-      const startIso = new Date(`${date}T${startTime}:00Z`).toISOString();
-      const endIso = new Date(`${date}T${endTime}:00Z`).toISOString();
+
+      console.log('startTime', startTime);
+      console.log('endTime', endTime);
+      console.log('date', date);
+
+      // Combine date and time as local time (user's timezone)
+      const startLocal = new Date(`${date}T${startTime}:00`);
+      const endLocal = new Date(`${date}T${endTime}:00`);
+      const startIso = startLocal.toISOString();
+      const endIso = endLocal.toISOString();
+
+      const toLocal = (iso: string) =>
+        new Date(iso).toLocaleString([], {
+          year: 'numeric',
+          month: 'short',
+          day: '2-digit',
+          hour: '2-digit',
+          minute: '2-digit',
+        });
+
+      console.log('startIso', startIso);
+      console.log('endIso', endIso);
+      console.log('startLocal', toLocal(startIso));
+      console.log('endLocal', toLocal(endIso));
+
       setSubmitting(true);
       try {
         const booking = await bookingService.schedule({
@@ -114,6 +137,8 @@ const BookingDialog = memo(
           session_type: 'video_call',
           notes: '',
         });
+
+        console.log('booking', booking);
         toast.success('Booking scheduled');
 
         // Send a booking summary message into the chat

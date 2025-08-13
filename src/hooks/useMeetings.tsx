@@ -192,7 +192,6 @@ export function useMeetings() {
     onError: () => toast.error('Failed to approve booking'),
   });
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [activeTab, setActiveTab] = useState<
     'pending' | 'upcoming' | 'completed' | 'cancelled'
   >('upcoming');
@@ -246,37 +245,36 @@ export function useMeetings() {
         m.subject.toLowerCase().includes(q) ||
         m.language.toLowerCase().includes(q);
 
-      const matchesLanguage =
-        selectedLanguage === 'all' || m.language === selectedLanguage;
-
       let matchesTab = true;
+      const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
       if (activeTab === 'pending') {
         matchesTab = m.status === 'PENDING';
       } else if (activeTab === 'upcoming') {
-        matchesTab = m.status === 'CONFIRMED' && new Date(m.date) > now;
+        // Show ongoing and future confirmed meetings
+        matchesTab = m.status === 'CONFIRMED' && end > now;
       } else if (activeTab === 'completed') {
         // Completed only if confirmed and end time has passed
-        const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
         matchesTab = m.status === 'CONFIRMED' && end <= now;
       } else if (activeTab === 'cancelled') {
         matchesTab = m.status === 'CANCELLED';
       }
 
-      return matchesSearch && matchesLanguage && matchesTab;
+      return matchesSearch && matchesTab;
     });
 
     // Sort ascending by start time
     return filtered.sort(
       (a, b) => new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-  }, [meetings, searchQuery, selectedLanguage, activeTab]);
+  }, [meetings, searchQuery, activeTab]);
 
   const counts = useMemo(() => {
     const now = new Date();
     const pending = meetings.filter((m) => m.status === 'PENDING').length;
-    const upcoming = meetings.filter(
-      (m) => m.status === 'CONFIRMED' && new Date(m.date) > now
-    ).length;
+    const upcoming = meetings.filter((m) => {
+      const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
+      return m.status === 'CONFIRMED' && end > now;
+    }).length;
     const completed = meetings.filter((m) => {
       const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
       return m.status === 'CONFIRMED' && end <= now;
@@ -314,8 +312,6 @@ export function useMeetings() {
     userRole,
     searchQuery,
     setSearchQuery,
-    selectedLanguage,
-    setSelectedLanguage,
     activeTab,
     setActiveTab,
     filteredMeetings,

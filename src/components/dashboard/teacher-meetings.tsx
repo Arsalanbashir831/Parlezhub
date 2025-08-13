@@ -18,7 +18,8 @@ interface TeacherMeetingsProps {
 export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
   const upcomingMeetings = meetings
     .filter((m) => m.status === 'CONFIRMED')
-    .slice(0, 5);
+    .slice(0, 5)
+    .sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
 
   return (
     <div className="lg:col-span-12">
@@ -40,7 +41,8 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
         <CardContent className="space-y-4">
           {upcomingMeetings.length > 0 ? (
             upcomingMeetings.map((meeting) => (
-              <div
+              <Link
+                href={ROUTES.TEACHER.MEETINGS}
                 key={meeting.id}
                 className="flex cursor-pointer items-center gap-4 rounded-xl bg-gray-50 p-4 transition-colors hover:bg-gray-100 dark:bg-gray-800 dark:hover:bg-gray-700"
               >
@@ -86,7 +88,7 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
                     {meeting.status === 'CONFIRMED' ? 'Upcoming' : 'Cancelled'}
                   </Badge>
                 </div>
-              </div>
+              </Link>
             ))
           ) : (
             <div className="py-8 text-center">
