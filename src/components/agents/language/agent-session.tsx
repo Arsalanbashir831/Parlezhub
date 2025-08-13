@@ -338,7 +338,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
     setTimeout(() => {
       onEnd();
     }, 500);
-  }, [session, onEnd, postConversation]);
+  }, [session, onEnd, postConversation, timeRemaining]);
 
   // Auto-stop when timer hits zero
   useEffect(() => {
