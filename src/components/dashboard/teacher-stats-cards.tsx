@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarIcon, Star, TrendingUp } from 'lucide-react';
+import { CalendarIcon, TrendingUp } from 'lucide-react';
 
 import { Meeting } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
@@ -28,7 +28,7 @@ export default function TeacherStatsCards({
   return (
     <>
       {/* Average Rating Card */}
-      <div className="lg:col-span-6">
+      {/* <div className="lg:col-span-6">
         <Card className="h-full border-yellow-200 bg-gradient-to-br from-yellow-50 to-yellow-100 dark:border-yellow-800 dark:from-yellow-900/20 dark:to-yellow-800/20">
           <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
@@ -50,7 +50,7 @@ export default function TeacherStatsCards({
             </div>
           </CardContent>
         </Card>
-      </div>
+      </div> */}
 
       {/* Upcoming Meetings Card */}
       <div className="lg:col-span-6">
