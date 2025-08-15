@@ -32,7 +32,7 @@ export function Logo({
             sizeClasses[size]
           )}
         >
-          Linkgua<span className="text-primary-500">Flex</span>
+          Lingua<span className="text-primary-500">Flex</span>
         </span>
       )}
     </div>

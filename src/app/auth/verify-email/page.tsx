@@ -98,10 +98,10 @@ export default function VerifyEmailPage() {
           <p>
             Having trouble? Contact our support team at{' '}
             <a
-              href="mailto:support@linkguaflex.com"
+              href="mailto:support@linguaflex.com"
               className="text-primary-600 hover:underline"
             >
-              support@linkguaflex.com
+              support@linguaflex.com
             </a>
           </p>
         </div>
