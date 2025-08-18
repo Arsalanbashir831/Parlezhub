@@ -44,6 +44,26 @@ export function middleware(request: NextRequest) {
   );
 
   if (isPublicRoute) {
+    // Only restrict auth pages (sign-in, signup) for authenticated users
+    const isAuthPage =
+      pathname.startsWith('/auth/sign-in') ||
+      pathname.startsWith('/auth/signup');
+    if (isAuthPage) {
+      const accessToken = request.cookies.get('access_token')?.value;
+      const userRole = request.cookies.get('user_role')?.value;
+      if (accessToken && userRole) {
+        if (userRole === 'STUDENT') {
+          return NextResponse.redirect(
+            new URL('/student/dashboard', request.url)
+          );
+        }
+        if (userRole === 'TEACHER') {
+          return NextResponse.redirect(
+            new URL('/teacher/dashboard', request.url)
+          );
+        }
+      }
+    }
     return NextResponse.next();
   }
 

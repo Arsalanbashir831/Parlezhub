@@ -34,7 +34,7 @@ const signupSchema = z
 type SignupFormData = z.infer<typeof signupSchema>;
 
 export default function SignupPage() {
-  const { signup, isLoading, error } = useAuth();
+  const { signup, isLoading, error, isAuthenticated } = useAuth();
   const router = useRouter();
 
   const {
@@ -47,6 +47,14 @@ export default function SignupPage() {
       role: 'STUDENT',
     },
   });
+
+  // Client-side guard: prevent access if already authenticated
+  if (isAuthenticated) {
+    if (typeof window !== 'undefined') {
+      router.replace('/');
+    }
+    return null;
+  }
 
   const onSubmit = async (data: SignupFormData) => {
     await signup(

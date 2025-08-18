@@ -35,28 +35,16 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(null);
-  const [isInitialized, setIsInitialized] = useState(false);
+  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(() => {
+    try {
+      const role = getCookie('user_role');
+      return role === 'TEACHER' || role === 'STUDENT' ? role : null;
+    } catch {
+      return null;
+    }
+  });
   const [userState, setUserState] = useState<UserProfile | null>(null);
   const queryClient = useQueryClient();
-
-  // Initialize user role from cookies on mount
-  useEffect(() => {
-    const initializeUserRole = () => {
-      try {
-        const role = getCookie('user_role');
-        if (role && (role === 'TEACHER' || role === 'STUDENT')) {
-          setUserRole(role);
-        }
-      } catch (error) {
-        console.error('Failed to initialize user role:', error);
-      } finally {
-        setIsInitialized(true);
-      }
-    };
-
-    initializeUserRole();
-  }, []);
 
   // Query for user profile based on role
   const {
@@ -77,7 +65,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         return userApi.getTeacherProfile();
       }
     },
-    enabled: !!userRole && isInitialized, // Only run when role is available and context is initialized
+    enabled: !!userRole, // Only run when role is available
     staleTime: 5 * 60 * 1000, // 5 minutes
     retry: (failureCount, error) => {
       // Don't retry on network errors or server errors (5xx)
