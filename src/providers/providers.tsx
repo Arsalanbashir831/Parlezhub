@@ -1,6 +1,7 @@
 'use client';
 
 import type React from 'react';
+import { Suspense } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
 import { SessionProvider } from '@/contexts/session-context';
 import { ThemeProvider } from '@/contexts/theme-context';
@@ -11,7 +12,7 @@ import { QueryProvider } from '@/providers/query-provider';
 import { Toaster } from '@/components/ui/sonner';
 import AuthFlowHandler from '@/components/auth/auth-flow-handler';
 
-export function Providers({ children }: { children: React.ReactNode }) {
+function ProvidersContent({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       <ThemeProvider>
@@ -26,5 +27,13 @@ export function Providers({ children }: { children: React.ReactNode }) {
         <Toaster richColors />
       </ThemeProvider>
     </QueryProvider>
+  );
+}
+
+export function Providers({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={null}>
+      <ProvidersContent>{children}</ProvidersContent>
+    </Suspense>
   );
 }
