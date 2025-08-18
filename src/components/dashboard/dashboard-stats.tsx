@@ -2,7 +2,7 @@
 
 import { CalendarIcon, MessageSquare, TrendingUp } from 'lucide-react';
 
-import { Meeting } from '@/hooks/useMeetings';
+import { Meeting, useMeetings } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConversationData } from '@/components/history/conversation-card';
 
@@ -16,9 +16,8 @@ export default function DashboardStatsCards({
   meetings,
 }: DashboardStatsProps) {
   const totalConversations = conversations.length;
-  const upcomingMeetings = meetings.filter(
-    (m) => m.status === 'CONFIRMED'
-  ).length;
+
+  const { counts, nextUpcomingLabel } = useMeetings();
 
   return (
     <>
@@ -38,9 +37,6 @@ export default function DashboardStatsCards({
               </p>
               <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
                 {totalConversations}
-              </p>
-              <p className="text-xs text-blue-600 dark:text-blue-400">
-                +3 from last week
               </p>
             </div>
           </CardContent>
@@ -62,10 +58,10 @@ export default function DashboardStatsCards({
                 Upcoming Meetings
               </p>
               <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                {upcomingMeetings}
+                {counts.upcoming}
               </p>
               <p className="text-xs text-purple-600 dark:text-purple-400">
-                Next: Tomorrow 3:00 PM
+                Next: {nextUpcomingLabel}
               </p>
             </div>
           </CardContent>

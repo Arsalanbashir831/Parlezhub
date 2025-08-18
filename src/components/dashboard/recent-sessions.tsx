@@ -5,7 +5,6 @@ import { ROUTES } from '@/constants/routes';
 import { ArrowRight } from 'lucide-react';
 
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { ConversationData } from '@/components/history/conversation-card';
@@ -51,12 +50,6 @@ export default function RecentSessions({ conversations }: RecentSessionsProps) {
                   {conversation.language} • {conversation.duration}m
                 </p>
               </div>
-              <Badge
-                variant={conversation.score >= 85 ? 'default' : 'secondary'}
-                className="text-xs"
-              >
-                {conversation.score}%
-              </Badge>
             </div>
           ))}
           <Link href={ROUTES.STUDENT.HISTORY}>

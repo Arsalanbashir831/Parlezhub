@@ -27,7 +27,6 @@ interface ConversationTranscriptModalProps {
   conversationDate: string;
   conversationLanguage: string;
   conversationDuration: number;
-  conversationScore: number;
   transcriptMessages?: TranscriptMessage[];
 }
 
@@ -50,17 +49,9 @@ export const ConversationTranscriptModal: React.FC<
   conversationDate,
   conversationLanguage,
   conversationDuration,
-  conversationScore,
   transcriptMessages,
 }) => {
   const transcript = transcriptMessages || [];
-
-  const getScoreColor = (score: number) => {
-    if (score >= 90) return 'bg-green-100 text-green-800';
-    if (score >= 80) return 'bg-blue-100 text-blue-800';
-    if (score >= 70) return 'bg-yellow-100 text-yellow-800';
-    return 'bg-red-100 text-red-800';
-  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -81,9 +72,6 @@ export const ConversationTranscriptModal: React.FC<
                   <span>{new Date(conversationDate).toLocaleDateString()}</span>
                   <span>•</span>
                   <span>{conversationDuration} minutes</span>
-                  {/* <Badge className={getScoreColor(conversationScore)}>
-                      {conversationScore}% Score
-                    </Badge> */}
                 </div>
               </div>
             </div>
