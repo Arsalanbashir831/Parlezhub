@@ -2,6 +2,7 @@ export const API_ROUTES = {
   AUTH: {
     SIGNUP: '/accounts/register/',
     LOGIN: '/login/',
+    RESEND_VERIFICATION_EMAIL: '/resend-verification/',
     FORGOT_PASSWORD: '/password-reset/',
     RESET_PASSWORD: '/password-reset/confirm/',
     REFRESH_TOKEN: '/token/refresh/',

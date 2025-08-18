@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import {
   authApi,
+  ResendVerificationEmailRequest,
   type ForgotPasswordRequest,
   type LoginRequest,
   type ResetPasswordRequest,
@@ -25,6 +26,7 @@ interface AuthContextType {
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
+  resendVerificationEmail: (email: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -83,7 +85,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signupMutation = useMutation({
     mutationFn: (data: SignupRequest) => authApi.signup(data),
-    onSuccess: (data) => {
+    onSuccess: (data, variables) => {
       setError(null);
 
       // Show success toast
@@ -93,7 +95,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
 
       // Redirect to login after successful signup
-      router.push(ROUTES.AUTH.VERIFY_EMAIL);
+      const emailParam = variables?.email
+        ? `?email=${encodeURIComponent(variables.email)}`
+        : '';
+      router.push(ROUTES.AUTH.VERIFY_EMAIL + emailParam);
     },
     onError: (error: unknown) => {
       console.error('Signup failed:', error);
@@ -143,6 +148,28 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const errorMessage = getErrorMessage(error, 'reset-password');
       setError(errorMessage);
       toast.error('Password Reset Failed', {
+        description: errorMessage,
+      });
+    },
+  });
+
+  const resendVerificationEmailMutation = useMutation({
+    mutationFn: (data: ResendVerificationEmailRequest) =>
+      authApi.resendVerificationEmail(data),
+    mutationKey: ['resend-verification-email'],
+    onSuccess: () => {
+      setError(null);
+
+      // Show success toast
+      toast.success('Verification Email Sent!', {
+        description: 'Please check your email for verification instructions.',
+      });
+    },
+    onError: (error: unknown) => {
+      console.error('Resend verification email failed:', error);
+      const errorMessage = getErrorMessage(error, 'resend-verification-email');
+      setError(errorMessage);
+      toast.error('Failed to Resend Verification Email', {
         description: errorMessage,
       });
     },
@@ -212,6 +239,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await resetPasswordMutation.mutateAsync({ token, new_password: password });
   };
 
+  const resendVerificationEmail = async (email: string) => {
+    await resendVerificationEmailMutation.mutateAsync({ email });
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -220,12 +251,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         forgotPassword,
         resetPassword,
+        resendVerificationEmail,
         isLoading:
           isLoading ||
           loginMutation.isPending ||
           signupMutation.isPending ||
           forgotPasswordMutation.isPending ||
-          resetPasswordMutation.isPending,
+          resetPasswordMutation.isPending ||
+          resendVerificationEmailMutation.isPending,
         error,
         isAuthenticated,
         userRole,

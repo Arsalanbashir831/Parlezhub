@@ -59,6 +59,14 @@ export interface ResetPasswordResponse {
   message: string;
 }
 
+export interface ResendVerificationEmailRequest {
+  email: string;
+}
+
+export interface ResendVerificationEmailResponse {
+  message: string;
+}
+
 export const authApi = {
   signup: async (data: SignupRequest): Promise<SignupResponse> => {
     const response = await apiCaller(
@@ -104,6 +112,19 @@ export const authApi = {
       data as unknown as Record<string, string>,
       {},
       false // Don't use auth token for reset password
+    );
+    return response.data;
+  },
+
+  resendVerificationEmail: async (
+    data: ResendVerificationEmailRequest
+  ): Promise<ResendVerificationEmailResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.RESEND_VERIFICATION_EMAIL,
+      'POST',
+      data as unknown as Record<string, string>,
+      {},
+      false // Don't use auth token for resend verification email
     );
     return response.data;
   },

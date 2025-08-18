@@ -16,14 +16,14 @@ export default function VerifyEmailPage() {
   const [resendCount, setResendCount] = useState(0);
   const searchParams = useSearchParams();
   const email = searchParams.get('email');
-  const { forgotPassword } = useAuth();
+  const { resendVerificationEmail } = useAuth();
 
   const handleResendEmail = async () => {
     if (!email) return;
 
     setIsLoading(true);
     try {
-      await forgotPassword(email);
+      await resendVerificationEmail(email);
       setResendCount((prev) => prev + 1);
     } catch (error) {
       console.error('Failed to resend email:', error);
@@ -87,7 +87,7 @@ export default function VerifyEmailPage() {
             {isLoading ? 'Sending...' : 'Resend Verification Email'}
           </AuthButton>
 
-          <Link href={ROUTES.AUTH.LOGIN}>
+          <Link href={ROUTES.AUTH.LOGIN} className="block">
             <AuthButton type="button" variant="ghost">
               Back to Sign In
             </AuthButton>
