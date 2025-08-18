@@ -1,6 +1,6 @@
 'use client';
 
-import { memo, useMemo, useState } from 'react';
+import { memo, useEffect, useMemo, useState } from 'react';
 import { useUser } from '@/contexts/user-context';
 import { availabilityService, bookingService } from '@/services/availability';
 import chatService from '@/services/chat';
@@ -45,6 +45,30 @@ const BookingDialog = memo(
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
+    // Future-only dates
+    const todayStr = useMemo(() => {
+      const d = new Date();
+      const y = d.getFullYear();
+      const m = String(d.getMonth() + 1).padStart(2, '0');
+      const day = String(d.getDate()).padStart(2, '0');
+      return `${y}-${m}-${day}`;
+    }, []);
+
+    // Auto end time = start + 60 minutes
+    const computeEndFromStart = (start: string): string => {
+      if (!start) return '';
+      const [hh, mm] = start.split(':').map((v) => Number(v));
+      const base = new Date(1970, 0, 1, hh, mm, 0);
+      base.setMinutes(base.getMinutes() + 60);
+      const h = String(base.getHours()).padStart(2, '0');
+      const m = String(base.getMinutes()).padStart(2, '0');
+      return `${h}:${m}`;
+    };
+
+    useEffect(() => {
+      if (startTime) setEndTime(computeEndFromStart(startTime));
+      else setEndTime('');
+    }, [startTime]);
     const [submitting, setSubmitting] = useState(false);
 
     const weekdayFromDate = useMemo(() => {
@@ -103,9 +127,9 @@ const BookingDialog = memo(
         return;
       }
 
-      // Combine date and time as local time (user's timezone)
+      // Combine date and start time as local time; end is +60 minutes
       const startLocal = new Date(`${date}T${startTime}:00`);
-      const endLocal = new Date(`${date}T${endTime}:00`);
+      const endLocal = new Date(startLocal.getTime() + 60 * 60 * 1000);
       const startIso = startLocal.toISOString();
       const endIso = endLocal.toISOString();
 
@@ -220,43 +244,15 @@ const BookingDialog = memo(
                 id="booking-date"
                 type="date"
                 value={date}
-                onChange={(e) => setDate(e.target.value)}
+                min={todayStr}
+                onChange={(e) => {
+                  const val = e.target.value;
+                  setDate(val && val < todayStr ? todayStr : val);
+                }}
               />
             </div>
 
-            {/* Recommended slots for selected day */}
-            {date && (
-              <div className="rounded-md border p-3">
-                <p className="mb-2 text-sm font-medium">Available slots</p>
-                {loading ? (
-                  <p className="text-sm text-muted-foreground">Loading...</p>
-                ) : daySlots.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">
-                    No slots for this day. You can still request a time.
-                  </p>
-                ) : (
-                  <ul className="flex flex-wrap gap-2">
-                    {daySlots.map((s, idx) => (
-                      <li key={`${s.start}-${idx}`}>
-                        <Button
-                          type="button"
-                          variant="outline"
-                          size="sm"
-                          onClick={() => {
-                            setStartTime(s.start);
-                            setEndTime(s.end);
-                          }}
-                        >
-                          {s.start} - {s.end}
-                        </Button>
-                      </li>
-                    ))}
-                  </ul>
-                )}
-              </div>
-            )}
-
-            {/* Start/End */}
+            {/* Start (selectable) / End (auto +1h) */}
             <div className="grid gap-3 sm:grid-cols-2">
               <div className="grid gap-2">
                 <Label htmlFor="booking-start">Start time</Label>
@@ -273,7 +269,8 @@ const BookingDialog = memo(
                   id="booking-end"
                   type="time"
                   value={endTime}
-                  onChange={(e) => setEndTime(e.target.value)}
+                  readOnly
+                  disabled
                 />
               </div>
             </div>

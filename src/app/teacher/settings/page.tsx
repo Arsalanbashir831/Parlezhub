@@ -11,7 +11,6 @@ import type { AvailabilitySchedule } from '@/components/settings';
 import {
   AccountStatus,
   AvailabilityCalendar,
-  NotificationSettings,
   ProfileSettings,
   SecuritySettings,
   SettingsHeader,
@@ -140,7 +139,7 @@ export default function TeacherSettingsPage() {
           />
 
           {/* Notification Settings */}
-          <NotificationSettings
+          {/* <NotificationSettings
             notificationData={{
               emailNotifications: true,
               pushNotifications: true,
@@ -154,7 +153,7 @@ export default function TeacherSettingsPage() {
             onSave={async () => {}}
             isLoading={false}
             userRole="teacher"
-          />
+          /> */}
         </div>
       </div>
     </div>

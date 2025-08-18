@@ -4,7 +4,6 @@ import { useUser } from '@/contexts/user-context';
 
 import {
   AccountStatus,
-  NotificationSettings,
   ProfileSettings,
   SecuritySettings,
   SettingsHeader,
@@ -52,7 +51,7 @@ export default function SettingsPage() {
           />
 
           {/* Notification Settings */}
-          <NotificationSettings
+          {/* <NotificationSettings
             notificationData={{
               emailNotifications: true,
               pushNotifications: true,
@@ -66,7 +65,7 @@ export default function SettingsPage() {
             onSave={async () => {}}
             isLoading={false}
             userRole="student"
-          />
+          /> */}
         </div>
       </div>
     </div>
