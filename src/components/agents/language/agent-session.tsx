@@ -26,7 +26,7 @@ interface AgentSessionProps {
   onEnd: () => void;
 }
 
-// Inner component that uses OpenAI conversation hooksss
+// Inner component that uses OpenAI conversation hooksssss
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const { config } = useSession();
   const { transcriptItems } = useTranscript();
