@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
 
 import { Meeting, MeetingStatus, useMeetings } from '@/hooks/useMeetings';
@@ -49,14 +49,41 @@ export default function MeetingTabs() {
       setIsCancelling(false);
     }
   };
-  console.log({ filteredMeetings, meetings });
+  // console.log({ filteredMeetings, meetings });
 
   // Use role from hook instead of heuristic
   const handleTabChange = (value: string) => {
     setActiveTab(value as 'upcoming' | 'completed' | 'cancelled');
   };
 
-  const now = new Date();
+  // Keep a ticking "now" so time-based UI updates without user interaction
+  const [nowMs, setNowMs] = useState<number>(Date.now());
+  useEffect(() => {
+    const id = setInterval(() => setNowMs(Date.now()), 5_000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Time helpers to avoid subtle Date comparison issues and to respect end time
+  const getStartMs = (m: Meeting) => new Date(m.date).getTime();
+  const getEndMs = (m: Meeting) =>
+    m.endDate
+      ? new Date(m.endDate).getTime()
+      : new Date(m.date).getTime() + m.duration * 60_000;
+  const isFuture = (m: Meeting) => {
+    console.log(getStartMs(m), nowMs);
+    return getStartMs(m) > nowMs;
+  };
+
+  // Allow joining slightly before and after the window
+  const JOIN_EARLY_MS = 5 * 60_000; // allow joining up to 5 minutes early
+  const JOIN_LATE_MS = 5 * 60_000; // allow joining up to 15 minutes after end
+  const canJoin = (m: Meeting) => {
+    const start = getStartMs(m) - JOIN_EARLY_MS;
+    const end = getEndMs(m) + JOIN_LATE_MS;
+    const allowed = nowMs >= start && nowMs <= end;
+    console.log({ start, end, nowMs, canJoin: allowed, id: m.id });
+    return allowed;
+  };
 
   const getStatusIcon = (status: MeetingStatus) => {
     switch (status) {
@@ -151,34 +178,36 @@ export default function MeetingTabs() {
             </p>
           )}
 
-          {((meeting.status === 'PENDING' && new Date(meeting.date) > now) ||
-            meeting.status === 'CONFIRMED') && (
-            <div className="flex flex-wrap gap-2 pt-2">
-              {/* Only teachers can approve pending */}
-              {userRole === 'teacher' && meeting.status === 'PENDING' && (
-                <Button size="sm" onClick={() => approveBooking(meeting.id)}>
-                  Approve
-                </Button>
-              )}
-              {/* Join button visible only for confirmed */}
-              {meeting.status === 'CONFIRMED' && (
+          {overrideLabel !== 'completed' &&
+            ((meeting.status === 'PENDING' && !isFuture(meeting)) ||
+              meeting.status === 'CONFIRMED') && (
+              <div className="flex flex-wrap gap-2 pt-2">
+                {/* Only teachers can approve pending */}
+                {userRole === 'teacher' && meeting.status === 'PENDING' && (
+                  <Button size="sm" onClick={() => approveBooking(meeting.id)}>
+                    Approve
+                  </Button>
+                )}
+                {/* Join button visible only for confirmed */}
+                {meeting.status === 'CONFIRMED' && (
+                  <Button
+                    size="sm"
+                    onClick={() => handleJoinMeeting(meeting)}
+                    // Enable join only during the meeting window with grace
+                    disabled={!canJoin(meeting)}
+                  >
+                    Join Meeting
+                  </Button>
+                )}
                 <Button
                   size="sm"
-                  onClick={() => handleJoinMeeting(meeting)}
-                  disabled={new Date(meeting.date) > now}
+                  variant="destructive"
+                  onClick={() => openCancel(meeting.id)}
                 >
-                  Join Meeting
+                  Cancel
                 </Button>
-              )}
-              <Button
-                size="sm"
-                variant="destructive"
-                onClick={() => openCancel(meeting.id)}
-              >
-                Cancel
-              </Button>
-            </div>
-          )}
+              </div>
+            )}
         </div>
       </CardContent>
     </Card>
