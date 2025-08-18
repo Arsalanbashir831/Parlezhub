@@ -49,7 +49,6 @@ export default function MeetingTabs() {
       setIsCancelling(false);
     }
   };
-  // console.log({ filteredMeetings, meetings });
 
   // Use role from hook instead of heuristic
   const handleTabChange = (value: string) => {
@@ -70,7 +69,6 @@ export default function MeetingTabs() {
       ? new Date(m.endDate).getTime()
       : new Date(m.date).getTime() + m.duration * 60_000;
   const isFuture = (m: Meeting) => {
-    console.log(getStartMs(m), nowMs);
     return getStartMs(m) > nowMs;
   };
 
@@ -81,7 +79,6 @@ export default function MeetingTabs() {
     const start = getStartMs(m) - JOIN_EARLY_MS;
     const end = getEndMs(m) + JOIN_LATE_MS;
     const allowed = nowMs >= start && nowMs <= end;
-    console.log({ start, end, nowMs, canJoin: allowed, id: m.id });
     return allowed;
   };
 

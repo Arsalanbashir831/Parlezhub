@@ -292,23 +292,17 @@ export function useServices(): UseServicesReturn {
   // Get single service
   const getService = useCallback(
     async (serviceId: string): Promise<Service | null> => {
-      console.log('getService called with ID:', serviceId);
-      console.log('Current services in state:', services);
-
       // First try to find in local state
       const localService = services.find((s) => s.id === serviceId);
       if (localService) {
-        console.log('Found service in local state:', localService);
         return localService;
       }
 
-      console.log('Service not found in local state, fetching from API...');
+      console.error('Service not found in local state, fetching from API...');
       // If not found locally, fetch from API
       try {
         const apiResponse = await serviceApi.getServiceById(serviceId);
-        console.log('API response received:', apiResponse);
         const fetchedService = serviceUtils.apiResponseToService(apiResponse);
-        console.log('Converted service:', fetchedService);
 
         // Add to local state for future use
         setServices((prev) => {

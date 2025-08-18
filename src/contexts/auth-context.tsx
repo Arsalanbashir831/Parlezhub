@@ -25,7 +25,6 @@ interface AuthContextType {
   signup: (userData: Partial<User>, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
-  verifyEmail: (token: string) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
@@ -46,8 +45,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
     onSuccess: (data) => {
-      console.log('Login successful:', data);
-
       // Store tokens in cookies only
       setCookie('access_token', data.access_token);
       setCookie('refresh_token', data.refresh_token);
@@ -87,7 +84,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signupMutation = useMutation({
     mutationFn: (data: SignupRequest) => authApi.signup(data),
     onSuccess: (data) => {
-      console.log('Signup successful:', data);
       setError(null);
 
       // Show success toast
@@ -112,7 +108,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const forgotPasswordMutation = useMutation({
     mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
     onSuccess: (data) => {
-      console.log('Forgot password request successful:', data);
       setError(null);
 
       // Show success toast
@@ -133,7 +128,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const resetPasswordMutation = useMutation({
     mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
     onSuccess: (data) => {
-      console.log('Password reset successful:', data);
       setError(null);
 
       // Show success toast
@@ -218,11 +212,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await resetPasswordMutation.mutateAsync({ token, new_password: password });
   };
 
-  const verifyEmail = async (token: string) => {
-    // Implementation for email verification
-    console.log('Verify email with token:', token);
-  };
-
   return (
     <AuthContext.Provider
       value={{
@@ -231,7 +220,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signup,
         forgotPassword,
         resetPassword,
-        verifyEmail,
         isLoading:
           isLoading ||
           loginMutation.isPending ||

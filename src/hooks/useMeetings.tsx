@@ -58,8 +58,6 @@ export function useMeetings() {
   const { user } = useUser();
   const queryClient = useQueryClient();
 
-  // console.log({ user });
-
   // UI state
   const [meetings, setMeetings] = useState<Meeting[]>([]);
 
@@ -303,8 +301,6 @@ export function useMeetings() {
       .sort((a, b) => +new Date(a.date) - +new Date(b.date))[0];
     return next ? formatDateTime(next.date) : 'None scheduled';
   }, [meetings, formatDateTime]);
-
-  console.log({ meetings, filteredMeetings });
 
   return {
     meetings,

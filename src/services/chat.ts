@@ -147,7 +147,6 @@ class ChatService {
         this.ws = new WebSocket(wsUrl);
 
         this.ws.onopen = () => {
-          console.log('WebSocket connected');
           this.reconnectAttempts = 0;
           this.notifyConnectionHandlers(true);
           resolve();
@@ -163,7 +162,6 @@ class ChatService {
         };
 
         this.ws.onclose = (event) => {
-          console.log('WebSocket disconnected:', event.code, event.reason);
           this.notifyConnectionHandlers(false);
 
           // Attempt to reconnect if not a normal closure
@@ -173,9 +171,6 @@ class ChatService {
           ) {
             this.reconnectAttempts++;
             setTimeout(() => {
-              console.log(
-                `Attempting to reconnect (${this.reconnectAttempts}/${this.maxReconnectAttempts})`
-              );
               this.connect(chatId).catch(console.error);
             }, this.reconnectDelay * this.reconnectAttempts);
           }

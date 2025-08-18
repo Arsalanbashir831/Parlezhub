@@ -148,7 +148,6 @@ export const serviceApi = {
 
   // Get a specific service by ID
   getServiceById: async (serviceId: string): Promise<ServiceResponse> => {
-    console.log('Fetching service by ID:', serviceId);
     const response = await apiCaller(
       `${API_ROUTES.TEACHER.CREATE_SERVICE}${serviceId}/`,
       'GET',
@@ -156,7 +155,6 @@ export const serviceApi = {
       {},
       true // Use auth token
     );
-    console.log('Service API response:', response.data);
     return response.data;
   },
 

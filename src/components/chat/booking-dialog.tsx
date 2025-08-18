@@ -27,7 +27,6 @@ interface BookingDialogProps {
 
 const BookingDialog = memo(
   ({ isOpen, onClose, teacherId }: BookingDialogProps) => {
-    console.log('teacherId', teacherId);
     const { user } = useUser();
     const { data: weeklyItems, isLoading: loading } = useQuery({
       queryKey: ['weekly-availability', teacherId],
@@ -104,10 +103,6 @@ const BookingDialog = memo(
         return;
       }
 
-      console.log('startTime', startTime);
-      console.log('endTime', endTime);
-      console.log('date', date);
-
       // Combine date and time as local time (user's timezone)
       const startLocal = new Date(`${date}T${startTime}:00`);
       const endLocal = new Date(`${date}T${endTime}:00`);
@@ -123,11 +118,6 @@ const BookingDialog = memo(
           minute: '2-digit',
         });
 
-      console.log('startIso', startIso);
-      console.log('endIso', endIso);
-      console.log('startLocal', toLocal(startIso));
-      console.log('endLocal', toLocal(endIso));
-
       setSubmitting(true);
       try {
         const booking = await bookingService.schedule({
@@ -138,7 +128,6 @@ const BookingDialog = memo(
           notes: '',
         });
 
-        console.log('booking', booking);
         toast.success('Booking scheduled');
 
         // Send a booking summary message into the chat

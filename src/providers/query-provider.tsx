@@ -20,7 +20,7 @@ export function QueryProvider({ children }: { children: React.ReactNode }) {
                   axiosError.response?.status &&
                   axiosError.response?.status >= 500
                 ) {
-                  console.log('Server error detected, not retrying');
+                  console.error('Server error detected, not retrying');
                   return false;
                 }
               }

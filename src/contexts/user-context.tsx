@@ -72,7 +72,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (error && typeof error === 'object' && 'response' in error) {
         const axiosError = error as AxiosError;
         if (axiosError.response?.status && axiosError.response?.status >= 500) {
-          console.log('Server error detected, not retrying');
+          console.error('Server error detected, not retrying');
           return false;
         }
       }
@@ -98,7 +98,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Update the user profile in the cache and local state
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
       setUserState(updatedProfile);
-      console.log('Student profile updated successfully:', updatedProfile);
 
       // Show success toast
       toast.success('Profile Updated Successfully!', {
@@ -122,7 +121,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       // Update the user profile in the cache and local state
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
       setUserState(updatedProfile);
-      console.log('Teacher profile updated successfully:', updatedProfile);
 
       // Show success toast
       toast.success('Profile Updated Successfully!', {

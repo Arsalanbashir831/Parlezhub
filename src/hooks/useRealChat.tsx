@@ -292,11 +292,11 @@ export const useRealChat = ({
   useEffect(() => {
     const unsubscribe = chatService.onConnectionChange((connected: boolean) => {
       setIsConnected(connected);
-      if (connected) {
-        console.log('Connected to chat');
-      } else {
-        console.log('Disconnected from chat');
-      }
+      // if (connected) {
+      //   console.log('Connected to chat');
+      // } else {
+      //   console.log('Disconnected from chat');
+      // }
     });
 
     return unsubscribe;

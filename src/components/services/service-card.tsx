@@ -45,7 +45,6 @@ export default function ServiceCard({
   onToggleStatus,
   showActions = true,
 }: ServiceCardProps) {
-  console.log({ service });
   const handleToggleStatus = () => {
     if (onToggleStatus) {
       onToggleStatus(service);
