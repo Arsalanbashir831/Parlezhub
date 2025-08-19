@@ -12,15 +12,19 @@ type Props = {
   showBackButton?: boolean;
   onBackClick?: () => void;
   sessionActive?: boolean;
+  rightContent?: React.ReactNode;
+  bottomContent?: React.ReactNode;
 };
 
 export default function AiSessionHeader({
   children,
   backButtonText = 'Back to AI Tutor',
-  backButtonHref = ROUTES.STUDENT.AI_TUTOR,
+  backButtonHref = ROUTES.STUDENT.DASHBOARD,
   showBackButton = true,
   onBackClick,
   sessionActive = false,
+  rightContent,
+  bottomContent,
 }: Props) {
   const BackButton = () => (
     <Button
@@ -36,9 +40,9 @@ export default function AiSessionHeader({
 
   return (
     <div className="w-full border-b border-gray-200 bg-white/50 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-black/20 dark:text-white">
-      <div className="flex items-center justify-between p-3 sm:p-4 lg:p-6">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 lg:p-6">
         {/* Left side - Back button */}
-        <div className="w-1/3 flex-shrink-0">
+        <div className="w-full flex-shrink-0 md:w-1/3">
           {showBackButton &&
             !sessionActive &&
             (onBackClick ? (
@@ -51,11 +55,25 @@ export default function AiSessionHeader({
         </div>
 
         {/* Center content - Timer */}
-        <div className="flex flex-1 justify-center">{children}</div>
+        <div className="flex w-full justify-end md:flex-1">{children}</div>
 
-        {/* Right side - Empty for balance */}
-        <div className="w-1/3 flex-shrink-0"></div>
+        {/* Right side - Controls */}
+        {rightContent && (
+          <div className="w-full flex-shrink-0 md:w-1/3">
+            <div className="flex flex-col items-stretch justify-end gap-2 md:flex-row md:items-center md:justify-end md:gap-3">
+              {rightContent}
+            </div>
+          </div>
+        )}
       </div>
+      {/* Bottom Content */}
+      {bottomContent && (
+        <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 sm:pt-0">
+          <div className="flex w-full justify-center md:flex-1">
+            {bottomContent}
+          </div>
+        </div>
+      )}
     </div>
   );
 }

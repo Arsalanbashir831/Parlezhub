@@ -13,6 +13,7 @@ interface SessionControlsProps {
   onResume: () => void;
   onStop: () => void;
   onToggleMute: () => void;
+  startDisabled?: boolean;
 }
 
 export default function SessionControls({
@@ -23,6 +24,7 @@ export default function SessionControls({
   onResume,
   onStop,
   onToggleMute,
+  startDisabled = false,
 }: SessionControlsProps) {
   const renderMainControls = () => {
     switch (sessionState) {
@@ -30,6 +32,7 @@ export default function SessionControls({
         return (
           <Button
             onClick={onStart}
+            disabled={startDisabled}
             size="lg"
             className="rounded-full border border-white/20 bg-gradient-to-r from-orange-500 to-orange-600 px-10 py-5 text-white shadow-lg shadow-orange-500/30 backdrop-blur-sm hover:from-orange-600 hover:to-orange-700 dark:from-orange-600 dark:to-orange-700 dark:hover:from-orange-700 dark:hover:to-orange-800"
           >

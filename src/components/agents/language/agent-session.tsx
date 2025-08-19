@@ -1,7 +1,12 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
-import { getLanguageName, SESSION_DURATION } from '@/constants/ai-session';
+import {
+  getLanguageName,
+  LANGUAGES,
+  NATIVE_LANGUAGES,
+  SESSION_DURATION,
+} from '@/constants/ai-session';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
 import { getToken } from '@/services/openai/token';
@@ -20,6 +25,8 @@ import {
   SessionTimer,
 } from '@/components/agents/session';
 
+import LanguageCombobox from './language-combobox';
+
 interface AgentSessionProps {
   prompt: string;
   onBack: () => void;
@@ -28,7 +35,7 @@ interface AgentSessionProps {
 
 // Inner component that uses OpenAI conversation hooksssss
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
-  const { config } = useSession();
+  const { config, updateConfig } = useSession();
   const { transcriptItems } = useTranscript();
   const [sessionState, setSessionState] = useState<
     'idle' | 'active' | 'paused' | 'completed'
@@ -97,7 +104,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       if (session) {
         try {
           session.close();
-          console.log('🔔 Session closed on component unmount');
         } catch (error) {
           console.error('Error closing session on unmount:', error);
         }
@@ -115,9 +121,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
 
   const postConversation = useCallback(
     async (durationMinutes?: number) => {
-      console.log('🛑 postConversation invoked');
-      console.log('🛑 hasPostedRef.current:', hasPostedRef.current);
-      console.log('🛑 sessionState:', sessionState);
       // Guard: only allow posting once, and only after session completion
       // if (hasPostedRef.current || sessionState !== 'completed') return;
       // hasPostedRef.current = true;
@@ -134,7 +137,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
 
         // Avoid posting empty transcripts
         if (!messages.length) {
-          console.log('🛑 Skipping post: no transcript messages');
           return;
         }
 
@@ -148,7 +150,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
             : {}),
         };
 
-        console.log('📤 Posting voice conversation payload:', payload);
         await voiceService.createConversation(payload);
         toast.success('Conversation saved');
       } catch (error) {
@@ -162,6 +163,11 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const handleStartSession = useCallback(async () => {
     setIsConnecting(true);
     try {
+      // Require language selections before starting
+      if (!config.nativeLanguage || !config.language) {
+        toast.error('Please select your native and target languages first');
+        return;
+      }
       // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
@@ -237,13 +243,9 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
         voice: 'sage',
       });
 
-      console.log('🤖 Creating OpenAI agent...');
-
       // Create the session with the language tutor
       const newSession = new realtime.RealtimeSession(languageTutor);
       setSession(newSession);
-
-      console.log('📡 Session created, connecting...');
 
       // Connect to the session
       await newSession.connect({
@@ -257,13 +259,11 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
       setSessionState('active');
       sessionStartedAtRef.current = Date.now();
       hasEverStartedRef.current = true;
-      console.log('🔔 OpenAI session connected successfully!');
 
       // Trigger the agent to start speaking by sending a simple message
       setTimeout(() => {
         try {
           newSession.sendMessage('Start the lesson');
-          console.log('🎤 Triggered agent to start speaking');
         } catch (error) {
           console.error('Error triggering agent:', error);
         }
@@ -278,14 +278,6 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
 
   const setupSessionListeners = (session: realtime.RealtimeSession) => {
     // Set up event listeners for the session
-    console.log('🔍 Setting up OpenAI session listeners');
-
-    // Log available methods and properties for debugging
-    console.log('🔍 Session object:', session);
-    console.log(
-      '🔍 Session methods:',
-      Object.getOwnPropertyNames(Object.getPrototypeOf(session))
-    );
 
     // Try to access session properties for debugging
     try {
@@ -295,7 +287,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
         // Add any other properties that might exist
       });
     } catch (err) {
-      console.log('🔍 Could not access session properties:', err);
+      console.error('🔍 Could not access session properties:', err);
     }
 
     // For now, we'll track the basic connection state
@@ -313,7 +305,6 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
   }, []);
 
   const handleStopSession = useCallback(async () => {
-    console.log('🛑 handleStopSession invoked');
     // Persist conversation first, then mark completed and cleanup
     // Prefer timer-derived duration to match UI timer
     const elapsedSeconds = Math.max(0, SESSION_DURATION - timeRemaining);
@@ -324,7 +315,6 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
     if (session) {
       try {
         session.close();
-        console.log('🔔 Session closed successfully');
       } catch (error) {
         console.error('Error closing session:', error);
       } finally {
@@ -350,17 +340,18 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
   // No safety-net auto-posting; posting is triggered from handleStopSession only
 
   const handleToggleMute = useCallback(() => {
-    // OpenAI doesn't have direct mute/unmute, but we can track state
-    console.log('Mute toggle requested');
+    // mute/unmute the volume of the audio
+    const audioElement = document.querySelector('audio');
+    if (audioElement) {
+      audioElement.muted = !audioElement.muted;
+    }
   }, []);
 
   const handleBack = useCallback(() => {
-    console.log('↩️ handleBack invoked');
     // Close session if it's active before going back
     if (session && (sessionState === 'active' || sessionState === 'paused')) {
       try {
         session.close();
-        console.log('🔔 Session closed on back button');
       } catch (error) {
         console.error('Error closing session on back:', error);
       }
@@ -399,6 +390,34 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
         backButtonHref="#"
         onBackClick={handleBack}
         sessionActive={sessionState === 'active'}
+        bottomContent={
+          <div className="flex w-full items-center justify-between gap-6">
+            <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                Native language
+              </label>
+              <LanguageCombobox
+                value={config.nativeLanguage}
+                onChange={(val) => updateConfig('nativeLanguage', val)}
+                options={NATIVE_LANGUAGES}
+                placeholder="Select native language"
+                disabled={sessionState !== 'idle'}
+              />
+            </div>
+            <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                Target language
+              </label>
+              <LanguageCombobox
+                value={config.language}
+                onChange={(val) => updateConfig('language', val)}
+                options={LANGUAGES}
+                placeholder="Select target language"
+                disabled={sessionState !== 'idle'}
+              />
+            </div>
+          </div>
+        }
       >
         <SessionTimer timeRemaining={timeRemaining} />
       </AiSessionHeader>
@@ -431,6 +450,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
           onResume={handleResumeSession}
           onStop={handleStopSession}
           onToggleMute={handleToggleMute}
+          startDisabled={!config.nativeLanguage || !config.language}
         />
 
         {sessionState === 'idle' && <SessionInstructions />}

@@ -25,7 +25,8 @@ export function MainContent() {
     if (prompt.trim()) {
       // Store the prompt in session context for later use
       updateConfig('topic', prompt);
-      setCurrentStep('native-language');
+      // Jump directly to session
+      setCurrentStep('session');
     }
   }, [prompt, updateConfig]);
 
@@ -34,7 +35,8 @@ export function MainContent() {
       setPrompt(selectedPrompt);
       // Store the prompt in session context for later use
       updateConfig('topic', selectedPrompt);
-      setCurrentStep('native-language');
+      // Jump directly to session
+      setCurrentStep('session');
     },
     [updateConfig]
   );
@@ -64,7 +66,8 @@ export function MainContent() {
         setCurrentStep('native-language');
         break;
       case 'session':
-        setCurrentStep('target-language');
+        // With direct-to-session flow, go back to prompt
+        setCurrentStep('prompt');
         break;
     }
   }, [currentStep]);
