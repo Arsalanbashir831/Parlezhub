@@ -12,6 +12,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "react-simple-wysiwyg": "^3.2.0",
     "@elevenlabs/react": "^0.4.5",
     "@hookform/resolvers": "latest",
     "@openai/agents": "^0.0.15",

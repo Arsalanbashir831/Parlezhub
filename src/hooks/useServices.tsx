@@ -397,3 +397,6 @@ export function useServices(): UseServicesReturn {
     refreshServices,
   };
 }
+
+// Blogs hook (frontend only; localStorage-backed)
+// (blogs hook moved to src/hooks/useBlogs.tsx)

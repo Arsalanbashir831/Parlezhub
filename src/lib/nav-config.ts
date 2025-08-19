@@ -113,6 +113,12 @@ export const teacherNav: NavItem[] = [
     href: ROUTES.TEACHER.SERVICES,
   },
   {
+    id: 'blogs',
+    label: 'Blogs',
+    icon: FileText,
+    href: ROUTES.TEACHER.BLOGS,
+  },
+  {
     id: 'meetings',
     label: 'Meetings',
     icon: Calendar,

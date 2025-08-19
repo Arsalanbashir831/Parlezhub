@@ -30,6 +30,9 @@ export const ROUTES = {
     CREATE_SERVICE: '/teacher/services/create',
     EDIT_SERVICE: (serviceId: string) => `/teacher/services/edit/${serviceId}`,
     SETTINGS: '/teacher/settings',
+    BLOGS: '/teacher/blogs',
+    CREATE_BLOG: '/teacher/blogs/create',
+    EDIT_BLOG: (blogId: string) => `/teacher/blogs/edit/${blogId}`,
   },
   AI_SESSION: {
     ROOT: '/ai-session',

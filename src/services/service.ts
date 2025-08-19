@@ -215,6 +215,82 @@ export const serviceApi = {
   },
 };
 
+// Frontend-only Blog API (localStorage-backed for now)
+export const blogApi = {
+  list: async (): Promise<import('@/types/service').BlogPost[]> => {
+    if (typeof window === 'undefined') return [];
+    const raw = localStorage.getItem('teacher_blogs');
+    return raw ? (JSON.parse(raw) as import('@/types/service').BlogPost[]) : [];
+  },
+  create: async (
+    data: import('@/types/service').BlogFormData
+  ): Promise<import('@/types/service').BlogPost> => {
+    const all = await blogApi.list();
+    const now = new Date().toISOString();
+    const id = crypto.randomUUID();
+    const slug = data.title
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/(^-|-$)/g, '');
+    const post: import('@/types/service').BlogPost = {
+      id,
+      title: data.title,
+      slug,
+      content: data.content,
+      coverImage: data.coverImage,
+      tags: data.tags || [],
+      status: data.status || 'published',
+      createdAt: now,
+      updatedAt: now,
+    };
+    const updated = [post, ...all];
+    localStorage.setItem('teacher_blogs', JSON.stringify(updated));
+    return post;
+  },
+  get: async (
+    id: string
+  ): Promise<import('@/types/service').BlogPost | null> => {
+    const all = await blogApi.list();
+    return all.find((b) => b.id === id) || null;
+  },
+  update: async (
+    id: string,
+    data: Partial<import('@/types/service').BlogFormData>
+  ): Promise<import('@/types/service').BlogPost | null> => {
+    const all = await blogApi.list();
+    const idx = all.findIndex((b) => b.id === id);
+    if (idx === -1) return null;
+    const updated: import('@/types/service').BlogPost = {
+      ...all[idx],
+      ...data,
+      updatedAt: new Date().toISOString(),
+    } as import('@/types/service').BlogPost;
+    all[idx] = updated;
+    localStorage.setItem('teacher_blogs', JSON.stringify(all));
+    return updated;
+  },
+  remove: async (id: string): Promise<void> => {
+    const all = await blogApi.list();
+    const filtered = all.filter((b) => b.id !== id);
+    localStorage.setItem('teacher_blogs', JSON.stringify(filtered));
+  },
+  toggleVisibility: async (
+    id: string
+  ): Promise<import('@/types/service').BlogPost | null> => {
+    const all = await blogApi.list();
+    const idx = all.findIndex((b) => b.id === id);
+    if (idx === -1) return null;
+    const nextStatus = all[idx].status === 'published' ? 'hidden' : 'published';
+    all[idx] = {
+      ...all[idx],
+      status: nextStatus,
+      updatedAt: new Date().toISOString(),
+    };
+    localStorage.setItem('teacher_blogs', JSON.stringify(all));
+    return all[idx];
+  },
+};
+
 // Utility functions to convert between frontend and API formats
 export const serviceUtils = {
   // Convert frontend ServiceFormData to API CreateServiceRequest
