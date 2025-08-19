@@ -3,6 +3,7 @@
 import * as React from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
 import { ChevronDown, ChevronRight, Home, LogOut } from 'lucide-react';
 
 import type { NavItem } from '@/types/nav';
@@ -45,6 +46,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   roleLabel,
   onLogout,
 }) => {
+  const { isAuthenticated } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
@@ -221,29 +223,42 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       </SidebarContent>
 
       <SidebarFooter className="bg-white p-4 dark:bg-gray-800">
-        {roleLabel !== 'Agent' ? (
-          <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+        {isAuthenticated ? (
+          <>
+            {roleLabel !== 'Agent' ? (
+              <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+            ) : (
+              <SidebarMenu>
+                {renderMenuItem({
+                  id: 'dashboard',
+                  label: 'Dashboard',
+                  href: ROUTES.STUDENT.DASHBOARD,
+                  icon: Home,
+                })}
+              </SidebarMenu>
+            )}
+            <Button
+              variant="ghost"
+              className={cn(
+                'w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300',
+                isCollapsed && 'justify-center'
+              )}
+              onClick={onLogout}
+            >
+              <LogOut className="h-4 w-4" />
+              {!isCollapsed && 'Sign Out'}
+            </Button>
+          </>
         ) : (
           <SidebarMenu>
             {renderMenuItem({
-              id: 'dashboard',
-              label: 'Dashboard',
-              href: ROUTES.STUDENT.DASHBOARD,
+              id: 'login',
+              label: 'Sign In',
+              href: ROUTES.AUTH.LOGIN,
               icon: Home,
             })}
           </SidebarMenu>
         )}
-        <Button
-          variant="ghost"
-          className={cn(
-            'w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300',
-            isCollapsed && 'justify-center'
-          )}
-          onClick={onLogout}
-        >
-          <LogOut className="h-4 w-4" />
-          {!isCollapsed && 'Sign Out'}
-        </Button>
       </SidebarFooter>
     </Sidebar>
   );

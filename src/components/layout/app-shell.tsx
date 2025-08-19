@@ -31,7 +31,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const pathname = usePathname();
   const { user } = useUser();
-  const { logout } = useAuth();
+  const { logout, isAuthenticated } = useAuth();
   const router = useRouter();
 
   const activeTab = React.useMemo(() => {
@@ -99,7 +99,7 @@ export const AppShell: React.FC<AppShellProps> = ({
             </h1>
             <div className="ml-auto flex items-center gap-4">
               <Avatar className="h-8 w-8">
-                <AvatarImage src={user?.profile_picture} />
+                <AvatarImage src={user?.profile_picture ?? undefined} />
                 <AvatarFallback className="bg-primary-100 text-sm text-primary-700 dark:bg-primary-800 dark:text-primary-200">
                   {user?.first_name?.charAt(0).toUpperCase()}
                 </AvatarFallback>

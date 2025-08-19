@@ -1,12 +1,14 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useRouter } from 'next/navigation';
 import {
   getLanguageName,
   LANGUAGES,
   NATIVE_LANGUAGES,
   SESSION_DURATION,
 } from '@/constants/ai-session';
+import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
 import { getToken } from '@/services/openai/token';
@@ -14,6 +16,7 @@ import voiceService from '@/services/voice';
 import { realtime } from '@openai/agents';
 import { toast } from 'sonner';
 
+import { getCookie } from '@/lib/cookie-utils';
 import { useHandleSessionHistory } from '@/hooks/useHandleSessionHistory';
 import { useSessionTimer } from '@/hooks/useSessionTimer';
 import {
@@ -35,6 +38,7 @@ interface AgentSessionProps {
 
 // Inner component that uses OpenAI conversation hooksssss
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
+  const router = useRouter();
   const { config, updateConfig } = useSession();
   const { transcriptItems } = useTranscript();
   const [sessionState, setSessionState] = useState<
@@ -166,6 +170,21 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       // Require language selections before starting
       if (!config.nativeLanguage || !config.language) {
         toast.error('Please select your native and target languages first');
+        return;
+      }
+
+      // Check auth; if not logged in, redirect to login with return params
+      const token = getCookie('access_token');
+      const role = getCookie('user_role');
+      if (!token || !role) {
+        const returnUrl = `${ROUTES.AGENT.LANGUAGE}?${new URLSearchParams({
+          prompt: String(config.topic || prompt || ''),
+          native: config.nativeLanguage,
+          target: config.language,
+          step: 'session',
+        }).toString()}`;
+        const params = new URLSearchParams({ redirect: returnUrl });
+        router.push(`${ROUTES.AUTH.LOGIN}?${params.toString()}`);
         return;
       }
       // Request microphone permission

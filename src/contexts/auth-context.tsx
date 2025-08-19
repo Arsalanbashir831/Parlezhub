@@ -57,9 +57,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setError(null);
 
       // Show success toast
-      toast.success(`Welcome back!`, {
-        description: `Redirecting to your ${data.user.role.toLowerCase()} dashboard...`,
-      });
+      toast.success(`Welcome back!`);
 
       // Redirect based on role
       const redirectTo = searchParams.get('redirect');

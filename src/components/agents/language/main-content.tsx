@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { quickLanguagePrompts } from '@/constants/quick-prompts';
 import { useSession } from '@/contexts/session-context';
 import { ArrowLeft } from 'lucide-react';
@@ -20,6 +20,24 @@ export function MainContent() {
   const { updateConfig } = useSession();
   const [currentStep, setCurrentStep] = useState<FlowStep>('prompt');
   const [prompt, setPrompt] = useState('');
+
+  // Bootstrap state from URL if coming back from login
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('prompt');
+    const nl = params.get('native');
+    const tl = params.get('target');
+    const step = params.get('step');
+    if (p) {
+      setPrompt(p);
+      updateConfig('topic', p);
+    }
+    if (nl) updateConfig('nativeLanguage', nl);
+    if (tl) updateConfig('language', tl);
+    if (step === 'session' && (p || params.has('prompt'))) {
+      setCurrentStep('session');
+    }
+  }, [updateConfig]);
 
   const handlePromptSend = useCallback(() => {
     if (prompt.trim()) {

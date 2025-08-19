@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { userApi } from '@/services/user';
@@ -29,6 +29,7 @@ type LoginFormData = z.infer<typeof loginSchema>;
 export default function LoginPage() {
   const { login, isLoading, isAuthenticated } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [processingLink, setProcessingLink] = useState(false);
 
   const hashParams = useMemo(() => {
@@ -41,8 +42,9 @@ export default function LoginPage() {
   useEffect(() => {
     // Client-side guard: if already authenticated, bounce to dashboard
     if (isAuthenticated) {
+      const redirectTo = searchParams?.get('redirect');
       if (typeof window !== 'undefined') {
-        window.location.replace('/');
+        window.location.replace(redirectTo || '/');
       }
       return;
     }
@@ -77,8 +79,11 @@ export default function LoginPage() {
 
         toast.success('Signed in successfully');
 
+        const redirectTo = searchParams?.get('redirect');
         if (typeof window !== 'undefined') {
-          if (role === 'STUDENT') {
+          if (redirectTo) {
+            window.location.replace(redirectTo);
+          } else if (role === 'STUDENT') {
             window.location.replace(ROUTES.STUDENT.DASHBOARD);
           } else if (role === 'TEACHER') {
             window.location.replace(ROUTES.TEACHER.DASHBOARD);

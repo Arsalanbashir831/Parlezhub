@@ -12,7 +12,6 @@ const STUDENT_ROUTES = [
   '/student/history',
   '/student/session-report',
   '/student/settings',
-  '/language',
   '/astrology',
 ];
 
@@ -33,6 +32,7 @@ const PUBLIC_ROUTES = [
   '/auth/verify-email',
   '/ai-session',
   '/placeholders',
+  '/language',
 ];
 
 export function middleware(request: NextRequest) {
@@ -51,7 +51,12 @@ export function middleware(request: NextRequest) {
     if (isAuthPage) {
       const accessToken = request.cookies.get('access_token')?.value;
       const userRole = request.cookies.get('user_role')?.value;
+      const redirectParam = request.nextUrl.searchParams.get('redirect');
       if (accessToken && userRole) {
+        // If a redirect param is present, honor it instead of forcing dashboard
+        if (redirectParam) {
+          return NextResponse.redirect(new URL(redirectParam, request.url));
+        }
         if (userRole === 'STUDENT') {
           return NextResponse.redirect(
             new URL('/student/dashboard', request.url)
