@@ -42,7 +42,7 @@ export default function AiSessionHeader({
     <div className="w-full border-b border-gray-200 bg-white/50 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-black/20 dark:text-white">
       <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 lg:p-6">
         {/* Left side - Back button */}
-        <div className="w-full flex-shrink-0 md:w-1/3">
+        <div className="w-1/3 flex-shrink-0">
           {showBackButton &&
             !sessionActive &&
             (onBackClick ? (
@@ -55,7 +55,7 @@ export default function AiSessionHeader({
         </div>
 
         {/* Center content - Timer */}
-        <div className="flex w-full justify-end md:flex-1">{children}</div>
+        <div className="flex w-full flex-1 justify-end">{children}</div>
 
         {/* Right side - Controls */}
         {rightContent && (

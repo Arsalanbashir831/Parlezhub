@@ -392,7 +392,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
         sessionActive={sessionState === 'active'}
         bottomContent={
           <div className="flex w-full items-center justify-between gap-6">
-            <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
               <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 Native language
               </label>
@@ -404,7 +404,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
                 disabled={sessionState !== 'idle'}
               />
             </div>
-            <div className="flex min-w-[220px] flex-1 flex-col gap-1">
+            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
               <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
                 Target language
               </label>
