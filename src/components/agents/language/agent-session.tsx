@@ -36,7 +36,7 @@ interface AgentSessionProps {
   onEnd: () => void;
 }
 
-// Inner component that uses OpenAI conversation hooksssss
+// Inner component that uses OpenAI conversation hookssssssss
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const router = useRouter();
   const { config, updateConfig } = useSession();
