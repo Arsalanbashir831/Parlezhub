@@ -130,6 +130,22 @@ export interface BookingApprovalResponse {
   };
 }
 
+export interface RescheduleBookingRequest {
+  start_time: string; // ISO string with Z
+  end_time: string; // ISO string with Z
+  reason: string;
+}
+
+export interface RescheduleBookingResponse {
+  message: string;
+  booking: BookingResponse;
+  zoom_info?: {
+    join_url: string;
+    meeting_id: string;
+    password: string;
+  };
+}
+
 export const bookingService = {
   schedule: async (payload: CreateBookingRequest): Promise<BookingResponse> => {
     const response = await apiCaller(
@@ -150,6 +166,19 @@ export const bookingService = {
       API_ROUTES.TEACHER.APPROVE_BOOKING(bookingId),
       'POST',
       {},
+      {},
+      true
+    );
+    return response.data;
+  },
+  reschedule: async (
+    bookingId: string | number,
+    data: RescheduleBookingRequest
+  ): Promise<RescheduleBookingResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.RESCHEDULE_BOOKING(bookingId),
+      'POST',
+      data as unknown as Record<string, string>,
       {},
       true
     );

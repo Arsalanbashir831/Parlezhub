@@ -4,7 +4,10 @@ import { useCallback, useEffect, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useUser } from '@/contexts/user-context';
-import { bookingService } from '@/services/availability';
+import {
+  bookingService,
+  RescheduleBookingRequest,
+} from '@/services/availability';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -22,6 +25,7 @@ export interface Meeting {
   endDate?: string; // ISO string (meeting end)
   duration: number; // minutes
   status: MeetingStatus;
+  paymentStatus?: 'PAID' | 'UNPAID' | 'PENDING';
   language: string;
   price: number;
   location: string;
@@ -102,6 +106,8 @@ export function useMeetings() {
           endDate: endIso,
           duration: durationMin,
           status: (b.status as MeetingStatus) || 'PENDING',
+          paymentStatus:
+            (b.payment_status as 'PAID' | 'UNPAID' | 'PENDING') || 'UNPAID',
           language: b.language || 'N/A',
           price: b.price || 0,
           location: 'Online',
@@ -150,6 +156,8 @@ export function useMeetings() {
               )
             : 60),
         status: (b.status as MeetingStatus) || 'PENDING',
+        paymentStatus:
+          (b.payment_status as 'PAID' | 'UNPAID' | 'PENDING') || 'UNPAID',
         language: b.language || 'N/A',
         price: b.price || 0,
         location: 'Online',
@@ -200,9 +208,26 @@ export function useMeetings() {
     },
     onError: () => toast.error('Failed to approve booking'),
   });
+  const rescheduleMutation = useMutation({
+    mutationFn: async ({
+      bookingId,
+      data,
+    }: {
+      bookingId: string;
+      data: RescheduleBookingRequest;
+    }) => bookingService.reschedule(bookingId, data),
+    onSuccess: async () => {
+      toast.success('Meeting rescheduled successfully');
+      await Promise.all([
+        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
+        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
+      ]);
+    },
+    onError: () => toast.error('Failed to reschedule meeting'),
+  });
   const [searchQuery, setSearchQuery] = useState('');
   const [activeTab, setActiveTab] = useState<
-    'pending' | 'upcoming' | 'completed' | 'cancelled'
+    'pending' | 'pendingPayment' | 'upcoming' | 'completed' | 'cancelled'
   >('upcoming');
 
   // Normalized user role for consumers (e.g., UI components)
@@ -258,9 +283,12 @@ export function useMeetings() {
       const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
       if (activeTab === 'pending') {
         matchesTab = m.status === 'PENDING';
+      } else if (activeTab === 'pendingPayment') {
+        matchesTab = m.status === 'CONFIRMED' && m.paymentStatus === 'UNPAID';
       } else if (activeTab === 'upcoming') {
-        // Show ongoing and future confirmed meetings
-        matchesTab = m.status === 'CONFIRMED' && end > now;
+        // Show ongoing and future confirmed meetings with paid status
+        matchesTab =
+          m.status === 'CONFIRMED' && m.paymentStatus === 'PAID' && end > now;
       } else if (activeTab === 'completed') {
         // Completed only if confirmed and end time has passed
         matchesTab = m.status === 'CONFIRMED' && end <= now;
@@ -280,16 +308,21 @@ export function useMeetings() {
   const counts = useMemo(() => {
     const now = new Date();
     const pending = meetings.filter((m) => m.status === 'PENDING').length;
+    const pendingPayment = meetings.filter(
+      (m) => m.status === 'CONFIRMED' && m.paymentStatus === 'UNPAID'
+    ).length;
     const upcoming = meetings.filter((m) => {
       const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
-      return m.status === 'CONFIRMED' && end > now;
+      return (
+        m.status === 'CONFIRMED' && m.paymentStatus === 'PAID' && end > now
+      );
     }).length;
     const completed = meetings.filter((m) => {
       const end = m.endDate ? new Date(m.endDate) : new Date(m.date);
       return m.status === 'CONFIRMED' && end <= now;
     }).length;
     const cancelled = meetings.filter((m) => m.status === 'CANCELLED').length;
-    return { pending, upcoming, completed, cancelled };
+    return { pending, pendingPayment, upcoming, completed, cancelled };
   }, [meetings]);
 
   const totalCompletedHours = useMemo(() => {
@@ -331,5 +364,7 @@ export function useMeetings() {
     cancelBooking: (bookingId: string, reason: string) =>
       cancelMutation.mutate({ bookingId, reason }),
     approveBooking: (bookingId: string) => approveMutation.mutate(bookingId),
+    rescheduleBooking: (bookingId: string, data: RescheduleBookingRequest) =>
+      rescheduleMutation.mutate({ bookingId, data }),
   };
 }

@@ -1,7 +1,13 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { Calendar, CheckCircle, Clock, XCircle } from 'lucide-react';
+import {
+  Calendar,
+  CheckCircle,
+  Clock,
+  CreditCard,
+  XCircle,
+} from 'lucide-react';
 
 import { Meeting, MeetingStatus, useMeetings } from '@/hooks/useMeetings';
 import { Badge } from '@/components/ui/badge';
@@ -16,16 +22,24 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import CancelMeetingDialog from '@/components/meetings/cancel-meeting-dialog';
+import MeetingPaymentButton from '@/components/meetings/meeting-payment-button';
+import RescheduleDialog from '@/components/meetings/reschedule-meeting-dialog';
 
 export default function MeetingTabs() {
   const [cancelOpen, setCancelOpen] = useState(false);
   const [cancelTargetId, setCancelTargetId] = useState<string | null>(null);
   const [isCancelling, setIsCancelling] = useState(false);
+  const [rescheduleOpen, setRescheduleOpen] = useState(false);
+  const [rescheduleTargetId, setRescheduleTargetId] = useState<string | null>(
+    null
+  );
+  const [isRescheduling, setIsRescheduling] = useState(false);
   const {
     meetings,
     filteredMeetings,
     handleJoinMeeting,
     cancelBooking,
+    rescheduleBooking,
     counts,
     activeTab,
     setActiveTab,
@@ -50,9 +64,41 @@ export default function MeetingTabs() {
     }
   };
 
+  const openReschedule = (id: string) => {
+    setRescheduleTargetId(id);
+    setRescheduleOpen(true);
+  };
+
+  const confirmReschedule = async (
+    startTime: string,
+    endTime: string,
+    reason: string
+  ) => {
+    if (!rescheduleTargetId) return;
+    setIsRescheduling(true);
+    try {
+      await rescheduleBooking(rescheduleTargetId, {
+        start_time: startTime,
+        end_time: endTime,
+        reason,
+      });
+      setRescheduleOpen(false);
+      setRescheduleTargetId(null);
+    } finally {
+      setIsRescheduling(false);
+    }
+  };
+
   // Use role from hook instead of heuristic
   const handleTabChange = (value: string) => {
-    setActiveTab(value as 'upcoming' | 'completed' | 'cancelled');
+    setActiveTab(
+      value as
+        | 'pending'
+        | 'pendingPayment'
+        | 'upcoming'
+        | 'completed'
+        | 'cancelled'
+    );
   };
 
   // Keep a ticking "now" so time-based UI updates without user interaction
@@ -185,24 +231,43 @@ export default function MeetingTabs() {
                     Approve
                   </Button>
                 )}
-                {/* Join button visible only for confirmed */}
-                {meeting.status === 'CONFIRMED' && (
+                {/* Payment button for students with unpaid confirmed meetings */}
+                {userRole === 'student' &&
+                  meeting.status === 'CONFIRMED' &&
+                  meeting.paymentStatus === 'UNPAID' && (
+                    <MeetingPaymentButton meeting={meeting} />
+                  )}
+                {/* Join button visible only for confirmed and paid */}
+                {meeting.status === 'CONFIRMED' &&
+                  meeting.paymentStatus === 'PAID' && (
+                    <Button
+                      size="sm"
+                      onClick={() => handleJoinMeeting(meeting)}
+                      // Enable join only during the meeting window with grace
+                      disabled={!canJoin(meeting)}
+                    >
+                      Join Meeting
+                    </Button>
+                  )}
+                {/* Show reschedule for paid meetings, cancel for unpaid */}
+                {meeting.status === 'CONFIRMED' &&
+                meeting.paymentStatus === 'PAID' ? (
                   <Button
                     size="sm"
-                    onClick={() => handleJoinMeeting(meeting)}
-                    // Enable join only during the meeting window with grace
-                    disabled={!canJoin(meeting)}
+                    variant="outline"
+                    onClick={() => openReschedule(meeting.id)}
                   >
-                    Join Meeting
+                    Reschedule
+                  </Button>
+                ) : (
+                  <Button
+                    size="sm"
+                    variant="destructive"
+                    onClick={() => openCancel(meeting.id)}
+                  >
+                    Cancel
                   </Button>
                 )}
-                <Button
-                  size="sm"
-                  variant="destructive"
-                  onClick={() => openCancel(meeting.id)}
-                >
-                  Cancel
-                </Button>
               </div>
             )}
         </div>
@@ -285,6 +350,25 @@ export default function MeetingTabs() {
     </div>
   );
 
+  const renderPendingPaymentContent = () => (
+    <div className="mt-6">
+      {activeTab === 'pendingPayment' && filteredMeetings?.length > 0 ? (
+        filteredMeetings?.map((m) => renderMeetingCard(m, 'upcoming'))
+      ) : (
+        <Card>
+          <CardContent className="py-8 text-center">
+            <CreditCard className="mx-auto mb-4 h-12 w-12 text-gray-400" />
+            <h3 className="mb-2 text-lg font-medium">No pending payments</h3>
+            <p className="text-gray-600">
+              Meetings requiring payment will appear here after teacher
+              approval.
+            </p>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+
   const renderCompletedContent = () => (
     <div className="mt-6">
       {activeTab === 'completed' && filteredMeetings?.length > 0 ? (
@@ -325,6 +409,8 @@ export default function MeetingTabs() {
     switch (activeTab) {
       case 'pending':
         return renderPendingContent();
+      case 'pendingPayment':
+        return renderPendingPaymentContent();
       case 'upcoming':
         return renderUpcomingContent();
       case 'completed':
@@ -344,6 +430,8 @@ export default function MeetingTabs() {
           <SelectTrigger className="w-full">
             <SelectValue>
               {activeTab === 'pending' && `Pending (${counts.pending})`}
+              {activeTab === 'pendingPayment' &&
+                `Payment (${counts.pendingPayment})`}
               {activeTab === 'upcoming' && `Upcoming (${counts.upcoming})`}
               {activeTab === 'completed' && `Completed (${counts.completed})`}
               {activeTab === 'cancelled' && `Cancelled (${counts.cancelled})`}
@@ -351,6 +439,9 @@ export default function MeetingTabs() {
           </SelectTrigger>
           <SelectContent>
             <SelectItem value="pending">Pending ({counts.pending})</SelectItem>
+            <SelectItem value="pendingPayment">
+              Payment ({counts.pendingPayment})
+            </SelectItem>
             <SelectItem value="upcoming">
               Upcoming ({counts.upcoming})
             </SelectItem>
@@ -370,9 +461,12 @@ export default function MeetingTabs() {
       {/* Desktop Tabs */}
       <div className="hidden md:block">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-4">
+          <TabsList className="grid w-full grid-cols-5">
             <TabsTrigger value="pending">
               Pending ({counts.pending})
+            </TabsTrigger>
+            <TabsTrigger value="pendingPayment">
+              Payment ({counts.pendingPayment})
             </TabsTrigger>
             <TabsTrigger value="upcoming">
               Upcoming ({counts.upcoming})
@@ -386,6 +480,10 @@ export default function MeetingTabs() {
           </TabsList>
 
           <TabsContent value="pending">{renderPendingContent()}</TabsContent>
+
+          <TabsContent value="pendingPayment">
+            {renderPendingPaymentContent()}
+          </TabsContent>
 
           <TabsContent value="upcoming">{renderUpcomingContent()}</TabsContent>
 
@@ -404,6 +502,19 @@ export default function MeetingTabs() {
         onOpenChange={setCancelOpen}
         onConfirm={confirmCancel}
         isSubmitting={isCancelling}
+      />
+
+      <RescheduleDialog
+        open={rescheduleOpen}
+        onOpenChange={setRescheduleOpen}
+        onConfirm={confirmReschedule}
+        isSubmitting={isRescheduling}
+        meetingTitle={
+          rescheduleTargetId
+            ? meetings.find((m) => m.id === rescheduleTargetId)?.subject ||
+              'Meeting'
+            : 'Meeting'
+        }
       />
     </>
   );

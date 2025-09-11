@@ -30,6 +30,8 @@ export const API_ROUTES = {
     GET_ALL_BOOKINGS: '/bookings/bookings/my/',
     CANCEL_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/cancel/`,
+    RESCHEDULE_BOOKING: (bookingId: string | number) =>
+      `/bookings/bookings/${bookingId}/reschedule/`,
     // Blogs (to integrate later)
     BLOGS: '/accounts/blogs/',
     BLOG_DETAIL: (blogId: string) => `/accounts/blogs/${blogId}/`,
