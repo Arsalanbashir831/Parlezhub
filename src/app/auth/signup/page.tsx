@@ -10,6 +10,7 @@ import { z } from 'zod';
 
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
+import { GoogleSignupWithRole } from '@/components/auth/google-signup-with-role';
 import {
   ConfirmPasswordField,
   EmailField,
@@ -122,6 +123,19 @@ export default function SignupPage() {
         <AuthButton type="submit" isLoading={isLoading}>
           Create Account
         </AuthButton>
+
+        <div className="relative">
+          <div className="absolute inset-0 flex items-center">
+            <span className="w-full border-t border-gray-300 dark:border-gray-600" />
+          </div>
+          <div className="relative flex justify-center text-xs uppercase">
+            <span className="bg-white px-2 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
+              Or continue with
+            </span>
+          </div>
+        </div>
+
+        <GoogleSignupWithRole disabled={isLoading} className="w-full" />
 
         <div className="text-center">
           <p className="text-sm text-gray-600 dark:text-gray-400">

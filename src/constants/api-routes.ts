@@ -6,6 +6,8 @@ export const API_ROUTES = {
     FORGOT_PASSWORD: '/password-reset/',
     RESET_PASSWORD: '/password-reset/confirm/',
     REFRESH_TOKEN: '/token/refresh/',
+    GOOGLE_INITIATE: '/auth/google/initiate/',
+    GOOGLE_CALLBACK: '/auth/google/callback/',
   },
   STUDENT: {
     PROFILE: '/accounts/profiles/me/',

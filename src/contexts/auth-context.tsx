@@ -27,10 +27,16 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<void>;
   resetPassword: (token: string, password: string) => Promise<void>;
   resendVerificationEmail: (email: string) => Promise<void>;
+  googleOAuthInitiate: (
+    mode: 'login' | 'signup',
+    role?: 'TEACHER' | 'STUDENT'
+  ) => Promise<void>;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
   userRole: 'TEACHER' | 'STUDENT' | null;
+  setIsAuthenticated: (value: boolean) => void;
+  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -173,6 +179,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const googleOAuthInitiateMutation = useMutation({
+    mutationFn: () => authApi.googleInitiate(),
+    onSuccess: (data, variables) => {
+      setError(null);
+      // The GoogleOAuthButton component will handle the redirect
+    },
+    onError: (error: unknown) => {
+      console.error('Google OAuth initiate failed:', error);
+      const errorMessage = getErrorMessage(error, 'google-oauth');
+      setError(errorMessage);
+      toast.error('Google Authentication Failed', {
+        description: errorMessage,
+      });
+    },
+  });
+
   useEffect(() => {
     // Check for existing session
     const checkAuth = async () => {
@@ -241,6 +263,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await resendVerificationEmailMutation.mutateAsync({ email });
   };
 
+  const googleOAuthInitiate = async (
+    mode: 'login' | 'signup',
+    role?: 'TEACHER' | 'STUDENT'
+  ) => {
+    if (mode === 'signup' && !role) {
+      toast.error('Please select a role before continuing with Google signup');
+      return;
+    }
+
+    // Store the mode and role in sessionStorage for the callback
+    sessionStorage.setItem('oauth_mode', mode);
+    if (role) {
+      sessionStorage.setItem('oauth_role', role);
+    }
+
+    await googleOAuthInitiateMutation.mutateAsync();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -250,16 +290,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         forgotPassword,
         resetPassword,
         resendVerificationEmail,
+        googleOAuthInitiate,
         isLoading:
           isLoading ||
           loginMutation.isPending ||
           signupMutation.isPending ||
           forgotPasswordMutation.isPending ||
           resetPasswordMutation.isPending ||
-          resendVerificationEmailMutation.isPending,
+          resendVerificationEmailMutation.isPending ||
+          googleOAuthInitiateMutation.isPending,
         error,
         isAuthenticated,
         userRole,
+        setIsAuthenticated,
+        setUserRole,
       }}
     >
       {children}

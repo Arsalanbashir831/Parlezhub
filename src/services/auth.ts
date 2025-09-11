@@ -67,6 +67,41 @@ export interface ResendVerificationEmailResponse {
   message: string;
 }
 
+export interface GoogleInitiateResponse {
+  success: boolean;
+  oauth_url: string;
+  message: string;
+}
+
+export interface GoogleCallbackRequest {
+  access_token: string;
+  refresh_token: string;
+  role?: 'TEACHER' | 'STUDENT'; // Required for signup, optional for login
+}
+
+export interface GoogleCallbackResponse {
+  success: boolean;
+  message: string;
+  user: {
+    id: string;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
+    full_name: string;
+    role: 'TEACHER' | 'STUDENT';
+    auth_provider: string;
+    email_verified: boolean;
+    is_oauth_user: boolean;
+    created_at: string;
+  };
+  access_token: string;
+  refresh_token: string;
+  created: boolean;
+  is_existing_user_login: boolean;
+  requires_profile_completion: boolean;
+  flow_type: 'login' | 'signup';
+}
+
 export const authApi = {
   signup: async (data: SignupRequest): Promise<SignupResponse> => {
     const response = await apiCaller(
@@ -125,6 +160,30 @@ export const authApi = {
       data as unknown as Record<string, string>,
       {},
       false // Don't use auth token for resend verification email
+    );
+    return response.data;
+  },
+
+  googleInitiate: async (): Promise<GoogleInitiateResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.GOOGLE_INITIATE,
+      'POST',
+      {},
+      {},
+      false // Don't use auth token for Google initiate
+    );
+    return response.data;
+  },
+
+  googleCallback: async (
+    data: GoogleCallbackRequest
+  ): Promise<GoogleCallbackResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.GOOGLE_CALLBACK,
+      'POST',
+      data as unknown as Record<string, string>,
+      {},
+      false // Don't use auth token for Google callback
     );
     return response.data;
   },
