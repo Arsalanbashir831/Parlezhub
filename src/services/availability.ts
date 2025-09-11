@@ -91,14 +91,47 @@ export const availabilityService = {
 
 export interface CreateBookingRequest {
   teacher: string; // teacher_id
+  gig: number; // service/gig id
   start_time: string; // ISO string with Z
   end_time: string; // ISO string with Z
-  session_type: 'video_call' | 'voice_call' | 'in_person';
   notes?: string;
 }
 
+export interface BookingResponse {
+  id: number;
+  student_name: string;
+  teacher_name: string;
+  duration_hours: string;
+  start_time: string;
+  end_time: string;
+  scheduled_datetime: string;
+  status: string;
+  payment_status: string;
+  zoom_meeting_id?: number | string;
+  zoom_join_url?: string;
+  zoom_start_url?: string;
+  zoom_password?: string;
+  created_at: string;
+  updated_at: string;
+  notes?: string;
+  cancellation_reason?: string;
+  student: string;
+  teacher: string;
+  gig: number;
+}
+
+export interface BookingApprovalResponse {
+  message: string;
+  booking: BookingResponse;
+  zoom_info?: {
+    join_url: string;
+    meeting_id: string;
+    password: string;
+  };
+}
+
 export const bookingService = {
-  schedule: async (payload: CreateBookingRequest) => {
+  schedule: async (payload: CreateBookingRequest): Promise<BookingResponse> => {
     const response = await apiCaller(
       // Using PUBLIC.SCHEDULE_BOOKING per routes file
       // If this should be a TEACHER or BOOKING namespace, adjust accordingly
@@ -110,7 +143,9 @@ export const bookingService = {
     );
     return response.data;
   },
-  approve: async (bookingId: string | number) => {
+  approve: async (
+    bookingId: string | number
+  ): Promise<BookingApprovalResponse> => {
     const response = await apiCaller(
       API_ROUTES.TEACHER.APPROVE_BOOKING(bookingId),
       'POST',

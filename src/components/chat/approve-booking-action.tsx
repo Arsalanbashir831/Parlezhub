@@ -1,5 +1,8 @@
 import { useUser } from '@/contexts/user-context';
-import { bookingService } from '@/services/availability';
+import {
+  BookingApprovalResponse,
+  bookingService,
+} from '@/services/availability';
 import chatService from '@/services/chat';
 
 import { Button } from '@/components/ui/button';
@@ -15,8 +18,9 @@ export default function ApproveBookingAction({
 
   const handleApprove = async () => {
     try {
-      const approvedResp = await bookingService.approve(bookingId);
-      const booking = (approvedResp && approvedResp.booking) || approvedResp;
+      const approvedResp: BookingApprovalResponse =
+        await bookingService.approve(bookingId);
+      const booking = approvedResp.booking;
       const toLocal = (iso: string) =>
         new Date(iso).toLocaleString([], {
           year: 'numeric',
@@ -25,28 +29,38 @@ export default function ApproveBookingAction({
           hour: '2-digit',
           minute: '2-digit',
         });
+      const serviceName = fields['Service'] || 'Service';
+
       const teacherSummary = [
         'Booking Approved',
+        `- Service: ${serviceName}`,
         `- Status: ${booking?.status ?? 'APPROVED'}`,
         booking?.start_time ? `- Start: ${toLocal(booking.start_time)}` : '',
         booking?.end_time ? `- End: ${toLocal(booking.end_time)}` : '',
+        booking?.payment_status
+          ? `- Payment Status: ${booking.payment_status}`
+          : '',
         booking?.zoom_start_url ? `- Host URL: ${booking.zoom_start_url}` : '',
-        // Booking ID intentionally omitted
+        `- Booking ID: ${booking?.id || bookingId}`,
       ]
         .filter(Boolean)
         .join('\n');
 
       const studentSummary = [
         'Booking Approved',
+        `- Service: ${serviceName}`,
         `- Status: ${booking?.status ?? 'APPROVED'}`,
         booking?.start_time ? `- Start: ${toLocal(booking.start_time)}` : '',
         booking?.end_time ? `- End: ${toLocal(booking.end_time)}` : '',
+        booking?.payment_status
+          ? `- Payment Status: ${booking.payment_status}`
+          : '',
         booking?.zoom_join_url
           ? `- Join URL: ${booking.zoom_join_url}`
           : approvedResp?.zoom_info?.join_url
             ? `- Join URL: ${approvedResp.zoom_info.join_url}`
             : '',
-        // Booking ID intentionally omitted
+        `- Booking ID: ${booking?.id || bookingId}`,
       ]
         .filter(Boolean)
         .join('\n');

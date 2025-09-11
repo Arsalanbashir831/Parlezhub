@@ -54,4 +54,8 @@ export const API_ROUTES = {
   VOICE: {
     CONVERSATIONS: '/accounts/voice-conversations/',
   },
+  PAYMENTS: {
+    PROCESS_BOOKING_PAYMENT: '/payments/process-booking-payment/',
+    GET_PAYMENT_METHODS: '/payments/payment-methods/',
+  },
 };

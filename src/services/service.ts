@@ -1,5 +1,7 @@
 import { API_ROUTES } from '@/constants/api-routes';
 
+// Frontend-only Blog API (localStorage-backed for now)
+import type { BlogFormData, BlogPost } from '@/types/blog';
 import { ServiceFormData, ServiceStatus, ServiceType } from '@/types/service';
 import apiCaller from '@/lib/api-caller';
 
@@ -213,18 +215,29 @@ export const serviceApi = {
     );
     return response.data;
   },
+
+  // Get services for a specific teacher
+  getTeacherServices: async (
+    teacherId: string
+  ): Promise<PublicServiceResponse[]> => {
+    const response = await apiCaller(
+      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?teacher=${teacherId}`,
+      'GET',
+      undefined,
+      {},
+      true
+    );
+    return response.data;
+  },
 };
 
-// Frontend-only Blog API (localStorage-backed for now)
 export const blogApi = {
-  list: async (): Promise<import('@/types/service').BlogPost[]> => {
+  list: async (): Promise<BlogPost[]> => {
     if (typeof window === 'undefined') return [];
     const raw = localStorage.getItem('teacher_blogs');
-    return raw ? (JSON.parse(raw) as import('@/types/service').BlogPost[]) : [];
+    return raw ? (JSON.parse(raw) as BlogPost[]) : [];
   },
-  create: async (
-    data: import('@/types/service').BlogFormData
-  ): Promise<import('@/types/service').BlogPost> => {
+  create: async (data: BlogFormData): Promise<BlogPost> => {
     const all = await blogApi.list();
     const now = new Date().toISOString();
     const id = crypto.randomUUID();
@@ -232,12 +245,12 @@ export const blogApi = {
       .toLowerCase()
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
-    const post: import('@/types/service').BlogPost = {
+    const post: BlogPost = {
       id,
       title: data.title,
       slug,
       content: data.content,
-      coverImage: data.coverImage,
+      thumbnail: data.thumbnail,
       tags: data.tags || [],
       status: data.status || 'published',
       createdAt: now,
@@ -247,24 +260,22 @@ export const blogApi = {
     localStorage.setItem('teacher_blogs', JSON.stringify(updated));
     return post;
   },
-  get: async (
-    id: string
-  ): Promise<import('@/types/service').BlogPost | null> => {
+  get: async (id: string): Promise<BlogPost | null> => {
     const all = await blogApi.list();
     return all.find((b) => b.id === id) || null;
   },
   update: async (
     id: string,
-    data: Partial<import('@/types/service').BlogFormData>
-  ): Promise<import('@/types/service').BlogPost | null> => {
+    data: Partial<BlogFormData>
+  ): Promise<BlogPost | null> => {
     const all = await blogApi.list();
     const idx = all.findIndex((b) => b.id === id);
     if (idx === -1) return null;
-    const updated: import('@/types/service').BlogPost = {
+    const updated: BlogPost = {
       ...all[idx],
       ...data,
       updatedAt: new Date().toISOString(),
-    } as import('@/types/service').BlogPost;
+    };
     all[idx] = updated;
     localStorage.setItem('teacher_blogs', JSON.stringify(all));
     return updated;
@@ -274,17 +285,21 @@ export const blogApi = {
     const filtered = all.filter((b) => b.id !== id);
     localStorage.setItem('teacher_blogs', JSON.stringify(filtered));
   },
-  toggleVisibility: async (
-    id: string
-  ): Promise<import('@/types/service').BlogPost | null> => {
+  toggleVisibility: async (id: string): Promise<BlogPost | null> => {
     const all = await blogApi.list();
     const idx = all.findIndex((b) => b.id === id);
     if (idx === -1) return null;
-    const nextStatus = all[idx].status === 'published' ? 'hidden' : 'published';
+    const nextStatus = all[idx].status === 'published' ? 'draft' : 'published';
     all[idx] = {
-      ...all[idx],
-      status: nextStatus,
+      id: all[idx].id,
+      title: all[idx].title,
+      slug: all[idx].slug,
+      content: all[idx].content,
+      thumbnail: all[idx].thumbnail,
+      tags: all[idx].tags,
+      createdAt: all[idx].createdAt,
       updatedAt: new Date().toISOString(),
+      status: nextStatus,
     };
     localStorage.setItem('teacher_blogs', JSON.stringify(all));
     return all[idx];

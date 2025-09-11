@@ -1,12 +1,15 @@
 import { useAuth } from '@/contexts/auth-context';
 
 import ApproveBookingAction from './approve-booking-action';
+import PaymentBookingAction from './payment-booking-action';
 
 export default function MessageBody({ content }: { content: string }) {
   const { userRole } = useAuth();
   const isBookingRequested = content?.startsWith('Booking Requested');
   const isBookingApproved = content?.startsWith('Booking Approved');
-  if (!isBookingRequested && !isBookingApproved) {
+  const isBookingConfirmed = content?.startsWith('Booking Confirmed');
+
+  if (!isBookingRequested && !isBookingApproved && !isBookingConfirmed) {
     return <p className="whitespace-pre-wrap break-words text-sm">{content}</p>;
   }
 
@@ -24,12 +27,26 @@ export default function MessageBody({ content }: { content: string }) {
     }
   });
 
+  // Check if booking needs payment (confirmed but unpaid)
+  const needsPayment =
+    (isBookingApproved || isBookingConfirmed) &&
+    fields['Status']?.includes('CONFIRMED') &&
+    fields['Payment Status']?.includes('UNPAID');
+
   return (
     <div className="space-y-1">
       <p className="text-sm font-semibold">
-        {isBookingApproved ? 'Booking Confirmed' : 'Booking Requested'}
+        {isBookingApproved || isBookingConfirmed
+          ? 'Booking Confirmed'
+          : 'Booking Requested'}
       </p>
       <div className="text-xs opacity-90">
+        {fields['Service'] && (
+          <div className="flex justify-between gap-3">
+            <span>Service</span>
+            <span>{fields['Service']}</span>
+          </div>
+        )}
         {fields['Status'] && (
           <div className="flex justify-between gap-3">
             <span>Status</span>
@@ -46,6 +63,20 @@ export default function MessageBody({ content }: { content: string }) {
           <div className="flex justify-between gap-3">
             <span>End</span>
             <span>{fields['End']}</span>
+          </div>
+        )}
+        {fields['Payment Status'] && (
+          <div className="flex justify-between gap-3">
+            <span>Payment</span>
+            <span
+              className={
+                fields['Payment Status'] === 'UNPAID'
+                  ? 'text-red-600'
+                  : 'text-green-600'
+              }
+            >
+              {fields['Payment Status']}
+            </span>
           </div>
         )}
         {/* Render meeting links after approval based on role */}
@@ -70,8 +101,12 @@ export default function MessageBody({ content }: { content: string }) {
           </a>
         )} */}
 
-        {!isBookingApproved && userRole === 'TEACHER' ? (
+        {!isBookingApproved && !isBookingConfirmed && userRole === 'TEACHER' ? (
           <ApproveBookingAction fields={fields} />
+        ) : null}
+
+        {needsPayment && userRole === 'STUDENT' ? (
+          <PaymentBookingAction fields={fields} />
         ) : null}
       </div>
     </div>

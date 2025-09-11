@@ -2,8 +2,13 @@
 
 import { memo, useEffect, useMemo, useState } from 'react';
 import { useUser } from '@/contexts/user-context';
-import { availabilityService, bookingService } from '@/services/availability';
+import {
+  availabilityService,
+  BookingResponse,
+  bookingService,
+} from '@/services/availability';
 import chatService from '@/services/chat';
+import { serviceApi, serviceUtils } from '@/services/service';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -17,7 +22,15 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
+import { Textarea } from '@/components/ui/textarea';
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -42,9 +55,29 @@ const BookingDialog = memo(
       refetchOnWindowFocus: false,
     });
 
+    // Fetch teacher services
+    const { data: teacherServicesData, isLoading: servicesLoading } = useQuery({
+      queryKey: ['teacher-services', teacherId],
+      queryFn: async () => {
+        if (!teacherId) return [];
+        return serviceApi.getTeacherServices(teacherId);
+      },
+      enabled: Boolean(isOpen && teacherId),
+      staleTime: 5 * 60 * 1000,
+      refetchOnWindowFocus: false,
+    });
+
+    // Convert teacher services to frontend format
+    const teacherServices = useMemo(() => {
+      if (!teacherServicesData) return [];
+      return teacherServicesData.map(serviceUtils.publicApiResponseToService);
+    }, [teacherServicesData]);
+
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
+    const [selectedServiceId, setSelectedServiceId] = useState<string>('');
+    const [notes, setNotes] = useState<string>('');
     // Future-only dates
     const todayStr = useMemo(() => {
       const d = new Date();
@@ -69,6 +102,17 @@ const BookingDialog = memo(
       if (startTime) setEndTime(computeEndFromStart(startTime));
       else setEndTime('');
     }, [startTime]);
+
+    // Reset form when dialog closes
+    useEffect(() => {
+      if (!isOpen) {
+        setDate('');
+        setStartTime('');
+        setEndTime('');
+        setSelectedServiceId('');
+        setNotes('');
+      }
+    }, [isOpen]);
     const [submitting, setSubmitting] = useState(false);
 
     const weekdayFromDate = useMemo(() => {
@@ -80,7 +124,7 @@ const BookingDialog = memo(
       return (jsIdx + 6) % 7;
     }, [date]);
 
-    const daySlots = useMemo(() => {
+    const _daySlots = useMemo(() => {
       if (weekdayFromDate === undefined)
         return [] as Array<{ start: string; end: string }>;
       const weekly = (weeklyItems || []).map((i) => ({
@@ -126,6 +170,10 @@ const BookingDialog = memo(
         toast.error('Please select date, start and end time');
         return;
       }
+      if (!selectedServiceId) {
+        toast.error('Please select a service');
+        return;
+      }
 
       // Combine date and start time as local time; end is +60 minutes
       const startLocal = new Date(`${date}T${startTime}:00`);
@@ -133,7 +181,7 @@ const BookingDialog = memo(
       const startIso = startLocal.toISOString();
       const endIso = endLocal.toISOString();
 
-      const toLocal = (iso: string) =>
+      const _toLocal = (iso: string) =>
         new Date(iso).toLocaleString([], {
           year: 'numeric',
           month: 'short',
@@ -144,17 +192,29 @@ const BookingDialog = memo(
 
       setSubmitting(true);
       try {
-        const booking = await bookingService.schedule({
+        const booking: BookingResponse = await bookingService.schedule({
           teacher: teacherId,
+          gig: parseInt(selectedServiceId),
           start_time: startIso,
           end_time: endIso,
-          session_type: 'video_call',
-          notes: '',
+          notes: notes.trim(),
         });
 
         toast.success('Booking scheduled');
 
         // Send a booking summary message into the chat
+        const selectedService = teacherServices.find(
+          (s) => s.id === selectedServiceId
+        );
+
+        // Fallback: if service not found in local array, try to find by gig ID from API response
+        const serviceFromApi =
+          !selectedService && booking.gig
+            ? teacherServices.find((s) => parseInt(s.id) === booking.gig)
+            : null;
+
+        const serviceInfo = selectedService || serviceFromApi;
+
         const toLocal = (iso: string) =>
           new Date(iso).toLocaleString([], {
             year: 'numeric',
@@ -163,12 +223,13 @@ const BookingDialog = memo(
             hour: '2-digit',
             minute: '2-digit',
           });
+
         const summary = [
           'Booking Requested',
+          `- Service: ${serviceInfo?.title || `Service #${booking.gig || selectedServiceId}`}`,
           `- Status: ${booking.status ?? 'PENDING'}`,
           `- Start: ${toLocal(booking.start_time)}`,
           `- End: ${toLocal(booking.end_time)}`,
-          // URLs are intentionally omitted until approval
           `- Booking ID: ${booking.id}`,
         ]
           .filter(Boolean)
@@ -181,7 +242,7 @@ const BookingDialog = memo(
         }
 
         onClose();
-      } catch (e) {
+      } catch {
         toast.error('Failed to schedule booking');
       } finally {
         setSubmitting(false);
@@ -275,12 +336,64 @@ const BookingDialog = memo(
               </div>
             </div>
 
+            {/* Service Selection */}
+            <div className="grid gap-2">
+              <Label htmlFor="booking-service">Select Service</Label>
+              {servicesLoading ? (
+                <div className="flex h-10 items-center px-3 text-sm text-muted-foreground">
+                  Loading services...
+                </div>
+              ) : teacherServices.length === 0 ? (
+                <div className="flex h-10 items-center px-3 text-sm text-muted-foreground">
+                  No services available
+                </div>
+              ) : (
+                <Select
+                  value={selectedServiceId}
+                  onValueChange={setSelectedServiceId}
+                >
+                  <SelectTrigger id="booking-service">
+                    <SelectValue placeholder="Choose a service" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {teacherServices.map((service) => (
+                      <SelectItem key={service.id} value={service.id}>
+                        <div className="flex flex-col">
+                          <span className="font-medium">{service.title}</span>
+                          <span className="text-sm text-muted-foreground">
+                            ${service.price} • {service.duration} minutes
+                          </span>
+                        </div>
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              )}
+            </div>
+
+            {/* Notes */}
+            <div className="grid gap-2">
+              <Label htmlFor="booking-notes">Notes (optional)</Label>
+              <Textarea
+                id="booking-notes"
+                placeholder="Any specific requirements or topics you'd like to focus on..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                rows={3}
+              />
+            </div>
+
             <Separator />
             <div className="flex justify-end gap-2">
               <Button variant="outline" onClick={onClose}>
                 Cancel
               </Button>
-              <Button onClick={handleSubmit} disabled={submitting}>
+              <Button
+                onClick={handleSubmit}
+                disabled={
+                  submitting || !date || !startTime || !selectedServiceId
+                }
+              >
                 {submitting ? 'Scheduling...' : 'Schedule'}
               </Button>
             </div>

@@ -43,12 +43,23 @@ interface ApiBooking {
   end_time?: string; // ISO
   finish_time?: string; // ISO
   duration_minutes?: number;
+  duration_hours?: string;
+  scheduled_datetime?: string;
   status?: string;
+  payment_status?: string;
   language?: string;
   price?: number;
+  zoom_meeting_id?: number;
   zoom_start_url?: string;
   zoom_join_url?: string;
+  zoom_password?: string;
   notes?: string;
+  cancellation_reason?: string;
+  created_at?: string;
+  updated_at?: string;
+  student?: string;
+  teacher?: string;
+  gig?: number;
 }
 
 export function useMeetings() {
@@ -300,7 +311,7 @@ export function useMeetings() {
       .filter((m) => m.status === 'CONFIRMED' && new Date(m.date) > now)
       .sort((a, b) => +new Date(a.date) - +new Date(b.date))[0];
     return next ? formatDateTime(next.date) : 'None scheduled';
-  }, [meetings, formatDateTime]);
+  }, [meetings]);
 
   return {
     meetings,
