@@ -33,7 +33,7 @@ export const ROUTES = {
     SETTINGS: '/teacher/settings',
     BLOGS: '/teacher/blogs',
     CREATE_BLOG: '/teacher/blogs/create',
-    EDIT_BLOG: (blogId: string) => `/teacher/blogs/edit/${blogId}`,
+    EDIT_BLOG: (blogId: string | number) => `/teacher/blogs/edit/${blogId}`,
   },
   AI_SESSION: {
     ROOT: '/ai-session',

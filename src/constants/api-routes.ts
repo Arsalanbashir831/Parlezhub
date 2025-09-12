@@ -32,9 +32,12 @@ export const API_ROUTES = {
       `/bookings/bookings/${bookingId}/cancel/`,
     RESCHEDULE_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/reschedule/`,
-    // Blogs (to integrate later)
-    BLOGS: '/accounts/blogs/',
-    BLOG_DETAIL: (blogId: string) => `/accounts/blogs/${blogId}/`,
+    // Blogs
+    BLOGS: '/blogs/teacher/blogs/',
+    BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
+    CREATE_BLOG: '/blogs/teacher/blogs/',
+    UPDATE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
+    DELETE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',

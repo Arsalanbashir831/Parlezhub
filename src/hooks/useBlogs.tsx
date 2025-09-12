@@ -10,21 +10,38 @@ export function useBlogs() {
   const [blogs, setBlogs] = useState<BlogPost[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [totalCount, setTotalCount] = useState(0);
+  const [currentPage, setCurrentPage] = useState(1);
+  const [hasNext, setHasNext] = useState(false);
+  const [hasPrevious, setHasPrevious] = useState(false);
 
-  const refresh = useCallback(async () => {
-    setIsLoading(true);
-    setError(null);
-    try {
-      await blogService.seedIfEmpty();
-      const list = await blogService.list();
-      setBlogs(list);
-    } catch (e) {
-      setError('Failed to load blogs');
-      toast.error('Failed to load blogs');
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const refresh = useCallback(
+    async (params?: {
+      page?: number;
+      page_size?: number;
+      status?: 'draft' | 'published';
+      search?: string;
+    }) => {
+      setIsLoading(true);
+      setError(null);
+      try {
+        const response = await blogService.list(params);
+        setBlogs(response.results);
+        setTotalCount(response.count);
+        setHasNext(!!response.next);
+        setHasPrevious(!!response.previous);
+        if (params?.page) {
+          setCurrentPage(params.page);
+        }
+      } catch {
+        setError('Failed to load blogs');
+        toast.error('Failed to load blogs');
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    []
+  );
 
   useEffect(() => {
     void refresh();
@@ -51,7 +68,7 @@ export function useBlogs() {
   );
 
   const remove = useCallback(
-    async (id: string) => {
+    async (id: string | number) => {
       await blogService.remove(id);
       toast.success('Blog deleted');
       await refresh();
@@ -60,7 +77,7 @@ export function useBlogs() {
   );
 
   const toggleVisibility = useCallback(
-    async (id: string) => {
+    async (id: string | number) => {
       const current = (await blogService.get(id))?.status;
       const next = current === 'published' ? 'draft' : 'published';
       const updated = await blogService.setStatus(
@@ -76,7 +93,7 @@ export function useBlogs() {
     [refresh]
   );
 
-  const loadOne = useCallback(async (id: string) => {
+  const loadOne = useCallback(async (id: string | number) => {
     return blogService.get(id);
   }, []);
 
@@ -84,6 +101,10 @@ export function useBlogs() {
     blogs,
     isLoading,
     error,
+    totalCount,
+    currentPage,
+    hasNext,
+    hasPrevious,
     refresh,
     create,
     update,
