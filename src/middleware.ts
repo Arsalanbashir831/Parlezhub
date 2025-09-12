@@ -1,39 +1,39 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 
+import { ROUTES } from './constants/routes';
+
 // Define protected routes for each role
 const STUDENT_ROUTES = [
-  '/student',
-  '/student/dashboard',
-  '/student/teachers',
-  '/student/ai-chirologist',
-  '/student/chat',
-  '/student/meetings',
-  '/student/history',
-  '/student/session-report',
-  '/student/settings',
-  '/astrology',
+  ROUTES.STUDENT.DASHBOARD,
+  ROUTES.STUDENT.TEACHERS,
+  ROUTES.STUDENT.AI_CHIROLOGIST,
+  ROUTES.STUDENT.CHAT,
+  ROUTES.STUDENT.MEETINGS,
+  ROUTES.STUDENT.HISTORY,
+  ROUTES.STUDENT.SESSION_REPORT,
+  ROUTES.STUDENT.SETTINGS,
+  ROUTES.AGENT.ASTROLOGY,
 ];
 
 const TEACHER_ROUTES = [
-  '/teacher',
-  '/teacher/dashboard',
-  '/teacher/chat',
-  '/teacher/meetings',
-  '/teacher/services',
-  '/teacher/settings',
+  ROUTES.TEACHER.DASHBOARD,
+  ROUTES.TEACHER.CHAT,
+  ROUTES.TEACHER.MEETINGS,
+  ROUTES.TEACHER.SERVICES,
+  ROUTES.TEACHER.SETTINGS,
 ];
 
 const PUBLIC_ROUTES = [
-  '/auth/sign-in',
-  '/auth/signup',
-  '/auth/forgot-password',
-  '/auth/reset-password',
-  '/auth/verify-email',
-  '/auth/callback',
-  '/ai-session',
+  ROUTES.AUTH.LOGIN,
+  ROUTES.AUTH.SIGNUP,
+  ROUTES.AUTH.FORGOT_PASSWORD,
+  ROUTES.AUTH.RESET_PASSWORD,
+  ROUTES.AUTH.VERIFY_EMAIL,
+  ROUTES.AUTH.CALLBACK,
+  ROUTES.AI_SESSION.ROOT,
+  ROUTES.AGENT.LANGUAGE,
   '/placeholders',
-  '/language',
 ];
 
 export function middleware(request: NextRequest) {
@@ -47,8 +47,8 @@ export function middleware(request: NextRequest) {
   if (isPublicRoute) {
     // Only restrict auth pages (sign-in, signup) for authenticated users
     const isAuthPage =
-      pathname.startsWith('/auth/sign-in') ||
-      pathname.startsWith('/auth/signup');
+      pathname.startsWith(ROUTES.AUTH.LOGIN) ||
+      pathname.startsWith(ROUTES.AUTH.SIGNUP);
     if (isAuthPage) {
       const accessToken = request.cookies.get('access_token')?.value;
       const userRole = request.cookies.get('user_role')?.value;
@@ -60,12 +60,12 @@ export function middleware(request: NextRequest) {
         }
         if (userRole === 'STUDENT') {
           return NextResponse.redirect(
-            new URL('/student/dashboard', request.url)
+            new URL(ROUTES.STUDENT.DASHBOARD, request.url)
           );
         }
         if (userRole === 'TEACHER') {
           return NextResponse.redirect(
-            new URL('/teacher/dashboard', request.url)
+            new URL(ROUTES.TEACHER.DASHBOARD, request.url)
           );
         }
       }
@@ -77,9 +77,19 @@ export function middleware(request: NextRequest) {
   const accessToken = request.cookies.get('access_token')?.value;
   const userRole = request.cookies.get('user_role')?.value;
 
-  if (!accessToken || !userRole) {
-    // Redirect to login if no token or role
-    const loginUrl = new URL('/auth/sign-in', request.url);
+  if (!accessToken) {
+    // Redirect to login if no token
+    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+    if (pathname !== '/') {
+      loginUrl.searchParams.set('redirect', pathname);
+    }
+    return NextResponse.redirect(loginUrl);
+  }
+
+  // Handle case where user has token but no role (incomplete OAuth flow)
+  if (!userRole) {
+    // Redirect to login - OAuth callback will handle role selection inline
+    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
     if (pathname !== '/') {
       loginUrl.searchParams.set('redirect', pathname);
     }
@@ -89,9 +99,13 @@ export function middleware(request: NextRequest) {
   // Handle root path - redirect based on role
   if (pathname === '/') {
     if (userRole === 'STUDENT') {
-      return NextResponse.redirect(new URL('/student/dashboard', request.url));
+      return NextResponse.redirect(
+        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
+      );
     } else if (userRole === 'TEACHER') {
-      return NextResponse.redirect(new URL('/teacher/dashboard', request.url));
+      return NextResponse.redirect(
+        new URL(ROUTES.TEACHER.DASHBOARD, request.url)
+      );
     }
   }
 
@@ -102,7 +116,9 @@ export function middleware(request: NextRequest) {
     );
     if (!isStudentRoute) {
       // Redirect student to their dashboard if trying to access teacher routes
-      return NextResponse.redirect(new URL('/student/dashboard', request.url));
+      return NextResponse.redirect(
+        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
+      );
     }
   } else if (userRole === 'TEACHER') {
     const isTeacherRoute = TEACHER_ROUTES.some((route) =>
@@ -110,11 +126,13 @@ export function middleware(request: NextRequest) {
     );
     if (!isTeacherRoute) {
       // Redirect teacher to their dashboard if trying to access student routes
-      return NextResponse.redirect(new URL('/teacher/dashboard', request.url));
+      return NextResponse.redirect(
+        new URL(ROUTES.TEACHER.DASHBOARD, request.url)
+      );
     }
   } else {
     // Invalid role, redirect to login
-    const loginUrl = new URL('/auth/sign-in', request.url);
+    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
     return NextResponse.redirect(loginUrl);
   }
 

@@ -116,7 +116,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const forgotPasswordMutation = useMutation({
     mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       setError(null);
 
       // Show success toast
@@ -136,7 +136,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resetPasswordMutation = useMutation({
     mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
-    onSuccess: (data) => {
+    onSuccess: () => {
       setError(null);
 
       // Show success toast
@@ -181,7 +181,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const googleOAuthInitiateMutation = useMutation({
     mutationFn: () => authApi.googleInitiate(),
-    onSuccess: (data, variables) => {
+    onSuccess: () => {
       setError(null);
       // The GoogleOAuthButton component will handle the redirect
     },
@@ -202,9 +202,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = getCookie('access_token');
         const role = getCookie('user_role');
 
+        // Only consider user authenticated if they have BOTH token AND role
         if (token && role) {
           setIsAuthenticated(true);
           setUserRole(role as 'TEACHER' | 'STUDENT');
+        } else {
+          // If missing either token or role, user is not fully authenticated
+          setIsAuthenticated(false);
+          setUserRole(null);
         }
       } catch (error) {
         console.error('Auth check failed:', error);

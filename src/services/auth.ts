@@ -82,24 +82,27 @@ export interface GoogleCallbackRequest {
 export interface GoogleCallbackResponse {
   success: boolean;
   message: string;
-  user: {
+  user?: {
     id: string;
     email: string;
     first_name: string | null;
     last_name: string | null;
     full_name: string;
-    role: 'TEACHER' | 'STUDENT';
+    role?: 'TEACHER' | 'STUDENT'; // Made optional for role selection cases
     auth_provider: string;
     email_verified: boolean;
     is_oauth_user: boolean;
     created_at: string;
   };
-  access_token: string;
-  refresh_token: string;
-  created: boolean;
-  is_existing_user_login: boolean;
-  requires_profile_completion: boolean;
-  flow_type: 'login' | 'signup';
+  access_token?: string;
+  refresh_token?: string;
+  created?: boolean;
+  is_existing_user_login?: boolean;
+  requires_profile_completion?: boolean;
+  flow_type?: 'login' | 'signup';
+  // Error case fields
+  error?: string;
+  requires_role_selection?: boolean;
 }
 
 export const authApi = {

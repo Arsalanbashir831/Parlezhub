@@ -9,11 +9,33 @@ import { toast } from 'sonner';
 
 import { setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
+import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Label } from '@/components/ui/label';
+import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+
+interface AxiosError {
+  response?: {
+    status?: number;
+    data?: {
+      requires_role_selection?: boolean;
+      error?: string;
+      message?: string;
+    };
+  };
+}
 
 export function GoogleOAuthCallback() {
-  const [isProcessing, setIsProcessing] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [showRoleSelection, setShowRoleSelection] = useState(false);
+  const [selectedRole, setSelectedRole] = useState<'STUDENT' | 'TEACHER' | ''>(
+    ''
+  );
+  const [isCompletingProfile, setIsCompletingProfile] = useState(false);
+  const [storedTokens, setStoredTokens] = useState<{
+    accessToken: string;
+    refreshToken: string;
+  } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setIsAuthenticated, setUserRole } = useAuth();
@@ -53,21 +75,132 @@ export function GoogleOAuthCallback() {
           ...(oauthMode === 'signup' && oauthRole ? { role: oauthRole } : {}),
         };
 
-        // Call the backend callback endpoint
-        const response = await authApi.googleCallback(callbackData);
+        try {
+          // Call the backend callback endpoint
+          const response = await authApi.googleCallback(callbackData);
 
-        if (!response.success) {
-          throw new Error(response.message || 'OAuth callback failed');
+          console.log('OAuth callback response:', response);
+
+          // Only set cookies if we have a successful response with user role
+          setCookie('access_token', response.access_token!);
+          setCookie('refresh_token', response.refresh_token!);
+          setCookie('user_role', response.user!.role!);
+
+          // Update auth context
+          setIsAuthenticated(true);
+          setUserRole(response.user!.role!);
+
+          // Clean up sessionStorage
+          sessionStorage.removeItem('oauth_mode');
+          sessionStorage.removeItem('oauth_role');
+
+          // Show success message
+          const isNewUser = response.flow_type === 'signup' || response.created;
+          toast.success(
+            isNewUser ? 'Account created successfully!' : 'Welcome back!',
+            {
+              description: isNewUser
+                ? 'Your Google account has been linked successfully.'
+                : 'You have been logged in successfully.',
+            }
+          );
+
+          // Redirect based on role
+          const redirectTo = searchParams.get('redirect');
+          if (redirectTo) {
+            router.push(redirectTo);
+          } else {
+            if (response.user!.role === 'STUDENT') {
+              router.push(ROUTES.STUDENT.DASHBOARD);
+            } else if (response.user!.role === 'TEACHER') {
+              router.push(ROUTES.TEACHER.DASHBOARD);
+            }
+          }
+        } catch (apiError: unknown) {
+          // Check if this is a 400 error with role selection required
+          if (
+            apiError &&
+            typeof apiError === 'object' &&
+            'response' in apiError
+          ) {
+            const axiosError = apiError as AxiosError;
+            if (
+              axiosError.response?.status === 400 &&
+              axiosError.response?.data
+            ) {
+              const errorData = axiosError.response.data;
+
+              if (errorData.requires_role_selection) {
+                console.log(
+                  'Role selection required, showing role selection UI'
+                );
+
+                // Store tokens for later use - DON'T set cookies yet!
+                setStoredTokens({ accessToken, refreshToken });
+
+                // Clean up sessionStorage
+                sessionStorage.removeItem('oauth_mode');
+                sessionStorage.removeItem('oauth_role');
+
+                // Show role selection UI
+                setShowRoleSelection(true);
+                return;
+              }
+            }
+          }
+
+          // For other errors, throw to be caught by outer catch
+          throw apiError;
         }
+      } catch (error) {
+        console.error('OAuth callback error:', error);
+        const errorMessage = getErrorMessage(error, 'google-oauth');
+        setError(errorMessage);
+        toast.error('Authentication failed', {
+          description: errorMessage,
+        });
 
-        // Store tokens and user info
-        setCookie('access_token', response.access_token);
-        setCookie('refresh_token', response.refresh_token);
-        setCookie('user_role', response.user.role);
+        // Clean up sessionStorage on error
+        sessionStorage.removeItem('oauth_mode');
+        sessionStorage.removeItem('oauth_role');
+
+        // Redirect to sign-in page after a delay
+        setTimeout(() => {
+          router.push(ROUTES.AUTH.LOGIN);
+        }, 3000);
+      }
+    };
+
+    handleCallback();
+  }, [router, searchParams, setIsAuthenticated, setUserRole]);
+
+  const handleRoleSubmit = async () => {
+    if (!selectedRole || !storedTokens) {
+      toast.error('Please select a role to continue');
+      return;
+    }
+
+    setIsCompletingProfile(true);
+
+    try {
+      // Call the SAME callback API again, but now WITH the role
+      const callbackData = {
+        access_token: storedTokens.accessToken,
+        refresh_token: storedTokens.refreshToken,
+        role: selectedRole, // This time we include the role
+      };
+
+      const response = await authApi.googleCallback(callbackData);
+
+      if (response.success) {
+        // NOW we can store tokens and user info after successful role completion
+        setCookie('access_token', response.access_token!);
+        setCookie('refresh_token', response.refresh_token!);
+        setCookie('user_role', response.user!.role!);
 
         // Update auth context
         setIsAuthenticated(true);
-        setUserRole(response.user.role);
+        setUserRole(response.user!.role!);
 
         // Clean up sessionStorage
         sessionStorage.removeItem('oauth_mode');
@@ -87,37 +220,95 @@ export function GoogleOAuthCallback() {
         // Redirect based on role
         const redirectTo = searchParams.get('redirect');
         if (redirectTo) {
-          router.push(redirectTo);
+          window.location.href = redirectTo;
         } else {
-          if (response.user.role === 'STUDENT') {
-            router.push(ROUTES.STUDENT.DASHBOARD);
-          } else if (response.user.role === 'TEACHER') {
-            router.push(ROUTES.TEACHER.DASHBOARD);
+          if (response.user!.role === 'STUDENT') {
+            window.location.href = ROUTES.STUDENT.DASHBOARD;
+          } else if (response.user!.role === 'TEACHER') {
+            window.location.href = ROUTES.TEACHER.DASHBOARD;
           }
         }
-      } catch (error) {
-        console.error('OAuth callback error:', error);
-        const errorMessage = getErrorMessage(error, 'google-oauth');
-        setError(errorMessage);
-        toast.error('Authentication failed', {
-          description: errorMessage,
-        });
-
-        // Clean up sessionStorage on error
-        sessionStorage.removeItem('oauth_mode');
-        sessionStorage.removeItem('oauth_role');
-
-        // Redirect to sign-in page after a delay
-        setTimeout(() => {
-          router.push(ROUTES.AUTH.LOGIN);
-        }, 3000);
-      } finally {
-        setIsProcessing(false);
+      } else {
+        throw new Error(
+          response.error || response.message || 'OAuth callback failed'
+        );
       }
-    };
+    } catch (error) {
+      console.error('Role completion error:', error);
+      const errorMessage = getErrorMessage(error, 'oauth-callback');
+      setError(errorMessage);
+      toast.error('Authentication failed', {
+        description: errorMessage,
+      });
+    } finally {
+      setIsCompletingProfile(false);
+    }
+  };
 
-    handleCallback();
-  }, [router, searchParams, setIsAuthenticated, setUserRole]);
+  if (showRoleSelection) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md">
+          <CardHeader className="space-y-1 text-center">
+            <CardTitle className="text-2xl font-bold">
+              Complete Your Profile
+            </CardTitle>
+            <p className="text-sm text-gray-600">
+              Please select your role to continue using LinguaFlex
+            </p>
+          </CardHeader>
+          <CardContent className="space-y-6">
+            <div className="space-y-4">
+              <Label className="text-base font-medium">I am a:</Label>
+              <RadioGroup
+                value={selectedRole}
+                onValueChange={(value) => {
+                  console.log('Role selected:', value);
+                  setSelectedRole(value as 'STUDENT' | 'TEACHER');
+                }}
+                className="space-y-3"
+              >
+                <Label
+                  htmlFor="student"
+                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+                >
+                  <RadioGroupItem value="STUDENT" id="student" />
+                  <div className="flex-1">
+                    <div className="font-medium">Student</div>
+                    <p className="text-sm text-gray-500">
+                      I want to learn languages and book sessions with teachers
+                    </p>
+                  </div>
+                </Label>
+                <Label
+                  htmlFor="teacher"
+                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+                >
+                  <RadioGroupItem value="TEACHER" id="teacher" />
+                  <div className="flex-1">
+                    <div className="font-medium">Teacher</div>
+                    <p className="text-sm text-gray-500">
+                      I want to teach languages and offer sessions to students
+                    </p>
+                  </div>
+                </Label>
+              </RadioGroup>
+            </div>
+
+            <Button
+              onClick={handleRoleSubmit}
+              className="w-full"
+              disabled={!selectedRole || isCompletingProfile}
+            >
+              {isCompletingProfile
+                ? 'Completing Profile...'
+                : 'Complete Profile'}
+            </Button>
+          </CardContent>
+        </Card>
+      </div>
+    );
+  }
 
   if (error) {
     return (

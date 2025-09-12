@@ -5,6 +5,7 @@ export const ROUTES = {
     FORGOT_PASSWORD: '/auth/forgot-password',
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth/verify-email',
+    CALLBACK: '/auth/callback',
   },
   AGENT: {
     LANGUAGE: '/language',
