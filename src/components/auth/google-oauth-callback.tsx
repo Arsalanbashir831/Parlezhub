@@ -51,7 +51,18 @@ export function GoogleOAuthCallback() {
         const refreshToken = params.get('refresh_token');
 
         if (!accessToken || !refreshToken) {
-          throw new Error('Missing OAuth tokens in callback');
+          // If tokens are missing, redirect to sign-in without processing
+          setError('Invalid OAuth callback. Please sign in again.');
+
+          // Clear the URL hash to remove any partial tokens from the URL
+          if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+
+          setTimeout(() => {
+            router.push(ROUTES.AUTH.LOGIN);
+          }, 3000);
+          return; // Exit early without processing
         }
 
         // Get stored OAuth mode and role from sessionStorage
@@ -65,7 +76,29 @@ export function GoogleOAuthCallback() {
           | null;
 
         if (!oauthMode) {
-          throw new Error('OAuth mode not found. Please try again.');
+          // If oauth_mode is missing (e.g., page refresh), redirect to sign-in
+          // Don't process tokens or set cookies - this prevents the issue where
+          // tokens get saved even when the OAuth flow is incomplete
+          setError(
+            'OAuth session expired. This usually happens when you refresh the page during sign-in. Please try signing in again.'
+          );
+
+          // Show toast notification
+          toast.error('OAuth session expired', {
+            description:
+              'Please try signing in again. Do not refresh the page during sign-in.',
+          });
+
+          // Clear the URL hash to remove tokens from the URL
+          if (window.location.hash) {
+            window.history.replaceState(null, '', window.location.pathname);
+          }
+
+          // Clear any existing tokens and redirect after delay
+          setTimeout(() => {
+            router.push(ROUTES.AUTH.LOGIN);
+          }, 3000);
+          return; // Exit early without processing tokens
         }
 
         // Prepare callback request
@@ -78,8 +111,6 @@ export function GoogleOAuthCallback() {
         try {
           // Call the backend callback endpoint
           const response = await authApi.googleCallback(callbackData);
-
-          console.log('OAuth callback response:', response);
 
           // Only set cookies if we have a successful response with user role
           setCookie('access_token', response.access_token!);
@@ -131,10 +162,6 @@ export function GoogleOAuthCallback() {
               const errorData = axiosError.response.data;
 
               if (errorData.requires_role_selection) {
-                console.log(
-                  'Role selection required, showing role selection UI'
-                );
-
                 // Store tokens for later use - DON'T set cookies yet!
                 setStoredTokens({ accessToken, refreshToken });
 
@@ -263,7 +290,6 @@ export function GoogleOAuthCallback() {
               <RadioGroup
                 value={selectedRole}
                 onValueChange={(value) => {
-                  console.log('Role selected:', value);
                   setSelectedRole(value as 'STUDENT' | 'TEACHER');
                 }}
                 className="space-y-3"
