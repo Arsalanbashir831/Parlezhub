@@ -280,6 +280,7 @@ export default function ServiceForm({
                   placeholder="60"
                   min={15}
                   max={300}
+                  disabled
                 />
               </div>
               {errors.duration && (

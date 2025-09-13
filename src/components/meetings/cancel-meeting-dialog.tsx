@@ -1,7 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useUser } from '@/contexts/user-context';
 
+import { Meeting } from '@/hooks/useMeetings';
 import { Button } from '@/components/ui/button';
 import {
   Dialog,
@@ -16,8 +18,10 @@ import { Textarea } from '@/components/ui/textarea';
 type CancelMeetingDialogProps = {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  onConfirm: (reason: string) => void | Promise<void>;
+  onConfirm: (reason: string, shouldRefund: boolean) => void | Promise<void>;
   isSubmitting?: boolean;
+  meeting?: Meeting | null;
+  activeTab?: string;
 };
 
 export default function CancelMeetingDialog({
@@ -25,8 +29,31 @@ export default function CancelMeetingDialog({
   onOpenChange,
   onConfirm,
   isSubmitting = false,
+  meeting,
+  activeTab,
 }: CancelMeetingDialogProps) {
   const [reason, setReason] = useState('');
+  const { user } = useUser();
+
+  // Check if this cancellation should trigger a refund
+  const shouldRefund =
+    activeTab === 'upcoming' &&
+    meeting?.paymentStatus === 'PAID' &&
+    meeting?.paymentId &&
+    meeting?.amountPaid;
+
+  // Get role-specific refund messaging
+  const getRefundMessage = () => {
+    if (!shouldRefund || !meeting?.amountPaid) return null;
+
+    const amount = meeting.amountPaid.toFixed(2);
+
+    if (user?.role === 'TEACHER') {
+      return `⚠️ This will process a refund of $${amount} to the student's payment method.`;
+    } else {
+      return `⚠️ This will also process a refund of $${amount} to your payment method.`;
+    }
+  };
 
   useEffect(() => {
     if (!open) setReason('');
@@ -39,6 +66,11 @@ export default function CancelMeetingDialog({
           <DialogTitle>Cancel meeting</DialogTitle>
           <DialogDescription>
             Please provide a brief reason for cancelling this meeting.
+            {getRefundMessage() && (
+              <span className="mt-2 block font-medium text-amber-600">
+                {getRefundMessage()}
+              </span>
+            )}
           </DialogDescription>
         </DialogHeader>
         <div className="space-y-2">
@@ -60,10 +92,20 @@ export default function CancelMeetingDialog({
           </Button>
           <Button
             variant="destructive"
-            onClick={() => onConfirm(reason.trim())}
+            onClick={() => onConfirm(reason.trim(), !!shouldRefund)}
             disabled={!reason.trim() || isSubmitting}
           >
-            {isSubmitting ? 'Cancelling...' : 'Confirm Cancel'}
+            {isSubmitting
+              ? shouldRefund
+                ? user?.role === 'TEACHER'
+                  ? 'Cancelling & Processing Refund...'
+                  : 'Cancelling & Refunding...'
+                : 'Cancelling...'
+              : shouldRefund
+                ? user?.role === 'TEACHER'
+                  ? 'Cancel & Process Refund'
+                  : 'Cancel & Refund'
+                : 'Confirm Cancel'}
           </Button>
         </DialogFooter>
       </DialogContent>

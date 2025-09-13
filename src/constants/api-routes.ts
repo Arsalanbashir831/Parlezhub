@@ -13,6 +13,7 @@ export const API_ROUTES = {
     PROFILE: '/accounts/profiles/me/',
     UPDATE_PROFILE: '/accounts/profiles/me/',
     GET_ALL_BOOKINGS: '/bookings/bookings/my/',
+    REFUND_BOOKING: '/payments/refund/request/',
   },
   TEACHER: {
     PROFILE: '/accounts/teachers/my-profile/',
@@ -32,6 +33,7 @@ export const API_ROUTES = {
       `/bookings/bookings/${bookingId}/cancel/`,
     RESCHEDULE_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/reschedule/`,
+    REFUND_BOOKING: '/payments/refund/request/',
     // Blogs
     BLOGS: '/blogs/teacher/blogs/',
     BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,

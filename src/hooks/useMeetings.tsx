@@ -6,6 +6,7 @@ import { ROUTES } from '@/constants/routes';
 import { useUser } from '@/contexts/user-context';
 import {
   bookingService,
+  RefundBookingRequest,
   RescheduleBookingRequest,
 } from '@/services/availability';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -36,6 +37,9 @@ export interface Meeting {
   rating?: number;
   feedback?: string;
   cancelReason?: string;
+  // Payment information for refunds
+  paymentId?: number;
+  amountPaid?: number;
 }
 
 // API response shape for bookings
@@ -64,6 +68,18 @@ interface ApiBooking {
   student?: string;
   teacher?: string;
   gig?: number;
+  // Payment information
+  payment_id?: number;
+  payment_details?: {
+    payment_id: number;
+    amount_paid: number;
+    payment_status: string;
+    stripe_payment_intent_id: string;
+    platform_fee: number;
+    session_cost: number;
+    payment_date: string;
+    currency: string;
+  };
 }
 
 export function useMeetings() {
@@ -97,7 +113,7 @@ export function useMeetings() {
                 )
               )
             : 60);
-        return {
+        const mappedMeeting = {
           id: String(b.id),
           teacherName: b.teacher_name,
           studentName: b.student_name,
@@ -115,7 +131,12 @@ export function useMeetings() {
           joinLink: b.zoom_join_url,
           hostLink: b.zoom_start_url,
           notes: b.notes,
+          // Payment information for refunds
+          paymentId: b.payment_id || b.payment_details?.payment_id,
+          amountPaid: b.payment_details?.amount_paid,
         };
+
+        return mappedMeeting;
       });
       return mapped;
     },
@@ -165,6 +186,9 @@ export function useMeetings() {
         joinLink: b.zoom_join_url,
         hostLink: b.zoom_start_url,
         notes: b.notes,
+        // Payment information for refunds
+        paymentId: b.payment_id || b.payment_details?.payment_id,
+        amountPaid: b.payment_details?.amount_paid,
       }));
       return mapped;
     },
@@ -184,18 +208,60 @@ export function useMeetings() {
     mutationFn: async ({
       bookingId,
       reason,
+      shouldRefund,
+      meeting,
     }: {
       bookingId: string;
       reason: string;
-    }) => bookingService.cancel(bookingId, reason),
-    onSuccess: async () => {
-      toast.success('Booking cancelled');
+      shouldRefund: boolean;
+      meeting?: Meeting;
+    }) => {
+      // First cancel the booking
+      await bookingService.cancel(bookingId, reason);
+
+      // If refund is needed, process the refund
+      if (
+        shouldRefund &&
+        meeting?.paymentId &&
+        meeting?.amountPaid &&
+        user?.role
+      ) {
+        const refundData: RefundBookingRequest = {
+          payment_id: meeting.paymentId,
+          reason: reason,
+          requested_amount_dollars: meeting.amountPaid,
+        };
+
+        await bookingService.refund(
+          refundData,
+          user.role as 'STUDENT' | 'TEACHER'
+        );
+      }
+    },
+    onSuccess: async (_, variables) => {
+      let message = 'Booking cancelled';
+      if (variables.shouldRefund) {
+        message =
+          user?.role === 'TEACHER'
+            ? 'Booking cancelled and refund processed for student'
+            : 'Booking cancelled and refund processed';
+      }
+      toast.success(message);
       await Promise.all([
         queryClient.invalidateQueries({ queryKey: ['bookings'] }),
         queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
       ]);
     },
-    onError: () => toast.error('Failed to cancel booking'),
+    onError: (error, variables) => {
+      let message = 'Failed to cancel booking';
+      if (variables.shouldRefund) {
+        message =
+          user?.role === 'TEACHER'
+            ? 'Failed to cancel booking or process refund for student'
+            : 'Failed to cancel booking or process refund';
+      }
+      toast.error(message);
+    },
   });
   const approveMutation = useMutation({
     mutationFn: async (bookingId: string) => bookingService.approve(bookingId),
@@ -361,8 +427,12 @@ export function useMeetings() {
     handleJoinMeeting,
     handleMessageTeacher,
     getStatusColor,
-    cancelBooking: (bookingId: string, reason: string) =>
-      cancelMutation.mutate({ bookingId, reason }),
+    cancelBooking: (
+      bookingId: string,
+      reason: string,
+      shouldRefund: boolean,
+      meeting?: Meeting
+    ) => cancelMutation.mutate({ bookingId, reason, shouldRefund, meeting }),
     approveBooking: (bookingId: string) => approveMutation.mutate(bookingId),
     rescheduleBooking: (bookingId: string, data: RescheduleBookingRequest) =>
       rescheduleMutation.mutate({ bookingId, data }),

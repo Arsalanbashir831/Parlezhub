@@ -52,11 +52,20 @@ export default function MeetingTabs() {
     setCancelOpen(true);
   };
 
-  const confirmCancel = async (reason: string) => {
+  const confirmCancel = async (reason: string, shouldRefund: boolean) => {
     if (!cancelTargetId) return;
     setIsCancelling(true);
     try {
-      await cancelBooking(cancelTargetId, reason);
+      // Find the meeting being cancelled
+      const meetingToCancel = filteredMeetings.find(
+        (m) => m.id === cancelTargetId
+      );
+      await cancelBooking(
+        cancelTargetId,
+        reason,
+        shouldRefund,
+        meetingToCancel
+      );
       setCancelOpen(false);
       setCancelTargetId(null);
     } finally {
@@ -240,34 +249,34 @@ export default function MeetingTabs() {
                 {/* Join button visible only for confirmed and paid */}
                 {meeting.status === 'CONFIRMED' &&
                   meeting.paymentStatus === 'PAID' && (
-                    <Button
-                      size="sm"
-                      onClick={() => handleJoinMeeting(meeting)}
-                      // Enable join only during the meeting window with grace
-                      disabled={!canJoin(meeting)}
-                    >
-                      Join Meeting
-                    </Button>
+                    <div className="flex gap-2">
+                      <Button
+                        size="sm"
+                        onClick={() => handleJoinMeeting(meeting)}
+                        // Enable join only during the meeting window with grace
+                        disabled={!canJoin(meeting)}
+                      >
+                        Join Meeting
+                      </Button>
+
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        onClick={() => openReschedule(meeting.id)}
+                      >
+                        Reschedule
+                      </Button>
+                    </div>
                   )}
-                {/* Show reschedule for paid meetings, cancel for unpaid */}
-                {meeting.status === 'CONFIRMED' &&
-                meeting.paymentStatus === 'PAID' ? (
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => openReschedule(meeting.id)}
-                  >
-                    Reschedule
-                  </Button>
-                ) : (
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => openCancel(meeting.id)}
-                  >
-                    Cancel
-                  </Button>
-                )}
+
+                <Button
+                  size="sm"
+                  variant="destructive"
+                  onClick={() => openCancel(meeting.id)}
+                  className="ml-auto"
+                >
+                  Cancel
+                </Button>
               </div>
             )}
         </div>
@@ -502,6 +511,8 @@ export default function MeetingTabs() {
         onOpenChange={setCancelOpen}
         onConfirm={confirmCancel}
         isSubmitting={isCancelling}
+        meeting={filteredMeetings.find((m) => m.id === cancelTargetId)}
+        activeTab={activeTab}
       />
 
       <RescheduleDialog

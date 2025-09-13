@@ -81,6 +81,22 @@ export interface PublicServiceResponse {
   updated_at: string;
 }
 
+export interface PublicServicesListResponse {
+  count: number;
+  results: PublicServiceResponse[];
+  filters_applied: {
+    teacher_id: string | null;
+    category: string | null;
+    service_type: string | null;
+    min_price: number | null;
+    max_price: number | null;
+    min_duration: number | null;
+    max_duration: number | null;
+    search: string | null;
+    ordering: string;
+  };
+}
+
 export interface PublicService {
   id: string;
   teacherId: string;
@@ -213,7 +229,28 @@ export const serviceApi = {
       {},
       true
     );
-    return response.data;
+
+    // Handle paginated response structure
+    const data = response.data as
+      | PublicServicesListResponse
+      | PublicServiceResponse[];
+
+    if (
+      data &&
+      typeof data === 'object' &&
+      'results' in data &&
+      Array.isArray(data.results)
+    ) {
+      // Paginated response
+      return data.results;
+    } else if (Array.isArray(data)) {
+      // Direct array response (fallback)
+      return data;
+    } else {
+      // Invalid response structure
+      console.error('Invalid API response structure:', data);
+      return [];
+    }
   },
 
   // Get services for a specific teacher
@@ -227,7 +264,28 @@ export const serviceApi = {
       {},
       true
     );
-    return response.data;
+
+    // Handle paginated response structure
+    const data = response.data as
+      | PublicServicesListResponse
+      | PublicServiceResponse[];
+
+    if (
+      data &&
+      typeof data === 'object' &&
+      'results' in data &&
+      Array.isArray(data.results)
+    ) {
+      // Paginated response
+      return data.results;
+    } else if (Array.isArray(data)) {
+      // Direct array response (fallback)
+      return data;
+    } else {
+      // Invalid response structure
+      console.error('Invalid API response structure:', data);
+      return [];
+    }
   },
 };
 

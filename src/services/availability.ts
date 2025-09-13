@@ -146,6 +146,19 @@ export interface RescheduleBookingResponse {
   };
 }
 
+export interface RefundBookingRequest {
+  payment_id: number;
+  reason: string;
+  requested_amount_dollars: number;
+}
+
+export interface RefundBookingResponse {
+  success: boolean;
+  message: string;
+  refund_id?: string;
+  refunded_amount?: number;
+}
+
 export const bookingService = {
   schedule: async (payload: CreateBookingRequest): Promise<BookingResponse> => {
     const response = await apiCaller(
@@ -200,6 +213,23 @@ export const bookingService = {
       API_ROUTES.TEACHER.CANCEL_BOOKING(bookingId),
       'POST',
       { reason } as unknown as Record<string, string>,
+      {},
+      true
+    );
+    return response.data;
+  },
+  refund: async (
+    data: RefundBookingRequest,
+    userRole: 'STUDENT' | 'TEACHER'
+  ): Promise<RefundBookingResponse> => {
+    const endpoint =
+      userRole === 'TEACHER'
+        ? API_ROUTES.TEACHER.REFUND_BOOKING
+        : API_ROUTES.STUDENT.REFUND_BOOKING;
+    const response = await apiCaller(
+      endpoint,
+      'POST',
+      data as unknown as Record<string, string>,
       {},
       true
     );
