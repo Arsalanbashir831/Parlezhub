@@ -258,7 +258,7 @@ export const serviceApi = {
     teacherId: string
   ): Promise<PublicServiceResponse[]> => {
     const response = await apiCaller(
-      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?teacher=${teacherId}`,
+      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?teacher_id=${teacherId}`,
       'GET',
       undefined,
       {},
@@ -304,15 +304,21 @@ export const blogApi = {
       .replace(/[^a-z0-9]+/g, '-')
       .replace(/(^-|-$)/g, '');
     const post: BlogPost = {
-      id,
+      id: Number(id),
       title: data.title,
       slug,
       content: data.content,
-      thumbnail: data.thumbnail,
+      thumbnail: data.thumbnail?.toString(),
       tags: data.tags || [],
       status: data.status || 'published',
-      createdAt: now,
-      updatedAt: now,
+      created_at: now,
+      updated_at: now,
+      tag_list: data.tags.join(','),
+      author_name: 'Teacher',
+      published_at: now,
+      read_time: 0,
+      view_count: 0,
+      is_published: true,
     };
     const updated = [post, ...all];
     localStorage.setItem('teacher_blogs', JSON.stringify(updated));
@@ -320,19 +326,28 @@ export const blogApi = {
   },
   get: async (id: string): Promise<BlogPost | null> => {
     const all = await blogApi.list();
-    return all.find((b) => b.id === id) || null;
+    // Ensure both id and b.id are compared as strings to avoid type mismatch
+    return all.find((b) => String(b.id) === String(id)) || null;
   },
   update: async (
     id: string,
     data: Partial<BlogFormData>
   ): Promise<BlogPost | null> => {
     const all = await blogApi.list();
-    const idx = all.findIndex((b) => b.id === id);
+    const idx = all.findIndex((b) => String(b.id) === String(id));
     if (idx === -1) return null;
     const updated: BlogPost = {
       ...all[idx],
       ...data,
-      updatedAt: new Date().toISOString(),
+      thumbnail:
+        data.thumbnail !== undefined
+          ? typeof data.thumbnail === 'string'
+            ? data.thumbnail
+            : data.thumbnail
+              ? data.thumbnail.toString()
+              : undefined
+          : all[idx].thumbnail?.toString(),
+      updated_at: new Date().toISOString(),
     };
     all[idx] = updated;
     localStorage.setItem('teacher_blogs', JSON.stringify(all));
@@ -340,26 +355,21 @@ export const blogApi = {
   },
   remove: async (id: string): Promise<void> => {
     const all = await blogApi.list();
-    const filtered = all.filter((b) => b.id !== id);
+    // Ensure both id and b.id are compared as strings to avoid type mismatch
+    const filtered = all.filter((b) => String(b.id) !== String(id));
     localStorage.setItem('teacher_blogs', JSON.stringify(filtered));
+    return;
   },
   toggleVisibility: async (id: string): Promise<BlogPost | null> => {
     const all = await blogApi.list();
-    const idx = all.findIndex((b) => b.id === id);
+    const idx = all.findIndex((b) => String(b.id) === String(id));
     if (idx === -1) return null;
     const nextStatus = all[idx].status === 'published' ? 'draft' : 'published';
     all[idx] = {
-      id: all[idx].id,
-      title: all[idx].title,
-      slug: all[idx].slug,
-      content: all[idx].content,
-      thumbnail: all[idx].thumbnail,
-      tags: all[idx].tags,
-      createdAt: all[idx].createdAt,
-      updatedAt: new Date().toISOString(),
+      ...all[idx],
       status: nextStatus,
+      updated_at: new Date().toISOString(),
     };
-    localStorage.setItem('teacher_blogs', JSON.stringify(all));
     return all[idx];
   },
 };

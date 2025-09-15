@@ -359,7 +359,9 @@ const BookingDialog = memo(
                     {teacherServices.map((service) => (
                       <SelectItem key={service.id} value={service.id}>
                         <div className="flex flex-col">
-                          <span className="font-medium">{service.title}</span>
+                          <span className="line-clamp-1 font-medium">
+                            {service.title}
+                          </span>
                           <span className="text-sm text-muted-foreground">
                             ${service.price} • {service.duration} minutes
                           </span>
