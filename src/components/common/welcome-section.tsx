@@ -3,7 +3,6 @@ import { ROUTES } from '@/constants/routes';
 import { Plus } from 'lucide-react';
 
 import { Button } from '../ui/button';
-import { CurrentTime } from './current-time';
 
 type Props = {
   title?: string;
@@ -43,10 +42,10 @@ export default function WelcomeSection({
                 </Button>
               </Link>
             )}
-            <div className="text-right lg:text-left">
+            {/* <div className="text-right lg:text-left">
               <p className="text-sm text-primary-100">Current Time</p>
               <CurrentTime />
-            </div>
+            </div> */}
           </div>
         </div>
       </div>
