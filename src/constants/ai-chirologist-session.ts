@@ -17,7 +17,7 @@ export const PALM_TYPES = [
   { value: 'both', label: 'Both Hands', description: 'Compare both hands' },
 ];
 
-// Reading focus areas
+// Reading focus areass
 export const READING_FOCUS = [
   'Life Line Analysis',
   'Heart Line Reading',
