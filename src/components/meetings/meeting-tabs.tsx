@@ -259,13 +259,15 @@ export default function MeetingTabs() {
                         Join Meeting
                       </Button>
 
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        onClick={() => openReschedule(meeting.id)}
-                      >
-                        Reschedule
-                      </Button>
+                      {userRole === 'student' && (
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          onClick={() => openReschedule(meeting.id)}
+                        >
+                          Reschedule
+                        </Button>
+                      )}
                     </div>
                   )}
 
