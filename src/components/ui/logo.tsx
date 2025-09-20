@@ -21,7 +21,7 @@ export function Logo({
     <div className={cn('flex items-center gap-2', className)}>
       <div className="relative">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600">
-          <span className="text-sm font-bold text-white">L</span>
+          <span className="text-sm font-bold text-white">P</span>
         </div>
         <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-primary-400"></div>
       </div>
@@ -32,7 +32,7 @@ export function Logo({
             sizeClasses[size]
           )}
         >
-          Lingua<span className="text-primary-500">Flex</span>
+          Parlez<span className="text-primary-500">Hub</span>
         </span>
       )}
     </div>
