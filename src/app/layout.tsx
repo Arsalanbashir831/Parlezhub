@@ -9,7 +9,7 @@ import { Providers } from '@/providers/providers';
 const inter = Inter({ subsets: ['latin'] });
 
 export const metadata: Metadata = {
-  title: 'LinguaFlex - Learn Languages with AI',
+  title: 'ParlezHub - Learn Languages with AI',
   description:
     'Master new languages through AI-powered conversations and expert tutoring',
   generator: 'v0.dev',

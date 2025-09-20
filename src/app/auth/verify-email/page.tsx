@@ -98,10 +98,10 @@ export default function VerifyEmailPage() {
           <p>
             Having trouble? Contact our support team at{' '}
             <a
-              href="mailto:support@linguaflex.com"
+              href="mailto:support@parlezhub.com"
               className="text-primary-600 hover:underline"
             >
-              support@linguaflex.com
+              support@parlezhub.com
             </a>
           </p>
         </div>

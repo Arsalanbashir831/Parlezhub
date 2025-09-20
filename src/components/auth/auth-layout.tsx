@@ -24,7 +24,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
         <div className="text-center">
           <p className="text-sm text-gray-500">
-            © {new Date().getFullYear()} LinguaFlex. All rights reserved.
+            © {new Date().getFullYear()} ParlezHub. All rights reserved.
           </p>
         </div>
       </div>

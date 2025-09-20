@@ -281,7 +281,7 @@ export function GoogleOAuthCallback() {
               Complete Your Profile
             </CardTitle>
             <p className="text-sm text-gray-600">
-              Please select your role to continue using LinguaFlex
+              Please select your role to continue using ParlezHub
             </p>
           </CardHeader>
           <CardContent className="space-y-6">
