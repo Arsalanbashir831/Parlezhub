@@ -87,21 +87,43 @@ const BookingDialog = memo(
       return `${y}-${m}-${day}`;
     }, []);
 
-    // Auto end time = start + 60 minutes
-    const computeEndFromStart = (start: string): string => {
-      if (!start) return '';
-      const [hh, mm] = start.split(':').map((v) => Number(v));
-      const base = new Date(1970, 0, 1, hh, mm, 0);
-      base.setMinutes(base.getMinutes() + 60);
-      const h = String(base.getHours()).padStart(2, '0');
-      const m = String(base.getMinutes()).padStart(2, '0');
-      return `${h}:${m}`;
+    // Calculate duration in minutes between start and end time
+    const calculateDuration = (start: string, end: string): number => {
+      if (!start || !end) return 0;
+
+      // Handle case where end time is on the next day (e.g., 23:00 to 01:00)
+      const [startHour, startMin] = start.split(':').map(Number);
+      const [endHour, endMin] = end.split(':').map(Number);
+
+      const startMinutes = startHour * 60 + startMin;
+      let endMinutes = endHour * 60 + endMin;
+
+      // If end time is earlier than start time, assume it's the next day
+      if (endMinutes <= startMinutes) {
+        endMinutes += 24 * 60; // Add 24 hours
+      }
+
+      return endMinutes - startMinutes;
     };
 
-    useEffect(() => {
-      if (startTime) setEndTime(computeEndFromStart(startTime));
-      else setEndTime('');
-    }, [startTime]);
+    // Calculate total price based on duration and service rate
+    const calculateTotalPrice = (): number => {
+      if (!selectedServiceId || !startTime || !endTime) return 0;
+      const duration = calculateDuration(startTime, endTime);
+      if (duration <= 0) return 0;
+
+      const selectedService = teacherServices.find(
+        (s) => s.id === selectedServiceId
+      );
+      if (!selectedService) return 0;
+
+      // Calculate price based on duration (service price is per hour)
+      const hours = duration / 60;
+      const totalPrice = selectedService.price * hours;
+
+      // Round to 2 decimal places
+      return Math.round(totalPrice * 100) / 100;
+    };
 
     // Reset form when dialog closes
     useEffect(() => {
@@ -114,28 +136,6 @@ const BookingDialog = memo(
       }
     }, [isOpen]);
     const [submitting, setSubmitting] = useState(false);
-
-    const weekdayFromDate = useMemo(() => {
-      if (!date) return undefined;
-      // Convert to weekday index Monday=0..Sunday=6
-      const jsDate = new Date(date + 'T00:00:00');
-      // JS: 0=Sun..6=Sat -> we want 0=Mon..6=Sun
-      const jsIdx = jsDate.getDay();
-      return (jsIdx + 6) % 7;
-    }, [date]);
-
-    const _daySlots = useMemo(() => {
-      if (weekdayFromDate === undefined)
-        return [] as Array<{ start: string; end: string }>;
-      const weekly = (weeklyItems || []).map((i) => ({
-        dayIndex: i.day_of_week,
-        start: i.start_time,
-        end: i.end_time,
-      }));
-      return weekly
-        .filter((w) => w.dayIndex === weekdayFromDate)
-        .map((w) => ({ start: w.start.slice(0, 5), end: w.end.slice(0, 5) }));
-    }, [weeklyItems, weekdayFromDate]);
 
     const weeklyGrouped = useMemo(() => {
       const days = [
@@ -175,28 +175,37 @@ const BookingDialog = memo(
         return;
       }
 
-      // Combine date and start time as local time; end is +60 minutes
+      const duration = calculateDuration(startTime, endTime);
+      if (duration <= 0) {
+        toast.error('End time must be after start time');
+        return;
+      }
+
+      // Combine date and times as local time
       const startLocal = new Date(`${date}T${startTime}:00`);
-      const endLocal = new Date(startLocal.getTime() + 60 * 60 * 1000);
+
+      // Handle cross-midnight scheduling (e.g., 10 PM to 2 AM)
+      let endLocal = new Date(`${date}T${endTime}:00`);
+
+      // If end time is earlier than start time, it means it's the next day
+      if (endLocal <= startLocal) {
+        // Add one day to the end time
+        endLocal = new Date(endLocal.getTime() + 24 * 60 * 60 * 1000);
+      }
+
       const startIso = startLocal.toISOString();
       const endIso = endLocal.toISOString();
 
-      const _toLocal = (iso: string) =>
-        new Date(iso).toLocaleString([], {
-          year: 'numeric',
-          month: 'short',
-          day: '2-digit',
-          hour: '2-digit',
-          minute: '2-digit',
-        });
-
       setSubmitting(true);
       try {
+        const durationHours = duration / 60; // Convert minutes to hours
+
         const booking: BookingResponse = await bookingService.schedule({
           teacher: teacherId,
-          gig: parseInt(selectedServiceId),
+          gig: parseInt(selectedServiceId), // Convert to number as required by API
           start_time: startIso,
           end_time: endIso,
+          duration_hours: Math.round(durationHours * 100) / 100, // Round to 2 decimal places
           notes: notes.trim(),
         });
 
@@ -224,12 +233,22 @@ const BookingDialog = memo(
             minute: '2-digit',
           });
 
+        const totalPrice = calculateTotalPrice();
+        const summaryDurationHours = duration / 60;
+
+        // Check if booking spans across midnight
+        const startDate = new Date(booking.start_time);
+        const endDate = new Date(booking.end_time);
+        const isNextDay = endDate.getDate() !== startDate.getDate();
+
         const summary = [
           'Booking Requested',
           `- Service: ${serviceInfo?.title || `Service #${booking.gig || selectedServiceId}`}`,
           `- Status: ${booking.status ?? 'PENDING'}`,
           `- Start: ${toLocal(booking.start_time)}`,
-          `- End: ${toLocal(booking.end_time)}`,
+          `- End: ${toLocal(booking.end_time)}${isNextDay ? ' (next day)' : ''}`,
+          `- Duration: ${duration} minutes (${Math.round(summaryDurationHours * 100) / 100} hours)`,
+          `- Total Amount: $${totalPrice.toFixed(2)}`,
           `- Booking ID: ${booking.id}`,
         ]
           .filter(Boolean)
@@ -256,6 +275,11 @@ const BookingDialog = memo(
             <DialogTitle>Schedule a session</DialogTitle>
             <DialogDescription>
               Select a date and time within the teacher&lsquo;s available slots.
+              <br />
+              <span className="text-xs text-muted-foreground">
+                Note: For sessions that cross midnight (e.g., 10 PM to 2 AM),
+                the end time will automatically be set to the next day.
+              </span>
             </DialogDescription>
           </DialogHeader>
 
@@ -330,9 +354,16 @@ const BookingDialog = memo(
                   id="booking-end"
                   type="time"
                   value={endTime}
-                  readOnly
-                  disabled
+                  onChange={(e) => setEndTime(e.target.value)}
+                  min={startTime || undefined}
                 />
+                {startTime &&
+                  endTime &&
+                  calculateDuration(startTime, endTime) <= 0 && (
+                    <p className="text-xs text-destructive">
+                      End time must be after start time
+                    </p>
+                  )}
               </div>
             </div>
 
@@ -373,6 +404,50 @@ const BookingDialog = memo(
               )}
             </div>
 
+            {/* Price Display */}
+            {selectedServiceId && startTime && endTime && (
+              <div className="rounded-md border bg-muted/50 p-4">
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Duration:</span>
+                    <span className="text-sm">
+                      {calculateDuration(startTime, endTime)} minutes
+                      {calculateDuration(startTime, endTime) > 0 && (
+                        <span className="ml-1 text-muted-foreground">
+                          (
+                          {Math.round(
+                            (calculateDuration(startTime, endTime) / 60) * 100
+                          ) / 100}{' '}
+                          hours)
+                        </span>
+                      )}
+                    </span>
+                  </div>
+                  <div className="flex items-center justify-between">
+                    <span className="text-sm font-medium">Rate:</span>
+                    <span className="text-sm">
+                      $
+                      {teacherServices.find((s) => s.id === selectedServiceId)
+                        ?.price || 0}
+                      /hour
+                    </span>
+                  </div>
+                  {calculateDuration(startTime, endTime) <= 0 && (
+                    <div className="text-sm text-destructive">
+                      End time must be after start time
+                    </div>
+                  )}
+                  <Separator />
+                  <div className="flex items-center justify-between">
+                    <span className="font-semibold">Total Amount:</span>
+                    <span className="text-primary text-lg font-bold">
+                      ${calculateTotalPrice().toFixed(2)}
+                    </span>
+                  </div>
+                </div>
+              </div>
+            )}
+
             {/* Notes */}
             <div className="grid gap-2">
               <Label htmlFor="booking-notes">Notes (optional)</Label>
@@ -393,7 +468,12 @@ const BookingDialog = memo(
               <Button
                 onClick={handleSubmit}
                 disabled={
-                  submitting || !date || !startTime || !selectedServiceId
+                  submitting ||
+                  !date ||
+                  !startTime ||
+                  !endTime ||
+                  !selectedServiceId ||
+                  calculateDuration(startTime, endTime) <= 0
                 }
               >
                 {submitting ? 'Scheduling...' : 'Schedule'}

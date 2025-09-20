@@ -94,6 +94,7 @@ export interface CreateBookingRequest {
   gig: number; // service/gig id
   start_time: string; // ISO string with Z
   end_time: string; // ISO string with Z
+  duration_hours: number; // Duration in hours (e.g., 1.5)
   notes?: string;
 }
 
