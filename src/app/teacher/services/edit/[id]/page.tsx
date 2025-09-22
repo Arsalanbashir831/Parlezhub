@@ -15,7 +15,8 @@ export default function EditServicePage() {
   const router = useRouter();
   const params = useParams();
   const serviceId = params.id as string;
-  const { updateExistingService, loadService, isLoading } = useServices();
+  const { updateExistingService, loadService, isLoading, error } =
+    useServices();
   const [service, setService] = useState<Service | null>(null);
   const [serviceNotFound, setServiceNotFound] = useState(false);
   const [isLoadingService, setIsLoadingService] = useState(true);
@@ -150,6 +151,7 @@ export default function EditServicePage() {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isLoading={isLoading}
+        error={error}
         mode="edit"
         availableTypes={[service.type]} // Only allow current type when editing
       />

@@ -11,7 +11,7 @@ import { ServiceForm } from '@/components/services';
 
 export default function CreateServicePage() {
   const router = useRouter();
-  const { createNewService, canCreateType, isLoading } = useServices();
+  const { createNewService, canCreateType, isLoading, error } = useServices();
 
   const getAvailableServiceTypes = (): ServiceType[] => {
     const allTypes: ServiceType[] = ['language', 'astrology'];
@@ -27,6 +27,8 @@ export default function CreateServicePage() {
       router.push(ROUTES.TEACHER.SERVICES);
     } catch (error) {
       // Error toast is handled by the hook
+      // The error will be displayed in the form via the error state
+      console.error('Service creation failed:', error);
     }
   };
 
@@ -67,6 +69,7 @@ export default function CreateServicePage() {
         onSubmit={handleSubmit}
         onCancel={handleCancel}
         isLoading={isLoading}
+        error={error}
         mode="create"
         availableTypes={availableTypes}
       />

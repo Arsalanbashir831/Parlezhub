@@ -5,6 +5,7 @@ interface ApiErrorResponse {
   error?: string;
   message?: string;
   detail?: string;
+  exception_err?: string; // Backend specific error field
   errors?: Record<string, string[]>;
   [key: string]: unknown;
 }
@@ -25,6 +26,7 @@ export const extractErrorMessage = (
 
     // Try different possible error message fields
     const errorMessage =
+      responseData.exception_err || // Backend specific error field
       responseData.error ||
       responseData.message ||
       responseData.detail ||

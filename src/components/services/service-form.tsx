@@ -8,6 +8,7 @@ import { z } from 'zod';
 
 import { ServiceFormData, ServiceType } from '@/types/service';
 import { getServiceTypeLabel } from '@/lib/service-utils';
+import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -61,6 +62,7 @@ interface ServiceFormProps {
   onSubmit: (data: ServiceFormData) => Promise<void>;
   onCancel?: () => void;
   isLoading?: boolean;
+  error?: string | null;
   mode?: 'create' | 'edit';
   availableTypes?: ServiceType[];
 }
@@ -70,6 +72,7 @@ export default function ServiceForm({
   onSubmit,
   onCancel,
   isLoading = false,
+  error = null,
   mode = 'create',
   availableTypes = ['language', 'astrology'],
 }: ServiceFormProps) {
@@ -141,6 +144,13 @@ export default function ServiceForm({
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
+      {/* Error Display */}
+      {error && (
+        <Alert variant="destructive">
+          <AlertDescription>{error}</AlertDescription>
+        </Alert>
+      )}
+
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Basic Information */}
         <Card>
