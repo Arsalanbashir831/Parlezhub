@@ -1,5 +1,5 @@
 export type ServiceCategory = 'language' | 'astrology';
-export type ServiceType = 'language' | 'astrology';
+export type ServiceType = 'language' | 'astrology' | 'general';
 
 export type ServiceStatus = 'active' | 'inactive';
 
