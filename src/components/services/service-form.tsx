@@ -8,6 +8,8 @@ import { z } from 'zod';
 
 import { ServiceFormData, ServiceType } from '@/types/service';
 import { getServiceTypeLabel } from '@/lib/service-utils';
+import { useAIGeneration } from '@/hooks/useAIGeneration';
+import AIGenerateButton from '@/components/ui/ai-generate-button';
 import { Alert, AlertDescription } from '@/components/ui/alert';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -24,7 +26,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 const serviceFormSchema = z.object({
-  type: z.enum(['language', 'astrology']),
+  type: z.enum(['language', 'astrology', 'general']),
   title: z
     .string()
     .min(10, 'Title must be at least 10 characters')
@@ -74,10 +76,12 @@ export default function ServiceForm({
   isLoading = false,
   error = null,
   mode = 'create',
-  availableTypes = ['language', 'astrology'],
+  availableTypes = ['language', 'astrology', 'general'],
 }: ServiceFormProps) {
   const [newTag, setNewTag] = useState('');
   const [newService, setNewService] = useState('');
+  const { isGenerating: isGeneratingDescription, generateContent } =
+    useAIGeneration();
 
   const {
     register,
@@ -141,6 +145,31 @@ export default function ServiceForm({
   const onFormSubmit = async (data: ServiceFormSchema) => {
     await onSubmit(data as ServiceFormData);
   };
+
+  const handleGenerateDescription = async () => {
+    const title = watchedFields.title?.trim();
+    const shortDescription = watchedFields.shortDescription?.trim();
+    const serviceType = watchedFields.type;
+
+    if (!title || !shortDescription) {
+      return;
+    }
+
+    const generatedContent = await generateContent({
+      type: 'service',
+      title,
+      shortDescription,
+      serviceType,
+      maxLength: 1200,
+    });
+
+    if (generatedContent) {
+      setValue('description', generatedContent);
+    }
+  };
+
+  const canGenerateDescription =
+    watchedFields.title?.trim() && watchedFields.shortDescription?.trim();
 
   return (
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
@@ -227,13 +256,22 @@ export default function ServiceForm({
 
             {/* Description */}
             <div>
-              <Label htmlFor="description">Full Description</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="description">Full Description</Label>
+                <AIGenerateButton
+                  onClick={handleGenerateDescription}
+                  disabled={!canGenerateDescription}
+                  isGenerating={isGeneratingDescription}
+                />
+              </div>
               <Textarea
                 id="description"
                 {...register('description')}
                 placeholder="Detailed description of your service..."
                 rows={6}
                 maxLength={1200}
+                className="mt-2"
+                disabled={isGeneratingDescription}
               />
               <div className="mt-1 flex justify-between text-sm text-gray-500">
                 {errors.description && (
@@ -401,7 +439,7 @@ export default function ServiceForm({
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading}>
+        <Button type="submit" disabled={isLoading || isGeneratingDescription}>
           {isLoading
             ? 'Saving...'
             : mode === 'create'

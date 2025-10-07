@@ -5,7 +5,9 @@ import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { toast } from 'sonner';
 
+import { useAIGeneration } from '@/hooks/useAIGeneration';
 import { useBlogs } from '@/hooks/useBlogs';
+import AIGenerateButton from '@/components/ui/ai-generate-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageUpload from '@/components/ui/image-upload';
@@ -25,6 +27,8 @@ import { Textarea } from '@/components/ui/textarea';
 export default function CreateBlogPage() {
   const router = useRouter();
   const { create } = useBlogs();
+  const { isGenerating: isGeneratingContent, generateContent } =
+    useAIGeneration();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
   const [metaDescription, setMetaDescription] = useState('');
@@ -63,6 +67,27 @@ export default function CreateBlogPage() {
       setIsSubmitting(false);
     }
   };
+
+  const handleGenerateContent = async () => {
+    if (!title.trim() || !metaDescription.trim()) {
+      toast.error('Please fill in the title and meta description first');
+      return;
+    }
+
+    const generatedContent = await generateContent({
+      type: 'blog',
+      title: title.trim(),
+      metaDescription: metaDescription.trim(),
+      maxLength: 5000,
+    });
+
+    if (generatedContent) {
+      setContent(generatedContent);
+      toast.success('Blog content generated successfully!');
+    }
+  };
+
+  const canGenerateContent = title.trim() && metaDescription.trim();
 
   return (
     <div className="space-y-6">
@@ -138,7 +163,14 @@ export default function CreateBlogPage() {
 
             {/* Content */}
             <div className="space-y-2">
-              <Label>Content *</Label>
+              <div className="flex items-center justify-between">
+                <Label>Content *</Label>
+                <AIGenerateButton
+                  onClick={handleGenerateContent}
+                  disabled={!canGenerateContent}
+                  isGenerating={isGeneratingContent}
+                />
+              </div>
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
@@ -178,7 +210,12 @@ export default function CreateBlogPage() {
               </Button>
               <Button
                 type="submit"
-                disabled={!title.trim() || !content.trim() || isSubmitting}
+                disabled={
+                  !title.trim() ||
+                  !content.trim() ||
+                  isSubmitting ||
+                  isGeneratingContent
+                }
               >
                 {isSubmitting ? 'Creating...' : 'Create Blog'}
               </Button>

@@ -14,7 +14,7 @@ export default function CreateServicePage() {
   const { createNewService, canCreateType, isLoading, error } = useServices();
 
   const getAvailableServiceTypes = (): ServiceType[] => {
-    const allTypes: ServiceType[] = ['language', 'astrology'];
+    const allTypes: ServiceType[] = ['language', 'astrology', 'general'];
     return allTypes.filter((type) => canCreateType(type));
   };
 

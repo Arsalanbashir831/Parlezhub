@@ -162,6 +162,8 @@ export function getServiceTypeLabel(type: ServiceType): string {
       return 'Language Consultation';
     case 'astrology':
       return 'Astrology Reading';
+    case 'general':
+      return 'General Consultancy';
     default:
       return type;
   }

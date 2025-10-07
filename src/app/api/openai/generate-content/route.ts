@@ -1,0 +1,159 @@
+import { NextRequest, NextResponse } from 'next/server';
+
+interface GenerateContentRequest {
+  type: 'service' | 'blog';
+  title: string;
+  shortDescription?: string;
+  metaDescription?: string;
+  serviceType?: 'language' | 'astrology' | 'general';
+  maxLength?: number;
+}
+
+export async function POST(request: NextRequest) {
+  try {
+    const {
+      type,
+      title,
+      shortDescription,
+      metaDescription,
+      serviceType,
+      maxLength = 1200,
+    }: GenerateContentRequest = await request.json();
+
+    // Validate required fields based on type
+    if (!title) {
+      return NextResponse.json({ error: 'Title is required' }, { status: 400 });
+    }
+
+    if (type === 'service' && !shortDescription) {
+      return NextResponse.json(
+        { error: 'Short description is required for service content' },
+        { status: 400 }
+      );
+    }
+
+    if (type === 'blog' && !metaDescription) {
+      return NextResponse.json(
+        { error: 'Meta description is required for blog content' },
+        { status: 400 }
+      );
+    }
+
+    let prompt: string;
+    let systemMessage: string;
+
+    if (type === 'service') {
+      // Service description generation
+      const serviceTypeContext = {
+        language: 'language learning and teaching services',
+        astrology: 'astrology, palm reading, and spiritual guidance services',
+        general: 'general consultation and coaching services',
+      };
+
+      const context =
+        serviceTypeContext[serviceType as keyof typeof serviceTypeContext] ||
+        serviceTypeContext.general;
+
+      systemMessage = `You are an expert copywriter specializing in ${context}.`;
+
+      prompt = `Based on the following information:
+- Service Title: "${title}"
+- Short Description: "${shortDescription}"
+- Service Type: ${serviceType}
+
+Write a compelling, detailed service description (maximum ${maxLength} characters) that:
+1. Expands on the short description with specific details
+2. Explains the benefits and value proposition clearly
+3. Describes what the client can expect from the session
+4. Includes a professional yet engaging tone
+5. Highlights the unique aspects of this service
+6. Maintains consistency with the title and short description
+
+IMPORTANT: 
+- Return ONLY the description text, no titles, headings, or additional content
+- Keep it under ${maxLength} characters
+- Format as plain text without markdown formatting
+- Make every word count due to character limit`;
+    } else {
+      // Blog content generation
+      systemMessage =
+        'You are an expert content writer who creates engaging, informative blog posts in markdown format.';
+
+      prompt = `Based on the following information:
+- Blog Title: "${title}"
+- Meta Description: "${metaDescription}"
+
+Write a comprehensive, well-structured blog post that:
+1. Starts with an engaging introduction that hooks the reader
+2. Expands on the title and meta description with valuable, in-depth insights
+3. Provides actionable information, tips, and practical advice
+4. Uses an engaging, conversational yet professional tone
+5. Includes relevant examples, scenarios, or case studies when appropriate
+6. Maintains reader interest throughout with varied paragraph lengths
+7. Concludes with a strong summary or call-to-action
+8. Aligns perfectly with the title and meta description
+
+STRUCTURE REQUIREMENTS:
+- Use proper markdown formatting with headers (##, ###), lists, bold text, etc.
+- Include 3-5 main sections with descriptive subheadings
+- Aim for 800-2000 words for comprehensive coverage
+- Use bullet points or numbered lists where appropriate
+- Add emphasis with **bold** and *italic* text strategically
+
+IMPORTANT: 
+- Return ONLY the blog content in markdown format
+- Do NOT include the main title (# Title) as it will be added separately
+- Start directly with the introduction paragraph or a subtitle
+- Focus on delivering maximum value to the reader
+- Make it comprehensive and engaging`;
+    }
+
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o-mini',
+        messages: [
+          {
+            role: 'system',
+            content: systemMessage,
+          },
+          {
+            role: 'user',
+            content: prompt,
+          },
+        ],
+        max_tokens:
+          type === 'blog' ? 2500 : Math.min(400, Math.floor(maxLength / 3)), // Higher limit for blogs
+        temperature: 0.7,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error(`OpenAI API error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    const generatedContent = data.choices[0]?.message?.content;
+
+    if (!generatedContent) {
+      throw new Error('No content generated');
+    }
+
+    return NextResponse.json({
+      content: generatedContent.trim(),
+      success: true,
+    });
+  } catch (error: unknown) {
+    console.error('[POST /api/openai/generate-content] error:', error);
+    const errorMessage =
+      error instanceof Error ? error.message : 'Unknown error';
+    return NextResponse.json(
+      { error: `Failed to generate content: ${errorMessage}` },
+      { status: 500 }
+    );
+  }
+}
