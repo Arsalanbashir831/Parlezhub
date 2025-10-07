@@ -52,19 +52,21 @@ export function middleware(request: NextRequest) {
       pathname.startsWith(ROUTES.AUTH.SIGNUP);
     if (isAuthPage) {
       const accessToken = request.cookies.get('access_token')?.value;
-      const userRole = request.cookies.get('user_role')?.value;
+      const activeRole =
+        request.cookies.get('active_role')?.value ||
+        request.cookies.get('user_role')?.value;
       const redirectParam = request.nextUrl.searchParams.get('redirect');
-      if (accessToken && userRole) {
+      if (accessToken && activeRole) {
         // If a redirect param is present, honor it instead of forcing dashboard
         if (redirectParam) {
           return NextResponse.redirect(new URL(redirectParam, request.url));
         }
-        if (userRole === 'STUDENT') {
+        if (activeRole === 'STUDENT') {
           return NextResponse.redirect(
             new URL(ROUTES.STUDENT.DASHBOARD, request.url)
           );
         }
-        if (userRole === 'TEACHER') {
+        if (activeRole === 'TEACHER') {
           return NextResponse.redirect(
             new URL(ROUTES.TEACHER.DASHBOARD, request.url)
           );
@@ -74,9 +76,28 @@ export function middleware(request: NextRequest) {
     return NextResponse.next();
   }
 
-  // Get tokens from cookies
+  // Get tokens and role information from cookies
   const accessToken = request.cookies.get('access_token')?.value;
-  const userRole = request.cookies.get('user_role')?.value;
+  const userRolesStr = request.cookies.get('user_roles')?.value;
+  const activeRole = request.cookies.get('active_role')?.value;
+  const fallbackRole = request.cookies.get('user_role')?.value; // Backward compatibility
+
+  // Parse user roles
+  let userRoles: ('STUDENT' | 'TEACHER')[] = [];
+  if (userRolesStr) {
+    try {
+      userRoles = JSON.parse(userRolesStr);
+    } catch {
+      userRoles = [];
+    }
+  }
+
+  // If no user_roles but has fallback user_role, use that
+  if (userRoles.length === 0 && fallbackRole) {
+    userRoles = [fallbackRole as 'STUDENT' | 'TEACHER'];
+  }
+
+  const currentRole = activeRole || fallbackRole;
 
   if (!accessToken) {
     // Redirect to login if no token
@@ -87,8 +108,8 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Handle case where user has token but no role (incomplete OAuth flow)
-  if (!userRole) {
+  // Handle case where user has token but no roles (incomplete OAuth flow)
+  if (userRoles.length === 0) {
     // Redirect to login - OAuth callback will handle role selection inline
     const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
     if (pathname !== '/') {
@@ -97,44 +118,74 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Handle root path - redirect based on role
+  // Handle root path - redirect based on active role or first available role
   if (pathname === '/') {
-    if (userRole === 'STUDENT') {
+    const roleToUse = currentRole || userRoles[0];
+    if (roleToUse === 'STUDENT') {
       return NextResponse.redirect(
         new URL(ROUTES.STUDENT.DASHBOARD, request.url)
       );
-    } else if (userRole === 'TEACHER') {
+    } else if (roleToUse === 'TEACHER') {
       return NextResponse.redirect(
         new URL(ROUTES.TEACHER.DASHBOARD, request.url)
       );
     }
   }
 
-  // Check role-based access for protected routes
-  if (userRole === 'STUDENT') {
-    const isStudentRoute = STUDENT_ROUTES.some((route) =>
-      pathname.startsWith(route)
-    );
-    if (!isStudentRoute) {
-      // Redirect student to their dashboard if trying to access teacher routes
+  // Check role-based access for protected routes with multi-role support
+  const isStudentRoute = STUDENT_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+  const isTeacherRoute = TEACHER_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+
+  if (isStudentRoute) {
+    // Allow access if user has student role
+    if (!userRoles.includes('STUDENT')) {
+      // User doesn't have student role, redirect to their default dashboard
+      const roleToUse = currentRole || userRoles[0];
+      if (roleToUse === 'TEACHER') {
+        return NextResponse.redirect(
+          new URL(ROUTES.TEACHER.DASHBOARD, request.url)
+        );
+      } else {
+        // No valid role, redirect to login
+        const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+  } else if (isTeacherRoute) {
+    // Allow access if user has teacher role
+    if (!userRoles.includes('TEACHER')) {
+      // User doesn't have teacher role, redirect to their default dashboard
+      const roleToUse = currentRole || userRoles[0];
+      if (roleToUse === 'STUDENT') {
+        return NextResponse.redirect(
+          new URL(ROUTES.STUDENT.DASHBOARD, request.url)
+        );
+      } else {
+        // No valid role, redirect to login
+        const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+        return NextResponse.redirect(loginUrl);
+      }
+    }
+  } else {
+    // Route not recognized, redirect to default dashboard
+    const roleToUse = currentRole || userRoles[0];
+    if (roleToUse === 'STUDENT') {
       return NextResponse.redirect(
         new URL(ROUTES.STUDENT.DASHBOARD, request.url)
       );
-    }
-  } else if (userRole === 'TEACHER') {
-    const isTeacherRoute = TEACHER_ROUTES.some((route) =>
-      pathname.startsWith(route)
-    );
-    if (!isTeacherRoute) {
-      // Redirect teacher to their dashboard if trying to access student routes
+    } else if (roleToUse === 'TEACHER') {
       return NextResponse.redirect(
         new URL(ROUTES.TEACHER.DASHBOARD, request.url)
       );
+    } else {
+      // No valid role, redirect to login
+      const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+      return NextResponse.redirect(loginUrl);
     }
-  } else {
-    // Invalid role, redirect to login
-    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-    return NextResponse.redirect(loginUrl);
   }
 
   return NextResponse.next();

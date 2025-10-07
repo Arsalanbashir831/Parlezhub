@@ -8,15 +8,16 @@ export const API_ROUTES = {
     REFRESH_TOKEN: '/token/refresh/',
     GOOGLE_INITIATE: '/auth/google/initiate/',
     GOOGLE_CALLBACK: '/auth/google/callback/',
+    ME: '/accounts/profiles/me/roles/',
+    BECOME_TEACHER: '/accounts/become-teacher/',
+    BECOME_STUDENT: '/accounts/become-student/',
   },
   STUDENT: {
-    PROFILE: '/accounts/profiles/me/',
     UPDATE_PROFILE: '/accounts/profiles/me/',
     GET_ALL_BOOKINGS: '/bookings/bookings/my/',
     REFUND_BOOKING: '/payments/refund/request/',
   },
   TEACHER: {
-    PROFILE: '/accounts/teachers/my-profile/',
     UPDATE_PROFILE: '/accounts/teachers/my-profile/',
     CREATE_SERVICE: '/accounts/gigs/',
     GET_YOUR_SERVICES: '/accounts/gigs/',

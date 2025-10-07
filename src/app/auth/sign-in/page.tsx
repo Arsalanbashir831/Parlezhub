@@ -5,7 +5,6 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
-import { userApi } from '@/services/user';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -67,16 +66,8 @@ export default function LoginPage() {
           window.history.replaceState(null, '', window.location.pathname);
         } catch {}
 
-        // Fetch profile to get role, then redirect accordingly
-        let role: 'STUDENT' | 'TEACHER' = 'STUDENT';
-        try {
-          const student = await userApi.getStudentProfile();
-          role = student.role;
-        } catch {
-          const teacher = await userApi.getTeacherProfile();
-          role = teacher.role;
-        }
-        setCookie('user_role', role);
+        // The auth context will handle profile fetching and role determination automatically
+        // No need to manually fetch profiles here
 
         toast.success('Signed in successfully');
 
@@ -84,11 +75,8 @@ export default function LoginPage() {
         if (typeof window !== 'undefined') {
           if (redirectTo) {
             window.location.replace(redirectTo);
-          } else if (role === 'STUDENT') {
-            window.location.replace(ROUTES.STUDENT.DASHBOARD);
-          } else if (role === 'TEACHER') {
-            window.location.replace(ROUTES.TEACHER.DASHBOARD);
           } else {
+            // Let the auth context handle the redirection based on user roles
             window.location.replace('/');
           }
         }

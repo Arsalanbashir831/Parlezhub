@@ -67,6 +67,59 @@ export interface ResendVerificationEmailResponse {
   message: string;
 }
 
+export interface StudentProfile {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string | null;
+  gender: string | null;
+  date_of_birth: string | null;
+  role: 'STUDENT';
+  profile_picture: string | null;
+  created_at: string;
+  bio: string;
+  city: string;
+  country: string;
+  postal_code: string;
+  status: string;
+  native_language: string;
+  learning_language: string;
+}
+
+export interface TeacherProfile {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  phone_number: string | null;
+  gender: string | null;
+  date_of_birth: string | null;
+  role: 'STUDENT'; // Note: role might still be STUDENT even with teacher profile
+  has_teacher: boolean;
+  has_student: boolean;
+  profile_picture: string | null;
+  created_at: string;
+  bio: string;
+  city: string;
+  country: string;
+  postal_code: string;
+  status: string;
+  native_language: string;
+  learning_language: string;
+  qualification: string;
+  experience_years: number;
+  certificates: string[];
+  about: string;
+}
+
+export interface UnifiedProfileResponse {
+  has_teacher: boolean;
+  teacher_profile: TeacherProfile | null;
+  has_student: boolean;
+  student_profile: StudentProfile | null;
+}
+
 export interface GoogleInitiateResponse {
   success: boolean;
   oauth_url: string;
@@ -103,6 +156,12 @@ export interface GoogleCallbackResponse {
   // Error case fields
   error?: string;
   requires_role_selection?: boolean;
+}
+
+export interface BecomeRoleResponse {
+  message: string;
+  created: boolean;
+  profile: StudentProfile | TeacherProfile;
 }
 
 export const authApi = {
@@ -187,6 +246,39 @@ export const authApi = {
       data as unknown as Record<string, string>,
       {},
       false // Don't use auth token for Google callback
+    );
+    return response.data;
+  },
+
+  getUnifiedProfile: async (): Promise<UnifiedProfileResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.ME,
+      'GET',
+      undefined,
+      {},
+      true // Use auth token for profile access
+    );
+    return response.data;
+  },
+
+  becomeTeacher: async (): Promise<BecomeRoleResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.BECOME_TEACHER,
+      'POST',
+      {},
+      {},
+      true // Use auth token
+    );
+    return response.data;
+  },
+
+  becomeStudent: async (): Promise<BecomeRoleResponse> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.BECOME_STUDENT,
+      'POST',
+      {},
+      {},
+      true // Use auth token
     );
     return response.data;
   },

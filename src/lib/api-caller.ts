@@ -124,17 +124,6 @@ const apiCaller = async (
         (error.response?.status === 403 || error.response?.status === 401) &&
         useAuth
       ) {
-        const originalRequest = {
-          url,
-          method,
-          data,
-          options,
-          useAuth,
-          dataType,
-          onErrorRefresh,
-          signal,
-        };
-
         if (isRefreshing) {
           // If already refreshing, queue this request
           return new Promise((resolve, reject) => {

@@ -4,6 +4,21 @@ import type React from 'react';
 import { createContext, useContext, useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useMutation } from '@tanstack/react-query';
+import { toast } from 'sonner';
+
+import {
+  clearAuthCookies,
+  getActiveRole,
+  getCookie,
+  getUserRoles,
+  setActiveRole,
+  setCookie,
+  setUserRoles,
+} from '@/lib/cookie-utils';
+import { getErrorMessage } from '@/lib/error-utils';
+
+import type { User } from '../lib/types';
 import {
   authApi,
   ResendVerificationEmailRequest,
@@ -11,14 +26,8 @@ import {
   type LoginRequest,
   type ResetPasswordRequest,
   type SignupRequest,
-} from '@/services/auth';
-import { useMutation } from '@tanstack/react-query';
-import { toast } from 'sonner';
-
-import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
-import { getErrorMessage } from '@/lib/error-utils';
-
-import type { User } from '../lib/types';
+  type UnifiedProfileResponse,
+} from '../services/auth';
 
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
@@ -31,12 +40,21 @@ interface AuthContextType {
     mode: 'login' | 'signup',
     role?: 'TEACHER' | 'STUDENT'
   ) => Promise<void>;
+  switchRole: (role: 'TEACHER' | 'STUDENT') => Promise<void>;
+  refreshUserProfile: () => Promise<void>;
+  becomeTeacher: () => Promise<void>;
+  becomeStudent: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  userRole: 'TEACHER' | 'STUDENT' | null;
+  userRoles: ('TEACHER' | 'STUDENT')[];
+  activeRole: 'TEACHER' | 'STUDENT' | null;
+  userRole: 'TEACHER' | 'STUDENT' | null; // Keep for backward compatibility
+  hasTeacherRole: boolean;
+  hasStudentRole: boolean;
+  canAccessRole: (role: 'TEACHER' | 'STUDENT') => boolean;
   setIsAuthenticated: (value: boolean) => void;
-  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void;
+  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void; // Keep for backward compatibility
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -45,36 +63,122 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(null);
+  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT')[]>(
+    []
+  );
+  const [activeRole, setActiveRoleState] = useState<
+    'TEACHER' | 'STUDENT' | null
+  >(null);
   const router = useRouter();
   const searchParams = useSearchParams();
+
+  // Computed values for backward compatibility and convenience
+  const userRole = activeRole; // For backward compatibility
+  const hasTeacherRole = userRoles.includes('TEACHER');
+  const hasStudentRole = userRoles.includes('STUDENT');
+  const canAccessRole = (role: 'TEACHER' | 'STUDENT') =>
+    userRoles.includes(role);
+
+  // Function to update roles from unified profile response
+  const updateRolesFromProfile = (profileData: UnifiedProfileResponse) => {
+    const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
+
+    if (profileData.has_student) {
+      availableRoles.push('STUDENT');
+    }
+    if (profileData.has_teacher) {
+      availableRoles.push('TEACHER');
+    }
+
+    setUserRolesState(availableRoles);
+    setUserRoles(availableRoles);
+
+    // Set active role - prefer current active role if valid, otherwise use first available
+    const currentActiveRole = getActiveRole();
+    if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
+      setActiveRoleState(currentActiveRole);
+    } else if (availableRoles.length > 0) {
+      const defaultRole = availableRoles[0];
+      setActiveRoleState(defaultRole);
+      setActiveRole(defaultRole);
+    }
+
+    // Keep backward compatibility cookie
+    if (availableRoles.length > 0) {
+      setCookie('user_role', activeRole || availableRoles[0]);
+    }
+  };
+
+  // Function to refresh user profile
+  const refreshUserProfile = async () => {
+    try {
+      const profileData = await authApi.getUnifiedProfile();
+      updateRolesFromProfile(profileData);
+    } catch (error) {
+      console.error('Failed to refresh user profile:', error);
+      throw error;
+    }
+  };
+
+  // Function to switch active role
+  const switchRole = async (role: 'TEACHER' | 'STUDENT') => {
+    if (!canAccessRole(role)) {
+      throw new Error(`You don't have access to ${role} role`);
+    }
+
+    setActiveRoleState(role);
+    setActiveRole(role);
+    setCookie('user_role', role); // For backward compatibility
+
+    // Redirect to appropriate dashboard
+    if (role === 'STUDENT') {
+      router.push(ROUTES.STUDENT.DASHBOARD);
+    } else {
+      router.push(ROUTES.TEACHER.DASHBOARD);
+    }
+
+    toast.success(`Switched to ${role.toLowerCase()} mode`);
+  };
 
   // TanStack Query mutations
   const loginMutation = useMutation({
     mutationFn: (data: LoginRequest) => authApi.login(data),
-    onSuccess: (data) => {
-      // Store tokens in cookies only
+    onSuccess: async (data) => {
+      // Store tokens in cookies
       setCookie('access_token', data.access_token);
       setCookie('refresh_token', data.refresh_token);
-      setCookie('user_role', data.user.role);
 
       setIsAuthenticated(true);
-      setUserRole(data.user.role);
       setError(null);
 
-      // Show success toast
-      toast.success(`Welcome back!`);
+      try {
+        // Get unified profile to determine available roles
+        await refreshUserProfile();
 
-      // Redirect based on role
-      const redirectTo = searchParams.get('redirect');
-      if (redirectTo) {
-        router.push(redirectTo);
-      } else {
-        if (data.user.role === 'STUDENT') {
-          router.push(ROUTES.STUDENT.DASHBOARD);
-        } else if (data.user.role === 'TEACHER') {
-          router.push(ROUTES.TEACHER.DASHBOARD);
+        // Show success toast
+        toast.success(`Welcome back!`);
+
+        // Redirect based on active role
+        const redirectTo = searchParams.get('redirect');
+        if (redirectTo) {
+          router.push(redirectTo);
+        } else {
+          const currentActiveRole = getActiveRole();
+          if (currentActiveRole === 'STUDENT') {
+            router.push(ROUTES.STUDENT.DASHBOARD);
+          } else if (currentActiveRole === 'TEACHER') {
+            router.push(ROUTES.TEACHER.DASHBOARD);
+          } else {
+            // Default to student dashboard if no active role set
+            router.push(ROUTES.STUDENT.DASHBOARD);
+          }
         }
+      } catch (profileError) {
+        console.error('Failed to load profile after login:', profileError);
+        // Fallback to old behavior
+        setCookie('user_role', data.user.role);
+        setUserRolesState([data.user.role]);
+        setActiveRoleState(data.user.role);
       }
     },
     onError: (error: unknown) => {
@@ -195,24 +299,108 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
+  const becomeTeacherMutation = useMutation({
+    mutationFn: () => authApi.becomeTeacher(),
+    onSuccess: async (data) => {
+      setError(null);
+
+      // Refresh profile to get updated roles
+      await refreshUserProfile();
+
+      // Switch to teacher role
+      await switchRole('TEACHER');
+
+      const message = data.created
+        ? 'Teacher profile created successfully!'
+        : 'Welcome back to teacher mode!';
+      toast.success(message);
+    },
+    onError: (error: unknown) => {
+      console.error('Become teacher failed:', error);
+      const errorMessage = getErrorMessage(error, 'become-teacher');
+      setError(errorMessage);
+      toast.error('Failed to Become Teacher', {
+        description: errorMessage,
+      });
+    },
+  });
+
+  const becomeStudentMutation = useMutation({
+    mutationFn: () => authApi.becomeStudent(),
+    onSuccess: async (data) => {
+      setError(null);
+
+      // Refresh profile to get updated roles
+      await refreshUserProfile();
+
+      // Switch to student role
+      await switchRole('STUDENT');
+
+      const message = data.created
+        ? 'Student profile created successfully!'
+        : 'Welcome back to student mode!';
+      toast.success(message);
+    },
+    onError: (error: unknown) => {
+      console.error('Become student failed:', error);
+      const errorMessage = getErrorMessage(error, 'become-student');
+      setError(errorMessage);
+      toast.error('Failed to Become Student', {
+        description: errorMessage,
+      });
+    },
+  });
+
   useEffect(() => {
     // Check for existing session
     const checkAuth = async () => {
       try {
         const token = getCookie('access_token');
-        const role = getCookie('user_role');
+        const storedRoles = getUserRoles();
+        const storedActiveRole = getActiveRole();
 
-        // Only consider user authenticated if they have BOTH token AND role
-        if (token && role) {
+        if (token) {
           setIsAuthenticated(true);
-          setUserRole(role as 'TEACHER' | 'STUDENT');
+
+          if (storedRoles.length > 0) {
+            setUserRolesState(storedRoles);
+            if (storedActiveRole && storedRoles.includes(storedActiveRole)) {
+              setActiveRoleState(storedActiveRole);
+            } else {
+              setActiveRoleState(storedRoles[0]);
+            }
+
+            // Try to refresh profile to get latest data
+            try {
+              await refreshUserProfile();
+            } catch (profileError) {
+              console.log(
+                'Could not refresh profile on init, using stored data'
+              );
+            }
+          } else {
+            // No stored roles, try to fetch profile
+            try {
+              await refreshUserProfile();
+            } catch (profileError) {
+              // If we can't get profile, fall back to clearing auth
+              console.error('Failed to get profile, clearing auth');
+              clearAuthCookies();
+              setIsAuthenticated(false);
+              setUserRolesState([]);
+              setActiveRoleState(null);
+            }
+          }
         } else {
-          // If missing either token or role, user is not fully authenticated
           setIsAuthenticated(false);
-          setUserRole(null);
+          setUserRolesState([]);
+          setActiveRoleState(null);
         }
       } catch (error) {
         console.error('Auth check failed:', error);
+        setIsAuthenticated(false);
+        setUserRolesState([]);
+        setActiveRoleState(null);
       } finally {
         setIsLoading(false);
       }
@@ -226,13 +414,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   const logout = () => {
-    // Clear cookies only
-    removeCookie('access_token');
-    removeCookie('refresh_token');
-    removeCookie('user_role');
+    // Clear all auth cookies
+    clearAuthCookies();
 
     setIsAuthenticated(false);
-    setUserRole(null);
+    setUserRolesState([]);
+    setActiveRoleState(null);
     setError(null);
 
     // Show logout toast
@@ -286,6 +473,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await googleOAuthInitiateMutation.mutateAsync();
   };
 
+  // Backward compatibility function
+  const setUserRole = (role: 'TEACHER' | 'STUDENT' | null) => {
+    if (role) {
+      setActiveRoleState(role);
+      setActiveRole(role);
+      setCookie('user_role', role);
+    } else {
+      setActiveRoleState(null);
+    }
+  };
+
+  const becomeTeacher = async () => {
+    await becomeTeacherMutation.mutateAsync();
+  };
+
+  const becomeStudent = async () => {
+    await becomeStudentMutation.mutateAsync();
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -296,6 +502,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         resetPassword,
         resendVerificationEmail,
         googleOAuthInitiate,
+        switchRole,
+        refreshUserProfile,
+        becomeTeacher,
+        becomeStudent,
         isLoading:
           isLoading ||
           loginMutation.isPending ||
@@ -303,12 +513,19 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           forgotPasswordMutation.isPending ||
           resetPasswordMutation.isPending ||
           resendVerificationEmailMutation.isPending ||
-          googleOAuthInitiateMutation.isPending,
+          googleOAuthInitiateMutation.isPending ||
+          becomeTeacherMutation.isPending ||
+          becomeStudentMutation.isPending,
         error,
         isAuthenticated,
-        userRole,
+        userRoles,
+        activeRole,
+        userRole, // For backward compatibility
+        hasTeacherRole,
+        hasStudentRole,
+        canAccessRole,
         setIsAuthenticated,
-        setUserRole,
+        setUserRole, // For backward compatibility
       }}
     >
       {children}

@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -35,7 +35,6 @@ type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 function ResetPasswordContent() {
   const { resetPassword, isLoading, error } = useAuth();
   const router = useRouter();
-  const searchParams = useSearchParams();
   const [token, setToken] = useState<string | null>(null);
 
   // Extract token from hash fragment

@@ -5,13 +5,11 @@ import {
   Briefcase,
   Calendar,
   FileText,
-  Hand,
   History,
   Home,
   Languages,
   MessageCircle,
   Settings,
-  Telescope,
   Users,
   Zap,
 } from 'lucide-react';

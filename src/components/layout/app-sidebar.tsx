@@ -4,7 +4,14 @@ import * as React from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
-import { ChevronDown, ChevronRight, Home, LogOut } from 'lucide-react';
+import {
+  ChevronDown,
+  ChevronRight,
+  GraduationCap,
+  Home,
+  LogOut,
+  Users,
+} from 'lucide-react';
 
 import type { NavItem } from '@/types/nav';
 import { cn } from '@/lib/utils';
@@ -46,7 +53,15 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   roleLabel,
   onLogout,
 }) => {
-  const { isAuthenticated } = useAuth();
+  const {
+    isAuthenticated,
+    activeRole,
+    hasTeacherRole,
+    hasStudentRole,
+    becomeTeacher,
+    becomeStudent,
+    switchRole,
+  } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
 
@@ -90,6 +105,32 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       }
       return newSet;
     });
+  };
+
+  const renderRoleSwitchMenuItem = (
+    role: 'TEACHER' | 'STUDENT',
+    label: string,
+    IconComponent: React.ComponentType<{ className?: string }>,
+    action: () => void
+  ) => {
+    return (
+      <SidebarMenuItem>
+        <SidebarMenuButton
+          tooltip={isCollapsed ? label : undefined}
+          className={cn(
+            'px-4 py-6 hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white',
+            role === 'TEACHER' &&
+              'text-blue-600 hover:text-white dark:text-blue-400',
+            role === 'STUDENT' &&
+              'text-green-600 hover:text-white dark:text-green-400'
+          )}
+          onClick={action}
+        >
+          <IconComponent className="shrink-0" />
+          {!isCollapsed && <span>{label}</span>}
+        </SidebarMenuButton>
+      </SidebarMenuItem>
+    );
   };
 
   const isSubItemActive = (item: NavItem): boolean => {
@@ -226,7 +267,46 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         {isAuthenticated ? (
           <>
             {roleLabel !== 'Agent' ? (
-              <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+              <div className="space-y-3">
+                {/* Dashboard Links - show opposite role dashboard */}
+                <SidebarMenu>
+                  {activeRole === 'STUDENT' &&
+                    hasTeacherRole &&
+                    renderRoleSwitchMenuItem(
+                      'TEACHER',
+                      'Teacher Dashboard',
+                      Users,
+                      () => switchRole('TEACHER')
+                    )}
+                  {activeRole === 'TEACHER' &&
+                    hasStudentRole &&
+                    renderRoleSwitchMenuItem(
+                      'STUDENT',
+                      'Student Dashboard',
+                      GraduationCap,
+                      () => switchRole('STUDENT')
+                    )}
+                  {/* Become Teacher Button - show if student but not teacher */}
+                  {activeRole === 'STUDENT' &&
+                    !hasTeacherRole &&
+                    renderRoleSwitchMenuItem(
+                      'TEACHER',
+                      'Become Teacher',
+                      Users,
+                      becomeTeacher
+                    )}
+                  {/* Become Student Button - show if teacher but not student */}
+                  {activeRole === 'TEACHER' &&
+                    !hasStudentRole &&
+                    renderRoleSwitchMenuItem(
+                      'STUDENT',
+                      'Become Student',
+                      GraduationCap,
+                      becomeStudent
+                    )}
+                </SidebarMenu>
+                <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+              </div>
             ) : (
               <SidebarMenu>
                 {renderMenuItem({
