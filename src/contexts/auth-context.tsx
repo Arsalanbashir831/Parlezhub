@@ -95,17 +95,20 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
     // Set active role - prefer current active role if valid, otherwise use first available
     const currentActiveRole = getActiveRole();
+    let newActiveRole: 'TEACHER' | 'STUDENT' | null = null;
+
     if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
+      newActiveRole = currentActiveRole;
       setActiveRoleState(currentActiveRole);
     } else if (availableRoles.length > 0) {
-      const defaultRole = availableRoles[0];
-      setActiveRoleState(defaultRole);
-      setActiveRole(defaultRole);
+      newActiveRole = availableRoles[0];
+      setActiveRoleState(newActiveRole);
+      setActiveRole(newActiveRole);
     }
 
-    // Keep backward compatibility cookie
-    if (availableRoles.length > 0) {
-      setCookie('user_role', activeRole || availableRoles[0]);
+    // Keep backward compatibility cookie with the correct role
+    if (newActiveRole) {
+      setCookie('user_role', newActiveRole);
     }
   };
 
@@ -148,12 +151,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setCookie('access_token', data.access_token);
       setCookie('refresh_token', data.refresh_token);
 
-      setIsAuthenticated(true);
       setError(null);
 
       try {
-        // Get unified profile to determine available roles
+        // Get unified profile to determine available roles before setting authenticated
         await refreshUserProfile();
+
+        // Only set authenticated after profile is loaded
+        setIsAuthenticated(true);
 
         // Show success toast
         toast.success(`Welcome back!`);
@@ -179,6 +184,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         setCookie('user_role', data.user.role);
         setUserRolesState([data.user.role]);
         setActiveRoleState(data.user.role);
+        setIsAuthenticated(true);
       }
     },
     onError: (error: unknown) => {
@@ -307,8 +313,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Refresh profile to get updated roles
       await refreshUserProfile();
 
-      // Switch to teacher role
-      await switchRole('TEACHER');
+      // Set teacher as active role and redirect (no validation needed since API succeeded)
+      setActiveRoleState('TEACHER');
+      setActiveRole('TEACHER');
+      setCookie('user_role', 'TEACHER');
+
+      // Redirect to teacher dashboard
+      router.push(ROUTES.TEACHER.DASHBOARD);
 
       const message = data.created
         ? 'Teacher profile created successfully!'
@@ -333,8 +344,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Refresh profile to get updated roles
       await refreshUserProfile();
 
-      // Switch to student role
-      await switchRole('STUDENT');
+      // Set student as active role and redirect (no validation needed since API succeeded)
+      setActiveRoleState('STUDENT');
+      setActiveRole('STUDENT');
+      setCookie('user_role', 'STUDENT');
+
+      // Redirect to student dashboard
+      router.push(ROUTES.STUDENT.DASHBOARD);
 
       const message = data.created
         ? 'Student profile created successfully!'

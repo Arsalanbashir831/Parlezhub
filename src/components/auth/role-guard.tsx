@@ -17,7 +17,8 @@ export default function RoleGuard({
   allowedRoles,
   fallbackPath,
 }: RoleGuardProps) {
-  const { isAuthenticated, userRole, isLoading } = useAuth();
+  const { isAuthenticated, userRoles, activeRole, isLoading, canAccessRole } =
+    useAuth();
   const { user } = useUser();
   const router = useRouter();
 
@@ -30,15 +31,27 @@ export default function RoleGuard({
       return;
     }
 
-    if (!userRole || !allowedRoles.includes(userRole)) {
-      // Redirect to appropriate dashboard if role is not allowed
+    // Check if user has any of the allowed roles (multi-role support)
+    const hasAllowedRole = allowedRoles.some((role) => canAccessRole(role));
+
+    if (!hasAllowedRole) {
+      // Redirect to appropriate dashboard if user doesn't have any allowed roles
       if (fallbackPath) {
         router.push(fallbackPath);
       } else {
-        if (userRole === 'STUDENT') {
+        // Redirect based on user's active role or first available role
+        if (activeRole === 'STUDENT') {
           router.push(ROUTES.STUDENT.DASHBOARD);
-        } else if (userRole === 'TEACHER') {
+        } else if (activeRole === 'TEACHER') {
           router.push(ROUTES.TEACHER.DASHBOARD);
+        } else if (userRoles.length > 0) {
+          // Use first available role if no active role set
+          const firstRole = userRoles[0];
+          if (firstRole === 'STUDENT') {
+            router.push(ROUTES.STUDENT.DASHBOARD);
+          } else {
+            router.push(ROUTES.TEACHER.DASHBOARD);
+          }
         } else {
           router.push(ROUTES.AUTH.LOGIN);
         }
@@ -47,11 +60,13 @@ export default function RoleGuard({
     }
   }, [
     isAuthenticated,
-    userRole,
+    userRoles,
+    activeRole,
     isLoading,
     allowedRoles,
     fallbackPath,
     router,
+    canAccessRole,
   ]);
 
   // Show loading while checking authentication and role
@@ -63,8 +78,11 @@ export default function RoleGuard({
     );
   }
 
-  // Don't render children if not authenticated or role not allowed
-  if (!isAuthenticated || !userRole || !allowedRoles.includes(userRole)) {
+  // Check if user has any allowed role for rendering
+  const hasAllowedRole = allowedRoles.some((role) => canAccessRole(role));
+
+  // Don't render children if not authenticated or doesn't have allowed roles
+  if (!isAuthenticated || !hasAllowedRole) {
     return null;
   }
 
