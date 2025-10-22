@@ -11,9 +11,9 @@ import {
 import { ROUTES } from '@/constants/routes';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
-import { getToken } from '@/services/openai/token';
+import vapiService from '@/services/vapi';
 import voiceService from '@/services/voice';
-import { realtime } from '@openai/agents';
+import Vapi from '@vapi-ai/web';
 import { toast } from 'sonner';
 
 import { getCookie } from '@/lib/cookie-utils';
@@ -45,14 +45,13 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
     'idle' | 'active' | 'paused' | 'completed'
   >('idle');
   const [isConnecting, setIsConnecting] = useState(false);
-  const [session, setSession] = useState<realtime.RealtimeSession | null>(null);
+  const [vapi, setVapi] = useState<Vapi | null>(null);
+  const [assistantId, setAssistantId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
   const { timeRemaining } = useSessionTimer(sessionState);
   const sessionStartedAtRef = useRef<number | null>(null);
-  const hasPostedRef = useRef(false);
-  const hasUnmountPostedRef = useRef(false);
   const hasEverStartedRef = useRef(false);
 
   // --- Remove all browser speech recognition code ---
@@ -61,67 +60,55 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const historyHandlers = useHandleSessionHistory().current;
 
   useEffect(() => {
-    if (session) {
-      // Type assertion to fix type mismatch between HistoryItem and RealtimeItem
-      session.on(
-        'history_added',
-        historyHandlers.handleHistoryAdded as (
-          item: realtime.RealtimeItem
-        ) => void
-      );
-      session.on(
-        'history_updated',
-        historyHandlers.handleHistoryUpdated as (
-          items: realtime.RealtimeItem[]
-        ) => void
-      );
-      session.on('agent_tool_start', historyHandlers.handleAgentToolStart);
-      session.on('agent_tool_end', historyHandlers.handleAgentToolEnd);
-      session.on('guardrail_tripped', historyHandlers.handleGuardrailTripped);
-      session.on(
-        'transport_event',
-        (event: {
-          type: string;
-          item_id?: string;
-          delta?: string;
-          transcript?: string;
-        }) => {
-          switch (event.type) {
-            case 'conversation.item.input_audio_transcription.completed':
-            case 'response.audio_transcript.done':
-              historyHandlers.handleTranscriptionCompleted(event);
-              break;
-            case 'response.audio_transcript.delta':
-              historyHandlers.handleTranscriptionDelta(event);
-              break;
-            default:
-              break;
-          }
-        }
-      );
-    }
-  }, [session, historyHandlers]);
+    if (vapi) {
+      // Set up Vapi event listeners
+      vapi.on('call-start', () => {
+        console.log('Vapi call started');
+        setIsConnected(true);
+      });
 
-  // Cleanup effect to ensure session is closed when component unmounts
+      vapi.on('call-end', () => {
+        console.log('Vapi call ended');
+        setIsConnected(false);
+        setSessionState('completed');
+      });
+
+      vapi.on('message', (message) => {
+        console.log('Vapi message event:', message);
+        if (message.type === 'transcript') {
+          historyHandlers.handleVapiMessage(message);
+        }
+      });
+
+      vapi.on('speech-start', () => {
+        console.log('Vapi speech started');
+        setIsAISpeaking(true);
+      });
+
+      vapi.on('speech-end', () => {
+        console.log('Vapi speech ended');
+        setIsAISpeaking(false);
+      });
+
+      vapi.on('error', (error) => {
+        console.error('Vapi error:', error);
+        toast.error('Voice session error occurred');
+      });
+    }
+  }, [vapi, historyHandlers]);
+
+  // Cleanup effect to ensure Vapi session is closed when component unmounts
   useEffect(() => {
     return () => {
-      if (session) {
+      if (vapi) {
         try {
-          session.close();
+          vapi.stop();
         } catch (error) {
-          console.error('Error closing session on unmount:', error);
+          console.error('Error stopping Vapi session on unmount:', error);
         }
       }
-      // Do not auto-post on unmount; only post on explicit stop
-      // if (recognitionRef.current) { // This line is removed as per the edit hint
-      //   try {
-      //     recognitionRef.current.stop();
-      //   } catch (error) {
-      //     // Ignore errors when stopping
-      //   }
-      // }
     };
-  }, [session]);
+  }, [vapi]);
 
   const postConversation = useCallback(
     async (durationMinutes?: number) => {
@@ -187,140 +174,60 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
         router.push(`${ROUTES.AUTH.LOGIN}?${params.toString()}`);
         return;
       }
+
       // Request microphone permission
       await navigator.mediaDevices.getUserMedia({ audio: true });
 
-      // Create the language tutor agent with auto-start instruction
-      const languageTutor = new realtime.RealtimeAgent({
-        name: 'Language Tutor',
-        instructions: `# Personality
-
-You are a friendly and patient language tutor named Alex. You love helping people learn new languages and cultures. You speak clearly, explain concepts simply, and adapt to each learner's pace and style. You are a native speaker of ${getLanguageName(config.nativeLanguage)} and ${getLanguageName(config.language)}.
-
-# CRITICAL: AUTO-START INSTRUCTION
-
-You MUST start speaking immediately when the session begins. Do not wait for the student to speak first. Begin with a warm greeting in ${getLanguageName(config.nativeLanguage)}.
-
-# Environment
-
-You're having a one-on-one voice lesson with a student who wants to learn ${getLanguageName(config.language)}. Their native language is ${getLanguageName(config.nativeLanguage)}. You have access to grammar guides, vocabulary, pronunciation tools, cultural insights, and practice exercises.
-
-# Tone
-
-You speak warmly, clearly, and slowly. Always be encouraging and supportive. Celebrate small wins. Focus on clear communication and practice. Don't overwhelm the student — keep learning fun and easy.
-
-# Topic
-
-Today's topic is: **${config.topic || prompt}**
-
-# Lesson Flow
-
-You must **start the conversation immediately**. Follow this structure:
-
-1. **Immediate Greeting** *(Start speaking right away)*
-   - "Hello! How are you today? I'm Alex, your language tutor. Welcome to our lesson on ${config.topic || prompt}!"
-   - Ask how the student is feeling about today's topic.
-
-2. **Mini Warm-up** *(2–3 questions based on the topic)*  
-   - Keep it simple and related to the student's level.
-   - Use both native and target language if needed.
-
-3. **Main Practice Activity**  
-   - Choose 1–2 short and focused exercises (e.g. sentence building, vocabulary use, role play, or Q&A).
-   - Explain each task clearly and guide the student step by step.
-   - Encourage the student to speak/respond as much as possible.
-
-4. **Feedback & Correction**  
-   - Gently correct mistakes. Repeat the right version and ask the student to try again.
-
-5. **Wrap-up & Mini Homework**  
-   - Summarize what was learned.
-   - Give a small homework task to reinforce today's lesson (e.g. a sentence to translate or a question to answer).
-
-# Guardrails
-
-- Keep language simple and non-technical.
-- Do not overload the student with too much theory.
-- Always prioritize **practice** over explanation.
-- Never go off-topic or share unrelated facts unless asked.
-- Do not ask for personal or sensitive information.
-- Encourage the student if they make mistakes — mistakes are part of learning!
-
-# Tools
-
-You have access to:
-- Grammar and vocabulary databases for ${getLanguageName(config.nativeLanguage)} and ${getLanguageName(config.language)}.
-- Audio guides and pronunciation examples.
-- Simple online exercises and quizzes.
-- Translation assistance.
-- Cultural facts relevant to language use.
-
-# IMPORTANT REMINDER
-
-START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student to speak first. Begin with a warm greeting and introduction.
-`,
-        voice: 'sage',
+      // Create Vapi assistant via backend API
+      const assistant = await vapiService.createAssistant({
+        language: config.language,
+        nativeLanguage: config.nativeLanguage,
+        topic: config.topic || prompt,
       });
+      setAssistantId(assistant.id);
 
-      // Create the session with the language tutor
-      const newSession = new realtime.RealtimeSession(languageTutor);
-      setSession(newSession);
+      // Get Vapi web token
+      const webToken = await vapiService.getWebToken();
+      console.log('Vapi web token:', webToken);
 
-      // Connect to the session
-      await newSession.connect({
-        apiKey: await getToken(),
-      });
+      // Initialize Vapi instance
+      const vapiInstance = new Vapi(webToken);
+      setVapi(vapiInstance);
 
-      // Set up event listeners for the session
-      setupSessionListeners(newSession);
+      // Start call with assistant
+      console.log('Starting Vapi call with assistant:', assistant.id);
+      try {
+        await vapiInstance.start(assistant.id);
+        console.log('Vapi call started successfully');
+      } catch (error) {
+        console.error('Error starting Vapi call:', error);
+        toast.error('Failed to start voice session');
+        setSessionState('idle');
+        return;
+      }
 
       setIsConnected(true);
       setSessionState('active');
       sessionStartedAtRef.current = Date.now();
       hasEverStartedRef.current = true;
-
-      // Trigger the agent to start speaking by sending a simple message
-      setTimeout(() => {
-        try {
-          newSession.sendMessage('Start the lesson');
-        } catch (error) {
-          console.error('Error triggering agent:', error);
-        }
-      }, 1000);
     } catch (error) {
-      console.error('Failed to start OpenAI conversation:', error);
+      console.error('Failed to start Vapi conversation:', error);
       setSessionState('idle');
     } finally {
       setIsConnecting(false);
     }
   }, [config, prompt]);
 
-  const setupSessionListeners = (session: realtime.RealtimeSession) => {
-    // Set up event listeners for the session
-
-    // Try to access session properties for debugging
-    try {
-      // Log any available properties
-      console.log('🔍 Session state:', {
-        connected: session,
-        // Add any other properties that might exist
-      });
-    } catch (err) {
-      console.error('🔍 Could not access session properties:', err);
-    }
-
-    // For now, we'll track the basic connection state
-    // You can add more event listeners here as needed in the future
-  };
-
   const handlePauseSession = useCallback(() => {
     setSessionState('paused');
-    // Note: OpenAI doesn't have direct pause/resume, but we can track state
+    // Note: Vapi doesn't support pause/resume, show toast
+    toast.info('Pause not available with Vapi');
   }, []);
 
   const handleResumeSession = useCallback(() => {
     setSessionState('active');
-    // Note: OpenAI doesn't have direct pause/resume, but we can track state
+    // Note: Vapi doesn't support pause/resume, show toast
+    toast.info('Resume not available with Vapi');
   }, []);
 
   const handleStopSession = useCallback(async () => {
@@ -331,13 +238,13 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
     await postConversation(durationMinutes);
     setSessionState('completed');
 
-    if (session) {
+    if (vapi) {
       try {
-        session.close();
+        vapi.stop();
       } catch (error) {
-        console.error('Error closing session:', error);
+        console.error('Error stopping Vapi session:', error);
       } finally {
-        setSession(null);
+        setVapi(null);
         setIsConnected(false);
         setIsAISpeaking(false);
         setIsUserSpeaking(false);
@@ -347,7 +254,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
     setTimeout(() => {
       onEnd();
     }, 500);
-  }, [session, onEnd, postConversation, timeRemaining]);
+  }, [vapi, onEnd, postConversation, timeRemaining]);
 
   // Auto-stop when timer hits zero
   useEffect(() => {
@@ -367,16 +274,16 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
   }, []);
 
   const handleBack = useCallback(() => {
-    // Close session if it's active before going back
-    if (session && (sessionState === 'active' || sessionState === 'paused')) {
+    // Close Vapi session if it's active before going back
+    if (vapi && (sessionState === 'active' || sessionState === 'paused')) {
       try {
-        session.close();
+        vapi.stop();
       } catch (error) {
-        console.error('Error closing session on back:', error);
+        console.error('Error stopping Vapi session on back:', error);
       }
     }
     onBack();
-  }, [session, sessionState, onBack]);
+  }, [vapi, sessionState, onBack]);
 
   // Get status text based on OpenAI session state
   const getStatusText = useCallback(() => {

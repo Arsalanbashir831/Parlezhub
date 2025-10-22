@@ -1,6 +1,8 @@
 import { useRef } from 'react';
 import { useTranscript } from '@/contexts/transcript-context';
 
+import { VapiMessage } from '@/types/vapi';
+
 // Define types for OpenAI SDK events
 interface ContentItem {
   type: string;
@@ -26,6 +28,7 @@ export function useHandleSessionHistory() {
     addTranscriptMessage,
     updateTranscriptMessage,
     updateTranscriptItem,
+    transcriptItems,
   } = useTranscript();
 
   // Helper to extract text from content array
@@ -86,6 +89,47 @@ export function useHandleSessionHistory() {
   function handleAgentToolEnd() {}
   function handleGuardrailTripped() {}
 
+  // Vapi event handlers
+  function handleVapiMessage(message: VapiMessage) {
+    if (message.type === 'transcript' && message.transcript) {
+      const itemId = `vapi_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+      addTranscriptMessage(itemId, message.role, message.transcript);
+    }
+  }
+
+  function handleVapiSpeechUpdate(message: VapiMessage) {
+    if (message.type === 'speech-update' && message.partialTranscript) {
+      // For Vapi partial transcripts, we need to find the last user/assistant message
+      // and append/update its content. This is a simplified approach.
+      // A more robust solution might involve tracking Vapi's item_id if available.
+      const lastMessage = transcriptItems[transcriptItems.length - 1];
+      if (
+        lastMessage &&
+        (lastMessage.role === message.role || !lastMessage.role)
+      ) {
+        updateTranscriptMessage(
+          lastMessage.itemId,
+          message.partialTranscript,
+          true
+        );
+      } else {
+        // If no previous message or role mismatch, create a new one (e.g., for initial AI speech)
+        const itemId = `vapi_partial_${Date.now()}`;
+        addTranscriptMessage(
+          itemId,
+          message.role,
+          message.partialTranscript,
+          true
+        ); // Mark as hidden until final
+      }
+    }
+  }
+
+  function handleVapiCallEnd() {
+    // This handler is primarily for logging or triggering session completion in AgentSession
+    console.log('Vapi call ended from useHandleSessionHistory');
+  }
+
   const handlersRef = useRef({
     handleHistoryAdded,
     handleHistoryUpdated,
@@ -94,6 +138,10 @@ export function useHandleSessionHistory() {
     handleAgentToolStart,
     handleAgentToolEnd,
     handleGuardrailTripped,
+    // Vapi handlers
+    handleVapiMessage,
+    handleVapiSpeechUpdate,
+    handleVapiCallEnd,
   });
 
   return handlersRef;

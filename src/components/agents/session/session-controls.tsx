@@ -1,6 +1,6 @@
 'use client';
 
-import { Pause, Play, Square, Volume2, VolumeX } from 'lucide-react';
+import { Play, Square, Volume2, VolumeX } from 'lucide-react';
 
 import { SessionStatus } from '@/types/ai-session';
 import { Button } from '@/components/ui/button';
@@ -52,14 +52,7 @@ export default function SessionControls({
             >
               <Square className="h-7 w-7" />
             </Button>
-            <Button
-              onClick={onPause}
-              variant="secondary"
-              size="lg"
-              className="rounded-full border-orange-500/50 bg-orange-600/20 px-6 py-4 text-orange-500 shadow-lg shadow-orange-500/25 hover:bg-orange-600/30 hover:text-orange-600 dark:bg-orange-600/30 dark:text-orange-300 dark:hover:bg-orange-600/40"
-            >
-              <Pause className="h-7 w-7" />
-            </Button>
+            {/* Hide pause button for Vapi since it doesn't support pause */}
           </>
         );
 
@@ -74,13 +67,7 @@ export default function SessionControls({
             >
               <Square className="h-7 w-7" />
             </Button>
-            <Button
-              onClick={onResume}
-              size="lg"
-              className="rounded-full border border-white/20 bg-gradient-to-r from-orange-600 to-orange-700 px-6 py-4 text-white shadow-2xl shadow-orange-500/30 backdrop-blur-sm hover:from-orange-700 hover:to-orange-800"
-            >
-              <Play className="h-7 w-7" />
-            </Button>
+            {/* Resume button removed for Vapi since it doesn't support pause/resume */}
           </>
         );
 
