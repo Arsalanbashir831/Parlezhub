@@ -54,7 +54,7 @@ export default function SessionBlob({
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transform">
           <Avatar className="h-52 w-52">
             <AvatarImage
-              src={aiSettings.avatar || '/placeholders/avatar.jpg'}
+              src={aiSettings.avatar || '/placeholders/female-avatar.jpg'}
             />
             <AvatarFallback className="bg-white/10 text-4xl font-bold text-white backdrop-blur-sm">
               {aiSettings.name.charAt(0)}

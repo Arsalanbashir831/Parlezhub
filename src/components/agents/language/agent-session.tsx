@@ -304,7 +304,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const aiSettings = {
     name: 'Language Tutor',
     gender: 'neutral' as const,
-    avatar: '/placeholders/avatar.jpg',
+    avatar: '/placeholders/female-avatar.jpg',
     context: config.topic || prompt,
   };
 
