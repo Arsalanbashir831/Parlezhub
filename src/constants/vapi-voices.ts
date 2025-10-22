@@ -1,50 +1,60 @@
 // Vapi Voice Configuration for Multilingual Support
 // Voice provider configuration - easily switchable
-export const VOICE_PROVIDER = 'azure' as '11labs' | 'azure' | 'openai'; // Azure has best multilingual support (140+ languages)
+export const VOICE_PROVIDER = 'openai' as '11labs' | 'azure' | 'openai'; // OpenAI TTS for better multilingual support
 
 // Helper function to get voice ID based on provider
-const getVoiceId = (labsId: string, azureId: string): string => {
+const getVoiceId = (
+  labsId: string,
+  azureId: string,
+  openaiVoice: string
+): string => {
   if (VOICE_PROVIDER === '11labs') {
     return labsId;
+  } else if (VOICE_PROVIDER === 'azure') {
+    return azureId;
   }
-  return azureId;
+  return openaiVoice;
 };
 
 export const VAPI_VOICE_MAP = {
   // English
   en: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('pNInz6obpgDQGcFmaJgB', 'en-US-AriaNeural'), // English voice
+    voiceId: getVoiceId('pNInz6obpgDQGcFmaJgB', 'en-US-AriaNeural', 'alloy'), // English voice
   },
 
   // Spanish
   es: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'es-ES-ElviraNeural'), // Spanish voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'es-ES-ElviraNeural', 'echo'), // Spanish voice
   },
 
   // French
   fr: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'fr-FR-DeniseNeural'), // French voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'fr-FR-DeniseNeural', 'fable'), // French voice
   },
 
   // German
   de: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'de-DE-KatjaNeural'), // German voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'de-DE-KatjaNeural', 'onyx'), // German voice
   },
 
   // Italian
   it: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'it-IT-ElsaNeural'), // Italian voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'it-IT-ElsaNeural', 'nova'), // Italian voice
   },
 
   // Portuguese
   pt: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'pt-PT-FernandaNeural'), // Portuguese voice
+    voiceId: getVoiceId(
+      'VR6AewLTigWG4xSOukaG',
+      'pt-PT-FernandaNeural',
+      'shimmer'
+    ), // Portuguese voice
   },
 
   // Portuguese (Brazil)
@@ -56,19 +66,23 @@ export const VAPI_VOICE_MAP = {
   // Japanese
   ja: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'ja-JP-NanamiNeural'), // Japanese voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'ja-JP-NanamiNeural', 'alloy'), // Japanese voice
   },
 
   // Korean
   ko: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'ko-KR-SunHiNeural'), // Korean voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'ko-KR-SunHiNeural', 'echo'), // Korean voice
   },
 
   // Chinese (Simplified)
   zh: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'zh-CN-XiaoxiaoNeural'), // Chinese voice
+    voiceId: getVoiceId(
+      'VR6AewLTigWG4xSOukaG',
+      'zh-CN-XiaoxiaoNeural',
+      'fable'
+    ), // Chinese voice
   },
 
   // Chinese (Traditional)
@@ -80,7 +94,7 @@ export const VAPI_VOICE_MAP = {
   // Hindi
   hi: {
     provider: VOICE_PROVIDER,
-    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'hi-IN-SwaraNeural'), // Hindi voice
+    voiceId: getVoiceId('VR6AewLTigWG4xSOukaG', 'hi-IN-SwaraNeural', 'onyx'), // Hindi voice
   },
 
   // Arabic
