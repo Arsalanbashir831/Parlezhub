@@ -3,7 +3,7 @@ import type { NextRequest } from 'next/server';
 
 import { ROUTES } from './constants/routes';
 
-// Define protected routes for each role
+// Define protected routes for each roleee
 const STUDENT_ROUTES = [
   ROUTES.STUDENT.DASHBOARD,
   ROUTES.STUDENT.TEACHERS,
