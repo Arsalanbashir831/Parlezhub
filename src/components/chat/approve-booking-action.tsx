@@ -65,7 +65,7 @@ export default function ApproveBookingAction({
         .filter(Boolean)
         .join('\n');
 
-      // Send the teacher summary locally so the teacher sees host URL immediately
+      // Send the teacher summary locally so the teacher sees host URL immediatelyyy
       chatService.appendLocal(teacherSummary, user?.id);
       // Also send the student-friendly summary via socket so it reaches the student
       if (chatService.isConnected()) chatService.sendMessage(studentSummary);
