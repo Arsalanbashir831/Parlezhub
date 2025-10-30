@@ -30,84 +30,32 @@ export async function POST(request: NextRequest) {
       : getVapiVoice(language);
     console.log('voiceConfig', voiceConfig);
 
-    // Generate first message in native language
+    // Generate first message with simplified gender handling
     const getFirstMessage = (nativeLang: string, topic: string) => {
-      const messages = {
-        en: `Hello! How are you today? I'm ${assistantDisplayName}, your English tutor. Welcome to our lesson on ${topic}!`,
-        es: `¡Hola! ¿Cómo estás hoy? Soy ${assistantDisplayName}, tu tutor(a) de español. ¡Bienvenid@ a nuestra lección sobre ${topic}!`,
-        fr: `Bonjour! Comment allez-vous aujourd'hui? Je suis ${assistantDisplayName}, votre tuteur·rice de français. Bienvenue à notre leçon sur ${topic}!`,
-        de: `Hallo! Wie geht es dir heute? Ich bin ${assistantDisplayName}, deine Lehrkraft für Deutsch. Willkommen zu unserer Lektion über ${topic}!`,
-        it: `Ciao! Come stai oggi? Sono ${assistantDisplayName}, il/la tuo/a tutor di italiano. Benvenut* alla nostra lezione su ${topic}!`,
-        pt: `Olá! Como você está hoje? Eu sou ${assistantDisplayName}, seu/sua tutor(a) de português. Bem-vind@ à nossa lição sobre ${topic}!`,
-        ja: `こんにちは！今日はどうですか？私はレキシー、あなたの日本語の家庭教師です。${topic}についてのレッスンへようこそ！`,
-        ko: `안녕하세요! 오늘은 어떠세요? 저는 렉시, 당신의 한국어 선생님입니다. ${topic}에 대한 수업에 오신 것을 환영합니다!`,
-        zh: `你好！你今天怎么样？我是${assistantDisplayName}，你的中文老师。欢迎来到我们关于${topic}的课程！`,
-        hi: `नमस्ते! आज आप कैसे हैं? मैं ${assistantDisplayName} हूं, आपका/आपकी हिंदी शिक्षक/शिक्षिका। ${topic} पर हमारे पाठ में आपका स्वागत है!`,
-        ar: `مرحبا! كيف حالك اليوم؟ أنا ${assistantDisplayName}، معلمك/معلمتك للعربية. أهلاً بك في درسنا حول ${topic}!`,
-        ru: `Привет! Как дела сегодня? Я ${assistantDisplayName}, ваш преподаватель русского языка. Добро пожаловать на наш урок о ${topic}!`,
-        nl: `Hallo! Hoe gaat het vandaag? Ik ben Max, je Nederlandse lerares. Welkom bij onze les over ${topic}!`,
-        pl: `Cześć! Jak się masz dzisiaj? Jestem Max, twoja nauczycielka polskiego. Witamy na naszej lekcji o ${topic}!`,
-        tr: `Merhaba! Bugün nasılsınız? Ben Max, Türkçe öğretmeninizim. ${topic} hakkındaki dersimize hoş geldiniz!`,
-        sv: `Hej! Hur mår du idag? Jag är Max, din svenska lärare. Välkommen till vår lektion om ${topic}!`,
-        no: `Hei! Hvordan har du det i dag? Jeg er Max, din norske lærer. Velkommen til vår leksjon om ${topic}!`,
-        da: `Hej! Hvordan har du det i dag? Jeg er Max, din danske lærer. Velkommen til vores lektion om ${topic}!`,
-        fi: `Hei! Miten menee tänään? Olen Max, sinun suomen kielen opettajasi. Tervetuloa oppitunnillemme aiheesta ${topic}!`,
-        bg: `Здравей! Как си днес? Аз съм Лекси, твоята българска учителка. Добре дошли в нашия урок за ${topic}!`,
-        ro: `Salut! Cum ești astăzi? Sunt Max, profesoara ta de română. Bine ai venit la lecția noastră despre ${topic}!`,
-        cs: `Ahoj! Jak se máš dnes? Jsem Max, tvoje česká učitelka. Vítej v naší lekci o ${topic}!`,
-        hu: `Helló! Hogy vagy ma? Max vagyok, a magyar tanárod. Üdvözöllek a leckénkben a ${topic} témában!`,
-        hr: `Bok! Kako si danas? Ja sam Max, tvoja hrvatska učiteljica. Dobrodošao u našu lekciju o ${topic}!`,
-        sk: `Ahoj! Ako sa máš dnes? Som Max, tvoja slovenská učiteľka. Vitaj v našej lekcii o ${topic}!`,
-        el: `Γεια σου! Πώς είσαι σήμερα; Είμαι η Λέξι, η δασκάλα σου στα ελληνικά. Καλώς ήρθες στο μάθημά μας για ${topic}!`,
-        ta: `வணக்கம்! இன்று எப்படி இருக்கிறீர்கள்? நான் லெக்ஸி, உங்கள் தமிழ் ஆசிரியை. ${topic} பற்றிய எங்கள் பாடத்திற்கு வரவேற்கிறோம்!`,
-        uk: `Привіт! Як справи сьогодні? Я Лексі, твій викладач української мови. Ласкаво просимо на наш урок про ${topic}!`,
-        vi: `Xin chào! Hôm nay bạn thế nào? Tôi là Max, giáo viên tiếng Việt của bạn. Chào mừng đến với bài học của chúng ta về ${topic}!`,
-        th: `สวัสดี! วันนี้เป็นอย่างไรบ้าง? ฉันคือเล็กซี่ ครูสอนภาษาไทยของคุณ ยินดีต้อนรับสู่บทเรียนของเราเกี่ยวกับ ${topic}!`,
-        id: `Halo! Bagaimana kabar Anda hari ini? Saya Max, guru bahasa Indonesia Anda. Selamat datang di pelajaran kami tentang ${topic}!`,
-        ms: `Halo! Apa khabar hari ini? Saya Max, guru bahasa Melayu anda. Selamat datang ke pelajaran kami tentang ${topic}!`,
-        tl: `Kumusta! Kamusta ka ngayon? Ako si Max, ang iyong guro sa Tagalog. Maligayang pagdating sa aming aralin tungkol sa ${topic}!`,
-      };
-      let msg = messages[nativeLang as keyof typeof messages] || messages.en;
-      // Gender-specific tweaks for a few languages
-      if (assistantGender === 'male') {
-        if (nativeLang === 'es')
-          msg = msg
-            .replace('tutor(a)', 'tutor')
-            .replace('Bienvenid@', 'Bienvenido');
-        if (nativeLang === 'fr') msg = msg.replace('tuteur·rice', 'tuteur');
-        if (nativeLang === 'de')
-          msg = msg.replace('deine Lehrkraft', 'dein Lehrer');
-        if (nativeLang === 'it')
-          msg = msg
-            .replace('il/la tuo/a tutor', 'il tuo tutor')
-            .replace('Benvenut*', 'Benvenuto');
-        if (nativeLang === 'pt')
-          msg = msg
-            .replace('seu/sua tutor(a)', 'seu tutor')
-            .replace('Bem-vind@', 'Bem-vindo');
-        if (nativeLang === 'ar') msg = msg.replace('معلمك/معلمتك', 'معلمك');
-        if (nativeLang === 'hi') msg = msg.replace('शिक्षक/शिक्षिका', 'शिक्षक');
-      } else {
-        if (nativeLang === 'es')
-          msg = msg
-            .replace('tutor(a)', 'tutora')
-            .replace('Bienvenid@', 'Bienvenida');
-        if (nativeLang === 'fr') msg = msg.replace('tuteur·rice', 'tutrice');
-        if (nativeLang === 'de')
-          msg = msg.replace('deine Lehrkraft', 'deine Lehrerin');
-        if (nativeLang === 'it')
-          msg = msg
-            .replace('il/la tuo/a tutor', 'la tua tutor')
-            .replace('Benvenut*', 'Benvenuta');
-        if (nativeLang === 'pt')
-          msg = msg
-            .replace('seu/sua tutor(a)', 'sua tutora')
-            .replace('Bem-vind@', 'Bem-vinda');
-        if (nativeLang === 'ar') msg = msg.replace('معلمك/معلمتك', 'معلمتك');
-        if (nativeLang === 'hi')
-          msg = msg.replace('शिक्षक/शिक्षिका', 'शिक्षिका');
+      if (nativeLang === 'hi') {
+        if (assistantGender === 'male') {
+          return `नमस्ते! मैं ${assistantDisplayName} हूँ, आपका ${getLanguageName(
+            language
+          )} ट्यूटर. आज का विषय: ${topic}. आप कैसे हैं?`;
+        }
+        return `नमस्ते! मैं ${assistantDisplayName} हूँ, आपकी ${getLanguageName(
+          language
+        )} ट्यूटर. आज का विषय: ${topic}. आप कैसी हैं?`;
       }
-      return msg;
+      if (nativeLang === 'ur') {
+        if (assistantGender === 'male') {
+          return `السلام علیکم! میں ${assistantDisplayName} ہوں، آپ کا ${getLanguageName(
+            language
+          )} ٹیوٹر۔ آج کا موضوع: ${topic}. آپ کیسے ہیں؟`;
+        }
+        return `السلام علیکم! میں ${assistantDisplayName} ہوں، آپ کی ${getLanguageName(
+          language
+        )} ٹیچر۔ آج کا موضوع: ${topic}. آپ کیسی ہیں؟`;
+      }
+      // Neutral English to avoid incorrect gendered phrasing; prompt enforces language/gender usage
+      return `Hello! I'm ${assistantDisplayName}, your ${getLanguageName(
+        language
+      )} tutor. Today's topic: ${topic}. How are you feeling about it?`;
     };
 
     // Build dynamic system instructions for multilingual support

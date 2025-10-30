@@ -29,6 +29,7 @@ import {
   SessionTimer,
 } from '@/components/agents/session';
 
+import AvatarUploader from './avatar-uploader';
 import LanguageCombobox from './language-combobox';
 import VoiceCombobox from './voice-combobox';
 
@@ -52,6 +53,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
+  const [avatarUrl, setAvatarUrl] = useState<string>('');
   const { timeRemaining } = useSessionTimer(sessionState);
   const sessionStartedAtRef = useRef<number | null>(null);
   const hasEverStartedRef = useRef(false);
@@ -111,6 +113,16 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       }
     };
   }, [vapi]);
+
+  // Load avatar from localStorage on mount
+  useEffect(() => {
+    try {
+      const stored = localStorage.getItem('sessionAvatar');
+      if (stored) setAvatarUrl(stored);
+    } catch {
+      // ignore
+    }
+  }, []);
 
   const postConversation = useCallback(
     async (durationMinutes?: number) => {
@@ -307,7 +319,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const aiSettings = {
     name: 'Language Tutor',
     gender: 'neutral' as const,
-    avatar: '/placeholders/avatar.jpg',
+    avatar: avatarUrl || '/placeholders/avatar.jpg',
     context: config.topic || prompt,
   };
 
@@ -354,6 +366,23 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
                 onChange={(val) => updateConfig('voice', val)}
                 options={OPENAI_VOICES}
                 placeholder="Select voice"
+                disabled={sessionState !== 'idle'}
+              />
+            </div>
+            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                Avatar
+              </label>
+              <AvatarUploader
+                value={avatarUrl}
+                onChange={(dataUrl) => {
+                  setAvatarUrl(dataUrl);
+                  try {
+                    localStorage.setItem('sessionAvatar', dataUrl);
+                  } catch {
+                    // ignore
+                  }
+                }}
                 disabled={sessionState !== 'idle'}
               />
             </div>
