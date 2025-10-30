@@ -79,6 +79,7 @@ export interface CreateAssistantRequest {
   language: string;
   nativeLanguage: string;
   topic: string;
+  voice?: string;
 }
 
 export interface CreateAssistantResponse {

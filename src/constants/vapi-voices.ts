@@ -329,3 +329,32 @@ export const getSupportedLanguages = (): string[] => {
 export const isLanguageSupported = (languageCode: string): boolean => {
   return languageCode in VAPI_VOICE_MAP;
 };
+
+// OpenAI voices for TTS with gender metadata
+export type OpenAiVoiceName =
+  | 'alloy'
+  | 'echo'
+  | 'fable'
+  | 'onyx'
+  | 'nova'
+  | 'shimmer';
+
+export const OPENAI_VOICES: {
+  value: OpenAiVoiceName;
+  label: string;
+  gender: 'male' | 'female';
+}[] = [
+  { value: 'alloy', label: 'Alloy', gender: 'male' },
+  { value: 'echo', label: 'Echo', gender: 'male' },
+  { value: 'fable', label: 'Fable', gender: 'male' },
+  { value: 'onyx', label: 'Onyx', gender: 'male' },
+  { value: 'nova', label: 'Nova', gender: 'female' },
+  { value: 'shimmer', label: 'Shimmer', gender: 'female' },
+];
+
+export const getOpenAiVoiceMeta = (voice?: string) => {
+  const meta = OPENAI_VOICES.find(
+    (v) => v.value === (voice as OpenAiVoiceName)
+  );
+  return meta ?? OPENAI_VOICES[0];
+};

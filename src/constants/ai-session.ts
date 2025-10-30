@@ -141,6 +141,7 @@ export const DEFAULT_SESSION_CONFIG = {
   sessionType: 'tutor' as const,
   nativeLanguage: 'en',
   language: 'es',
+  voice: 'alloy',
   gender: 'neutral' as const,
   accent: 'Neutral',
   topic: 'Daily Conversation',

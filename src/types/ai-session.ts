@@ -4,6 +4,7 @@ export interface SessionConfig {
   sessionType?: 'tutor' | 'chirologist';
   nativeLanguage: string;
   language: string;
+  voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
   gender?: 'male' | 'female' | 'neutral';
   accent?: string;
   topic: string;

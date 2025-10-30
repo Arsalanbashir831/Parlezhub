@@ -9,6 +9,7 @@ import {
   SESSION_DURATION,
 } from '@/constants/ai-session';
 import { ROUTES } from '@/constants/routes';
+import { OPENAI_VOICES } from '@/constants/vapi-voices';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
 import vapiService from '@/services/vapi';
@@ -29,6 +30,7 @@ import {
 } from '@/components/agents/session';
 
 import LanguageCombobox from './language-combobox';
+import VoiceCombobox from './voice-combobox';
 
 interface AgentSessionProps {
   prompt: string;
@@ -183,6 +185,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
         language: config.language,
         nativeLanguage: config.nativeLanguage,
         topic: config.topic || prompt,
+        voice: config.voice,
       });
       setAssistantId(assistant.id);
 
@@ -339,6 +342,18 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
                 onChange={(val) => updateConfig('language', val)}
                 options={LANGUAGES}
                 placeholder="Select target language"
+                disabled={sessionState !== 'idle'}
+              />
+            </div>
+            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
+              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+                Voice
+              </label>
+              <VoiceCombobox
+                value={config.voice}
+                onChange={(val) => updateConfig('voice', val)}
+                options={OPENAI_VOICES}
+                placeholder="Select voice"
                 disabled={sessionState !== 'idle'}
               />
             </div>

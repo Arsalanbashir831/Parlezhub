@@ -1,12 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getLanguageName } from '@/constants/ai-session';
-import { getVapiVoice } from '@/constants/vapi-voices';
+import { getOpenAiVoiceMeta, getVapiVoice } from '@/constants/vapi-voices';
 
 import { CreateAssistantRequest, CreateAssistantResponse } from '@/types/vapi';
 
 export async function POST(request: NextRequest) {
   try {
-    const { language, nativeLanguage, topic }: CreateAssistantRequest =
+    const { language, nativeLanguage, topic, voice }: CreateAssistantRequest =
       await request.json();
 
     if (!language || !nativeLanguage || !topic) {
@@ -18,25 +18,33 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get voice configuration for the target language (language being learned)
-    const voiceConfig = getVapiVoice(language);
+    // Resolve selected voice meta (label + gender) if any
+    const selectedVoiceMeta = voice ? getOpenAiVoiceMeta(voice) : null;
+    const assistantDisplayName = selectedVoiceMeta?.label || 'Max';
+    const assistantGender: 'male' | 'female' =
+      selectedVoiceMeta?.gender || 'female';
+
+    // Get voice configuration (override if a specific OpenAI voice was selected)
+    const voiceConfig = voice
+      ? { provider: 'openai', voiceId: voice }
+      : getVapiVoice(language);
     console.log('voiceConfig', voiceConfig);
 
     // Generate first message in native language
     const getFirstMessage = (nativeLang: string, topic: string) => {
       const messages = {
-        en: `Hello! How are you today? I'm Max, your English tutor. Welcome to our lesson on ${topic}!`,
-        es: `¡Hola! ¿Cómo estás hoy? Soy Max, tu tutora de español. ¡Bienvenida a nuestra lección sobre ${topic}!`,
-        fr: `Bonjour! Comment allez-vous aujourd'hui? Je suis Max, votre tutrice de français. Bienvenue à notre leçon sur ${topic}!`,
-        de: `Hallo! Wie geht es dir heute? Ich bin Max, deine Deutschlehrerin. Willkommen zu unserer Lektion über ${topic}!`,
-        it: `Ciao! Come stai oggi? Sono Max, la tua tutor di italiano. Benvenuta alla nostra lezione su ${topic}!`,
-        pt: `Olá! Como você está hoje? Eu sou Max, sua tutora de português. Bem-vinda à nossa lição sobre ${topic}!`,
+        en: `Hello! How are you today? I'm ${assistantDisplayName}, your English tutor. Welcome to our lesson on ${topic}!`,
+        es: `¡Hola! ¿Cómo estás hoy? Soy ${assistantDisplayName}, tu tutor(a) de español. ¡Bienvenid@ a nuestra lección sobre ${topic}!`,
+        fr: `Bonjour! Comment allez-vous aujourd'hui? Je suis ${assistantDisplayName}, votre tuteur·rice de français. Bienvenue à notre leçon sur ${topic}!`,
+        de: `Hallo! Wie geht es dir heute? Ich bin ${assistantDisplayName}, deine Lehrkraft für Deutsch. Willkommen zu unserer Lektion über ${topic}!`,
+        it: `Ciao! Come stai oggi? Sono ${assistantDisplayName}, il/la tuo/a tutor di italiano. Benvenut* alla nostra lezione su ${topic}!`,
+        pt: `Olá! Como você está hoje? Eu sou ${assistantDisplayName}, seu/sua tutor(a) de português. Bem-vind@ à nossa lição sobre ${topic}!`,
         ja: `こんにちは！今日はどうですか？私はレキシー、あなたの日本語の家庭教師です。${topic}についてのレッスンへようこそ！`,
         ko: `안녕하세요! 오늘은 어떠세요? 저는 렉시, 당신의 한국어 선생님입니다. ${topic}에 대한 수업에 오신 것을 환영합니다!`,
-        zh: `你好！你今天怎么样？我是Max，你的中文老师。欢迎来到我们关于${topic}的课程！`,
-        hi: `नमस्ते! आज आप कैसे हैं? मैं लेक्सी हूं, आपकी हिंदी शिक्षिका। ${topic} पर हमारे पाठ में आपका स्वागत है!`,
-        ar: `مرحبا! كيف حالك اليوم؟ أنا ليكسي، معلمتك للعربية. أهلاً بك في درسنا حول ${topic}!`,
-        ru: `Привет! Как дела сегодня? Я Лекси, ваш преподаватель русского языка. Добро пожаловать на наш урок о ${topic}!`,
+        zh: `你好！你今天怎么样？我是${assistantDisplayName}，你的中文老师。欢迎来到我们关于${topic}的课程！`,
+        hi: `नमस्ते! आज आप कैसे हैं? मैं ${assistantDisplayName} हूं, आपका/आपकी हिंदी शिक्षक/शिक्षिका। ${topic} पर हमारे पाठ में आपका स्वागत है!`,
+        ar: `مرحبا! كيف حالك اليوم؟ أنا ${assistantDisplayName}، معلمك/معلمتك للعربية. أهلاً بك في درسنا حول ${topic}!`,
+        ru: `Привет! Как дела сегодня? Я ${assistantDisplayName}, ваш преподаватель русского языка. Добро пожаловать на наш урок о ${topic}!`,
         nl: `Hallo! Hoe gaat het vandaag? Ik ben Max, je Nederlandse lerares. Welkom bij onze les over ${topic}!`,
         pl: `Cześć! Jak się masz dzisiaj? Jestem Max, twoja nauczycielka polskiego. Witamy na naszej lekcji o ${topic}!`,
         tr: `Merhaba! Bugün nasılsınız? Ben Max, Türkçe öğretmeninizim. ${topic} hakkındaki dersimize hoş geldiniz!`,
@@ -59,15 +67,55 @@ export async function POST(request: NextRequest) {
         ms: `Halo! Apa khabar hari ini? Saya Max, guru bahasa Melayu anda. Selamat datang ke pelajaran kami tentang ${topic}!`,
         tl: `Kumusta! Kamusta ka ngayon? Ako si Max, ang iyong guro sa Tagalog. Maligayang pagdating sa aming aralin tungkol sa ${topic}!`,
       };
-      return messages[nativeLang as keyof typeof messages] || messages.en;
+      let msg = messages[nativeLang as keyof typeof messages] || messages.en;
+      // Gender-specific tweaks for a few languages
+      if (assistantGender === 'male') {
+        if (nativeLang === 'es')
+          msg = msg
+            .replace('tutor(a)', 'tutor')
+            .replace('Bienvenid@', 'Bienvenido');
+        if (nativeLang === 'fr') msg = msg.replace('tuteur·rice', 'tuteur');
+        if (nativeLang === 'de')
+          msg = msg.replace('deine Lehrkraft', 'dein Lehrer');
+        if (nativeLang === 'it')
+          msg = msg
+            .replace('il/la tuo/a tutor', 'il tuo tutor')
+            .replace('Benvenut*', 'Benvenuto');
+        if (nativeLang === 'pt')
+          msg = msg
+            .replace('seu/sua tutor(a)', 'seu tutor')
+            .replace('Bem-vind@', 'Bem-vindo');
+        if (nativeLang === 'ar') msg = msg.replace('معلمك/معلمتك', 'معلمك');
+        if (nativeLang === 'hi') msg = msg.replace('शिक्षक/शिक्षिका', 'शिक्षक');
+      } else {
+        if (nativeLang === 'es')
+          msg = msg
+            .replace('tutor(a)', 'tutora')
+            .replace('Bienvenid@', 'Bienvenida');
+        if (nativeLang === 'fr') msg = msg.replace('tuteur·rice', 'tutrice');
+        if (nativeLang === 'de')
+          msg = msg.replace('deine Lehrkraft', 'deine Lehrerin');
+        if (nativeLang === 'it')
+          msg = msg
+            .replace('il/la tuo/a tutor', 'la tua tutor')
+            .replace('Benvenut*', 'Benvenuta');
+        if (nativeLang === 'pt')
+          msg = msg
+            .replace('seu/sua tutor(a)', 'sua tutora')
+            .replace('Bem-vind@', 'Bem-vinda');
+        if (nativeLang === 'ar') msg = msg.replace('معلمك/معلمتك', 'معلمتك');
+        if (nativeLang === 'hi')
+          msg = msg.replace('शिक्षक/शिक्षिका', 'शिक्षिका');
+      }
+      return msg;
     };
 
     // Build dynamic system instructions for multilingual support
-    const systemInstructions = `# Language Tutor Agent - Max
+    const systemInstructions = `# Language Tutor Agent - ${assistantDisplayName}
 
 ## Identity & Purpose
 
-You are **Max**, an interactive **language tutor and conversational practice assistant**.
+You are **${assistantDisplayName}**, an interactive **language tutor and conversational practice assistant**.
 Your purpose is to help users **learn, practice, and master new languages** through natural dialogue, adaptive correction, grammar explanations, and vocabulary reinforcement.
 You adapt your teaching style to the learner's **skill level, goals, and pace**, balancing **correction, encouragement, and immersion**.
 
@@ -85,6 +133,15 @@ You adapt your teaching style to the learner's **skill level, goals, and pace**,
 * When explaining grammar or vocabulary, use **short examples** and **plain language**.
 * Use the target language as much as possible, but **switch to ${getLanguageName(nativeLanguage)} for explanations** when needed.
 
+### Gender and Self-reference
+Your selected speaking voice is ${assistantGender}. You must:
+- Refer to yourself as "${assistantDisplayName}".
+- Use ${assistantGender} grammatical forms, pronouns, and morphology in gendered languages when speaking in first person.
+- Examples (Urdu/Hindi):
+  - Male: "main khata hoon" / "मैं खाता हूँ"
+  - Female: "main khati hoon" / "मैं खाती हूँ"
+Ensure this consistency throughout the session.
+
 ## CRITICAL: LANGUAGE CAPABILITIES
 You can speak and understand the following languages:
 - Target Language: ${getLanguageName(language)} (${language})
@@ -97,7 +154,7 @@ You MUST:
 - Respond in the appropriate language based on context
 
 ## CRITICAL: AUTO-START INSTRUCTION
-You MUST start speaking immediately in ${getLanguageName(nativeLanguage)} (native language) when the session begins. Do not wait for the student to speak first.
+You MUST start speaking immediately in ${getLanguageName(nativeLanguage)} (native language) when the session begins. Do not wait for the student to speak first. Introduce yourself explicitly as "${assistantDisplayName}".
 
 ## Language Configuration
 - Target Language: ${getLanguageName(language)} (${language})
@@ -197,7 +254,7 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
 
     // Create Vapi assistant configuration
     const assistantConfig = {
-      name: `Max - ${getLanguageName(language)} Language Tutor`,
+      name: `${assistantDisplayName} - ${getLanguageName(language)} Language Tutor`,
       model: {
         provider: 'openai',
         model: 'gpt-4o',
