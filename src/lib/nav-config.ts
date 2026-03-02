@@ -24,12 +24,12 @@ export const agentNav: NavItem[] = [
     icon: Languages,
     href: ROUTES.AGENT.LANGUAGE,
   },
-  {
-    id: 'astrology',
-    label: 'Astrology',
-    icon: Telescope,
-    href: ROUTES.AGENT.ASTROLOGY,
-  },
+  // {
+  //   id: 'astrology',
+  //   label: 'Astrology',
+  //   icon: Telescope,
+  //   href: ROUTES.AGENT.ASTROLOGY,
+  // },
 ];
 
 export const studentNav: NavItem[] = [
