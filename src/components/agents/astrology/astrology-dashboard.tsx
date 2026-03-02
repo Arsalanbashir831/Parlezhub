@@ -14,9 +14,7 @@ import {
   LifeBuoy,
   Moon,
   Orbit,
-  PanelLeftClose,
   PanelLeftOpen,
-  PanelRightClose,
   PanelRightOpen,
   Sparkles,
   Star,
@@ -132,24 +130,9 @@ export default function AstrologyDashboard() {
                 />
               </SheetContent>
             </Sheet>
-
-            {/* Desktop Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setLeftDesktopOpen(!leftDesktopOpen)}
-              className="hidden h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black lg:flex"
-              title={leftDesktopOpen ? 'Hide Menu' : 'Show Menu'}
-            >
-              {leftDesktopOpen ? (
-                <PanelLeftClose className="h-5 w-5" />
-              ) : (
-                <PanelLeftOpen className="h-5 w-5" />
-              )}
-            </Button>
           </div>
 
-          <div className="ml-1 flex flex-col md:ml-0">
+          <div className="flex flex-col">
             <h1 className="font-serif text-lg font-bold leading-none tracking-[0.1em] text-black md:text-2xl">
               JYOTISH COSMIC
             </h1>
@@ -205,21 +188,6 @@ export default function AstrologyDashboard() {
                 />
               </SheetContent>
             </Sheet>
-
-            {/* Desktop Toggle */}
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => setRightDesktopOpen(!rightDesktopOpen)}
-              className="hidden h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-white lg:flex"
-              title={rightDesktopOpen ? 'Hide Navigation' : 'Show Navigation'}
-            >
-              {rightDesktopOpen ? (
-                <PanelRightClose className="h-5 w-5" />
-              ) : (
-                <PanelRightOpen className="h-5 w-5" />
-              )}
-            </Button>
           </div>
         </div>
       </header>
