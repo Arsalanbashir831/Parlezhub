@@ -13,11 +13,7 @@ interface ChartProps {
   className?: string;
 }
 
-const VedicChart: React.FC<ChartProps> = ({
-  _natalPlanets = [],
-  _transitPlanets = [],
-  className,
-}) => {
+const VedicChart: React.FC<ChartProps> = ({ className }) => {
   const size = 600;
   const center = size / 2;
   const outerRadius = 260;
@@ -35,7 +31,7 @@ const VedicChart: React.FC<ChartProps> = ({
         width={size}
         height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="drop-shadow-[0_0_30px_rgba(59,130,246,0.3)] transition-all duration-700"
+        className="drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700"
       >
         <defs>
           <radialGradient
@@ -46,8 +42,8 @@ const VedicChart: React.FC<ChartProps> = ({
             fx="50%"
             fy="50%"
           >
-            <stop offset="0%" stopColor="rgb(var(--primary-900) / 0.2)" />
-            <stop offset="100%" stopColor="rgb(var(--primary-900) / 0)" />
+            <stop offset="0%" stopColor="#f97316" stopOpacity="0.08" />
+            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
           </radialGradient>
           <filter id="glow">
             <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
@@ -74,15 +70,19 @@ const VedicChart: React.FC<ChartProps> = ({
         {ZODIAC_SIGNS.map((sign, i) => {
           const angle = i * 30 - 90;
           const rad = (angle * Math.PI) / 180;
-          const x1 = center + innerRadius * Math.cos(rad);
-          const y1 = center + innerRadius * Math.sin(rad);
-          const x2 = center + outerRadius * Math.cos(rad);
-          const y2 = center + outerRadius * Math.sin(rad);
-
           const textAngle = angle + 15;
           const textRad = (textAngle * Math.PI) / 180;
-          const textX = center + (outerRadius + 30) * Math.cos(textRad);
-          const textY = center + (outerRadius + 30) * Math.sin(textRad);
+          const textX = Number(
+            (center + (outerRadius + 30) * Math.cos(textRad)).toFixed(2)
+          );
+          const textY = Number(
+            (center + (outerRadius + 30) * Math.sin(textRad)).toFixed(2)
+          );
+
+          const x1 = Number((center + innerRadius * Math.cos(rad)).toFixed(2));
+          const y1 = Number((center + innerRadius * Math.sin(rad)).toFixed(2));
+          const x2 = Number((center + outerRadius * Math.cos(rad)).toFixed(2));
+          const y2 = Number((center + outerRadius * Math.sin(rad)).toFixed(2));
 
           return (
             <g key={sign.name} className="group">
@@ -126,8 +126,8 @@ const VedicChart: React.FC<ChartProps> = ({
           r={innerRadius}
           fill="url(#houseGradient)"
           stroke="currentColor"
-          strokeWidth="2"
-          className="text-primary-500"
+          strokeWidth="1.5"
+          className="text-primary-200"
         />
 
         {/* Center Label */}
@@ -250,16 +250,16 @@ const VedicChart: React.FC<ChartProps> = ({
       </svg>
 
       {/* Legend */}
-      <div className="absolute left-4 top-4 rounded-2xl border border-primary-200/30 bg-white/40 p-4 text-xs font-medium text-primary-900 shadow-xl shadow-primary-500/5 backdrop-blur-xl">
+      <div className="absolute left-4 top-4 rounded-2xl border border-slate-200/60 bg-white/60 p-4 text-[10px] font-bold text-slate-600 shadow-sm backdrop-blur-md">
         <div className="mb-2 flex items-center gap-3">
-          <div className="h-3 w-3 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50"></div>
-          <span className="uppercase tracking-wide opacity-70">
+          <div className="h-2.5 w-2.5 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50"></div>
+          <span className="uppercase tracking-widest opacity-80">
             Natal Positions
           </span>
         </div>
         <div className="flex items-center gap-3">
-          <div className="h-3 w-3 rounded-full border-2 border-primary-400 bg-white shadow-sm"></div>
-          <span className="uppercase tracking-wide opacity-70">
+          <div className="h-2.5 w-2.5 rounded-full border-2 border-primary-500 bg-transparent shadow-sm"></div>
+          <span className="uppercase tracking-widest opacity-80">
             Transit Positions
           </span>
         </div>
