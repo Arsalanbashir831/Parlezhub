@@ -226,10 +226,12 @@ export default function AstrologyDashboard() {
                 />
 
                 <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
-                  <div className="w-full max-w-[600px] px-2">
-                    <VedicChart className="h-auto max-h-[600px] w-full" />
+                  <div className="flex w-full min-w-0 max-w-full justify-center px-2">
+                    <div className="w-full max-w-[600px]">
+                      <VedicChart className="h-auto w-full" />
+                    </div>
                   </div>
-                  <div className="mx-auto w-full px-2">
+                  <div className="mx-auto w-full min-w-0 max-w-full px-2">
                     <AstroDetailsTable />
                   </div>
                 </div>
