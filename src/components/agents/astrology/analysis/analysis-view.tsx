@@ -2,11 +2,12 @@
 
 import React from 'react';
 import { ChevronLeft } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 
 import { cn } from '@/lib/utils';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { AnalysisTopic } from './content';
+import { AnalysisTopic, SHARED_CONTEXTS, SHARED_QUOTE } from './content';
 
 interface AnalysisViewProps {
   topic: AnalysisTopic;
@@ -14,6 +15,9 @@ interface AnalysisViewProps {
 }
 
 const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
+  const activeContexts = topic.contexts || SHARED_CONTEXTS;
+  const activeQuote = topic.quote || SHARED_QUOTE;
+
   return (
     <div className="flex h-full flex-col bg-[#fffdfa] duration-700 animate-in fade-in slide-in-from-bottom-4">
       {/* Header */}
@@ -37,107 +41,45 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
 
       {/* Content Body */}
       <div className="flex flex-1 gap-12 overflow-hidden p-8">
-        {/* Left Column: Main Analysis Text */}
+        {/* Left Column: Main Analysis Text using ReactMarkdown */}
         <ScrollArea className="flex-1 pr-8">
-          <div className="prose prose-slate prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-p:text-slate-600 prose-strong:text-slate-800 max-w-none">
-            {/* Split content by markdown bits for basic rendering or use a markdown parser if available. 
-                For now, we'll manually format the structure to match the user's specific text. 
-            */}
-            <div className="space-y-8 whitespace-pre-wrap leading-relaxed text-slate-600">
-              <div className="rounded-3xl border border-slate-200/60 bg-white/40 p-10 shadow-sm backdrop-blur-sm">
-                {topic.mainContent
-                  .trim()
-                  .split('\n')
-                  .map((line, idx) => {
-                    if (line.startsWith('# ')) {
-                      return (
-                        <h2
-                          key={idx}
-                          className="mb-6 font-serif text-3xl font-bold text-slate-900"
-                        >
-                          {line.replace('# ', '')}
-                        </h2>
-                      );
-                    }
-                    if (line.startsWith('## ')) {
-                      return (
-                        <h3
-                          key={idx}
-                          className="mb-4 mt-12 font-serif text-2xl font-bold text-slate-900"
-                        >
-                          {line.replace('## ', '')}
-                        </h3>
-                      );
-                    }
-                    if (line.trim() === '---') {
-                      return (
-                        <hr key={idx} className="my-10 border-slate-200/60" />
-                      );
-                    }
-                    if (line.startsWith('* ')) {
-                      return (
-                        <div key={idx} className="mb-2 ml-4 flex gap-3">
-                          <div className="mt-2 h-1.5 w-1.5 shrink-0 rounded-full bg-primary-500" />
-                          <p>{line.replace('* ', '')}</p>
-                        </div>
-                      );
-                    }
-                    if (line.startsWith('**')) {
-                      const parts = line.split('**');
-                      return (
-                        <p key={idx} className="mb-4">
-                          {parts.map((part, i) =>
-                            i % 2 === 1 ? (
-                              <strong key={i} className="text-slate-900">
-                                {part}
-                              </strong>
-                            ) : (
-                              part
-                            )
-                          )}
-                        </p>
-                      );
-                    }
-                    return (
-                      <p key={idx} className="mb-4">
-                        {line}
-                      </p>
-                    );
-                  })}
-              </div>
-            </div>
+          <div className="rounded-3xl border border-slate-200/60 bg-white/40 p-10 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm">
+            <ReactMarkdown className="prose prose-slate prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-h1:text-3xl prose-h1:mb-8 prose-h2:text-2xl prose-h2:mt-12 prose-h2:mb-4 prose-p:mb-6 prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:font-bold prose-strong:text-slate-800 prose-hr:my-10 prose-hr:border-slate-200/60 prose-ul:list-none prose-ul:pl-0 prose-li:mb-2 prose-li:flex prose-li:gap-3 prose-li:before:mt-2.5 prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:shrink-0 prose-li:before:rounded-full prose-li:before:bg-primary-500 prose-li:before:content-[''] max-w-none">
+              {topic.mainContent}
+            </ReactMarkdown>
           </div>
+          <div className="h-10" />
         </ScrollArea>
 
-        {/* Right Column: Topic Context */}
-        <aside className="w-80 space-y-8 delay-300 duration-1000 animate-in slide-in-from-right-8">
-          <div className="rounded-3xl border border-slate-200/60 bg-white/60 p-6 shadow-sm backdrop-blur-md">
-            <h4 className="mb-6 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
-              Topic Context
+        {/* Right Column: Topic Context (Styled to match requested image) */}
+        <aside className="w-80 space-y-6 delay-300 duration-1000 animate-in slide-in-from-right-8">
+          <div className="rounded-[32px] border border-slate-200/50 bg-white/40 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] backdrop-blur-md">
+            <h4 className="mb-6 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400/80">
+              TOPIC CONTEXT
             </h4>
 
             <div className="space-y-4">
-              {topic.contexts.map((ctx, idx) => (
+              {activeContexts.map((ctx, idx) => (
                 <div
                   key={idx}
-                  className="group cursor-default rounded-2xl border border-slate-100 bg-slate-50/50 p-4 transition-all hover:bg-white hover:shadow-md hover:shadow-primary-500/5"
+                  className="group cursor-default rounded-2xl border border-blue-50/30 bg-[#f8fbff]/50 p-4 transition-all duration-500 hover:scale-[1.02] hover:bg-white hover:shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)]"
                 >
                   <h5
                     className={cn(
-                      'mb-2 text-xs font-bold uppercase tracking-wider transition-colors',
+                      'mb-1 text-[12px] font-bold uppercase tracking-[0.1em] transition-colors',
                       ctx.color === 'blue' &&
-                        'text-blue-600 group-hover:text-blue-700',
+                        'text-blue-500 group-hover:text-blue-600',
                       ctx.color === 'purple' &&
-                        'text-purple-600 group-hover:text-purple-700',
+                        'text-[#a855f7] group-hover:text-[#9333ea]',
                       ctx.color === 'orange' &&
-                        'text-orange-600 group-hover:text-orange-700',
+                        'text-[#f97316] group-hover:text-[#ea580c]',
                       ctx.color === 'red' &&
-                        'text-red-600 group-hover:text-red-700'
+                        'text-red-500 group-hover:text-red-600'
                     )}
                   >
                     {ctx.title}
                   </h5>
-                  <p className="text-[11px] leading-relaxed text-slate-500">
+                  <p className="text-[12px] font-medium leading-[1.5] text-slate-500/90">
                     {ctx.description}
                   </p>
                 </div>
@@ -145,12 +87,21 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
             </div>
           </div>
 
-          <div className="relative overflow-hidden rounded-3xl border-l-[3px] border-primary-500 bg-slate-900 p-6 shadow-xl shadow-slate-900/10 transition-transform hover:scale-[1.02]">
-            <p className="relative z-10 font-serif text-sm italic leading-relaxed text-slate-200">
-              &quot;{topic.quote}&quot;
-            </p>
+          <div className="group relative overflow-hidden rounded-[32px] border-l-[4px] border-primary-500 bg-slate-900 p-6 shadow-2xl shadow-slate-900/20 transition-all duration-700 hover:-translate-y-1 hover:shadow-primary-500/10">
+            <div className="relative z-10">
+              <span className="block font-serif text-3xl text-primary-500/40">
+                “
+              </span>
+              <p className="font-serif text-sm italic leading-[1.5] text-slate-200">
+                {activeQuote}
+              </p>
+              <span className="mt-1 block text-right font-serif text-3xl text-primary-500/40">
+                ”
+              </span>
+            </div>
             {/* Subtle light effect in dark quote card */}
-            <div className="absolute right-0 top-0 h-32 w-32 bg-primary-500/10 blur-[60px]" />
+            <div className="absolute -right-10 -top-10 h-32 w-32 bg-primary-500/15 opacity-60 blur-[60px] transition-opacity duration-700 group-hover:opacity-100" />
+            <div className="absolute -bottom-10 -left-10 h-32 w-32 bg-orange-500/10 opacity-40 blur-[60px] transition-opacity duration-700 group-hover:opacity-100" />
           </div>
         </aside>
       </div>

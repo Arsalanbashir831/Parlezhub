@@ -21,9 +21,32 @@ export interface AnalysisTopic {
   title: string;
   subtitle: string;
   mainContent: string;
-  contexts: TopicContextItem[];
-  quote: string;
+  contexts?: TopicContextItem[]; // Optional, will fallback to SHARED_CONTEXTS
+  quote?: string; // Optional, will fallback to SHARED_QUOTE
 }
+
+export const SHARED_QUOTE =
+  'Knowledge of the stars is the lantern of the soul. May this wisdom illuminate your path to dharma.';
+
+export const SHARED_CONTEXTS: TopicContextItem[] = [
+  {
+    title: 'Perspective',
+    description:
+      "This analysis uses Parashara's classical methods blended with modern intuitive wisdom.",
+    color: 'blue',
+  },
+  {
+    title: 'Birth Influence',
+    description: 'Calculated specifically for the Rohini nakshatra energy.',
+    color: 'purple',
+  },
+  {
+    title: 'Current Transit',
+    description:
+      'Includes influences from the Moon in Shravana and current Saturn movements.',
+    color: 'orange',
+  },
+];
 
 export const ANALYSIS_TOPICS: Record<string, AnalysisTopic> = {
   'benefic-planets': {
@@ -59,27 +82,8 @@ For the purpose of our spiritual inquiry, we focus on the **Natural Benefics**. 
 
 They are the soft rays of dawn that wake you gently, opposed to the harsh alarm of the Malefics.
     `,
-    contexts: [
-      {
-        title: 'Perspective',
-        description:
-          "This analysis uses Parashara's classical methods blended with modern intuitive wisdom.",
-        color: 'blue',
-      },
-      {
-        title: 'Birth Influence',
-        description: 'Calculated specifically for the Rohini nakshatra energy.',
-        color: 'purple',
-      },
-      {
-        title: 'Current Transit',
-        description:
-          'Includes influences from the Moon in Shravana and current Saturn movements.',
-        color: 'orange',
-      },
-    ],
-    quote:
-      'Knowledge of the stars is the lantern of the soul. May this wisdom illuminate your path to dharma.',
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
   },
   'malefic-planets': {
     id: 'malefic-planets',
@@ -103,22 +107,8 @@ In Vedic thought, Malefics are the architects of karma. They bring delays, separ
 * **Mars (Mangala):** The warrior, representing energy, drive, and conflict.
 * **Rahu & Ketu:** The nodes of the Moon, representing obsession and liberation.
     `,
-    contexts: [
-      {
-        title: 'Perspective',
-        description:
-          'Analysis focusing on karmic retribution and soul refinement.',
-        color: 'red',
-      },
-      {
-        title: 'Karmic Depth',
-        description:
-          'Evaluating past-life influences on current structural challenges.',
-        color: 'slate',
-      },
-    ],
-    quote:
-      'Through the fire of discipline, the iron of the ego is forged into the steel of the spirit.',
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
   },
   analysis: {
     id: 'analysis',
@@ -135,15 +125,8 @@ This analysis provides a holistic view of your birth chart, looking at the inter
 
 Every chart is a unique map of karmic patterns. By analyzing the houses and their lords, we uncover the primary themes of your current incarnation.
     `,
-    contexts: [
-      {
-        title: 'Perspective',
-        description: 'Synthesis of Jaimini and Parashara systems.',
-        color: 'purple',
-      },
-    ],
-    quote:
-      'The cosmos is within us. We are made of star-stuff. We are a way for the cosmos to know itself.',
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
   },
   'lagna-lord': {
     id: 'lagna-lord',
@@ -160,14 +143,59 @@ The Lagna Lord is the most important planet in your chart, representing your phy
 
 The house and sign occupied by your Lagna Lord indicate where your life's purpose is most focused and how you express your core identity.
     `,
-    contexts: [
-      {
-        title: 'Core Identity',
-        description:
-          'Analyzing the primary focus of your physical and mental energy.',
-        color: 'orange',
-      },
-    ],
-    quote: 'Know thyself, and thou shalt know the universe and God.',
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
+  },
+  'planetary-state': {
+    id: 'planetary-state',
+    title: 'State of Planets',
+    subtitle: 'AVASTHAS & DIGNITIES',
+    mainContent: `
+# Deciphering Planetary Avasthas
+
+Each planet exists in a certain "state" or Avastha, determining its ability to deliver its results effectively.
+
+---
+
+Planet states include Baladi Avasthas (infant to old) and Jagratadi Avasthas (awake to sleeping).
+    `,
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
+  },
+  'dimensional-energy': {
+    id: 'dimensional-energy',
+    title: '12-Dimensional Astro Energy',
+    subtitle: 'MULTIDIMENSIONAL KARMIC LAYERS',
+    mainContent: `
+# The 12 Dimensions of Your Existence
+
+Each house represents a dimension of life. From the first house of self to the twelfth house of liberation.
+    `,
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
+  },
+  'rashi-rulers': {
+    id: 'rashi-rulers',
+    title: 'Meaning of Rashi Rulers',
+    subtitle: 'THE GOVERNORS OF YOUR ZODIAC',
+    mainContent: `
+# The Sovereignty of Rashi Lords
+
+Each Rashi (Sign) is ruled by a planet. Understanding the ruler is understanding the flavour of that sign in your chart.
+    `,
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
+  },
+  challenges: {
+    id: 'challenges',
+    title: 'Challenges & Learning',
+    subtitle: 'THE PATH OF SOUL EVOLUTION',
+    mainContent: `
+# Overcoming Your Karmic Obstacles
+
+Challenges in the chart are simply areas where the soul has chosen a rigorous curriculum for this lifetime.
+    `,
+    contexts: SHARED_CONTEXTS,
+    quote: SHARED_QUOTE,
   },
 };
