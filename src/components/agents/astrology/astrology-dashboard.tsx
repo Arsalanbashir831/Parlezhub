@@ -28,6 +28,7 @@ import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
 import AstroHeader from './astro-header';
 import { LEFT_MENU_ITEMS, NAKSHATRAS, RIGHT_MENU_ITEMS } from './constants';
+import AstroDetailsTable from './dashboard/astro-details-table';
 import TransitCard from './transit-card';
 import { DashboardState, TaraType } from './types';
 import VedicChart from './vedic-chart';
@@ -171,17 +172,14 @@ export function AstrologyDashboard() {
                 />
 
                 {/* Chart Area */}
-                <div className="relative flex flex-1 items-center justify-center py-10">
+                <div className="relative flex flex-col items-center justify-center gap-16 py-10">
                   <VedicChart className="max-h-[600px] max-w-[600px]" />
 
-                  {/* Floating Labels */}
-                  <div className="pointer-events-none absolute inset-0">
-                    {/* Add subtle cosmic dust particles or extra SVG elements here if needed */}
+                  {/* Detailed Astro Tables (NEW) */}
+                  <div className="mx-auto w-full">
+                    <AstroDetailsTable />
                   </div>
                 </div>
-
-                {/* Extra spacing bottom */}
-                <div className="h-10" />
               </div>
             ) : (
               <AnalysisView
@@ -197,15 +195,6 @@ export function AstrologyDashboard() {
 
         {/* Right Sidebar Menu */}
         <aside className="flex w-80 flex-col gap-6 border-l border-slate-200/60 bg-white/40 p-6 backdrop-blur-xl">
-          {/* <div className="mb-2 flex items-center gap-3 px-2">
-            <h2 className="ml-auto font-serif text-xl font-bold tracking-tight text-slate-900">
-              Celestial Navigation
-            </h2>
-            <div className="rounded-xl border border-primary-200 bg-primary-50 p-2 shadow-sm">
-              <Compass className="h-5 w-5 text-primary-600" />
-            </div>
-          </div> */}
-
           <ScrollArea className="-ml-4 flex-1 pl-4">
             <div className="space-y-4">
               <p className="mb-3 mr-1 px-2 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
@@ -272,31 +261,6 @@ export function AstrologyDashboard() {
             </div>
           </ScrollArea>
         </aside>
-      </div>
-
-      {/* Modern Dashboard Footer */}
-      <footer className="relative z-20 flex h-14 items-center justify-between border-t border-slate-200/60 bg-white/40 px-8 backdrop-blur-xl">
-        <div className="flex items-center gap-6 text-[10px] font-bold uppercase tracking-widest text-slate-400">
-          <div className="flex items-center gap-2">
-            <div className="h-1.5 w-1.5 rounded-full bg-green-500" />
-            Live Celestial Feed
-          </div>
-          <span>Refreshed: 32 mins ago</span>
-        </div>
-
-        <div className="flex items-center gap-4">
-          {/* Add any secondary footer buttons here if needed */}
-          <p className="text-[10px] font-medium text-slate-400">
-            &copy; 2026 ParlezHub Astrology Engine
-          </p>
-        </div>
-      </footer>
-
-      {/* Dynamic Background (Moved here to stay behind footer content) */}
-      <div className="absolute inset-0 z-0 overflow-hidden">
-        <div className="absolute -right-24 -top-24 h-[600px] w-[600px] rounded-full bg-primary-100/50 blur-[100px]" />
-        <div className="absolute -left-32 top-1/2 h-[400px] w-[400px] rounded-full bg-orange-50 blur-[80px]" />
-        <div className="absolute -bottom-24 right-1/4 h-[300px] w-[300px] rounded-full bg-yellow-50/50 blur-[100px]" />
       </div>
     </div>
   );

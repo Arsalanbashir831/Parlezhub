@@ -87,12 +87,12 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
             </div>
           </div>
 
-          <div className="group relative overflow-hidden rounded-[32px] border-l-[4px] border-primary-500 bg-slate-900 p-6 shadow-2xl shadow-slate-900/20 transition-all duration-700 hover:-translate-y-1 hover:shadow-primary-500/10">
+          <div className="group relative overflow-hidden rounded-[32px] border-l-[4px] border-primary-500 bg-white p-6 shadow-2xl shadow-slate-900/20 transition-all duration-700 hover:-translate-y-1 hover:shadow-primary-500/10">
             <div className="relative z-10">
               <span className="block font-serif text-3xl text-primary-500/40">
                 “
               </span>
-              <p className="font-serif text-sm italic leading-[1.5] text-slate-200">
+              <p className="font-serif text-sm italic leading-[1.5] text-black">
                 {activeQuote}
               </p>
               <span className="mt-1 block text-right font-serif text-3xl text-primary-500/40">
