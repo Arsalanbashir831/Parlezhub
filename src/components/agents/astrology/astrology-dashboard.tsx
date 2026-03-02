@@ -109,7 +109,7 @@ export default function AstrologyDashboard() {
           <div className="flex items-center">
             {/* Mobile Toggle */}
             <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
-              <SheetTrigger asChild className="lg:hidden">
+              <SheetTrigger asChild className="xl:hidden">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -167,7 +167,7 @@ export default function AstrologyDashboard() {
           <div className="flex items-center">
             {/* Mobile Toggle */}
             <Sheet open={rightOpen} onOpenChange={setRightOpen}>
-              <SheetTrigger asChild className="lg:hidden">
+              <SheetTrigger asChild className="xl:hidden">
                 <Button
                   variant="ghost"
                   size="icon"
@@ -196,12 +196,12 @@ export default function AstrologyDashboard() {
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* Left Sidebar Menu (Desktop Collapsible) */}
         {leftDesktopOpen && (
-          <div className="hidden duration-300 animate-in slide-in-from-left-full lg:block">
+          <div className="hidden duration-300 animate-in slide-in-from-left-full xl:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl lg:w-72 2xl:w-80"
+              className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
             />
           </div>
         )}
@@ -248,12 +248,12 @@ export default function AstrologyDashboard() {
 
         {/* Right Sidebar Menu (Desktop Collapsible) */}
         {rightDesktopOpen && (
-          <div className="hidden duration-300 animate-in slide-in-from-right-full lg:block">
+          <div className="hidden duration-300 animate-in slide-in-from-right-full xl:block">
             <NavigationSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl lg:w-72 2xl:w-80"
+              className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
             />
           </div>
         )}
