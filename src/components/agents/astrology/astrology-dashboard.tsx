@@ -10,18 +10,21 @@ import {
   FileText,
   Flame,
   Gem,
-  Info,
   Landmark,
   LifeBuoy,
-  Menu,
   Moon,
   Orbit,
+  PanelLeftClose,
+  PanelLeftOpen,
+  PanelRightClose,
+  PanelRightOpen,
   Sparkles,
   Star,
   Tornado,
 } from 'lucide-react';
 
 import { DashboardState, TaraType } from '@/types/astrology';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
@@ -65,6 +68,8 @@ export default function AstrologyDashboard() {
   );
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+  const [leftDesktopOpen, setLeftDesktopOpen] = useState(true);
+  const [rightDesktopOpen, setRightDesktopOpen] = useState(true);
 
   useEffect(() => {
     setMounted(true);
@@ -99,62 +104,139 @@ export default function AstrologyDashboard() {
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
-      {/* Mobile Navigation Header */}
-      <div className="flex h-16 w-full items-center justify-between border-b border-slate-200/60 bg-white/40 px-4 backdrop-blur-md lg:hidden">
-        <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-xl">
-              <Menu className="h-6 w-6 text-slate-600" />
+      {/* Premium Top Navigation Bar (Consistent across all sizes) */}
+      <header className="z-50 flex h-20 w-full items-center justify-between border-b border-black/5 px-4 md:px-8">
+        <div className="flex items-center gap-2 md:gap-4">
+          {/* Analysis Menu Toggle (Mobile & Desktop) */}
+          <div className="flex items-center">
+            {/* Mobile Toggle */}
+            <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black"
+                >
+                  <PanelLeftOpen className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="left" className="w-80 border-none p-0">
+                <SheetTitle className="sr-only">Analysis Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Access astrological analysis and planet strengths.
+                </SheetDescription>
+                <AnalysisSidebar
+                  activeAnalysis={activeAnalysis}
+                  onSelect={handleSelect}
+                  iconMap={ICON_MAP}
+                />
+              </SheetContent>
+            </Sheet>
+
+            {/* Desktop Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setLeftDesktopOpen(!leftDesktopOpen)}
+              className="hidden h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black lg:flex"
+              title={leftDesktopOpen ? 'Hide Menu' : 'Show Menu'}
+            >
+              {leftDesktopOpen ? (
+                <PanelLeftClose className="h-5 w-5" />
+              ) : (
+                <PanelLeftOpen className="h-5 w-5" />
+              )}
             </Button>
-          </SheetTrigger>
-          <SheetContent side="left" className="w-80 border-none p-0">
-            <SheetTitle className="sr-only">Analysis Menu</SheetTitle>
-            <SheetDescription className="sr-only">
-              Access astrological analysis and planet strengths.
-            </SheetDescription>
+          </div>
+
+          <div className="ml-1 flex flex-col md:ml-0">
+            <h1 className="font-serif text-lg font-bold leading-none tracking-[0.1em] text-black md:text-2xl">
+              JYOTISH COSMIC
+            </h1>
+            <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.3em] text-primary-500 md:text-[10px]">
+              Vedic Astrology Intelligence
+            </p>
+          </div>
+        </div>
+
+        {/* User Profile & Right Sidebar Toggle */}
+        <div className="flex items-center gap-2 md:gap-6">
+          <div className="hidden flex-col items-end leading-tight sm:flex">
+            <span className="text-[10px] font-medium text-slate-500">
+              Logged in as
+            </span>
+            <span className="text-sm font-bold text-primary-500">
+              {dashboardState.username} Doe
+            </span>
+          </div>
+
+          <Avatar className="h-9 w-9 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10 md:h-10 md:w-10">
+            <AvatarImage src="" />
+            <AvatarFallback
+              className="bg-primary-600 text-[11px] font-bold text-white"
+              title="John Doe"
+            >
+              JD
+            </AvatarFallback>
+          </Avatar>
+
+          {/* Navigation Menu Toggle (Mobile & Desktop) */}
+          <div className="flex items-center">
+            {/* Mobile Toggle */}
+            <Sheet open={rightOpen} onOpenChange={setRightOpen}>
+              <SheetTrigger asChild className="lg:hidden">
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-white"
+                >
+                  <PanelRightOpen className="h-6 w-6" />
+                </Button>
+              </SheetTrigger>
+              <SheetContent side="right" className="w-80 border-none p-0">
+                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+                <SheetDescription className="sr-only">
+                  Navigate through charts and transit details.
+                </SheetDescription>
+                <NavigationSidebar
+                  activeAnalysis={activeAnalysis}
+                  onSelect={handleSelect}
+                  iconMap={ICON_MAP}
+                />
+              </SheetContent>
+            </Sheet>
+
+            {/* Desktop Toggle */}
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => setRightDesktopOpen(!rightDesktopOpen)}
+              className="hidden h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-white lg:flex"
+              title={rightDesktopOpen ? 'Hide Navigation' : 'Show Navigation'}
+            >
+              {rightDesktopOpen ? (
+                <PanelRightClose className="h-5 w-5" />
+              ) : (
+                <PanelRightOpen className="h-5 w-5" />
+              )}
+            </Button>
+          </div>
+        </div>
+      </header>
+
+      {/* Main Content Area */}
+      <div className="relative z-10 flex flex-1 overflow-hidden">
+        {/* Left Sidebar Menu (Desktop Collapsible) */}
+        {leftDesktopOpen && (
+          <div className="hidden duration-500 animate-in slide-in-from-left-full lg:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
+              className="w-80 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl"
             />
-          </SheetContent>
-        </Sheet>
-
-        <h2 className="font-serif text-lg font-bold text-slate-900">
-          Astrology Hub
-        </h2>
-
-        <Sheet open={rightOpen} onOpenChange={setRightOpen}>
-          <SheetTrigger asChild>
-            <Button variant="ghost" size="icon" className="rounded-xl">
-              <Info className="h-6 w-6 text-slate-600" />
-            </Button>
-          </SheetTrigger>
-          <SheetContent side="right" className="w-80 border-none p-0">
-            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-            <SheetDescription className="sr-only">
-              Navigate through charts and transit details.
-            </SheetDescription>
-            <NavigationSidebar
-              activeAnalysis={activeAnalysis}
-              onSelect={handleSelect}
-              iconMap={ICON_MAP}
-            />
-          </SheetContent>
-        </Sheet>
-      </div>
-
-      {/* Main Content Area */}
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        {/* Left Sidebar Menu (Desktop) */}
-        <div className="hidden lg:block">
-          <AnalysisSidebar
-            activeAnalysis={activeAnalysis}
-            onSelect={handleSelect}
-            iconMap={ICON_MAP}
-            className="w-80 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl"
-          />
-        </div>
+          </div>
+        )}
 
         {/* Center Canvas */}
         <main className="flex flex-1 flex-col overflow-hidden">
@@ -196,15 +278,17 @@ export default function AstrologyDashboard() {
           </ScrollArea>
         </main>
 
-        {/* Right Sidebar Menu (Desktop) */}
-        <div className="hidden lg:block">
-          <NavigationSidebar
-            activeAnalysis={activeAnalysis}
-            onSelect={handleSelect}
-            iconMap={ICON_MAP}
-            className="w-80 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl"
-          />
-        </div>
+        {/* Right Sidebar Menu (Desktop Collapsible) */}
+        {rightDesktopOpen && (
+          <div className="hidden duration-500 animate-in slide-in-from-right-full lg:block">
+            <NavigationSidebar
+              activeAnalysis={activeAnalysis}
+              onSelect={handleSelect}
+              iconMap={ICON_MAP}
+              className="w-80 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl"
+            />
+          </div>
+        )}
       </div>
     </div>
   );
