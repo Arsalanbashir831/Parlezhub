@@ -1,6 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import {
+  LEFT_MENU_ITEMS,
+  NAKSHATRAS,
+  RIGHT_MENU_ITEMS,
+} from '@/constants/astrology';
 import { motion } from 'framer-motion';
 import {
   CloudMoon,
@@ -20,6 +25,7 @@ import {
   Tornado,
 } from 'lucide-react';
 
+import { DashboardState, TaraType } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -27,10 +33,8 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
 import AstroHeader from './astro-header';
-import { LEFT_MENU_ITEMS, NAKSHATRAS, RIGHT_MENU_ITEMS } from './constants';
 import AstroDetailsTable from './dashboard/astro-details-table';
 import TransitCard from './transit-card';
-import { DashboardState, TaraType } from './types';
 import VedicChart from './vedic-chart';
 
 // Map icons manually since the const only has emoji

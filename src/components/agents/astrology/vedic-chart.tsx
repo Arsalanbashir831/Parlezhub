@@ -1,11 +1,10 @@
 'use client';
 
 import React from 'react';
+import { ZODIAC_SIGNS } from '@/constants/astrology';
 
+import { Planet } from '@/types/astrology';
 import { cn } from '@/lib/utils';
-
-import { ZODIAC_SIGNS } from './constants';
-import { Planet } from './types';
 
 interface ChartProps {
   _natalPlanets?: Planet[];

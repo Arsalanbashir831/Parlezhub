@@ -1,4 +1,4 @@
-import { NakshatraData, TaraType } from './types';
+import { NakshatraData, TaraType } from '@/types/astrology';
 
 export const NAKSHATRAS: NakshatraData[] = [
   { name: 'Ashwini', lord: 'Ketu', index: 1 },
