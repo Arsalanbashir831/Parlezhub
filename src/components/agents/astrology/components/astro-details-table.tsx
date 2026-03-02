@@ -252,31 +252,31 @@ const AstroDetailsTable = () => {
               <Table className="border-collapse">
                 <TableHeader className="bg-[#6b3e2e] hover:bg-[#6b3e2e]">
                   <TableRow className="border-none hover:bg-transparent">
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Graha
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Longitude
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Nakshatra
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Nak Lord/Sub
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Ruler
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Is In
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Owner
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Relation
                     </TableHead>
-                    <TableHead className="h-auto px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Dignities
                     </TableHead>
                   </TableRow>
@@ -290,31 +290,31 @@ const AstroDetailsTable = () => {
                         idx % 2 === 0 ? 'bg-[#f4e4bc]' : 'bg-[#f1dab0]'
                       )}
                     >
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 font-bold">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 font-bold">
                         {row.graha}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-4 py-2.5 font-bold text-[#d2691e]">
+                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-2 py-2.5 font-bold text-[#d2691e]">
                         {row.longitude}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-4 py-2.5">
+                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-2 py-2.5">
                         {row.nakshatra}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 text-center text-[#d2691e]">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center text-[#d2691e]">
                         {row.lord}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 text-center">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
                         {row.ruler}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 text-center">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
                         {row.isIn}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 text-center font-bold">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center font-bold">
                         {row.owner}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-4 py-2.5 text-center">
+                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
                         {row.relationship}
                       </TableCell>
-                      <TableCell className="px-4 py-2.5 text-center">
+                      <TableCell className="px-2 py-2.5 text-center">
                         {row.dignities}
                       </TableCell>
                     </TableRow>
@@ -393,22 +393,22 @@ const AstroDetailsTable = () => {
               <Table className="border-collapse">
                 <TableHeader className="bg-[#6b3e2e] hover:bg-[#6b3e2e]">
                   <TableRow className="border-none hover:bg-transparent">
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Bhava
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Residents
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Owner
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Rashi
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Qualities
                     </TableHead>
-                    <TableHead className="h-auto px-6 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
+                    <TableHead className="h-auto px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Aspected By
                     </TableHead>
                   </TableRow>
@@ -422,22 +422,22 @@ const AstroDetailsTable = () => {
                         idx % 2 === 0 ? 'bg-[#f4e4bc]' : 'bg-[#f1dab0]'
                       )}
                     >
-                      <TableCell className="border-r border-[#8b4513]/10 px-6 py-3 font-bold">
+                      <TableCell className="border-r border-[#8b4513]/10 px-3 py-3 font-bold">
                         {row.bhava}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-6 py-3 font-bold text-[#d2691e]">
+                      <TableCell className="border-r border-[#8b4513]/10 px-3 py-3 font-bold text-[#d2691e]">
                         {row.residents}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-6 py-3 font-bold">
+                      <TableCell className="border-r border-[#8b4513]/10 px-3 py-3 font-bold">
                         {row.owner}
                       </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-6 py-3 font-bold text-[#d2691e]">
+                      <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-3 py-3 font-bold text-[#d2691e]">
                         {row.rashi}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-6 py-3">
+                      <TableCell className="border-r border-[#8b4513]/10 px-3 py-3">
                         {row.qualities}
                       </TableCell>
-                      <TableCell className="px-6 py-3 font-bold text-[#d2691e]">
+                      <TableCell className="px-3 py-3 font-bold text-[#d2691e]">
                         {row.aspected}
                       </TableCell>
                     </TableRow>

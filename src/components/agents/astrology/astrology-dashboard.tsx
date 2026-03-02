@@ -171,7 +171,7 @@ export default function AstrologyDashboard() {
                 <Button
                   variant="ghost"
                   size="icon"
-                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-white"
+                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black"
                 >
                   <PanelRightOpen className="h-6 w-6" />
                 </Button>
@@ -196,21 +196,21 @@ export default function AstrologyDashboard() {
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* Left Sidebar Menu (Desktop Collapsible) */}
         {leftDesktopOpen && (
-          <div className="hidden duration-500 animate-in slide-in-from-left-full lg:block">
+          <div className="hidden duration-300 animate-in slide-in-from-left-full lg:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-80 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl"
+              className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl lg:w-72 2xl:w-80"
             />
           </div>
         )}
 
         {/* Center Canvas */}
-        <main className="flex flex-1 flex-col overflow-hidden">
+        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <ScrollArea className="flex-1 bg-white/30 backdrop-blur-sm">
             {activeAnalysis === 'd1-chart' || !activeAnalysis ? (
-              <div className="flex flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-10 md:p-8">
+              <div className="flex min-w-0 flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-10 md:p-8">
                 <AstroHeader
                   username={dashboardState.username}
                   moonNakshatra={
@@ -248,12 +248,12 @@ export default function AstrologyDashboard() {
 
         {/* Right Sidebar Menu (Desktop Collapsible) */}
         {rightDesktopOpen && (
-          <div className="hidden duration-500 animate-in slide-in-from-right-full lg:block">
+          <div className="hidden duration-300 animate-in slide-in-from-right-full lg:block">
             <NavigationSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-80 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl"
+              className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl lg:w-72 2xl:w-80"
             />
           </div>
         )}

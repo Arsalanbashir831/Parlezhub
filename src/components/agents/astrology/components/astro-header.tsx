@@ -29,13 +29,13 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
 }) => {
   return (
     <div
-      className={cn('grid w-full grid-cols-1 gap-4 xl:grid-cols-3', className)}
+      className={cn('grid w-full grid-cols-1 gap-4 2xl:grid-cols-3', className)}
     >
       {/* Welcome & Insights Card */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative col-span-1 overflow-hidden rounded-[24px] border border-slate-200/60 bg-white/60 p-6 shadow-sm backdrop-blur-md md:rounded-[2rem] md:p-8 xl:col-span-2"
+        className="relative col-span-1 overflow-hidden rounded-[24px] border border-slate-200/60 bg-white/60 p-6 shadow-sm backdrop-blur-md md:rounded-[2rem] md:p-8 2xl:col-span-2"
       >
         <div className="flex items-start justify-between">
           <div className="space-y-4">
