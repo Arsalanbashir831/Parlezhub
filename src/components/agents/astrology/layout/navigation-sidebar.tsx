@@ -14,15 +14,17 @@ interface NavigationSidebarProps {
   activeAnalysis: string | null;
   onSelect: (id: string) => void;
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
+  className?: string;
 }
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   activeAnalysis,
   onSelect,
   iconMap,
+  className,
 }) => {
   return (
-    <aside className="flex w-80 flex-col gap-6 border-l border-slate-200/60 bg-white/40 p-6 backdrop-blur-xl">
+    <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-ml-4 flex-1 pl-4">
         <div className="space-y-4">
           <p className="mb-3 mr-1 px-2 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">

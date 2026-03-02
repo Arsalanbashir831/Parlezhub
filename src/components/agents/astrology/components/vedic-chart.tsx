@@ -249,18 +249,14 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
       </svg>
 
       {/* Legend */}
-      <div className="absolute left-4 top-4 rounded-2xl border border-slate-200/60 bg-white/60 p-4 text-[10px] font-bold text-slate-600 shadow-sm backdrop-blur-md">
-        <div className="mb-2 flex items-center gap-3">
-          <div className="h-2.5 w-2.5 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50"></div>
-          <span className="uppercase tracking-widest opacity-80">
-            Natal Positions
-          </span>
+      <div className="absolute left-2 top-2 z-20 rounded-xl border border-slate-200/60 bg-white/60 p-2 text-[8px] font-bold text-slate-600 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
+        <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
+          <div className="h-2 w-2 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50 md:h-2.5 md:w-2.5"></div>
+          <span className="uppercase tracking-widest opacity-80">Natal</span>
         </div>
-        <div className="flex items-center gap-3">
-          <div className="h-2.5 w-2.5 rounded-full border-2 border-primary-500 bg-transparent shadow-sm"></div>
-          <span className="uppercase tracking-widest opacity-80">
-            Transit Positions
-          </span>
+        <div className="flex items-center gap-2 md:gap-3">
+          <div className="h-2 w-2 rounded-full border-2 border-primary-500 bg-transparent shadow-sm md:h-2.5 md:w-2.5"></div>
+          <span className="uppercase tracking-widest opacity-80">Transit</span>
         </div>
       </div>
     </div>

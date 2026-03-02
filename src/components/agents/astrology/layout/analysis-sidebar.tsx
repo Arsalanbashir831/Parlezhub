@@ -13,15 +13,17 @@ interface AnalysisSidebarProps {
   activeAnalysis: string | null;
   onSelect: (id: string) => void;
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
+  className?: string;
 }
 
 const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   activeAnalysis,
   onSelect,
   iconMap,
+  className,
 }) => {
   return (
-    <aside className="flex w-80 flex-col gap-6 border-r border-slate-200/60 bg-white/40 p-6 backdrop-blur-xl">
+    <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-mr-4 flex-1 pr-4">
         <div className="space-y-6">
           <div className="space-y-2">
