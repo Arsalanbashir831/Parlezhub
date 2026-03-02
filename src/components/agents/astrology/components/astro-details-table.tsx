@@ -227,25 +227,28 @@ const AstroDetailsTable = () => {
   return (
     <div className="w-full duration-700 animate-in fade-in slide-in-from-bottom-4">
       <Tabs defaultValue="graha" className="w-full">
-        {/* Simplified TabsList to match the reference look while being shadcn structure */}
-        <TabsList className="h-auto justify-start gap-px border-none bg-transparent p-0">
-          <TabsTrigger
-            value="graha"
-            className="rounded-t-2xl border-none px-6 py-2.5 text-xs font-bold uppercase tracking-widest data-[state=active]:bg-[#8b4513] data-[state=inactive]:bg-[#d2691e]/80 data-[state=active]:text-[#f4e4bc] data-[state=inactive]:text-[#f4e4bc]/80 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-[#8b4513]/90"
-          >
-            Graha Details
-          </TabsTrigger>
-          <TabsTrigger
-            value="bhava"
-            className="rounded-t-2xl border-none px-6 py-2.5 text-xs font-bold uppercase tracking-widest data-[state=active]:bg-[#8b4513] data-[state=inactive]:bg-[#d2691e]/80 data-[state=active]:text-[#f4e4bc] data-[state=inactive]:text-[#f4e4bc]/80 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-[#8b4513]/90"
-          >
-            Bhava Details
-          </TabsTrigger>
-        </TabsList>
+        {/* Scrollable Tabs on Mobile */}
+        <div className="scrollbar-hide overflow-x-auto pb-1">
+          <TabsList className="h-auto w-full min-w-max justify-start gap-px border-none bg-transparent p-0">
+            <TabsTrigger
+              value="graha"
+              className="rounded-t-2xl border-none px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-[#8b4513] data-[state=inactive]:bg-[#d2691e]/80 data-[state=active]:text-[#f4e4bc] data-[state=inactive]:text-[#f4e4bc]/80 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-[#8b4513]/90 md:px-6 md:text-xs"
+            >
+              Graha Details
+            </TabsTrigger>
+            <TabsTrigger
+              value="bhava"
+              className="rounded-t-2xl border-none px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-[#8b4513] data-[state=inactive]:bg-[#d2691e]/80 data-[state=active]:text-[#f4e4bc] data-[state=inactive]:text-[#f4e4bc]/80 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-[#8b4513]/90 md:px-6 md:text-xs"
+            >
+              Bhava Details
+            </TabsTrigger>
+          </TabsList>
+        </div>
 
-        <div className="overflow-hidden rounded-2xl rounded-tl-none border border-[#8b4513]/30 bg-[#f4e4bc] shadow-2xl">
+        <div className="overflow-hidden rounded-2xl border border-[#8b4513]/30 bg-[#f4e4bc] shadow-2xl md:rounded-tl-none">
           <TabsContent value="graha" className="m-0 border-none outline-none">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden overflow-x-auto md:block">
               <Table className="border-collapse">
                 <TableHeader className="bg-[#6b3e2e] hover:bg-[#6b3e2e]">
                   <TableRow className="border-none hover:bg-transparent">
@@ -259,19 +262,19 @@ const AstroDetailsTable = () => {
                       Nakshatra
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Nakshatra Lord/Sub Lord
+                      Nak Lord/Sub
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Ruler of
+                      Ruler
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Is In
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      B. Owner
+                      Owner
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Relationship
+                      Relation
                     </TableHead>
                     <TableHead className="h-auto px-4 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Dignities
@@ -319,10 +322,74 @@ const AstroDetailsTable = () => {
                 </TableBody>
               </Table>
             </div>
+
+            {/* Mobile Card View */}
+            <div className="space-y-4 p-4 md:hidden">
+              {GRAHA_DATA.map((row, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-[#8b4513]/20 bg-[#fef8e6] p-4 shadow-sm"
+                >
+                  <div className="mb-3 flex items-center justify-between border-b border-[#8b4513]/10 pb-2">
+                    <span className="text-sm font-bold text-[#8b4513]">
+                      {row.graha}
+                    </span>
+                    <span className="rounded-full bg-[#8b4513]/5 px-2 py-0.5 text-[10px] font-bold text-[#d2691e]">
+                      {row.longitude}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px]">
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Nakshatra
+                      </p>
+                      <p className="font-medium text-[#5d2e17]">
+                        {row.nakshatra}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Lord/Sub
+                      </p>
+                      <p className="font-medium text-[#d2691e]">{row.lord}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Ruler/In
+                      </p>
+                      <p className="font-medium text-[#5d2e17]">
+                        {row.ruler || '-'} / {row.isIn}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Owner
+                      </p>
+                      <p className="font-bold text-[#5d2e17]">{row.owner}</p>
+                    </div>
+                    <div className="col-span-2 flex justify-between border-t border-[#8b4513]/5 pt-1">
+                      <span>
+                        Relationship:{' '}
+                        <span className="font-bold text-[#5d2e17]">
+                          {row.relationship || '-'}
+                        </span>
+                      </span>
+                      <span>
+                        Dignity:{' '}
+                        <span className="font-bold text-primary-600">
+                          {row.dignities}
+                        </span>
+                      </span>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
           </TabsContent>
 
           <TabsContent value="bhava" className="m-0 border-none outline-none">
-            <div className="overflow-x-auto">
+            {/* Desktop Table */}
+            <div className="hidden overflow-x-auto md:block">
               <Table className="border-collapse">
                 <TableHeader className="bg-[#6b3e2e] hover:bg-[#6b3e2e]">
                   <TableRow className="border-none hover:bg-transparent">
@@ -377,6 +444,57 @@ const AstroDetailsTable = () => {
                   ))}
                 </TableBody>
               </Table>
+            </div>
+
+            {/* Mobile Card View */}
+            <div className="space-y-4 p-4 md:hidden">
+              {BHAVA_DATA.map((row, idx) => (
+                <div
+                  key={idx}
+                  className="rounded-xl border border-[#8b4513]/20 bg-[#fef8e6] p-4 shadow-sm"
+                >
+                  <div className="mb-3 flex items-center justify-between border-b border-[#8b4513]/10 pb-2">
+                    <span className="text-sm font-bold text-[#8b4513]">
+                      Bhava {row.bhava}
+                    </span>
+                    <span className="text-[10px] font-bold text-[#d2691e]">
+                      {row.rashi}
+                    </span>
+                  </div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px]">
+                    <div className="col-span-2">
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Residents
+                      </p>
+                      <p className="font-bold text-[#d2691e]">
+                        {row.residents || 'None'}
+                      </p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Owner
+                      </p>
+                      <p className="font-bold text-[#5d2e17]">{row.owner}</p>
+                    </div>
+                    <div>
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Qualities
+                      </p>
+                      <p className="font-medium text-[#5d2e17]">
+                        {row.qualities}
+                      </p>
+                    </div>
+                    <div className="col-span-2 border-t border-[#8b4513]/5 pt-1">
+                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
+                        Aspected By
+                      </p>
+                      <p className="font-medium text-[#d2691e]">
+                        {row.aspected || 'None'}
+                      </p>
+                    </div>
+                  </div>
+                </div>
+              ))}
             </div>
           </TabsContent>
         </div>

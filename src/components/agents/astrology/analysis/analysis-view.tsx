@@ -42,10 +42,10 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
 
       {/* Content Body */}
       <ScrollArea className="flex-1">
-        <div className="flex flex-1 flex-col gap-8 p-4 md:gap-12 md:p-8 xl:flex-row">
+        <div className="flex flex-1 flex-col gap-6 p-4 md:gap-12 md:p-8 xl:flex-row">
           {/* Left Column: Main Analysis Text using ReactMarkdown */}
           <div className="flex-1">
-            <div className="rounded-3xl border border-slate-200/60 bg-white/40 p-6 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm md:p-10">
+            <div className="rounded-[24px] border border-slate-200/60 bg-white/40 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm md:rounded-3xl md:p-10">
               <ReactMarkdown className="prose prose-slate prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-h1:text-2xl md:prose-h1:text-3xl prose-h1:mb-6 md:prose-h1:mb-8 prose-h2:text-xl md:prose-h2:text-2xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 prose-p:mb-4 md:prose-p:mb-6 prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:font-bold prose-strong:text-slate-800 prose-hr:my-8 md:prose-hr:my-10 prose-hr:border-slate-200/60 prose-ul:list-none prose-ul:pl-0 prose-li:mb-2 prose-li:flex prose-li:gap-3 prose-li:before:mt-2.5 prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:shrink-0 prose-li:before:rounded-full prose-li:before:bg-primary-500 prose-li:before:content-[''] max-w-none">
                 {topic.mainContent}
               </ReactMarkdown>
@@ -53,8 +53,8 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
           </div>
 
           {/* Right Column: Topic Context */}
-          <aside className="mb-8 w-full space-y-6 delay-300 duration-1000 animate-in slide-in-from-right-8 xl:w-80">
-            <div className="rounded-[32px] border border-slate-200/50 bg-white/40 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.02)] backdrop-blur-md">
+          <aside className="mb-6 w-full space-y-6 delay-300 duration-1000 animate-in slide-in-from-right-8 xl:w-80">
+            <div className="rounded-[24px] border border-slate-200/50 bg-white/40 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.02)] backdrop-blur-md md:rounded-[32px] md:p-6">
               <h4 className="mb-6 text-[11px] font-bold uppercase tracking-[0.25em] text-slate-400/80">
                 TOPIC CONTEXT
               </h4>
@@ -88,7 +88,7 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
               </div>
             </div>
 
-            <div className="group relative overflow-hidden rounded-[32px] border-l-[4px] border-primary-500 bg-white p-6 shadow-2xl shadow-slate-900/20 transition-all duration-700 hover:-translate-y-1 hover:shadow-primary-500/10">
+            <div className="group relative overflow-hidden rounded-[24px] border-l-[4px] border-primary-500 bg-white p-6 shadow-2xl shadow-slate-900/20 transition-all duration-700 hover:-translate-y-1 hover:shadow-primary-500/10 md:rounded-[32px]">
               <div className="relative z-10">
                 <span className="block font-serif text-3xl text-primary-500/40">
                   “

@@ -24,7 +24,13 @@ import {
 import { DashboardState, TaraType } from '@/types/astrology';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetTitle,
+  SheetTrigger,
+} from '@/components/ui/sheet';
 
 import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
@@ -92,7 +98,7 @@ export default function AstrologyDashboard() {
   }
 
   return (
-    <div className="flex h-screen w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
       {/* Mobile Navigation Header */}
       <div className="flex h-16 w-full items-center justify-between border-b border-slate-200/60 bg-white/40 px-4 backdrop-blur-md lg:hidden">
         <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
@@ -102,6 +108,10 @@ export default function AstrologyDashboard() {
             </Button>
           </SheetTrigger>
           <SheetContent side="left" className="w-80 border-none p-0">
+            <SheetTitle className="sr-only">Analysis Menu</SheetTitle>
+            <SheetDescription className="sr-only">
+              Access astrological analysis and planet strengths.
+            </SheetDescription>
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
@@ -121,6 +131,10 @@ export default function AstrologyDashboard() {
             </Button>
           </SheetTrigger>
           <SheetContent side="right" className="w-80 border-none p-0">
+            <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
+            <SheetDescription className="sr-only">
+              Navigate through charts and transit details.
+            </SheetDescription>
             <NavigationSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}

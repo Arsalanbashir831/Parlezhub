@@ -27,10 +27,8 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
       )}
     >
       <svg
-        width={size}
-        height={size}
         viewBox={`0 0 ${size} ${size}`}
-        className="drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700"
+        className="h-auto w-full max-w-[500px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[600px]"
       >
         <defs>
           <radialGradient
@@ -136,7 +134,7 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
           fill="currentColor"
           textAnchor="middle"
           alignmentBaseline="middle"
-          className="font-serif text-2xl font-bold tracking-widest text-primary-600"
+          className="font-serif text-xl font-bold tracking-widest text-primary-600 sm:text-2xl"
           style={{ filter: 'url(#glow)' }}
         >
           D1 CHART
