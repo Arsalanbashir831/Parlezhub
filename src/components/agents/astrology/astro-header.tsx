@@ -44,13 +44,13 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
             </h1>
 
             <div className="flex flex-wrap gap-2">
-              <Badge className="border-blue-100 bg-blue-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-blue-600 hover:bg-blue-50">
+              <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50">
                 Moon: {moonNakshatra}
               </Badge>
-              <Badge className="border-indigo-100 bg-indigo-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-indigo-600 hover:bg-indigo-50">
+              <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50">
                 Tara: {tara}
               </Badge>
-              <Badge className="border-orange-100 bg-primary-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50">
+              <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[11px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50">
                 Tithi: {tithi}
               </Badge>
             </div>
@@ -60,7 +60,7 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
             </p>
           </div>
 
-          <div className="hidden h-16 w-16 items-center justify-center rounded-2xl bg-indigo-600 p-4 shadow-lg shadow-indigo-600/20 sm:flex">
+          <div className="hidden h-16 w-16 items-center justify-center rounded-2xl bg-primary-500 p-4 shadow-lg shadow-primary-600/20 sm:flex">
             {/* Simple Om Character representation in font */}
             <span className="text-3xl font-bold text-white">ॐ</span>
           </div>
