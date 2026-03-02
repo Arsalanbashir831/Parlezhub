@@ -46,9 +46,9 @@ const AnalysisView: React.FC<AnalysisViewProps> = ({ topic, onBack }) => {
           {/* Left Column: Main Analysis Text using ReactMarkdown */}
           <div className="flex-1">
             <div className="rounded-[24px] border border-slate-200/60 bg-white/40 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm md:rounded-3xl md:p-10">
-              <ReactMarkdown className="prose prose-slate prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-h1:text-2xl md:prose-h1:text-3xl prose-h1:mb-6 md:prose-h1:mb-8 prose-h2:text-xl md:prose-h2:text-2xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 prose-p:mb-4 md:prose-p:mb-6 prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:font-bold prose-strong:text-slate-800 prose-hr:my-8 md:prose-hr:my-10 prose-hr:border-slate-200/60 prose-ul:list-none prose-ul:pl-0 prose-li:mb-2 prose-li:flex prose-li:gap-3 prose-li:before:mt-2.5 prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:shrink-0 prose-li:before:rounded-full prose-li:before:bg-primary-500 prose-li:before:content-[''] max-w-none">
-                {topic.mainContent}
-              </ReactMarkdown>
+              <div className="prose prose-slate prose-headings:font-serif prose-headings:font-bold prose-headings:text-slate-900 prose-h1:text-2xl md:prose-h1:text-3xl prose-h1:mb-6 md:prose-h1:mb-8 prose-h2:text-xl md:prose-h2:text-2xl prose-h2:mt-8 md:prose-h2:mt-12 prose-h2:mb-4 prose-p:mb-4 md:prose-p:mb-6 prose-p:leading-relaxed prose-p:text-slate-600 prose-strong:font-bold prose-strong:text-slate-800 prose-hr:my-8 md:prose-hr:my-10 prose-hr:border-slate-200/60 prose-ul:list-none prose-ul:pl-0 prose-li:mb-2 prose-li:flex prose-li:gap-3 prose-li:before:mt-2.5 prose-li:before:h-1.5 prose-li:before:w-1.5 prose-li:before:shrink-0 prose-li:before:rounded-full prose-li:before:bg-primary-500 prose-li:before:content-[''] max-w-none">
+                <ReactMarkdown>{topic.mainContent}</ReactMarkdown>
+              </div>
             </div>
           </div>
 
