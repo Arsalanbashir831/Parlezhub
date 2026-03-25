@@ -3,6 +3,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
+  AstrologicalInsight,
   BirthProfile,
   NatalChartResponse,
   TransitResponse,
@@ -93,5 +94,20 @@ export function useSaveBirthProfile(isUpdate: boolean = false) {
         err?.response?.data?.message || 'Failed to save birth profile'
       );
     },
+  });
+}
+
+export function useAstrologicalInsight(slug: string, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['astrology', 'insights', slug],
+    queryFn: async () => {
+      const response = await apiCaller(
+        `${API_ROUTES.ASTROLOGY.INSIGHTS}/${slug}/`,
+        'GET'
+      );
+      return response.data as AstrologicalInsight;
+    },
+    enabled,
+    staleTime: 1000 * 60 * 60,
   });
 }

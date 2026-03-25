@@ -164,3 +164,7 @@ export interface NatalChartResponse {
   d9_chart: DivisionalChart;
   vargottama_planets: string[];
 }
+export interface AstrologicalInsight {
+  category: string;
+  insight_text: string;
+}

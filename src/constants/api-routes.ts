@@ -70,5 +70,6 @@ export const API_ROUTES = {
     BIRTH_PROFILE: '/astrology/birth-profile/',
     NATAL_CHART: '/astrology/natal-chart/',
     TRANSITS: '/astrology/transits/',
+    INSIGHTS: '/astrology/insights',
   },
 };

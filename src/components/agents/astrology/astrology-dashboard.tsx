@@ -38,6 +38,7 @@ import {
 
 import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
+import InsightView from './analysis/insight-view';
 import AstroDetailsTable from './components/astro-details-table';
 import AstroHeader from './components/astro-header';
 import BirthProfileForm from './components/birth-profile-form';
@@ -270,12 +271,17 @@ export default function AstrologyDashboard() {
                   </div>
                 </div>
               </div>
-            ) : (
+            ) : activeAnalysis in ANALYSIS_TOPICS ? (
               <AnalysisView
                 topic={
                   ANALYSIS_TOPICS[activeAnalysis] ||
                   ANALYSIS_TOPICS['benefic-planets']
                 }
+                onBack={() => setActiveAnalysis('d1-chart')}
+              />
+            ) : (
+              <InsightView
+                slug={activeAnalysis}
                 onBack={() => setActiveAnalysis('d1-chart')}
               />
             )}

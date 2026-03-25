@@ -64,6 +64,19 @@ export const RIGHT_MENU_ITEMS = [
 ];
 
 export const LEFT_MENU_ITEMS = [
+  { id: 'mental_health', label: 'Mental Health', icon: '🧠' },
+  { id: 'marriage', label: 'Marriage Timing', icon: '💍' },
+  { id: 'prosperity_sav', label: 'Prosperity & Career (SAV)', icon: '💼' },
+  { id: 'medical', label: 'Medical Astrology', icon: '🏥' },
+  {
+    id: 'btr',
+    label: 'Birth Time Rectification',
+    icon: '⏳',
+  },
+  { id: 'parasari', label: 'Parasari Relationships', icon: '👥' },
+  { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
+  { id: 'darakaraka', label: 'Spouse Profile (Jaimini)', icon: '❤️' },
+  { id: 'planetary_states', label: 'Planetary Avatars & States', icon: '🎭' },
   { id: 'benefic-planets', label: 'Benefic Planets', icon: '💎' },
   { id: 'malefic-planets', label: 'Malefic Planets', icon: '🔥' },
   { id: 'analysis', label: 'Chart Analysis', icon: '📜' },
