@@ -4,6 +4,7 @@ import React from 'react';
 import { RIGHT_MENU_ITEMS } from '@/constants/astrology';
 import { Info } from 'lucide-react';
 
+import { TransitPlanet } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -15,6 +16,7 @@ interface NavigationSidebarProps {
   onSelect: (id: string) => void;
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
   className?: string;
+  transits?: TransitPlanet[];
 }
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
@@ -22,6 +24,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   onSelect,
   iconMap,
   className,
+  transits,
 }) => {
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
@@ -81,11 +84,11 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
           {/* Transit Card Section */}
           <TransitCard
             className="mt-4"
-            transits={[
-              { planet: 'Sun', sign: 'Aquarius' },
-              { planet: 'Jupiter', sign: 'Aries' },
-              { planet: 'Saturn', sign: 'Aquarius', retrograde: true },
-            ]}
+            transits={transits?.map((t) => ({
+              planet: t.planet,
+              sign: t.sign,
+              retrograde: t.speed_per_day < 0,
+            }))}
           />
         </div>
       </ScrollArea>

@@ -8,9 +8,9 @@ import { Badge } from '@/components/ui/badge';
 
 interface AstroHeaderProps {
   username: string;
-  moonNakshatra: string;
-  tara: string;
-  tithi: string;
+  moonSign: string;
+  sunSign: string;
+  ascendant: string;
   birthNakshatra: string;
   nakshatraRuler: string;
   insight?: string;
@@ -19,12 +19,12 @@ interface AstroHeaderProps {
 
 const AstroHeader: React.FC<AstroHeaderProps> = ({
   username,
-  moonNakshatra,
-  tara,
-  tithi,
+  moonSign,
+  sunSign,
+  ascendant,
   birthNakshatra,
   nakshatraRuler,
-  insight = 'As the Moon returns to the hallowed embrace of Shravana, your spirit stands at a celestial portal of rebirth, perfectly attuned to the primordial echoes of the Divine. Lean into the power of sacred listening today.',
+  insight = 'As the planets align, your spirit stands at a celestial portal of rebirth, perfectly attuned to the primordial echoes of the Divine. Lean into the power of sacred cosmic energy today.',
   className,
 }) => {
   return (
@@ -45,13 +45,13 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
 
             <div className="flex flex-wrap gap-2">
               <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50 md:text-[11px]">
-                Moon: {moonNakshatra}
+                Moon: {moonSign}
               </Badge>
               <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50 md:text-[11px]">
-                Tara: {tara}
+                Sun: {sunSign}
               </Badge>
               <Badge className="border-primary-100 bg-primary-50/50 px-3 py-1 text-[10px] font-bold uppercase tracking-wider text-primary-600 hover:bg-primary-50 md:text-[11px]">
-                Tithi: {tithi}
+                Asc: {ascendant}
               </Badge>
             </div>
 

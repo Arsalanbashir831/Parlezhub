@@ -3,21 +3,117 @@
 import React from 'react';
 import { ZODIAC_SIGNS } from '@/constants/astrology';
 
-import { Planet } from '@/types/astrology';
+import { ChartPlanet, TransitPlanet } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 
 interface ChartProps {
-  _natalPlanets?: Planet[];
-  _transitPlanets?: Planet[];
+  natalPlanets?: ChartPlanet[];
+  transitPlanets?: TransitPlanet[];
   className?: string;
+  title?: string;
 }
 
-const VedicChart: React.FC<ChartProps> = ({ className }) => {
+const PLANET_INFO: Record<
+  string,
+  { symbol: string; color: string; textColor?: string }
+> = {
+  Sun: { symbol: '☉', color: '#fbbf24', textColor: '#000' },
+  Moon: { symbol: '☽', color: '#f8fafc', textColor: '#000' },
+  Mars: { symbol: '♂', color: '#ef4444', textColor: '#fff' },
+  Mercury: { symbol: '☿', color: '#22c55e', textColor: '#fff' },
+  Jupiter: { symbol: '♃', color: '#eab308', textColor: '#fff' },
+  Venus: { symbol: '♀', color: '#ec4899', textColor: '#fff' },
+  Saturn: { symbol: '♄', color: '#475569', textColor: '#fff' },
+  Rahu: { symbol: '☊', color: '#1f2937', textColor: '#fff' },
+  Ketu: { symbol: '☋', color: '#6b7280', textColor: '#fff' },
+  Ascendant: { symbol: 'As', color: '#3b82f6', textColor: '#fff' },
+};
+
+const getSignIndex = (sign: string) => {
+  const signs = [
+    'Ari',
+    'Tau',
+    'Gem',
+    'Can',
+    'Leo',
+    'Vir',
+    'Lib',
+    'Sco',
+    'Sag',
+    'Cap',
+    'Aqu',
+    'Pis',
+  ];
+  return signs.indexOf(sign);
+};
+
+const getAngleRad = (sign: string, degree: number = 15) => {
+  const index = getSignIndex(sign);
+  if (index === -1) return 0;
+  const angleDeg = index * 30 - 90 + degree;
+  return (angleDeg * Math.PI) / 180;
+};
+
+const VedicChart: React.FC<ChartProps> = ({
+  className,
+  natalPlanets = [],
+  transitPlanets = [],
+  title = 'D1 CHART',
+}) => {
   const size = 600;
   const center = size / 2;
   const outerRadius = 260;
   const midRadius = 180;
   const innerRadius = 100;
+
+  // Render a planet
+  const renderPlanet = (
+    p: { planet: string; sign: string; degree?: number; isTransit?: boolean },
+    idx: number
+  ) => {
+    const info = PLANET_INFO[p.planet] || {
+      symbol: p.planet[0],
+      color: '#ccc',
+      textColor: '#000',
+    };
+    const degree = p.degree ?? 15;
+
+    // Slight offset to prevent overlap if degrees are very close
+    const offset = (idx % 3) * 5 - 5;
+    const rad = getAngleRad(p.sign, degree + offset);
+
+    const radiusDist = p.isTransit ? 220 : 140;
+    const cx = center + radiusDist * Math.cos(rad);
+    const cy = center + radiusDist * Math.sin(rad);
+
+    return (
+      <g
+        key={`${p.planet}-${p.isTransit ? 't' : 'n'}`}
+        className="group transition-transform"
+      >
+        <circle
+          cx={cx}
+          cy={cy}
+          r="14"
+          fill={info.color}
+          stroke={p.isTransit ? 'currentColor' : ''}
+          strokeWidth="4"
+          className={p.isTransit ? 'text-primary-500' : ''}
+        />
+        <text
+          x={cx}
+          y={cy + 1}
+          fill={info.textColor}
+          fontSize="12"
+          fontWeight="bold"
+          textAnchor="middle"
+          alignmentBaseline="middle"
+        >
+          {info.symbol}
+        </text>
+      </g>
+    );
+  };
 
   return (
     <div
@@ -52,16 +148,18 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
         </defs>
 
         {/* Outer Circle - Transits */}
-        <circle
-          cx={center}
-          cy={center}
-          r={outerRadius}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeDasharray="5,5"
-          className="text-primary-800 opacity-40"
-        />
+        {transitPlanets.length > 0 && (
+          <circle
+            cx={center}
+            cy={center}
+            r={outerRadius}
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="1.5"
+            strokeDasharray="5,5"
+            className="text-primary-800 opacity-40"
+          />
+        )}
 
         {/* Zodiac Divisions */}
         {ZODIAC_SIGNS.map((sign, i) => {
@@ -78,8 +176,9 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
 
           const x1 = Number((center + innerRadius * Math.cos(rad)).toFixed(2));
           const y1 = Number((center + innerRadius * Math.sin(rad)).toFixed(2));
-          const x2 = Number((center + outerRadius * Math.cos(rad)).toFixed(2));
-          const y2 = Number((center + outerRadius * Math.sin(rad)).toFixed(2));
+          const outerR = transitPlanets.length > 0 ? outerRadius : midRadius;
+          const x2 = Number((center + outerR * Math.cos(rad)).toFixed(2));
+          const y2 = Number((center + outerR * Math.sin(rad)).toFixed(2));
 
           return (
             <g key={sign.name} className="group">
@@ -137,113 +236,26 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
           className="font-serif text-xl font-bold tracking-widest text-primary-600 sm:text-2xl"
           style={{ filter: 'url(#glow)' }}
         >
-          D1 CHART
+          {title}
         </text>
 
-        {/* Planets Display Logic (Simplified/Placeholder for now as per provided code) */}
+        {/* Natal Planets */}
+        {natalPlanets.map((p, idx) =>
+          renderPlanet({ ...p, isTransit: false }, idx)
+        )}
 
-        {/* Sun in Natal */}
-        <g className="animate-pulse">
-          <circle
-            cx={center + 140 * Math.cos(0.2)}
-            cy={center + 140 * Math.sin(0.2)}
-            r="14"
-            fill="#fbbf24"
-            stroke="#fff"
-            strokeWidth="1"
-          />
-          <text
-            x={center + 140 * Math.cos(0.2)}
-            y={center + 140 * Math.sin(0.2)}
-            fill="#000"
-            fontSize="12"
-            fontWeight="bold"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            ☉
-          </text>
-        </g>
-
-        {/* Moon in Transit */}
-        <g>
-          <circle
-            cx={center + 220 * Math.cos(Math.PI / 4)}
-            cy={center + 220 * Math.sin(Math.PI / 4)}
-            r="14"
-            fill="#f8fafc"
-            stroke="currentColor"
-            strokeWidth="1"
-            className="text-primary-500"
-          />
-          <text
-            x={center + 220 * Math.cos(Math.PI / 4)}
-            y={center + 220 * Math.sin(Math.PI / 4)}
-            fill="#000"
-            fontSize="12"
-            fontWeight="bold"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            ☽
-          </text>
-        </g>
-
-        {/* Mars in Natal */}
-        <g>
-          <circle
-            cx={center + 140 * Math.cos(Math.PI / 2)}
-            cy={center + 140 * Math.sin(Math.PI / 2)}
-            r="14"
-            fill="#ef4444"
-            stroke="#fff"
-            strokeWidth="1"
-          />
-          <text
-            x={center + 140 * Math.cos(Math.PI / 2)}
-            y={center + 140 * Math.sin(Math.PI / 2)}
-            fill="#fff"
-            fontSize="12"
-            fontWeight="bold"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            ♂
-          </text>
-        </g>
-
-        {/* Saturn in Transit */}
-        <g>
-          <circle
-            cx={center + 220 * Math.cos(Math.PI)}
-            cy={center + 220 * Math.sin(Math.PI)}
-            r="14"
-            fill="#475569"
-            stroke="#fff"
-            strokeWidth="1"
-          />
-          <text
-            x={center + 220 * Math.cos(Math.PI)}
-            y={center + 220 * Math.sin(Math.PI)}
-            fill="#fff"
-            fontSize="12"
-            fontWeight="bold"
-            textAnchor="middle"
-            alignmentBaseline="middle"
-          >
-            ♄
-          </text>
-        </g>
-
-        {/* Dynamic Aspect Lines (Example) */}
-        <path
-          d={`M ${center + 140 * Math.cos(0.2)} ${center + 140 * Math.sin(0.2)} Q ${center + 180} ${center + 50} ${center + 220 * Math.cos(Math.PI / 4)} ${center + 220 * Math.sin(Math.PI / 4)}`}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          strokeDasharray="6,4"
-          className="text-primary-500 opacity-40"
-        />
+        {/* Transit Planets */}
+        {transitPlanets.map((p, idx) =>
+          renderPlanet(
+            {
+              planet: p.planet,
+              sign: p.sign,
+              degree: p.longitude % 30,
+              isTransit: true,
+            },
+            idx
+          )
+        )}
       </svg>
 
       {/* Legend */}
@@ -252,10 +264,14 @@ const VedicChart: React.FC<ChartProps> = ({ className }) => {
           <div className="h-2 w-2 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50 md:h-2.5 md:w-2.5"></div>
           <span className="uppercase tracking-widest opacity-80">Natal</span>
         </div>
-        <div className="flex items-center gap-2 md:gap-3">
-          <div className="h-2 w-2 rounded-full border-2 border-primary-500 bg-transparent shadow-sm md:h-2.5 md:w-2.5"></div>
-          <span className="uppercase tracking-widest opacity-80">Transit</span>
-        </div>
+        {transitPlanets.length > 0 && (
+          <div className="flex items-center gap-2 md:gap-3">
+            <div className="h-2 w-2 rounded-full border-2 border-primary-500 bg-transparent shadow-sm md:h-2.5 md:w-2.5"></div>
+            <span className="uppercase tracking-widest opacity-80">
+              Transit
+            </span>
+          </div>
+        )}
       </div>
     </div>
   );

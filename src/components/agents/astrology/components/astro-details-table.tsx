@@ -1,5 +1,6 @@
 'use client';
 
+import { BhavaDetail, GrahaDetail } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 import {
   Table,
@@ -11,219 +12,15 @@ import {
 } from '@/components/ui/table';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
-const GRAHA_DATA = [
-  {
-    graha: 'Lagna (Q) 🌸',
-    longitude: '26° Mesh 48\' 49"',
-    nakshatra: 'Krittika 1',
-    lord: 'Surya, Surya',
-    ruler: '',
-    isIn: '1 Bhava',
-    owner: 'Mangal',
-    relationship: '',
-    dignities: '-',
-  },
-  {
-    graha: 'Surya 🌸',
-    longitude: '17° Kumb 22\' 58"',
-    nakshatra: 'Shatabhisha 4 🔥',
-    lord: 'Rahu, Shukra',
-    ruler: '5 Bhava',
-    isIn: '11 Bhava',
-    owner: 'Shani',
-    relationship: "Enemy's House",
-    dignities: '-',
-  },
-  {
-    graha: 'Chandra (T)',
-    longitude: '01° Simh 24\' 33"',
-    nakshatra: 'Magha 1 👑',
-    lord: 'Ketu, Shukra',
-    ruler: '4 Bhava',
-    isIn: '5 Bhava',
-    owner: 'Surya',
-    relationship: "Friend's House",
-    dignities: '-',
-  },
-  {
-    graha: 'Mangal 🔥',
-    longitude: '05° Kumb 27\' 42"',
-    nakshatra: 'Dhanishtha 4 🥁',
-    lord: 'Mangal, Surya',
-    ruler: '1, 8 Bhava',
-    isIn: '11 Bhava',
-    owner: 'Shani',
-    relationship: 'Neutral',
-    dignities: '-',
-  },
-  {
-    graha: 'Budha 🔄 🔥',
-    longitude: '27° Kumb 07\' 36"',
-    nakshatra: 'P Bhadrapada 3 ☸️',
-    lord: 'Guru, Shukra',
-    ruler: '3, 6 Bhava',
-    isIn: '11 Bhava',
-    owner: 'Shani',
-    relationship: 'Neutral',
-    dignities: '-',
-  },
-  {
-    graha: 'Guru 🔄',
-    longitude: '20° Mitu 59\' 19"',
-    nakshatra: 'Punarvasu 1 🏹',
-    lord: 'Guru, Guru',
-    ruler: '9, 12 Bhava',
-    isIn: '3 Bhava',
-    owner: 'Budha',
-    relationship: "Enemy's House",
-    dignities: '-',
-  },
-  {
-    graha: 'Shukra 🌸',
-    longitude: '00° Meen 29\' 00"',
-    nakshatra: 'P Bhadrapada 4 ☸️',
-    lord: 'Guru, Chandra',
-    ruler: '2, 7 Bhava',
-    isIn: '12 Bhava',
-    owner: 'Guru',
-    relationship: 'Neutral',
-    dignities: 'Exalted',
-  },
-  {
-    graha: 'Shani 🌸',
-    longitude: '07° Meen 38\' 18"',
-    nakshatra: 'U Bhadrapada 2 🕯️',
-    lord: 'Shani, Ketu',
-    ruler: '10, 11 Bhava',
-    isIn: '12 Bhava',
-    owner: 'Guru',
-    relationship: 'Neutral',
-    dignities: '-',
-  },
-  {
-    graha: 'Rahu 🔄',
-    longitude: '14° Kumb 45\' 06"',
-    nakshatra: 'Shatabhisha 3 🔥',
-    lord: 'Rahu, Ketu',
-    ruler: '11 Bhava',
-    isIn: '11 Bhava',
-    owner: 'Shani',
-    relationship: "Friend's House",
-    dignities: '-',
-  },
-  {
-    graha: 'Ketu (T) 🔄',
-    longitude: '14° Simh 45\' 06"',
-    nakshatra: 'P Phalguni 1 🎭',
-    lord: 'Shukra, Shukra',
-    ruler: '8 Bhava',
-    isIn: '5 Bhava',
-    owner: 'Surya',
-    relationship: "Enemy's House",
-    dignities: '-',
-  },
-];
+interface AstroDetailsTableProps {
+  grahaDetails?: GrahaDetail[];
+  bhavaDetails?: BhavaDetail[];
+}
 
-const BHAVA_DATA = [
-  {
-    bhava: '1 (Q)',
-    residents: '',
-    owner: 'Mangal',
-    rashi: '♈︎ Mesha',
-    qualities: 'Mas, Movable',
-    aspected: '',
-  },
-  {
-    bhava: '2',
-    residents: '',
-    owner: 'Shukra',
-    rashi: '♉︎ Vrishabha',
-    qualities: 'Fem, Fixed',
-    aspected: 'Mangal, Shani',
-  },
-  {
-    bhava: '3',
-    residents: 'Guru',
-    owner: 'Budha',
-    rashi: '♊︎ Mithuna 🔥',
-    qualities: 'Mas, Common',
-    aspected: '',
-  },
-  {
-    bhava: '4 (Q)',
-    residents: '',
-    owner: 'Chandra',
-    rashi: '♋︎ Karka',
-    qualities: 'Fem, Movable',
-    aspected: '',
-  },
-  {
-    bhava: '5 (T)',
-    residents: 'Chandra, Ketu',
-    owner: 'Surya',
-    rashi: '♌︎ Simha',
-    qualities: 'Mas, Fixed',
-    aspected: 'Surya, Mangal, Budha',
-  },
-  {
-    bhava: '6',
-    residents: '',
-    owner: 'Budha',
-    rashi: '♍︎ Kanya 🔥',
-    qualities: 'Fem, Common',
-    aspected: 'Mangal, Shukra, Shani',
-  },
-  {
-    bhava: '7 (Q)',
-    residents: '',
-    owner: 'Shukra',
-    rashi: '♎︎ Tula',
-    qualities: 'Mas, Movable',
-    aspected: 'Guru',
-  },
-  {
-    bhava: '8',
-    residents: '',
-    owner: 'Mangal',
-    rashi: '♏︎ Vrishchika',
-    qualities: 'Fem, Fixed',
-    aspected: '',
-  },
-  {
-    bhava: '9 (T)',
-    residents: '',
-    owner: 'Guru',
-    rashi: '♐︎ Dhanu 🔥',
-    qualities: 'Mas, Common',
-    aspected: 'Guru, Shani',
-  },
-  {
-    bhava: '10 (Q)',
-    residents: '',
-    owner: 'Shani',
-    rashi: '♑︎ Makara',
-    qualities: 'Fem, Movable',
-    aspected: '',
-  },
-  {
-    bhava: '11',
-    residents: 'Surya, Mangal, Budha, Rahu',
-    owner: 'Shani',
-    rashi: '♒︎ Kumbha',
-    qualities: 'Mas, Fixed',
-    aspected: 'Chandra, Guru',
-  },
-  {
-    bhava: '12',
-    residents: 'Shukra, Shani',
-    owner: 'Guru',
-    rashi: '♓︎ Meena 🔥',
-    qualities: 'Fem, Common',
-    aspected: '',
-  },
-];
-
-const AstroDetailsTable = () => {
+const AstroDetailsTable: React.FC<AstroDetailsTableProps> = ({
+  grahaDetails = [],
+  bhavaDetails = [],
+}) => {
   return (
     <div className="w-full duration-700 animate-in fade-in slide-in-from-bottom-4">
       <Tabs defaultValue="graha" className="w-full">
@@ -265,24 +62,15 @@ const AstroDetailsTable = () => {
                       Nak Lord/Sub
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Ruler
+                      Ruler (Bhavas)
                     </TableHead>
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Is In
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Owner
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Relation
-                    </TableHead>
-                    <TableHead className="h-auto px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Dignities
+                      Is In (Bhava)
                     </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-[11px] font-medium text-[#5d2e17]">
-                  {GRAHA_DATA.map((row, idx) => (
+                  {grahaDetails.map((row, idx) => (
                     <TableRow
                       key={idx}
                       className={cn(
@@ -294,38 +82,36 @@ const AstroDetailsTable = () => {
                         {row.graha}
                       </TableCell>
                       <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-2 py-2.5 font-bold text-[#d2691e]">
-                        {row.longitude}
+                        {row.longitude_degree.toFixed(2)}° {row.longitude_rashi}
                       </TableCell>
                       <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-2 py-2.5">
-                        {row.nakshatra}
+                        {row.nakshatra} (Pada {row.nakshatra_pada})
                       </TableCell>
                       <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center text-[#d2691e]">
-                        {row.lord}
+                        {row.nakshatra_lord} / {row.nakshatra_sublord}
                       </TableCell>
                       <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
-                        {row.ruler}
+                        {row.rules_bhavas.join(', ') || '-'}
                       </TableCell>
                       <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
-                        {row.isIn}
-                      </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center font-bold">
-                        {row.owner}
-                      </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-2 py-2.5 text-center">
-                        {row.relationship}
-                      </TableCell>
-                      <TableCell className="px-2 py-2.5 text-center">
-                        {row.dignities}
+                        {row.current_bhava}
                       </TableCell>
                     </TableRow>
                   ))}
+                  {grahaDetails.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="py-4 text-center">
+                        No data available.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
 
             {/* Mobile Card View */}
             <div className="space-y-4 p-4 md:hidden">
-              {GRAHA_DATA.map((row, idx) => (
+              {grahaDetails.map((row, idx) => (
                 <div
                   key={idx}
                   className="rounded-xl border border-[#8b4513]/20 bg-[#fef8e6] p-4 shadow-sm"
@@ -335,51 +121,34 @@ const AstroDetailsTable = () => {
                       {row.graha}
                     </span>
                     <span className="rounded-full bg-[#8b4513]/5 px-2 py-0.5 text-[10px] font-bold text-[#d2691e]">
-                      {row.longitude}
+                      {row.longitude_degree.toFixed(2)}° {row.longitude_rashi}
                     </span>
                   </div>
                   <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px]">
-                    <div>
+                    <div className="col-span-2">
                       <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
                         Nakshatra
                       </p>
                       <p className="font-medium text-[#5d2e17]">
-                        {row.nakshatra}
+                        {row.nakshatra} (Pada {row.nakshatra_pada})
                       </p>
                     </div>
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
                         Lord/Sub
                       </p>
-                      <p className="font-medium text-[#d2691e]">{row.lord}</p>
+                      <p className="font-medium text-[#d2691e]">
+                        {row.nakshatra_lord} / {row.nakshatra_sublord}
+                      </p>
                     </div>
                     <div>
                       <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
-                        Ruler/In
+                        Ruler / In Bhava
                       </p>
                       <p className="font-medium text-[#5d2e17]">
-                        {row.ruler || '-'} / {row.isIn}
+                        {row.rules_bhavas.join(', ') || '-'} /{' '}
+                        {row.current_bhava}
                       </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
-                        Owner
-                      </p>
-                      <p className="font-bold text-[#5d2e17]">{row.owner}</p>
-                    </div>
-                    <div className="col-span-2 flex justify-between border-t border-[#8b4513]/5 pt-1">
-                      <span>
-                        Relationship:{' '}
-                        <span className="font-bold text-[#5d2e17]">
-                          {row.relationship || '-'}
-                        </span>
-                      </span>
-                      <span>
-                        Dignity:{' '}
-                        <span className="font-bold text-primary-600">
-                          {row.dignities}
-                        </span>
-                      </span>
                     </div>
                   </div>
                 </div>
@@ -405,16 +174,10 @@ const AstroDetailsTable = () => {
                     <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
                       Rashi
                     </TableHead>
-                    <TableHead className="h-auto border-r border-[#8b4513]/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Qualities
-                    </TableHead>
-                    <TableHead className="h-auto px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-[#f4e4bc]">
-                      Aspected By
-                    </TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody className="text-[11px] font-medium text-[#5d2e17]">
-                  {BHAVA_DATA.map((row, idx) => (
+                  {bhavaDetails.map((row, idx) => (
                     <TableRow
                       key={idx}
                       className={cn(
@@ -426,7 +189,7 @@ const AstroDetailsTable = () => {
                         {row.bhava}
                       </TableCell>
                       <TableCell className="border-r border-[#8b4513]/10 px-3 py-3 font-bold text-[#d2691e]">
-                        {row.residents}
+                        {row.residents.join(', ') || '-'}
                       </TableCell>
                       <TableCell className="border-r border-[#8b4513]/10 px-3 py-3 font-bold">
                         {row.owner}
@@ -434,21 +197,22 @@ const AstroDetailsTable = () => {
                       <TableCell className="whitespace-nowrap border-r border-[#8b4513]/10 px-3 py-3 font-bold text-[#d2691e]">
                         {row.rashi}
                       </TableCell>
-                      <TableCell className="border-r border-[#8b4513]/10 px-3 py-3">
-                        {row.qualities}
-                      </TableCell>
-                      <TableCell className="px-3 py-3 font-bold text-[#d2691e]">
-                        {row.aspected}
-                      </TableCell>
                     </TableRow>
                   ))}
+                  {bhavaDetails.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={4} className="py-4 text-center">
+                        No data available.
+                      </TableCell>
+                    </TableRow>
+                  )}
                 </TableBody>
               </Table>
             </div>
 
             {/* Mobile Card View */}
             <div className="space-y-4 p-4 md:hidden">
-              {BHAVA_DATA.map((row, idx) => (
+              {bhavaDetails.map((row, idx) => (
                 <div
                   key={idx}
                   className="rounded-xl border border-[#8b4513]/20 bg-[#fef8e6] p-4 shadow-sm"
@@ -467,7 +231,7 @@ const AstroDetailsTable = () => {
                         Residents
                       </p>
                       <p className="font-bold text-[#d2691e]">
-                        {row.residents || 'None'}
+                        {row.residents.join(', ') || '-'}
                       </p>
                     </div>
                     <div>
@@ -475,22 +239,6 @@ const AstroDetailsTable = () => {
                         Owner
                       </p>
                       <p className="font-bold text-[#5d2e17]">{row.owner}</p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
-                        Qualities
-                      </p>
-                      <p className="font-medium text-[#5d2e17]">
-                        {row.qualities}
-                      </p>
-                    </div>
-                    <div className="col-span-2 border-t border-[#8b4513]/5 pt-1">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-[#8b4513]/60">
-                        Aspected By
-                      </p>
-                      <p className="font-medium text-[#d2691e]">
-                        {row.aspected || 'None'}
-                      </p>
                     </div>
                   </div>
                 </div>

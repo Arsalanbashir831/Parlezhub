@@ -1,7 +1,6 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { NAKSHATRAS } from '@/constants/astrology';
 import {
   CloudMoon,
   Compass,
@@ -21,7 +20,11 @@ import {
   Tornado,
 } from 'lucide-react';
 
-import { DashboardState, TaraType } from '@/types/astrology';
+import {
+  useBirthProfile,
+  useNatalChart,
+  useTransits,
+} from '@/hooks/useAstrology';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { ScrollArea } from '@/components/ui/scroll-area';
@@ -37,6 +40,7 @@ import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
 import AstroDetailsTable from './components/astro-details-table';
 import AstroHeader from './components/astro-header';
+import BirthProfileForm from './components/birth-profile-form';
 import VedicChart from './components/vedic-chart';
 import AnalysisSidebar from './layout/analysis-sidebar';
 import NavigationSidebar from './layout/navigation-sidebar';
@@ -66,8 +70,17 @@ export default function AstrologyDashboard() {
   );
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
+
+  // For simplicity, force desktop menus open by default on large screens.
   const [leftDesktopOpen, setLeftDesktopOpen] = useState(true);
   const [rightDesktopOpen, setRightDesktopOpen] = useState(true);
+
+  // API Hooks
+  const { data: profile, isLoading: isProfileLoading } = useBirthProfile();
+  const { data: natalChart, isLoading: isChartLoading } =
+    useNatalChart(!!profile);
+  const { data: transits, isLoading: isTransitsLoading } =
+    useTransits(!!profile);
 
   useEffect(() => {
     setMounted(true);
@@ -79,20 +92,7 @@ export default function AstrologyDashboard() {
     setRightOpen(false);
   };
 
-  // Mock data for demo
-  const [dashboardState] = useState<DashboardState>({
-    userNakshatraIndex: 12, // Uttara Phalguni
-    currentMoonNakshatraIndex: 1, // Ashwini
-    username: 'Max',
-    tara: TaraType.VADHA,
-    tithi: 'Shukla Navami',
-  });
-
-  const userNak = NAKSHATRAS.find(
-    (n) => n.index === dashboardState.userNakshatraIndex
-  );
-
-  if (!mounted) {
+  if (!mounted || isProfileLoading) {
     return (
       <div className="flex h-screen w-full items-center justify-center bg-[#fffdfa]">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
@@ -100,14 +100,14 @@ export default function AstrologyDashboard() {
     );
   }
 
+  const username = profile ? profile.user_name || 'Seeker' : 'Guest';
+
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
       {/* Premium Top Navigation Bar (Consistent across all sizes) */}
       <header className="z-50 flex h-20 w-full items-center justify-between border-b border-black/5 px-4 md:px-8">
         <div className="flex items-center gap-2 md:gap-4">
-          {/* Analysis Menu Toggle (Mobile & Desktop) */}
           <div className="flex items-center">
-            {/* Mobile Toggle */}
             <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
               <SheetTrigger asChild className="xl:hidden">
                 <Button
@@ -121,7 +121,7 @@ export default function AstrologyDashboard() {
               <SheetContent side="left" className="w-80 border-none p-0">
                 <SheetTitle className="sr-only">Analysis Menu</SheetTitle>
                 <SheetDescription className="sr-only">
-                  Access astrological analysis and planet strengths.
+                  Access astrological analysis.
                 </SheetDescription>
                 <AnalysisSidebar
                   activeAnalysis={activeAnalysis}
@@ -131,7 +131,6 @@ export default function AstrologyDashboard() {
               </SheetContent>
             </Sheet>
           </div>
-
           <div className="flex flex-col">
             <h1 className="font-serif text-lg font-bold leading-none tracking-[0.1em] text-black md:text-2xl">
               JYOTISH COSMIC
@@ -142,30 +141,24 @@ export default function AstrologyDashboard() {
           </div>
         </div>
 
-        {/* User Profile & Right Sidebar Toggle */}
         <div className="flex items-center gap-2 md:gap-6">
           <div className="hidden flex-col items-end leading-tight sm:flex">
             <span className="text-[10px] font-medium text-slate-500">
               Logged in as
             </span>
             <span className="text-sm font-bold text-primary-500">
-              {dashboardState.username} Doe
+              {username}
             </span>
           </div>
 
           <Avatar className="h-9 w-9 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10 md:h-10 md:w-10">
             <AvatarImage src="" />
-            <AvatarFallback
-              className="bg-primary-600 text-[11px] font-bold text-white"
-              title="John Doe"
-            >
-              JD
+            <AvatarFallback className="bg-primary-600 text-[11px] font-bold text-white">
+              {username.substring(0, 2).toUpperCase()}
             </AvatarFallback>
           </Avatar>
 
-          {/* Navigation Menu Toggle (Mobile & Desktop) */}
           <div className="flex items-center">
-            {/* Mobile Toggle */}
             <Sheet open={rightOpen} onOpenChange={setRightOpen}>
               <SheetTrigger asChild className="xl:hidden">
                 <Button
@@ -179,12 +172,13 @@ export default function AstrologyDashboard() {
               <SheetContent side="right" className="w-80 border-none p-0">
                 <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
                 <SheetDescription className="sr-only">
-                  Navigate through charts and transit details.
+                  Navigate through charts.
                 </SheetDescription>
                 <NavigationSidebar
                   activeAnalysis={activeAnalysis}
                   onSelect={handleSelect}
                   iconMap={ICON_MAP}
+                  transits={transits?.transits}
                 />
               </SheetContent>
             </Sheet>
@@ -194,8 +188,8 @@ export default function AstrologyDashboard() {
 
       {/* Main Content Area */}
       <div className="relative z-10 flex flex-1 overflow-hidden">
-        {/* Left Sidebar Menu (Desktop Collapsible) */}
-        {leftDesktopOpen && (
+        {/* Left Sidebar Menu */}
+        {leftDesktopOpen && profile && (
           <div className="hidden duration-300 animate-in slide-in-from-left-full xl:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
@@ -208,31 +202,71 @@ export default function AstrologyDashboard() {
 
         {/* Center Canvas */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="flex-1 bg-white/30 backdrop-blur-sm">
-            {activeAnalysis === 'd1-chart' || !activeAnalysis ? (
+          <ScrollArea className="h-full flex-1 bg-white/30 backdrop-blur-sm">
+            {!profile ? (
+              <BirthProfileForm />
+            ) : isChartLoading || isTransitsLoading || !natalChart ? (
+              <div className="flex h-full min-h-[50vh] w-full items-center justify-center">
+                <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+              </div>
+            ) : activeAnalysis === 'birth-profile' ? (
+              <div className="flex h-full w-full items-center justify-center">
+                <BirthProfileForm />
+              </div>
+            ) : // Active Analysis checks
+            activeAnalysis === 'd1-chart' ||
+              activeAnalysis === 'd9-chart' ||
+              !activeAnalysis ? (
               <div className="flex min-w-0 flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-10 md:p-8">
                 <AstroHeader
-                  username={dashboardState.username}
-                  moonNakshatra={
-                    NAKSHATRAS.find(
-                      (n) =>
-                        n.index === dashboardState.currentMoonNakshatraIndex
-                    )?.name || ''
+                  username={username}
+                  moonSign={natalChart.moon_sign || 'N/A'}
+                  sunSign={natalChart.sun_sign || 'N/A'}
+                  ascendant={natalChart.ascendant?.rashi || 'N/A'}
+                  birthNakshatra={natalChart.nakshatra || 'N/A'}
+                  nakshatraRuler={
+                    natalChart.planets.find(
+                      (p) => p.nakshatra === natalChart.nakshatra
+                    )?.nakshatra_lord || 'N/A'
                   }
-                  tara={dashboardState.tara}
-                  tithi={dashboardState.tithi}
-                  birthNakshatra={userNak?.name || ''}
-                  nakshatraRuler={userNak?.lord || ''}
                 />
 
                 <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
                   <div className="flex w-full min-w-0 max-w-full justify-center px-2">
                     <div className="w-full max-w-[600px]">
-                      <VedicChart className="h-auto w-full" />
+                      <VedicChart
+                        title={
+                          activeAnalysis === 'd9-chart'
+                            ? 'D9 NAVAMSA'
+                            : 'D1 CHART'
+                        }
+                        natalPlanets={
+                          activeAnalysis === 'd9-chart'
+                            ? natalChart.d9_chart?.positions
+                            : natalChart.d1_chart?.positions
+                        }
+                        transitPlanets={
+                          activeAnalysis === 'd1-chart' && transits
+                            ? transits.transits
+                            : []
+                        }
+                        className="h-auto w-full"
+                      />
                     </div>
                   </div>
                   <div className="mx-auto w-full min-w-0 max-w-full px-2">
-                    <AstroDetailsTable />
+                    <AstroDetailsTable
+                      grahaDetails={
+                        activeAnalysis === 'd9-chart'
+                          ? natalChart.d9_chart?.graha_details
+                          : natalChart.d1_chart?.graha_details
+                      }
+                      bhavaDetails={
+                        activeAnalysis === 'd9-chart'
+                          ? natalChart.d9_chart?.bhava_details
+                          : natalChart.d1_chart?.bhava_details
+                      }
+                    />
                   </div>
                 </div>
               </div>
@@ -248,14 +282,15 @@ export default function AstrologyDashboard() {
           </ScrollArea>
         </main>
 
-        {/* Right Sidebar Menu (Desktop Collapsible) */}
-        {rightDesktopOpen && (
+        {/* Right Sidebar Menu */}
+        {rightDesktopOpen && profile && (
           <div className="hidden duration-300 animate-in slide-in-from-right-full xl:block">
             <NavigationSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
               className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              transits={transits?.transits}
             />
           </div>
         )}

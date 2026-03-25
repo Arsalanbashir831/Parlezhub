@@ -3,7 +3,6 @@
 import React from 'react';
 
 import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 
 interface TransitCardProps {
   className?: string;
@@ -13,9 +12,9 @@ interface TransitCardProps {
 const TransitCard: React.FC<TransitCardProps> = ({
   className,
   transits = [
-    { planet: 'Sun', sign: 'Aquarius' },
-    { planet: 'Jupiter', sign: 'Aries' },
-    { planet: 'Saturn', sign: 'Aquarius', retrograde: true },
+    { planet: 'Sun', sign: 'Pisces' },
+    { planet: 'Moon', sign: 'Gemini' },
+    { planet: 'Mars', sign: 'Aquarius', retrograde: true },
   ],
 }) => {
   return (
@@ -43,9 +42,9 @@ const TransitCard: React.FC<TransitCardProps> = ({
         ))}
       </div>
 
-      <Button className="mt-6 w-full rounded-2xl bg-primary-500 py-6 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-primary-500/20 transition-all hover:scale-[1.02] hover:bg-primary-600">
+      {/* <Button className="mt-6 w-full rounded-2xl bg-primary-500 py-6 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-primary-500/20 transition-all hover:scale-[1.02] hover:bg-primary-600">
         Refresh Transits
-      </Button>
+      </Button> */}
     </div>
   );
 };

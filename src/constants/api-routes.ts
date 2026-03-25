@@ -66,4 +66,9 @@ export const API_ROUTES = {
     PROCESS_BOOKING_PAYMENT: '/payments/process-booking-payment/',
     GET_PAYMENT_METHODS: '/payments/payment-methods/',
   },
+  ASTROLOGY: {
+    BIRTH_PROFILE: '/astrology/birth-profile/',
+    NATAL_CHART: '/astrology/natal-chart/',
+    TRANSITS: '/astrology/transits/',
+  },
 };
