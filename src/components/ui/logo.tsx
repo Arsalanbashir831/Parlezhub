@@ -1,15 +1,19 @@
+import Link from 'next/link';
+
 import { cn } from '@/lib/utils';
 
 interface LogoProps {
   className?: string;
   size?: 'sm' | 'md' | 'lg';
   isCollapsed?: boolean;
+  href?: string;
 }
 
 export function Logo({
   className,
   size = 'md',
   isCollapsed = false,
+  href,
 }: LogoProps) {
   const sizeClasses = {
     sm: 'text-xl',
@@ -17,7 +21,7 @@ export function Logo({
     lg: 'text-3xl',
   };
 
-  return (
+  const content = (
     <div className={cn('flex items-center gap-2', className)}>
       <div className="relative">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600">
@@ -37,4 +41,6 @@ export function Logo({
       )}
     </div>
   );
+
+  return href ? <Link href={href}>{content}</Link> : content;
 }

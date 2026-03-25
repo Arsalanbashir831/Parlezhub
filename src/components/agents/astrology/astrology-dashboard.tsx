@@ -1,6 +1,9 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { useRouter } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
 import {
   CloudMoon,
   Compass,
@@ -11,6 +14,7 @@ import {
   Gem,
   Landmark,
   LifeBuoy,
+  LogOut,
   Moon,
   Orbit,
   PanelLeftOpen,
@@ -25,8 +29,8 @@ import {
   useNatalChart,
   useTransits,
 } from '@/hooks/useAstrology';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import { Logo } from '@/components/ui/logo';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import {
   Sheet,
@@ -35,6 +39,7 @@ import {
   SheetTitle,
   SheetTrigger,
 } from '@/components/ui/sheet';
+import { UserMiniCard } from '@/components/layout/user-mini-card';
 
 import AnalysisView from './analysis/analysis-view';
 import { ANALYSIS_TOPICS } from './analysis/content';
@@ -75,6 +80,9 @@ export default function AstrologyDashboard() {
   // For simplicity, force desktop menus open by default on large screens.
   const [leftDesktopOpen, setLeftDesktopOpen] = useState(true);
   const [rightDesktopOpen, setRightDesktopOpen] = useState(true);
+
+  const { logout } = useAuth();
+  const router = useRouter();
 
   // API Hooks
   const { data: profile, isLoading: isProfileLoading } = useBirthProfile();
@@ -132,32 +140,25 @@ export default function AstrologyDashboard() {
               </SheetContent>
             </Sheet>
           </div>
-          <div className="flex flex-col">
-            <h1 className="font-serif text-lg font-bold leading-none tracking-[0.1em] text-black md:text-2xl">
-              JYOTISH COSMIC
-            </h1>
-            <p className="mt-1 text-[8px] font-bold uppercase tracking-[0.3em] text-primary-500 md:text-[10px]">
-              Vedic Astrology Intelligence
-            </p>
-          </div>
+          <Logo href={ROUTES.HOME} />
         </div>
 
         <div className="flex items-center gap-2 md:gap-6">
-          <div className="hidden flex-col items-end leading-tight sm:flex">
-            <span className="text-[10px] font-medium text-slate-500">
-              Logged in as
-            </span>
-            <span className="text-sm font-bold text-primary-500">
-              {username}
-            </span>
+          <div className="flex items-center gap-4">
+            <UserMiniCard roleLabel="Astrologer" />
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-red-500 hover:bg-red-50 hover:text-red-700"
+              onClick={() => {
+                logout();
+                router.push(ROUTES.AUTH.LOGIN);
+              }}
+              title="Sign Out"
+            >
+              <LogOut className="h-5 w-5" />
+            </Button>
           </div>
-
-          <Avatar className="h-9 w-9 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10 md:h-10 md:w-10">
-            <AvatarImage src="" />
-            <AvatarFallback className="bg-primary-600 text-[11px] font-bold text-white">
-              {username.substring(0, 2).toUpperCase()}
-            </AvatarFallback>
-          </Avatar>
 
           <div className="flex items-center">
             <Sheet open={rightOpen} onOpenChange={setRightOpen}>

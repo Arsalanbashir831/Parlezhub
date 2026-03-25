@@ -305,6 +305,14 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                       becomeStudent
                     )}
                 </SidebarMenu>
+                <SidebarMenu>
+                  {renderMenuItem({
+                    id: 'astrology',
+                    label: 'Astrology Dashboard',
+                    href: ROUTES.AGENT.ASTROLOGY,
+                    icon: Home,
+                  })}
+                </SidebarMenu>
                 <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
               </div>
             ) : (

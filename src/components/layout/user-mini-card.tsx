@@ -19,7 +19,7 @@ export const UserMiniCard: React.FC<UserMiniCardProps> = ({
     return (
       <div className="mb-4 flex justify-center">
         <Avatar>
-          <AvatarImage src={user?.profile_picture} />
+          <AvatarImage src={user?.profile_picture || ''} />
           <AvatarFallback>
             {user?.first_name?.charAt(0).toUpperCase()}
           </AvatarFallback>
@@ -31,7 +31,7 @@ export const UserMiniCard: React.FC<UserMiniCardProps> = ({
   return (
     <div className="mb-4 flex items-center gap-3">
       <Avatar>
-        <AvatarImage src={user?.profile_picture} />
+        <AvatarImage src={user?.profile_picture || ''} />
         <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200">
           {user?.first_name?.charAt(0).toUpperCase()}
         </AvatarFallback>
