@@ -5,6 +5,8 @@ import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import {
+  Brain,
+  Briefcase,
   CloudMoon,
   Compass,
   Contrast,
@@ -12,6 +14,9 @@ import {
   FileText,
   Flame,
   Gem,
+  Heart,
+  Hospital,
+  Hourglass,
   Landmark,
   LifeBuoy,
   LogOut,
@@ -21,7 +26,9 @@ import {
   PanelRightOpen,
   Sparkles,
   Star,
+  Theater,
   Tornado,
+  Users,
 } from 'lucide-react';
 
 import {
@@ -41,8 +48,6 @@ import {
 } from '@/components/ui/sheet';
 import { UserMiniCard } from '@/components/layout/user-mini-card';
 
-import AnalysisView from './analysis/analysis-view';
-import { ANALYSIS_TOPICS } from './analysis/content';
 import InsightView from './analysis/insight-view';
 import AstroDetailsTable from './components/astro-details-table';
 import AstroHeader from './components/astro-header';
@@ -67,6 +72,12 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   '👑': Crown,
   '🏛️': Landmark,
   '☯️': Contrast,
+  '🧠': Brain,
+  '💼': Briefcase,
+  '🏥': Hospital,
+  '⏳': Hourglass,
+  '👥': Users,
+  '🎭': Theater,
 };
 
 export default function AstrologyDashboard() {
@@ -272,14 +283,6 @@ export default function AstrologyDashboard() {
                   </div>
                 </div>
               </div>
-            ) : activeAnalysis in ANALYSIS_TOPICS ? (
-              <AnalysisView
-                topic={
-                  ANALYSIS_TOPICS[activeAnalysis] ||
-                  ANALYSIS_TOPICS['benefic-planets']
-                }
-                onBack={() => setActiveAnalysis('d1-chart')}
-              />
             ) : (
               <InsightView
                 slug={activeAnalysis}
