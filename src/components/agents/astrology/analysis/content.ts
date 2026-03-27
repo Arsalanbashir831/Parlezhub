@@ -1,15 +1,3 @@
-import {
-  CloudMoon,
-  Contrast,
-  Crown,
-  FileText,
-  Flame,
-  Landmark,
-  LucideIcon,
-  Sparkles,
-  Tornado,
-} from 'lucide-react';
-
 export interface TopicContextItem {
   title: string;
   description: string;

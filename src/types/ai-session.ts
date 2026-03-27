@@ -4,6 +4,7 @@ export interface SessionConfig {
   sessionType?: 'tutor' | 'chirologist';
   nativeLanguage: string;
   language: string;
+  level: string;
   voice?: 'alloy' | 'echo' | 'fable' | 'onyx' | 'nova' | 'shimmer';
   gender?: 'male' | 'female' | 'neutral';
   accent?: string;
@@ -13,6 +14,7 @@ export interface SessionConfig {
   palmType?: string;
   readingFocus?: string;
   experience?: string;
+  context?: string;
 }
 
 export interface SessionState {

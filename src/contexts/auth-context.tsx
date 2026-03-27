@@ -1,7 +1,12 @@
 'use client';
 
-import type React from 'react';
-import { createContext, useContext, useEffect, useState } from 'react';
+import React, {
+  createContext,
+  useCallback,
+  useContext,
+  useEffect,
+  useState,
+} from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useMutation } from '@tanstack/react-query';
@@ -80,40 +85,43 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     userRoles.includes(role);
 
   // Function to update roles from unified profile response
-  const updateRolesFromProfile = (profileData: UnifiedProfileResponse) => {
-    const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
+  const updateRolesFromProfile = useCallback(
+    (profileData: UnifiedProfileResponse) => {
+      const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
 
-    if (profileData.has_student) {
-      availableRoles.push('STUDENT');
-    }
-    if (profileData.has_teacher) {
-      availableRoles.push('TEACHER');
-    }
+      if (profileData.has_student) {
+        availableRoles.push('STUDENT');
+      }
+      if (profileData.has_teacher) {
+        availableRoles.push('TEACHER');
+      }
 
-    setUserRolesState(availableRoles);
-    setUserRoles(availableRoles);
+      setUserRolesState(availableRoles);
+      setUserRoles(availableRoles);
 
-    // Set active role - prefer current active role if valid, otherwise use first available
-    const currentActiveRole = getActiveRole();
-    let newActiveRole: 'TEACHER' | 'STUDENT' | null = null;
+      // Set active role - prefer current active role if valid, otherwise use first available
+      const currentActiveRole = getActiveRole();
+      let newActiveRole: 'TEACHER' | 'STUDENT' | null = null;
 
-    if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
-      newActiveRole = currentActiveRole;
-      setActiveRoleState(currentActiveRole);
-    } else if (availableRoles.length > 0) {
-      newActiveRole = availableRoles[0];
-      setActiveRoleState(newActiveRole);
-      setActiveRole(newActiveRole);
-    }
+      if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
+        newActiveRole = currentActiveRole;
+        setActiveRoleState(currentActiveRole);
+      } else if (availableRoles.length > 0) {
+        newActiveRole = availableRoles[0];
+        setActiveRoleState(newActiveRole);
+        setActiveRole(newActiveRole);
+      }
 
-    // Keep backward compatibility cookie with the correct role
-    if (newActiveRole) {
-      setCookie('user_role', newActiveRole);
-    }
-  };
+      // Keep backward compatibility cookie with the correct role
+      if (newActiveRole) {
+        setCookie('user_role', newActiveRole);
+      }
+    },
+    []
+  );
 
   // Function to refresh user profile
-  const refreshUserProfile = async () => {
+  const refreshUserProfile = useCallback(async () => {
     try {
       const profileData = await authApi.getUnifiedProfile();
       updateRolesFromProfile(profileData);
@@ -121,7 +129,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       console.error('Failed to refresh user profile:', error);
       throw error;
     }
-  };
+  }, [updateRolesFromProfile]);
 
   // Function to switch active role
   const switchRole = async (role: 'TEACHER' | 'STUDENT') => {
@@ -389,7 +397,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // Try to refresh profile to get latest data
             try {
               await refreshUserProfile();
-            } catch (profileError) {
+            } catch {
               console.log(
                 'Could not refresh profile on init, using stored data'
               );
@@ -398,7 +406,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             // No stored roles, try to fetch profile
             try {
               await refreshUserProfile();
-            } catch (profileError) {
+            } catch {
               // If we can't get profile, fall back to clearing auth
               console.error('Failed to get profile, clearing auth');
               clearAuthCookies();
@@ -423,7 +431,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     };
 
     checkAuth();
-  }, []);
+  }, [refreshUserProfile, router, searchParams]);
 
   const login = async (email: string, password: string) => {
     await loginMutation.mutateAsync({ email, password });

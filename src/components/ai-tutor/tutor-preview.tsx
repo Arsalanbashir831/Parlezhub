@@ -3,8 +3,6 @@
 import { Bot, Clock, MessageCircle } from 'lucide-react';
 
 import { AITutorSettings } from '@/types/ai-tutor';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,

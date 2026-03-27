@@ -53,7 +53,6 @@ export default function MarkdownEditor({
         onChange={(val) => onChange(val || '')}
         height={height}
         data-color-mode="light"
-        visibleDragBar={false}
         textareaProps={{
           placeholder,
           style: {

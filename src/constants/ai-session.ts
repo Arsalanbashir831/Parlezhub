@@ -1,4 +1,4 @@
-import { Globe, Languages, MessageCircle, Play, User } from 'lucide-react';
+import { Languages, MessageCircle, Play, User } from 'lucide-react';
 
 import { Language, Level, SetupStep } from '@/types/ai-session';
 
@@ -141,7 +141,8 @@ export const DEFAULT_SESSION_CONFIG = {
   sessionType: 'tutor' as const,
   nativeLanguage: 'en',
   language: 'es',
-  voice: 'alloy',
+  level: 'beginner',
+  voice: 'alloy' as const,
   gender: 'neutral' as const,
   accent: 'Neutral',
   topic: 'Daily Conversation',

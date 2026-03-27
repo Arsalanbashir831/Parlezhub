@@ -7,6 +7,7 @@ import { authApi } from './auth';
 export interface UserProfile {
   id: string;
   email: string;
+  full_name: string;
   first_name: string;
   last_name: string;
   phone_number?: string;
@@ -18,6 +19,7 @@ export interface UserProfile {
   bio?: string;
   city?: string;
   country?: string;
+  address?: string;
   postal_code?: string;
   status?: string;
   native_language?: string;
@@ -27,6 +29,9 @@ export interface UserProfile {
   experience_years?: number;
   certificates?: string[];
   about?: string;
+  is_verified?: boolean;
+  hourly_rate?: number;
+  subjects?: string[];
 }
 
 export interface UpdateStudentProfileRequest {
@@ -84,6 +89,10 @@ interface RawProfileData {
   experience_years?: number | null;
   certificates?: string[] | null;
   about?: string | null;
+  is_verified?: boolean | null;
+  hourly_rate?: number | null;
+  subjects?: string[] | null;
+  address?: string | null;
 }
 
 // Helper function to convert auth profile to user profile format
@@ -113,6 +122,11 @@ const mapProfileToUserProfile = (
   experience_years: profile.experience_years || undefined,
   certificates: profile.certificates || undefined,
   about: profile.about || undefined,
+  is_verified: profile.is_verified || undefined,
+  address: profile.address || undefined,
+  full_name: `${profile.first_name} ${profile.last_name}`,
+  hourly_rate: profile.hourly_rate || undefined,
+  subjects: profile.subjects || undefined,
 });
 
 export const userApi = {

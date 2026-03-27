@@ -24,6 +24,7 @@ export interface ConversationData {
     sender: 'user' | 'ai';
     timestamp: string;
   }[];
+  score: number;
 }
 
 interface ConversationCardProps {

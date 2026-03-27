@@ -3,8 +3,6 @@
 import { Clock, Eye, HandMetal } from 'lucide-react';
 
 import { AIChirologistSettings } from '@/types/ai-chirologist';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import {
   Card,
   CardContent,

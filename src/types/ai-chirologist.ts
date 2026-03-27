@@ -3,6 +3,7 @@ export interface AIChirologistSettings {
   gender: 'male' | 'female' | 'neutral';
   avatar: string;
   context: string;
+  level?: string;
 }
 
 export interface AIChirologistEditState {

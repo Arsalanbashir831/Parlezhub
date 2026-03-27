@@ -18,7 +18,10 @@ export default function AIChirologistPage() {
 
   const handleStartSession = () => {
     // Save chirologist session config before navigating
-    saveSessionConfig(DEFAULT_CHIROLOGIST_SESSION_CONFIG);
+    saveSessionConfig({
+      ...DEFAULT_CHIROLOGIST_SESSION_CONFIG,
+      level: settings?.level || 'beginner',
+    });
     router.push(ROUTES.AI_SESSION.SETUP);
   };
 

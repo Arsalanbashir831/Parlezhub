@@ -4,7 +4,6 @@ import React from 'react';
 import { Award, Clock, MessageCircle, TrendingUp } from 'lucide-react';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Progress } from '@/components/ui/progress';
 
 interface SessionMetricsProps {
   metrics: {

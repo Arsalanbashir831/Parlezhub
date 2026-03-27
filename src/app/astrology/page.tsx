@@ -1,11 +1,12 @@
 import AstrologyDashboard from '@/components/agents/astrology/astrology-dashboard';
 
-export default function AstrologyPage({
+export default async function AstrologyPage({
   searchParams,
 }: {
-  searchParams: { student_id?: string };
+  searchParams: Promise<{ student_id?: string }>;
 }) {
-  const studentId = searchParams.student_id;
+  const resolvedSearchParams = await searchParams;
+  const studentId = resolvedSearchParams.student_id;
   const readOnly = !!studentId;
 
   return <AstrologyDashboard studentId={studentId} readOnly={readOnly} />;

@@ -80,7 +80,7 @@ export default function LoginPage() {
             window.location.replace('/');
           }
         }
-      } catch (e) {
+      } catch {
         // If anything fails, stay on sign-in and show a message
         toast.error('Sign-in link processing failed. Please sign in manually.');
         setProcessingLink(false);

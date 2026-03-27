@@ -53,7 +53,7 @@ export default function EditServicePage() {
       await updateExistingService(service.id, data);
       // Success toast is handled by the hook
       router.push(ROUTES.TEACHER.SERVICES);
-    } catch (error) {
+    } catch {
       // Error toast is handled by the hook
     }
   };

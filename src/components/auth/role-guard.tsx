@@ -4,7 +4,6 @@ import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
-import { useUser } from '@/contexts/user-context';
 
 interface RoleGuardProps {
   children: React.ReactNode;
@@ -19,7 +18,6 @@ export default function RoleGuard({
 }: RoleGuardProps) {
   const { isAuthenticated, userRoles, activeRole, isLoading, canAccessRole } =
     useAuth();
-  const { user } = useUser();
   const router = useRouter();
 
   useEffect(() => {

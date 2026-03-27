@@ -28,7 +28,9 @@ export default function SetupStepper({ currentStep }: SetupStepperProps) {
             {index < currentStep ? (
               <Check className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
             ) : (
-              <step.icon className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
+              step.icon && (
+                <step.icon className="h-3 w-3 sm:h-4 sm:w-4 lg:h-5 lg:w-5" />
+              )
             )}
           </div>
           {index < steps.length - 1 && (

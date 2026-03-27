@@ -2,9 +2,6 @@ import {
   CreateAssistantRequest,
   CreateAssistantResponse,
   GetWebTokenResponse,
-  VapiCallEvent,
-  VapiErrorEvent,
-  VapiMessage,
 } from '@/types/vapi';
 
 const VAPI_API_BASE_URL = '/api/vapi';

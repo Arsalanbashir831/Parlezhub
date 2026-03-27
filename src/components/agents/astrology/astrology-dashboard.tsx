@@ -84,10 +84,6 @@ export default function AstrologyDashboard({
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
-  // For simplicity, force desktop menus open by default on large screens.
-  const [leftDesktopOpen, setLeftDesktopOpen] = useState(true);
-  const [rightDesktopOpen, setRightDesktopOpen] = useState(true);
-
   // API Hooks
   const { data: profile, isLoading: isProfileLoading } = useBirthProfile();
   const { data: natalChart, isLoading: isChartLoading } = useNatalChart(
@@ -165,7 +161,7 @@ export default function AstrologyDashboard({
       {/* Main Content Area */}
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* Left Sidebar Menu */}
-        {leftDesktopOpen && (profile || studentId) && (
+        {(profile || studentId) && (
           <div className="hidden duration-300 animate-in slide-in-from-left-full xl:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
@@ -272,7 +268,7 @@ export default function AstrologyDashboard({
         </main>
 
         {/* Right Sidebar Menu */}
-        {rightDesktopOpen && (profile || studentId) && (
+        {(profile || studentId) && (
           <div className="hidden duration-300 animate-in slide-in-from-right-full xl:block">
             <NavigationSidebar
               activeAnalysis={activeAnalysis}

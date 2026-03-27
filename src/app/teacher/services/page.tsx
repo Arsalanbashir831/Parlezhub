@@ -87,7 +87,7 @@ export default function ServicesPage() {
     try {
       await deleteExistingService(deleteServiceId);
       // Success toast is handled by the hook
-    } catch (error) {
+    } catch {
       // Error toast is handled by the hook
     } finally {
       setIsDeleting(false);
@@ -102,7 +102,7 @@ export default function ServicesPage() {
     try {
       await toggleServiceStatus(service.id, newStatus);
       // Success toast is handled by the hook
-    } catch (error) {
+    } catch {
       // Error toast is handled by the hook
     }
   };

@@ -35,11 +35,6 @@ export const useTeachers = () => {
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  // Load public services on mount
-  useEffect(() => {
-    loadPublicServices();
-  }, []);
-
   const loadPublicServices = useCallback(async () => {
     try {
       setIsLoading(true);
@@ -60,6 +55,11 @@ export const useTeachers = () => {
       setIsLoading(false);
     }
   }, []);
+
+  // Load public services on mount
+  useEffect(() => {
+    loadPublicServices();
+  }, [loadPublicServices]);
 
   // Convert services to service card data format
   const serviceCards = useMemo(() => {

@@ -42,7 +42,7 @@ export default function EditBlogPage() {
       const blog = await loadOne(blogId);
       if (blog) {
         setTitle(blog.title);
-        setContent(blog.content);
+        setContent(blog.content || '');
         setMetaDescription(blog.meta_description || '');
         setTags(blog.tags || []);
         setStatus(blog.status);
