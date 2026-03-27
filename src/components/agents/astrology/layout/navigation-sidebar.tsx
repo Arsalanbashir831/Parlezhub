@@ -17,6 +17,7 @@ interface NavigationSidebarProps {
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
   className?: string;
   transits?: TransitPlanet[];
+  readOnly?: boolean;
 }
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
@@ -25,7 +26,11 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   iconMap,
   className,
   transits,
+  readOnly,
 }) => {
+  const menuItems = readOnly
+    ? RIGHT_MENU_ITEMS.filter((item) => item.id !== 'share-access')
+    : RIGHT_MENU_ITEMS;
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-ml-4 flex-1 pl-4">
@@ -35,7 +40,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
           </p>
 
           <div className="grid gap-3">
-            {RIGHT_MENU_ITEMS.map((item) => {
+            {menuItems.map((item) => {
               const Icon = iconMap[item.icon] || Info;
               const isActive = activeAnalysis === item.id;
               return (
@@ -73,7 +78,9 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                           : 'text-slate-500 group-hover:text-slate-900'
                       )}
                     >
-                      {item.label}
+                      {readOnly && item.id === 'birth-profile'
+                        ? 'Birth Profile'
+                        : item.label}
                     </span>
                   </CardContent>
                 </Card>

@@ -10,7 +10,6 @@ import {
   Languages,
   MessageCircle,
   Settings,
-  Telescope,
   Users,
   Zap,
 } from 'lucide-react';

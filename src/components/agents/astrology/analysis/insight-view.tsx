@@ -11,10 +11,19 @@ import { ScrollArea } from '@/components/ui/scroll-area';
 interface InsightViewProps {
   slug: string;
   onBack: () => void;
+  studentId?: string;
 }
 
-const InsightView: React.FC<InsightViewProps> = ({ slug, onBack }) => {
-  const { data, isLoading, isError } = useAstrologicalInsight(slug);
+const InsightView: React.FC<InsightViewProps> = ({
+  slug,
+  onBack,
+  studentId,
+}) => {
+  const { data, isLoading, isError } = useAstrologicalInsight(
+    slug,
+    true,
+    studentId
+  );
 
   // Find the matching menu item for title and subtitle context
   const menuItem = LEFT_MENU_ITEMS.find((item) => item.id === slug) || {

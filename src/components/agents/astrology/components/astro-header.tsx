@@ -40,7 +40,7 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
         <div className="flex items-start justify-between">
           <div className="space-y-4">
             <h1 className="font-serif text-2xl font-bold tracking-tight text-slate-900 md:text-3xl">
-              Welcome, {username}
+              {username}
             </h1>
 
             <div className="flex flex-wrap gap-2">

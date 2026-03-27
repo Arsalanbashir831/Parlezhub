@@ -44,14 +44,20 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
-export default function BirthProfileForm() {
-  const { data: profile } = useBirthProfile();
+export default function BirthProfileForm({
+  readOnly = false,
+  studentId,
+}: {
+  readOnly?: boolean;
+  studentId?: string;
+}) {
+  const { data: profile } = useBirthProfile(studentId);
   const isUpdate = !!profile;
   const { mutate: saveProfile, isPending } = useSaveBirthProfile(isUpdate);
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
-    defaultValues: {
+    values: {
       birth_year: profile?.birth_year || 1990,
       birth_month: profile?.birth_month || 1,
       birth_day: profile?.birth_day || 1,
@@ -97,7 +103,7 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Year</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -110,7 +116,7 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Month (1-12)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -123,7 +129,7 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Day (1-31)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -139,7 +145,7 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Hour (0-23)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -152,7 +158,7 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Minute (0-59)</FormLabel>
                     <FormControl>
-                      <Input type="number" {...field} />
+                      <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -168,7 +174,11 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>City</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. New York" {...field} />
+                      <Input
+                        placeholder="e.g. New York"
+                        {...field}
+                        disabled={readOnly}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -181,7 +191,11 @@ export default function BirthProfileForm() {
                   <FormItem>
                     <FormLabel>Country Code</FormLabel>
                     <FormControl>
-                      <Input placeholder="e.g. US, IN" {...field} />
+                      <Input
+                        placeholder="e.g. US, IN"
+                        {...field}
+                        disabled={readOnly}
+                      />
                     </FormControl>
                     <FormMessage />
                   </FormItem>
@@ -189,22 +203,24 @@ export default function BirthProfileForm() {
               />
             </div>
 
-            <Button
-              type="submit"
-              className="w-full bg-primary-600 hover:bg-primary-700"
-              disabled={isPending}
-            >
-              {isPending ? (
-                <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                  {isUpdate ? 'Updating...' : 'Generating...'}
-                </>
-              ) : isUpdate ? (
-                'Update Chart'
-              ) : (
-                'Generate Chart'
-              )}
-            </Button>
+            {!readOnly && (
+              <Button
+                type="submit"
+                className="w-full bg-primary-600 hover:bg-primary-700"
+                disabled={isPending}
+              >
+                {isPending ? (
+                  <>
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    {isUpdate ? 'Updating...' : 'Generating...'}
+                  </>
+                ) : isUpdate ? (
+                  'Update Chart'
+                ) : (
+                  'Generate Chart'
+                )}
+              </Button>
+            )}
           </form>
         </Form>
       </div>

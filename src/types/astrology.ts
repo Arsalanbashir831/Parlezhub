@@ -168,3 +168,36 @@ export interface AstrologicalInsight {
   category: string;
   insight_text: string;
 }
+
+export interface AstrologyTeacher {
+  id: string;
+  first_name: string | null;
+  last_name: string | null;
+  profile_picture: string | null;
+  bio: string;
+  about: string;
+  qualification: string;
+  experience_years: number;
+}
+
+export interface AstrologyAccess {
+  id: number;
+  teacher: {
+    id: string;
+    email: string;
+    full_name: string;
+    profile_picture: string | null;
+  };
+  granted_at: string;
+}
+
+export interface SharedStudentAccess {
+  id: number;
+  student: {
+    id: string;
+    full_name: string;
+    profile_picture: string | null;
+  };
+  has_birth_profile: boolean;
+  granted_at: string;
+}

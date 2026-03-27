@@ -285,7 +285,7 @@ export function useServices(): UseServicesReturn {
   }, []);
 
   // Check if can create service type (simplified logic - can create any type)
-  const canCreateType = useCallback((type: ServiceType): boolean => {
+  const canCreateType = useCallback((): boolean => {
     return true; // For now, allow creating any service type
   }, []);
 

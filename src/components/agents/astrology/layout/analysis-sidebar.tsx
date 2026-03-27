@@ -14,6 +14,7 @@ interface AnalysisSidebarProps {
   onSelect: (id: string) => void;
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
   className?: string;
+  readOnly?: boolean;
 }
 
 const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
@@ -21,6 +22,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   onSelect,
   iconMap,
   className,
+  readOnly,
 }) => {
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>

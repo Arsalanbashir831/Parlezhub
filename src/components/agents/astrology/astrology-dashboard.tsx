@@ -1,9 +1,8 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
 import {
   Brain,
   Briefcase,
@@ -14,16 +13,13 @@ import {
   FileText,
   Flame,
   Gem,
-  Heart,
+  Handshake,
   Hospital,
   Hourglass,
   Landmark,
   LifeBuoy,
-  LogOut,
   Moon,
   Orbit,
-  PanelLeftOpen,
-  PanelRightOpen,
   Sparkles,
   Star,
   Theater,
@@ -36,22 +32,15 @@ import {
   useNatalChart,
   useTransits,
 } from '@/hooks/useAstrology';
-import { Button } from '@/components/ui/button';
-import { Logo } from '@/components/ui/logo';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetTitle,
-  SheetTrigger,
-} from '@/components/ui/sheet';
-import { UserMiniCard } from '@/components/layout/user-mini-card';
 
 import InsightView from './analysis/insight-view';
+import ShareAccessView from './analysis/share-access-view';
 import AstroDetailsTable from './components/astro-details-table';
 import AstroHeader from './components/astro-header';
 import BirthProfileForm from './components/birth-profile-form';
+import { DashboardHeader } from './components/dashboard-header';
+import { FloatingFooter } from './components/floating-footer';
 import VedicChart from './components/vedic-chart';
 import AnalysisSidebar from './layout/analysis-sidebar';
 import NavigationSidebar from './layout/navigation-sidebar';
@@ -78,9 +67,16 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   '⏳': Hourglass,
   '👥': Users,
   '🎭': Theater,
+  '🤝': Handshake,
 };
 
-export default function AstrologyDashboard() {
+export default function AstrologyDashboard({
+  studentId,
+  readOnly = false,
+}: {
+  studentId?: string;
+  readOnly?: boolean;
+}) {
   const [mounted, setMounted] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<string | null>(
     'd1-chart'
@@ -92,15 +88,16 @@ export default function AstrologyDashboard() {
   const [leftDesktopOpen, setLeftDesktopOpen] = useState(true);
   const [rightDesktopOpen, setRightDesktopOpen] = useState(true);
 
-  const { logout } = useAuth();
-  const router = useRouter();
-
   // API Hooks
   const { data: profile, isLoading: isProfileLoading } = useBirthProfile();
-  const { data: natalChart, isLoading: isChartLoading } =
-    useNatalChart(!!profile);
-  const { data: transits, isLoading: isTransitsLoading } =
-    useTransits(!!profile);
+  const { data: natalChart, isLoading: isChartLoading } = useNatalChart(
+    !!profile || !!studentId,
+    studentId
+  );
+  const { data: transits, isLoading: isTransitsLoading } = useTransits(
+    !!profile || !!studentId,
+    studentId
+  );
 
   useEffect(() => {
     setMounted(true);
@@ -120,94 +117,61 @@ export default function AstrologyDashboard() {
     );
   }
 
-  const username = profile ? profile.user_name || 'Seeker' : 'Guest';
+  const displayUsername = studentId
+    ? natalChart?.birth_profile?.user_name || 'Student'
+    : profile?.user_name || 'Seeker';
+
+  const welcomeMessage = studentId
+    ? `Viewing: ${displayUsername}`
+    : `Welcome, ${displayUsername}`;
+
+  const renderLeftSidebar = () => (
+    <AnalysisSidebar
+      activeAnalysis={activeAnalysis}
+      onSelect={handleSelect}
+      iconMap={ICON_MAP}
+      readOnly={readOnly}
+    />
+  );
+
+  const renderRightSidebar = () => (
+    <NavigationSidebar
+      activeAnalysis={activeAnalysis}
+      onSelect={handleSelect}
+      iconMap={ICON_MAP}
+      transits={transits?.transits}
+      readOnly={readOnly}
+    />
+  );
 
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
-      {/* Premium Top Navigation Bar (Consistent across all sizes) */}
-      <header className="z-50 flex h-20 w-full items-center justify-between border-b border-black/5 px-4 md:px-8">
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="flex items-center">
-            <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
-              <SheetTrigger asChild className="xl:hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black"
-                >
-                  <PanelLeftOpen className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="left" className="w-80 border-none p-0">
-                <SheetTitle className="sr-only">Analysis Menu</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Access astrological analysis.
-                </SheetDescription>
-                <AnalysisSidebar
-                  activeAnalysis={activeAnalysis}
-                  onSelect={handleSelect}
-                  iconMap={ICON_MAP}
-                />
-              </SheetContent>
-            </Sheet>
+      {readOnly && (
+        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 backdrop-blur-md md:px-8">
+          <div className="flex items-center gap-2 text-xs font-semibold text-primary-900 md:text-sm">
+            <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary-500" />
+            Viewing {displayUsername}&apos;s Chart — Read-Only Mode
           </div>
-          <Logo href={ROUTES.HOME} />
+          <Link
+            href={ROUTES.TEACHER.DASHBOARD}
+            className="text-right text-[10px] font-bold uppercase tracking-wider text-primary-600 hover:text-primary-700 md:text-xs"
+          >
+            ← Back to Students
+          </Link>
         </div>
-
-        <div className="flex items-center gap-2 md:gap-6">
-          <div className="flex items-center gap-4">
-            <UserMiniCard roleLabel="Astrologer" />
-            <Button
-              variant="ghost"
-              size="icon"
-              className="text-red-500 hover:bg-red-50 hover:text-red-700"
-              onClick={() => {
-                logout();
-                router.push(ROUTES.AUTH.LOGIN);
-              }}
-              title="Sign Out"
-            >
-              <LogOut className="h-5 w-5" />
-            </Button>
-          </div>
-
-          <div className="flex items-center">
-            <Sheet open={rightOpen} onOpenChange={setRightOpen}>
-              <SheetTrigger asChild className="xl:hidden">
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="h-10 w-10 text-slate-400 hover:bg-white/10 hover:text-black"
-                >
-                  <PanelRightOpen className="h-6 w-6" />
-                </Button>
-              </SheetTrigger>
-              <SheetContent side="right" className="w-80 border-none p-0">
-                <SheetTitle className="sr-only">Navigation Menu</SheetTitle>
-                <SheetDescription className="sr-only">
-                  Navigate through charts.
-                </SheetDescription>
-                <NavigationSidebar
-                  activeAnalysis={activeAnalysis}
-                  onSelect={handleSelect}
-                  iconMap={ICON_MAP}
-                  transits={transits?.transits}
-                />
-              </SheetContent>
-            </Sheet>
-          </div>
-        </div>
-      </header>
+      )}
+      <DashboardHeader />
 
       {/* Main Content Area */}
       <div className="relative z-10 flex flex-1 overflow-hidden">
         {/* Left Sidebar Menu */}
-        {leftDesktopOpen && profile && (
+        {leftDesktopOpen && (profile || studentId) && (
           <div className="hidden duration-300 animate-in slide-in-from-left-full xl:block">
             <AnalysisSidebar
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
+              readOnly={readOnly}
               className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
             />
           </div>
@@ -216,7 +180,7 @@ export default function AstrologyDashboard() {
         {/* Center Canvas */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
           <ScrollArea className="h-full flex-1 bg-white/30 backdrop-blur-sm">
-            {!profile ? (
+            {!profile && !studentId ? (
               <BirthProfileForm />
             ) : isChartLoading || isTransitsLoading || !natalChart ? (
               <div className="flex h-full min-h-[50vh] w-full items-center justify-center">
@@ -224,7 +188,11 @@ export default function AstrologyDashboard() {
               </div>
             ) : activeAnalysis === 'birth-profile' ? (
               <div className="flex h-full w-full items-center justify-center">
-                <BirthProfileForm />
+                {readOnly ? (
+                  <BirthProfileForm readOnly={true} studentId={studentId} />
+                ) : (
+                  <BirthProfileForm />
+                )}
               </div>
             ) : // Active Analysis checks
             activeAnalysis === 'd1-chart' ||
@@ -232,7 +200,7 @@ export default function AstrologyDashboard() {
               !activeAnalysis ? (
               <div className="flex min-w-0 flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-10 md:p-8">
                 <AstroHeader
-                  username={username}
+                  username={welcomeMessage}
                   moonSign={natalChart.moon_sign || 'N/A'}
                   sunSign={natalChart.sun_sign || 'N/A'}
                   ascendant={natalChart.ascendant?.rashi || 'N/A'}
@@ -283,17 +251,28 @@ export default function AstrologyDashboard() {
                   </div>
                 </div>
               </div>
+            ) : activeAnalysis === 'share-access' ? (
+              readOnly ? (
+                <div className="flex h-full w-full items-center justify-center">
+                  <p className="font-serif text-lg text-slate-500">
+                    Sharing access is restricted in read-only mode.
+                  </p>
+                </div>
+              ) : (
+                <ShareAccessView onBack={() => setActiveAnalysis('d1-chart')} />
+              )
             ) : (
               <InsightView
                 slug={activeAnalysis}
                 onBack={() => setActiveAnalysis('d1-chart')}
+                studentId={studentId}
               />
             )}
           </ScrollArea>
         </main>
 
         {/* Right Sidebar Menu */}
-        {rightDesktopOpen && profile && (
+        {rightDesktopOpen && (profile || studentId) && (
           <div className="hidden duration-300 animate-in slide-in-from-right-full xl:block">
             <NavigationSidebar
               activeAnalysis={activeAnalysis}
@@ -301,10 +280,21 @@ export default function AstrologyDashboard() {
               iconMap={ICON_MAP}
               className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
               transits={transits?.transits}
+              readOnly={readOnly}
             />
           </div>
         )}
       </div>
+
+      {/* Mobile Floating Actions */}
+      <FloatingFooter
+        leftOpen={leftOpen}
+        setLeftOpen={setLeftOpen}
+        rightOpen={rightOpen}
+        setRightOpen={setRightOpen}
+        renderLeftSidebar={renderLeftSidebar}
+        renderRightSidebar={renderRightSidebar}
+      />
     </div>
   );
 }

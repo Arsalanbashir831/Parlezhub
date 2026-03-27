@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { useMeetings } from '@/hooks/useMeetings';
 import WelcomeSection from '@/components/common/welcome-section';
 import { TeacherMeetings, TeacherStatsCards } from '@/components/dashboard';
+import { SharedStudentsList } from '@/components/dashboard/shared-students-list';
 
 export default function TeacherDashboardPage() {
   const { meetings } = useMeetings();
@@ -25,6 +26,9 @@ export default function TeacherDashboardPage() {
 
         {/* Teacher Sessions */}
         <TeacherMeetings meetings={meetings} />
+
+        {/* Shared Astrology Access Students */}
+        <SharedStudentsList />
       </div>
     </div>
   );

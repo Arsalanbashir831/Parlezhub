@@ -61,6 +61,7 @@ export const RIGHT_MENU_ITEMS = [
   { id: 'd1-chart', label: 'D1 Chart & Transit', icon: '✨' },
   { id: 'd9-chart', label: 'D9 Navamsa Chart', icon: '👑' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
+  { id: 'share-access', label: 'Share Access', icon: '🤝' },
 ];
 
 export const LEFT_MENU_ITEMS = [
