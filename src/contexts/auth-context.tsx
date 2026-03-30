@@ -462,6 +462,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       full_name: userData.username || '',
       role:
         (userData.role?.toUpperCase() as 'TEACHER' | 'STUDENT') || 'STUDENT',
+      redirect_to:
+        typeof window !== 'undefined'
+          ? `${window.location.origin}${ROUTES.AUTH.CALLBACK}`
+          : undefined,
     };
 
     await signupMutation.mutateAsync(signupData);

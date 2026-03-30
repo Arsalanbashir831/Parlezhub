@@ -7,6 +7,7 @@ export interface SignupRequest {
   password: string;
   full_name: string;
   role: 'TEACHER' | 'STUDENT';
+  redirect_to?: string;
 }
 
 export interface SignupResponse {

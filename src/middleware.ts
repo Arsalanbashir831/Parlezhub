@@ -108,13 +108,24 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Handle case where user has token but no roles (incomplete OAuth flow)
+  // Handle case where user has token but no roles yet.
+  // This happens right after email-verification or OAuth when the callback
+  // page has stored the access_token cookie but the auth context hasn't
+  // had a chance to fetch the profile and persist the role cookies.
+  //
+  // ⚠️  Do NOT redirect to sign-in here when pathname is '/':
+  //   sign-in sees isAuthenticated=true → does window.location.replace('/')
+  //   → middleware redirects back to sign-in → infinite loop.
+  //
+  // Instead, let '/' through.  The client-side AuthContext will fetch the
+  // profile, set role cookies, and page.tsx will route to the dashboard.
   if (userRoles.length === 0) {
-    // Redirect to login - OAuth callback will handle role selection inline
-    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-    if (pathname !== '/') {
-      loginUrl.searchParams.set('redirect', pathname);
+    if (pathname === '/') {
+      return NextResponse.next();
     }
+    // For any other protected path redirect to sign-in with the redirect param
+    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
+    loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
