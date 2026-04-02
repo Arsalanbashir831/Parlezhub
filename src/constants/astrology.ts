@@ -43,18 +43,18 @@ export const TARA_MAPPING: Record<number, TaraType> = {
 };
 
 export const ZODIAC_SIGNS = [
-  { name: 'Aries', symbol: '♈︎' },
-  { name: 'Taurus', symbol: '♉︎' },
-  { name: 'Gemini', symbol: '♊︎' },
-  { name: 'Cancer', symbol: '♋︎' },
-  { name: 'Leo', symbol: '♌︎' },
-  { name: 'Virgo', symbol: '♍︎' },
-  { name: 'Libra', symbol: '♎︎' },
-  { name: 'Scorpio', symbol: '♏︎' },
-  { name: 'Sagittarius', symbol: '♐︎' },
-  { name: 'Capricorn', symbol: '♑︎' },
-  { name: 'Aquarius', symbol: '♒︎' },
-  { name: 'Pisces', symbol: '♓︎' },
+  { name: 'Aries', symbol: 'Ari' },
+  { name: 'Taurus', symbol: 'Tau' },
+  { name: 'Gemini', symbol: 'Gem' },
+  { name: 'Cancer', symbol: 'Can' },
+  { name: 'Leo', symbol: 'Leo' },
+  { name: 'Virgo', symbol: 'Vir' },
+  { name: 'Libra', symbol: 'Lib' },
+  { name: 'Scorpio', symbol: 'Sco' },
+  { name: 'Sagittarius', symbol: 'Sag' },
+  { name: 'Capricorn', symbol: 'Cap' },
+  { name: 'Aquarius', symbol: 'Aqu' },
+  { name: 'Pisces', symbol: 'Pis' },
 ];
 
 export const RIGHT_MENU_ITEMS = [

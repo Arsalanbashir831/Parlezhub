@@ -17,16 +17,16 @@ const PLANET_INFO: Record<
   string,
   { symbol: string; color: string; textColor?: string }
 > = {
-  Sun: { symbol: '☉', color: '#fbbf24', textColor: '#000' },
-  Moon: { symbol: '☽', color: '#f8fafc', textColor: '#000' },
-  Mars: { symbol: '♂', color: '#ef4444', textColor: '#fff' },
-  Mercury: { symbol: '☿', color: '#22c55e', textColor: '#fff' },
-  Jupiter: { symbol: '♃', color: '#eab308', textColor: '#fff' },
-  Venus: { symbol: '♀', color: '#ec4899', textColor: '#fff' },
-  Saturn: { symbol: '♄', color: '#475569', textColor: '#fff' },
-  Rahu: { symbol: '☊', color: '#1f2937', textColor: '#fff' },
-  Ketu: { symbol: '☋', color: '#6b7280', textColor: '#fff' },
-  Ascendant: { symbol: 'As', color: '#3b82f6', textColor: '#fff' },
+  Sun: { symbol: 'Sun', color: '#fbbf24', textColor: '#000' },
+  Moon: { symbol: 'Moon', color: '#f8fafc', textColor: '#000' },
+  Mars: { symbol: 'Mars', color: '#ef4444', textColor: '#fff' },
+  Mercury: { symbol: 'Mer', color: '#22c55e', textColor: '#fff' },
+  Jupiter: { symbol: 'Jup', color: '#eab308', textColor: '#fff' },
+  Venus: { symbol: 'Ven', color: '#ec4899', textColor: '#fff' },
+  Saturn: { symbol: 'Sat', color: '#475569', textColor: '#fff' },
+  Rahu: { symbol: 'Rahu', color: '#1f2937', textColor: '#fff' },
+  Ketu: { symbol: 'Ketu', color: '#6b7280', textColor: '#fff' },
+  Ascendant: { symbol: 'Asc', color: '#3b82f6', textColor: '#fff' },
 };
 
 const getSignIndex = (sign: string) => {
@@ -94,18 +94,18 @@ const VedicChart: React.FC<ChartProps> = ({
         <circle
           cx={cx}
           cy={cy}
-          r="14"
+          r="16"
           fill={info.color}
           stroke={p.isTransit ? 'currentColor' : ''}
-          strokeWidth="4"
+          strokeWidth="3"
           className={p.isTransit ? 'text-primary-500' : ''}
         />
         <text
           x={cx}
           y={cy + 1}
           fill={info.textColor}
-          fontSize="12"
-          fontWeight="bold"
+          fontSize="11"
+          fontWeight="semibold"
           textAnchor="middle"
           alignmentBaseline="middle"
         >
