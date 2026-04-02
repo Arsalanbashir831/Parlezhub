@@ -127,3 +127,64 @@
   -webkit-box-orient: vertical;
   overflow: hidden;
 }
+
+/* AI Chat Markdown Styles */
+.ai-chat-markdown p {
+  margin-bottom: 0.5rem;
+  line-height: 1.65;
+  color: #475569;
+}
+
+.ai-chat-markdown p:last-child {
+  margin-bottom: 0;
+}
+
+.ai-chat-markdown ol {
+  list-style-type: decimal;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.ai-chat-markdown ul {
+  list-style-type: disc;
+  padding-left: 1.25rem;
+  margin: 0.5rem 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.ai-chat-markdown li {
+  line-height: 1.65;
+  color: #475569;
+}
+
+.ai-chat-markdown strong {
+  font-weight: 700;
+  color: #312e81;
+}
+
+.ai-chat-markdown em {
+  font-style: italic;
+}
+
+.ai-chat-markdown code {
+  background: #eef2ff;
+  color: #4338ca;
+  padding: 0.1rem 0.35rem;
+  border-radius: 0.25rem;
+  font-size: 0.8em;
+}
+
+.ai-chat-markdown h1,
+.ai-chat-markdown h2,
+.ai-chat-markdown h3 {
+  font-weight: 700;
+  color: #1e293b;
+  margin-top: 0.75rem;
+  margin-bottom: 0.35rem;
+  font-family: Georgia, serif;
+}

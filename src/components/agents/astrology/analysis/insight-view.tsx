@@ -2,11 +2,13 @@
 
 import React from 'react';
 import { LEFT_MENU_ITEMS } from '@/constants/astrology';
-import { ChevronLeft, Loader2, Sparkles } from 'lucide-react';
+import { ChevronLeft, Loader2, MessageSquare, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import { useAstrologicalInsight } from '@/hooks/useAstrology';
 import { ScrollArea } from '@/components/ui/scroll-area';
+
+import { AstrologyAIChat } from './astrology-ai-chat';
 
 interface InsightViewProps {
   slug: string;
@@ -24,6 +26,12 @@ const InsightView: React.FC<InsightViewProps> = ({
     true,
     studentId
   );
+
+  const chatSectionRef = React.useRef<HTMLDivElement>(null);
+
+  const scrollToChat = () => {
+    chatSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
+  };
 
   // Find the matching menu item for title and subtitle context
   const menuItem = LEFT_MENU_ITEMS.find((item) => item.id === slug) || {
@@ -44,14 +52,27 @@ const InsightView: React.FC<InsightViewProps> = ({
             DEEP COSMIC INSIGHT
           </p>
         </div>
-        <button
-          onClick={onBack}
-          className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-95"
-        >
-          <ChevronLeft className="h-4 w-4" />
-          <span className="hidden sm:inline">Back to Dashboard</span>
-          <span className="sm:hidden">Back</span>
-        </button>
+        <div className="flex items-center gap-3">
+          {!studentId && (
+            <button
+              onClick={scrollToChat}
+              disabled={isLoading || isError || !data}
+              className="flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-xs font-bold uppercase tracking-widest text-white shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:shadow-none"
+            >
+              <MessageSquare className="h-4 w-4" />
+              <span className="hidden sm:inline">Talk with AI</span>
+              <span className="sm:hidden">Chat</span>
+            </button>
+          )}
+          <button
+            onClick={onBack}
+            className="flex items-center gap-2 rounded-xl border border-slate-200 bg-white px-4 py-2 text-xs font-bold uppercase tracking-widest text-slate-500 transition-all hover:bg-slate-50 hover:text-slate-900 hover:shadow-sm active:scale-95"
+          >
+            <ChevronLeft className="h-4 w-4" />
+            <span className="hidden sm:inline">Back</span>
+            <span className="sm:hidden">Back</span>
+          </button>
+        </div>
       </div>
 
       {/* Content Body */}
@@ -139,6 +160,25 @@ const InsightView: React.FC<InsightViewProps> = ({
               </div>
             )}
           </div>
+
+          {/* AI Chat Section - Only visible for the user, not for teachers viewing a student */}
+          {!isLoading && !isError && data && !studentId && (
+            <div ref={chatSectionRef} className="scroll-mt-10">
+              <div className="mx-auto max-w-4xl px-2">
+                <div className="relative mb-8 flex items-center justify-center">
+                  <div className="absolute h-px w-full bg-slate-200/60" />
+                  <div className="relative flex items-center gap-4 bg-[#fffdfa] px-6">
+                    <Sparkles className="h-5 w-5 text-primary-400" />
+                    <span className="font-serif text-lg font-bold text-slate-400">
+                      Deepen Your Understanding
+                    </span>
+                    <Sparkles className="h-5 w-5 text-primary-400" />
+                  </div>
+                </div>
+              </div>
+              <AstrologyAIChat category={slug} />
+            </div>
+          )}
         </div>
       </ScrollArea>
     </div>

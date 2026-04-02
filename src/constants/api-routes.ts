@@ -74,5 +74,6 @@ export const API_ROUTES = {
     ACCESS: '/astrology/access/',
     ASTROLOGER_SEARCH: '/accounts/teachers/',
     TEACHER_STUDENTS: '/astrology/teacher/students/',
+    CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
   },
 };
