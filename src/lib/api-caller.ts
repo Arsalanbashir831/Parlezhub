@@ -2,7 +2,7 @@ import { API_ROUTES } from '@/constants/api-routes';
 import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 
-import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
+import { clearAuthCookies, getCookie, setCookie } from '@/lib/cookie-utils';
 
 type RequestData =
   | Record<string, string | number | boolean | File | Blob>
@@ -50,9 +50,7 @@ const refreshToken = async (): Promise<string> => {
     return access_token;
   } catch (error) {
     // If refresh fails, clear all tokens and redirect to login
-    removeCookie('access_token');
-    removeCookie('refresh_token');
-    removeCookie('user_role');
+    clearAuthCookies();
 
     // Show error toast
     toast.error('Session Expired', {
