@@ -30,6 +30,7 @@ const PLANET_INFO: Record<
 };
 
 const getSignIndex = (sign: string) => {
+  if (!sign) return -1;
   const signs = [
     'Ari',
     'Tau',
@@ -44,13 +45,33 @@ const getSignIndex = (sign: string) => {
     'Aqu',
     'Pis',
   ];
-  return signs.indexOf(sign);
+  // Check for 3-letter symbol
+  const index = signs.indexOf(sign);
+  if (index !== -1) return index;
+
+  // Check for full name
+  const fullSigns = [
+    'Aries',
+    'Taurus',
+    'Gemini',
+    'Cancer',
+    'Leo',
+    'Virgo',
+    'Libra',
+    'Scorpio',
+    'Sagittarius',
+    'Capricorn',
+    'Aquarius',
+    'Pisces',
+  ];
+  return fullSigns.indexOf(sign);
 };
 
 const getAngleRad = (sign: string, degree: number = 15) => {
   const index = getSignIndex(sign);
   if (index === -1) return 0;
-  const angleDeg = index * 30 - 90 + degree;
+  // Start Aries at -90 (top) and move anticlockwise
+  const angleDeg = -90 - (index * 30 + degree);
   return (angleDeg * Math.PI) / 180;
 };
 
@@ -60,6 +81,8 @@ const VedicChart: React.FC<ChartProps> = ({
   transitPlanets = [],
   title = 'D1 CHART',
 }) => {
+  const [hoveredId, setHoveredId] = React.useState<string | null>(null);
+
   const size = 600;
   const center = size / 2;
   const outerRadius = 260;
@@ -68,7 +91,13 @@ const VedicChart: React.FC<ChartProps> = ({
 
   // Render a planet
   const renderPlanet = (
-    p: { planet: string; sign: string; degree?: number; isTransit?: boolean },
+    p: {
+      planet: string;
+      sign: string;
+      degree?: number;
+      isTransit?: boolean;
+      hide?: boolean;
+    },
     idx: number
   ) => {
     const info = PLANET_INFO[p.planet] || {
@@ -86,34 +115,69 @@ const VedicChart: React.FC<ChartProps> = ({
     const cx = center + radiusDist * Math.cos(rad);
     const cy = center + radiusDist * Math.sin(rad);
 
+    const id = `${p.planet}-${p.isTransit ? 't' : 'n'}`;
+    const isHovered = hoveredId === id;
+
     return (
       <g
-        key={`${p.planet}-${p.isTransit ? 't' : 'n'}`}
-        className="group transition-transform"
+        key={id}
+        className={cn(
+          'group cursor-pointer transition-all duration-200',
+          isHovered ? 'z-50' : 'z-0'
+        )}
+        onMouseEnter={() => setHoveredId(id)}
+        onMouseLeave={() => setHoveredId(null)}
+        style={{
+          transform: isHovered ? 'scale(1.1)' : 'scale(1)',
+          transformOrigin: `${cx}px ${cy}px`,
+          visibility: p.hide ? 'hidden' : 'visible',
+        }}
       >
         <circle
           cx={cx}
           cy={cy}
-          r="16"
+          r={isHovered ? '19' : '16'}
           fill={info.color}
           stroke={p.isTransit ? 'currentColor' : ''}
-          strokeWidth="3"
-          className={p.isTransit ? 'text-primary-500' : ''}
+          strokeWidth={isHovered ? '4' : '3'}
+          className={cn(
+            'transition-all duration-200',
+            p.isTransit ? 'text-primary-500' : '',
+            isHovered ? 'drop-shadow-[0_0_4px_rgba(0,0,0,0.3)] filter' : ''
+          )}
         />
         <text
           x={cx}
           y={cy + 1}
           fill={info.textColor}
-          fontSize="11"
-          fontWeight="semibold"
+          fontSize={isHovered ? '12' : '11'}
+          fontWeight="bold"
           textAnchor="middle"
           alignmentBaseline="middle"
+          className="pointer-events-none"
         >
           {info.symbol}
         </text>
       </g>
     );
   };
+
+  const natalWithIdx = natalPlanets.map((p, idx) => ({
+    ...p,
+    isTransit: false,
+    idx,
+  }));
+  const transitWithIdx = transitPlanets.map((p, idx) => ({
+    planet: p.planet,
+    sign: p.sign,
+    degree: p.longitude % 30,
+    isTransit: true,
+    idx,
+  }));
+
+  const hoveredPlanetData = [...natalWithIdx, ...transitWithIdx].find(
+    (p) => `${p.planet}-${p.isTransit ? 't' : 'n'}` === hoveredId
+  );
 
   return (
     <div
@@ -163,9 +227,9 @@ const VedicChart: React.FC<ChartProps> = ({
 
         {/* Zodiac Divisions */}
         {ZODIAC_SIGNS.map((sign, i) => {
-          const angle = i * 30 - 90;
+          const angle = -90 - i * 30; // Divider at start of sign
           const rad = (angle * Math.PI) / 180;
-          const textAngle = angle + 15;
+          const textAngle = angle - 15; // Label in center of sign
           const textRad = (textAngle * Math.PI) / 180;
           const textX = Number(
             (center + (outerRadius + 30) * Math.cos(textRad)).toFixed(2)
@@ -239,23 +303,17 @@ const VedicChart: React.FC<ChartProps> = ({
           {title}
         </text>
 
-        {/* Natal Planets */}
-        {natalPlanets.map((p, idx) =>
-          renderPlanet({ ...p, isTransit: false }, idx)
+        {/* Base Planet Layer (Stable Order) */}
+        {natalWithIdx.map((p) =>
+          renderPlanet({ ...p, hide: hoveredId === `${p.planet}-n` }, p.idx)
+        )}
+        {transitWithIdx.map((p) =>
+          renderPlanet({ ...p, hide: hoveredId === `${p.planet}-t` }, p.idx)
         )}
 
-        {/* Transit Planets */}
-        {transitPlanets.map((p, idx) =>
-          renderPlanet(
-            {
-              planet: p.planet,
-              sign: p.sign,
-              degree: p.longitude % 30,
-              isTransit: true,
-            },
-            idx
-          )
-        )}
+        {/* Hover Overlay Layer (Ensures immediate "on top" rendering) */}
+        {hoveredPlanetData &&
+          renderPlanet(hoveredPlanetData, hoveredPlanetData.idx)}
       </svg>
 
       {/* Legend */}
