@@ -41,6 +41,7 @@ import AstroHeader from './components/astro-header';
 import BirthProfileForm from './components/birth-profile-form';
 import { DashboardHeader } from './components/dashboard-header';
 import { FloatingFooter } from './components/floating-footer';
+import { NavataraEducationView } from './components/navatara-education-view';
 import VedicChart from './components/vedic-chart';
 import AnalysisSidebar from './layout/analysis-sidebar';
 import NavigationSidebar from './layout/navigation-sidebar';
@@ -257,6 +258,13 @@ export default function AstrologyDashboard({
               ) : (
                 <ShareAccessView onBack={() => setActiveAnalysis('d1-chart')} />
               )
+            ) : activeAnalysis === 'navatara' ? (
+              <div className="flex w-full flex-col p-4 duration-500 animate-in fade-in md:p-8">
+                <NavataraEducationView
+                  studentId={studentId}
+                  onClose={() => setActiveAnalysis('d1-chart')}
+                />
+              </div>
             ) : (
               <InsightView
                 slug={activeAnalysis}

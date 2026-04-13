@@ -60,6 +60,7 @@ export const ZODIAC_SIGNS = [
 export const RIGHT_MENU_ITEMS = [
   { id: 'd1-chart', label: 'D1 Chart & Transit', icon: '✨' },
   { id: 'd9-chart', label: 'D9 Navamsa Chart', icon: '👑' },
+  { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
   { id: 'share-access', label: 'Share Access', icon: '🤝' },
 ];
@@ -75,7 +76,6 @@ export const LEFT_MENU_ITEMS = [
     icon: '⏳',
   },
   { id: 'parasari', label: 'Parasari Relationships', icon: '👥' },
-  { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
   { id: 'darakaraka', label: 'Spouse Profile (Jaimini)', icon: '❤️' },
   { id: 'planetary_states', label: 'Planetary Avatars & States', icon: '🎭' },
   { id: 'benefic_planets', label: 'Benefic Planets', icon: '💎' },

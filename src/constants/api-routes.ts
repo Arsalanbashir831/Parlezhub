@@ -70,6 +70,7 @@ export const API_ROUTES = {
     BIRTH_PROFILE: '/astrology/birth-profile/',
     NATAL_CHART: '/astrology/natal-chart/',
     TRANSITS: '/astrology/transits/',
+    NAKSHATRA_PREDICTIONS: '/astrology/nakshatra-predictions/',
     INSIGHTS: '/astrology/insights',
     ACCESS: '/astrology/access/',
     ASTROLOGER_SEARCH: '/accounts/teachers/',

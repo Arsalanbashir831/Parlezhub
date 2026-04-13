@@ -7,6 +7,7 @@ import {
   AstrologyAccess,
   AstrologyTeacher,
   BirthProfile,
+  NakshatraPredictionResponse,
   NatalChartResponse,
   SharedStudentAccess,
   TransitResponse,
@@ -72,6 +73,25 @@ export function useTransits(enabled: boolean = true, studentId?: string) {
         : API_ROUTES.ASTROLOGY.TRANSITS;
       const response = await apiCaller(url, 'GET');
       return response.data as TransitResponse;
+    },
+    enabled,
+  });
+}
+
+export function useNakshatraPredictions(
+  enabled: boolean = true,
+  studentId?: string
+) {
+  return useQuery({
+    queryKey: studentId
+      ? ['astrology', 'nakshatra-predictions', studentId]
+      : ['astrology', 'nakshatra-predictions'],
+    queryFn: async () => {
+      const url = studentId
+        ? `${API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS}?student_id=${studentId}`
+        : API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS;
+      const response = await apiCaller(url, 'GET');
+      return response.data as NakshatraPredictionResponse;
     },
     enabled,
   });

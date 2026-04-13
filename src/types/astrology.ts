@@ -201,3 +201,49 @@ export interface SharedStudentAccess {
   has_birth_profile: boolean;
   granted_at: string;
 }
+
+export interface TaraBalaData {
+  name: string;
+  count: number;
+  effect: string;
+}
+
+export interface NakshatraPredictionResponse {
+  subject_name: string;
+  prediction_date: string;
+  current_moon: {
+    nakshatra: string;
+    nakshatra_number: number;
+    nakshatra_lord: string;
+    nakshatra_deity: string;
+    pada: number;
+    sign: string;
+    longitude: number;
+  };
+  natal_moon: {
+    nakshatra: string;
+    nakshatra_number: number;
+    nakshatra_lord: string;
+  };
+  predictions: {
+    general: string;
+    career: string;
+    relationships: string;
+    health: string;
+    finance: string;
+    spiritual: string;
+  };
+  guidance: {
+    favorable_activities: string[];
+    avoid_activities: string[];
+    lucky_colors: string[];
+    lucky_numbers: number[];
+  };
+  tarabala: TaraBalaData;
+  overall_score: number;
+  timing: {
+    hours_until_nakshatra_change: number;
+    nakshatra_duration_remaining: string;
+  };
+  ayanamsa: string;
+}
