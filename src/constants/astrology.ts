@@ -66,6 +66,18 @@ export const RIGHT_MENU_ITEMS = [
 ];
 
 export const LEFT_MENU_ITEMS = [
+  { id: 'benefic_planets', label: 'Benefic Planets', icon: '💎' },
+  { id: 'malefic_planets', label: 'Malefic Planets', icon: '🔥' },
+  { id: 'chart_analysis', label: 'Chart Analysis', icon: '📜' },
+  { id: 'planetary_states', label: 'Planetary Avatars & States', icon: '🎭' },
+  {
+    id: 'astro_energy',
+    label: '12-Dimensional Astro Energy',
+    icon: '🌀',
+  },
+  { id: 'rashi_planets', label: 'Meaning of Rashi Rulers', icon: '👑' },
+  { id: 'lagna_lord', label: 'Your Lagna Lord Position', icon: '🏛️' },
+  { id: 'challenges', label: 'Challenges & Learning', icon: '☯️' },
   { id: 'mental_health', label: 'Mental Health', icon: '🧠' },
   { id: 'marriage', label: 'Marriage Timing', icon: '💍' },
   { id: 'prosperity_sav', label: 'Prosperity & Career (SAV)', icon: '💼' },
@@ -77,16 +89,4 @@ export const LEFT_MENU_ITEMS = [
   },
   { id: 'parasari', label: 'Parasari Relationships', icon: '👥' },
   { id: 'darakaraka', label: 'Spouse Profile (Jaimini)', icon: '❤️' },
-  { id: 'planetary_states', label: 'Planetary Avatars & States', icon: '🎭' },
-  { id: 'benefic_planets', label: 'Benefic Planets', icon: '💎' },
-  { id: 'malefic_planets', label: 'Malefic Planets', icon: '🔥' },
-  { id: 'chart_analysis', label: 'Chart Analysis', icon: '📜' },
-  {
-    id: 'astro_energy',
-    label: '12-Dimensional Astro Energy',
-    icon: '🌀',
-  },
-  { id: 'rashi_planets', label: 'Meaning of Rashi Rulers', icon: '👑' },
-  { id: 'lagna_lord', label: 'Your Lagna Lord Position', icon: '🏛️' },
-  { id: 'challenges', label: 'Challenges & Learning', icon: '☯️' },
 ];

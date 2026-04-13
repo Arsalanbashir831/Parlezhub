@@ -30,7 +30,7 @@ export function FloatingFooter({
   renderRightSidebar,
 }: FloatingFooterProps) {
   return (
-    <div className="fixed bottom-6 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-black/80 p-2 shadow-2xl backdrop-blur-xl sm:hidden">
+    <div className="fixed bottom-6 left-1/2 z-[100] flex -translate-x-1/2 items-center gap-2 rounded-full border border-white/20 bg-black/80 p-2 shadow-2xl backdrop-blur-xl xl:hidden">
       {/* Analysis Menu Toggle */}
       <Sheet open={leftOpen} onOpenChange={setLeftOpen}>
         <SheetTrigger asChild>

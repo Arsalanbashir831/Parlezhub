@@ -2,6 +2,7 @@
 
 import React from 'react';
 import { LEFT_MENU_ITEMS } from '@/constants/astrology';
+import { useAuth } from '@/contexts/auth-context';
 import { motion } from 'framer-motion';
 import { Info } from 'lucide-react';
 
@@ -24,6 +25,14 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   className,
   readOnly,
 }) => {
+  const { activeRole } = useAuth();
+
+  // If a student is viewing their own profile, limit to the first 8 basic analysis items
+  const isStudentOwnProfile = activeRole === 'STUDENT' && !readOnly;
+  const displayItems = isStudentOwnProfile
+    ? LEFT_MENU_ITEMS.slice(0, 8)
+    : LEFT_MENU_ITEMS;
+
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-mr-4 flex-1 pr-4">
@@ -33,7 +42,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
               Analysis & Strength
             </p>
             <div className="grid gap-3">
-              {LEFT_MENU_ITEMS.map((item) => {
+              {displayItems.map((item) => {
                 const Icon = iconMap[item.icon] || Info;
                 const isActive = activeAnalysis === item.id;
                 return (
