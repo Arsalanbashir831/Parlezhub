@@ -20,11 +20,11 @@ const TransitCard: React.FC<TransitCardProps> = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-3xl border border-slate-200/60 bg-white/40 p-5 shadow-sm backdrop-blur-md',
+        'overflow-hidden rounded-3xl border border-primary-500/60 bg-white/5 p-5 shadow-sm backdrop-blur-md',
         className
       )}
     >
-      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-400">
+      <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-500">
         Current Transits
       </p>
 
@@ -34,8 +34,8 @@ const TransitCard: React.FC<TransitCardProps> = ({
             key={t.planet}
             className="flex items-center justify-between text-sm"
           >
-            <span className="font-medium text-slate-500">{t.planet}</span>
-            <span className="font-bold text-slate-800">
+            <span className="font-medium text-primary-500">{t.planet}</span>
+            <span className="font-bold text-primary-300">
               {t.sign} {t.retrograde && '(R)'}
             </span>
           </div>

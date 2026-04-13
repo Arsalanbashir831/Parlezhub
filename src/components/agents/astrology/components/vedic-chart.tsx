@@ -317,7 +317,7 @@ const VedicChart: React.FC<ChartProps> = ({
       </svg>
 
       {/* Legend */}
-      <div className="absolute left-2 top-2 z-20 rounded-xl border border-slate-200/60 bg-white/60 p-2 text-[8px] font-bold text-slate-600 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
+      <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/60 p-2 text-[8px] font-bold text-primary-600 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
         <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
           <div className="h-2 w-2 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50 md:h-2.5 md:w-2.5"></div>
           <span className="uppercase tracking-widest opacity-80">Natal</span>

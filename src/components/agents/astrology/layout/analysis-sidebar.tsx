@@ -38,7 +38,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
       <ScrollArea className="-mr-4 flex-1 pr-4">
         <div className="space-y-6">
           <div className="space-y-2">
-            <p className="mb-3 ml-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+            <p className="mb-3 ml-1 px-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100">
               Analysis & Strength
             </p>
             <div className="grid gap-3">
@@ -50,9 +50,9 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
                     key={item.id}
                     onClick={() => onSelect(item.id)}
                     className={cn(
-                      'group cursor-pointer gap-0 overflow-hidden border-slate-200/60 bg-white/80 py-0 transition-all duration-500 hover:border-primary-300 hover:shadow-md hover:shadow-primary-500/5',
+                      'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-all duration-500 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
                       isActive &&
-                        'border-primary-200 bg-primary-50/50 shadow-sm'
+                        'border-primary-500 bg-primary-50/10 shadow-sm'
                     )}
                   >
                     <CardContent className="flex items-center gap-4 p-4">
@@ -60,23 +60,25 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
                         className={cn(
                           'rounded-xl p-2 transition-all duration-500',
                           isActive
-                            ? 'bg-primary-50 shadow-inner'
-                            : 'bg-slate-50 group-hover:bg-slate-100'
+                            ? 'bg-primary-500 shadow-inner'
+                            : 'bg-primary-500/70 group-hover:bg-primary-500'
                         )}
                       >
                         <Icon
                           className={cn(
                             'h-4 w-4 transition-colors duration-500',
                             isActive
-                              ? 'text-primary-600'
-                              : 'text-slate-400 group-hover:text-primary-500'
+                              ? 'text-primary-50'
+                              : 'text-slate-100 group-hover:text-primary-50'
                           )}
                         />
                       </div>
                       <span
                         className={cn(
                           'text-sm font-medium transition-colors',
-                          isActive ? 'text-primary-600' : 'text-slate-600'
+                          isActive
+                            ? 'text-primary-500'
+                            : 'text-primary-500/70 group-hover:text-primary-500'
                         )}
                       >
                         {item.label}

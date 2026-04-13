@@ -21,7 +21,7 @@ export function DashboardHeader({ className }: DashboardHeaderProps) {
   return (
     <header
       className={cn(
-        'z-50 flex h-20 w-full items-center justify-between border-b border-black/5 bg-white/80 px-4 backdrop-blur-md md:px-8',
+        'z-50 flex h-20 w-full items-center justify-between border-b border-primary-300/60 bg-background/80 px-4 backdrop-blur-md md:px-8',
         className
       )}
     >
@@ -37,7 +37,7 @@ export function DashboardHeader({ className }: DashboardHeaderProps) {
           <Button
             variant="ghost"
             size="icon"
-            className="text-red-500 hover:bg-red-50 hover:text-red-700"
+            className="text-red-500 hover:bg-red-600 hover:text-red-200"
             onClick={() => {
               logout();
               router.push(ROUTES.AUTH.LOGIN);

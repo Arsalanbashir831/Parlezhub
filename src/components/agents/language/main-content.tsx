@@ -102,14 +102,14 @@ export function MainContent() {
   }
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center bg-gray-50">
+    <div className="flex h-full min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center bg-background">
       <div className="flex w-full flex-1 flex-col items-center justify-center p-8">
         {currentStep === 'prompt' && (
           <>
-            <h1 className="mb-4 text-center text-3xl font-bold text-gray-900 md:text-4xl">
+            <h1 className="mb-4 text-center text-3xl font-bold text-primary-600 md:text-4xl">
               What would you like to learn today?
             </h1>
-            <p className="mb-8 max-w-2xl text-center text-gray-600">
+            <p className="mb-8 max-w-2xl text-center text-muted-foreground">
               Ask me anything about language learning, practice conversations,
               or get personalized lessons
             </p>

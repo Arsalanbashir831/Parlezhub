@@ -82,12 +82,12 @@ export default function BirthProfileForm({
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-4">
-      <div className="w-full max-w-md rounded-2xl border border-slate-200 bg-white p-8 shadow-xl">
+      <div className="bg-white/1 w-full max-w-md rounded-2xl border border-primary-500/20 p-8 shadow-2xl backdrop-blur-md">
         <div className="mb-6 text-center">
-          <h2 className="font-serif text-2xl font-bold tracking-wide text-primary-900">
+          <h2 className="font-serif text-2xl font-bold tracking-wide text-primary-500">
             Birth Profile
           </h2>
-          <p className="mt-2 text-sm text-slate-500">
+          <p className="mt-2 text-sm text-primary-100/60">
             Please enter your birth details to generate your astrological
             charts.
           </p>
@@ -206,12 +206,12 @@ export default function BirthProfileForm({
             {!readOnly && (
               <Button
                 type="submit"
-                className="w-full bg-primary-600 hover:bg-primary-700"
+                className="w-full bg-primary-500 font-bold text-primary-950 hover:bg-primary-600"
                 disabled={isPending}
               >
                 {isPending ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin text-primary-950" />
                     {isUpdate ? 'Updating...' : 'Generating...'}
                   </>
                 ) : isUpdate ? (

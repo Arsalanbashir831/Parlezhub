@@ -35,7 +35,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-ml-4 flex-1 pl-4">
         <div className="space-y-4">
-          <p className="mb-3 mr-1 px-2 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
+          <p className="mb-3 mr-1 px-2 text-left text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100">
             Main Navigation
           </p>
 
@@ -48,8 +48,8 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                   key={item.id}
                   onClick={() => onSelect(item.id)}
                   className={cn(
-                    'group cursor-pointer gap-0 overflow-hidden border-slate-200/60 bg-white/80 py-0 transition-all duration-500 hover:border-primary-300 hover:shadow-md hover:shadow-primary-500/5',
-                    isActive && 'border-primary-200 bg-primary-50/50 shadow-sm'
+                    'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-all duration-500 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
+                    isActive && 'border-primary-500 bg-primary-50/10 shadow-sm'
                   )}
                 >
                   <CardContent className="flex items-center gap-4 p-4">
@@ -57,25 +57,25 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
                       className={cn(
                         'rounded-xl p-2.5 transition-all duration-500',
                         isActive
-                          ? 'scale-110 bg-primary-100 shadow-sm'
-                          : 'bg-slate-50 group-hover:scale-105'
+                          ? 'scale-110 bg-primary-500 shadow-inner'
+                          : 'bg-primary-500/70 group-hover:bg-primary-500'
                       )}
                     >
                       <Icon
                         className={cn(
                           'h-5 w-5',
                           isActive
-                            ? 'text-primary-600'
-                            : 'text-slate-400 group-hover:text-primary-500'
+                            ? 'text-primary-50'
+                            : 'text-slate-100 group-hover:text-primary-50'
                         )}
                       />
                     </div>
                     <span
                       className={cn(
-                        'text-sm font-semibold tracking-tight',
+                        'text-sm font-medium transition-colors',
                         isActive
-                          ? 'text-slate-900'
-                          : 'text-slate-500 group-hover:text-slate-900'
+                          ? 'text-primary-500'
+                          : 'text-primary-500/70 group-hover:text-primary-500'
                       )}
                     >
                       {readOnly && item.id === 'birth-profile'

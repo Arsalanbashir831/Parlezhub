@@ -30,12 +30,7 @@ export function Logo({
         <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-primary-400"></div>
       </div>
       {!isCollapsed && (
-        <span
-          className={cn(
-            'font-bold text-gray-900 dark:text-gray-100',
-            sizeClasses[size]
-          )}
-        >
+        <span className={cn('font-bold text-primary-50', sizeClasses[size])}>
           Parlez<span className="text-primary-500">Hub</span>
         </span>
       )}

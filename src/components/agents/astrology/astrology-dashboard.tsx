@@ -108,7 +108,7 @@ export default function AstrologyDashboard({
 
   if (!mounted || isProfileLoading) {
     return (
-      <div className="flex h-screen w-full items-center justify-center bg-[#fffdfa]">
+      <div className="flex h-screen w-full items-center justify-center bg-background">
         <div className="h-8 w-8 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
       </div>
     );
@@ -142,7 +142,7 @@ export default function AstrologyDashboard({
   );
 
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-[#fffdfa] text-slate-900 selection:bg-primary-500/10">
+    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground selection:bg-primary-500/10">
       {readOnly && (
         <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 backdrop-blur-md md:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold text-primary-900 md:text-sm">
@@ -169,14 +169,14 @@ export default function AstrologyDashboard({
               onSelect={handleSelect}
               iconMap={ICON_MAP}
               readOnly={readOnly}
-              className="w-64 border-r border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-r border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
             />
           </div>
         )}
 
         {/* Center Canvas */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="h-full flex-1 bg-white/30 backdrop-blur-sm">
+          <ScrollArea className="h-full flex-1 bg-white/5 backdrop-blur-sm">
             {!profile && !studentId ? (
               <BirthProfileForm />
             ) : isChartLoading || isTransitsLoading || !natalChart ? (
@@ -282,7 +282,7 @@ export default function AstrologyDashboard({
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-64 border-l border-slate-200/60 bg-white/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-l border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
               transits={transits?.transits}
               readOnly={readOnly}
             />

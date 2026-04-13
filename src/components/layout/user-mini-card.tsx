@@ -32,17 +32,15 @@ export const UserMiniCard: React.FC<UserMiniCardProps> = ({
     <div className="mb-4 flex items-center gap-3">
       <Avatar>
         <AvatarImage src={user?.profile_picture || ''} />
-        <AvatarFallback className="bg-primary-100 text-primary-700 dark:bg-primary-800 dark:text-primary-200">
+        <AvatarFallback className="bg-primary-100 text-primary-700">
           {user?.first_name?.charAt(0).toUpperCase()}
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="truncate text-sm font-medium text-gray-900 dark:text-gray-100">
+        <p className="truncate text-sm font-medium text-primary-500">
           {user?.first_name} {user?.last_name}
         </p>
-        <p className="text-xs capitalize text-gray-500 dark:text-gray-400">
-          {roleLabel}
-        </p>
+        <p className="text-xs capitalize text-primary-500/70">{roleLabel}</p>
       </div>
     </div>
   );

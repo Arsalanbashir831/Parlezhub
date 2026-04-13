@@ -13,17 +13,19 @@ const config: Config = {
     extend: {
       colors: {
         primary: {
-          50: '#fff7ed',
-          100: '#ffedd5',
-          200: '#fed7aa',
-          300: '#fdba74',
-          400: '#fb923c',
-          500: '#f97316', // Main orange
-          600: '#ea580c',
-          700: '#c2410c',
-          800: '#9a3412',
-          900: '#7c2d12',
-          950: '#431407',
+          50: '#fefbed',
+          100: '#fdf6d6',
+          200: '#fbeaa8',
+          300: '#f8da70',
+          400: '#f3c43e',
+          500: '#d4af37', // Light gold
+          600: '#b8941f', // Dark gold
+          700: '#967015',
+          800: '#7e5a17',
+          900: '#694a17',
+          950: '#3e290a',
+          DEFAULT: 'hsl(var(--primary))',
+          foreground: 'hsl(var(--primary-foreground))',
         },
         background: 'hsl(var(--background))',
         foreground: 'hsl(var(--foreground))',

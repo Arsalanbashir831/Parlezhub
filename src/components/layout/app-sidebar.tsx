@@ -118,11 +118,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         <SidebarMenuButton
           tooltip={isCollapsed ? label : undefined}
           className={cn(
-            'px-4 py-6 hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white',
-            role === 'TEACHER' &&
-              'text-blue-600 hover:text-white dark:text-blue-400',
-            role === 'STUDENT' &&
-              'text-green-600 hover:text-white dark:text-green-400'
+            'px-4 py-6 font-medium transition-all hover:bg-primary-500 hover:text-primary-950',
+            role === 'TEACHER' && 'text-primary-300',
+            role === 'STUDENT' && 'text-primary-400'
           )}
           onClick={action}
         >
@@ -156,9 +154,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <SidebarMenuButton
                 tooltip={isCollapsed ? item.label : undefined}
                 className={cn(
-                  'px-4 py-6 hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white',
-                  isParentActive &&
-                    'bg-gradient-to-br from-primary-500 to-primary-600 text-white'
+                  'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
+                  isParentActive && 'bg-primary-500 font-bold text-primary-950'
                 )}
               >
                 <item.icon className="shrink-0" />
@@ -185,9 +182,9 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                           asChild
                           isActive={isSubActive}
                           className={cn(
-                            'px-4 py-6 hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white',
+                            'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
                             isSubActive &&
-                              'bg-gradient-to-br from-primary-500 to-primary-600 text-white'
+                              'border-r-2 border-primary-500 bg-primary-500/20 font-bold text-primary-300'
                           )}
                         >
                           <Link href={subItem.href!}>
@@ -214,9 +211,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           isActive={isActive}
           tooltip={isCollapsed ? item.label : undefined}
           className={cn(
-            'px-4 py-6 hover:bg-gradient-to-br hover:from-primary-500 hover:to-primary-600 hover:text-white',
-            isActive &&
-              'bg-gradient-to-br from-primary-500 to-primary-600 text-white'
+            'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
+            isActive && 'bg-primary-500 font-bold text-primary-950'
           )}
         >
           <Link
@@ -225,11 +221,6 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           >
             <item.icon className="shrink-0" />
             {!isCollapsed && <span>{item.label}</span>}
-            {/* {!isCollapsed && item.badge && (
-							<span className="ml-auto bg-primary-100 text-primary-600 dark:bg-primary-800 dark:text-primary-300 px-2 py-0.5 rounded-full text-xs font-medium">
-								{item.badge}
-							</span>
-						)} */}
           </Link>
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -239,11 +230,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   return (
     <Sidebar
       collapsible="icon"
-      className="border-none bg-white shadow-lg dark:bg-gray-800"
+      className="border-r border-none border-primary-300/60 bg-background"
     >
       <SidebarHeader
         className={cn(
-          'border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+          'border-b border-primary-300/60 bg-background',
           isCollapsed ? 'py-4' : 'p-4'
         )}
       >
@@ -252,7 +243,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
       <SidebarContent
         className={cn(
-          'border-b border-gray-200 bg-white dark:border-gray-700 dark:bg-gray-800',
+          'border-b border-primary-300/60 bg-background',
           !isCollapsed ? 'px-2' : ''
         )}
       >
@@ -263,7 +254,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="bg-white p-4 dark:bg-gray-800">
+      <SidebarFooter className="border-t border-primary-300/10 bg-background p-4">
         {isAuthenticated ? (
           <>
             {roleLabel !== 'Agent' ? (
@@ -328,7 +319,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
             <Button
               variant="ghost"
               className={cn(
-                'w-full justify-start gap-3 text-red-600 hover:bg-red-50 hover:text-red-700 dark:text-red-400 dark:hover:bg-red-900/20 dark:hover:text-red-300',
+                'w-full justify-start gap-3 text-red-400 hover:bg-red-500/10 hover:text-red-300',
                 isCollapsed && 'justify-center'
               )}
               onClick={onLogout}
