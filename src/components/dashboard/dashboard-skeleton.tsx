@@ -7,8 +7,8 @@ export default function DashboardSkeleton() {
     <div className="space-y-8">
       {/* Welcome Section Skeleton */}
       <div className="space-y-2">
-        <div className="h-8 w-64 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
-        <div className="h-4 w-48 animate-pulse rounded-md bg-gray-200 dark:bg-gray-700" />
+        <div className="h-8 w-64 animate-pulse rounded-md bg-primary-200" />
+        <div className="h-4 w-48 animate-pulse rounded-md bg-primary-200" />
       </div>
 
       {/* Grid Skeleton */}

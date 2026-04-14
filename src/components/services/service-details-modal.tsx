@@ -21,6 +21,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -95,6 +96,9 @@ export function ServiceDetailsModal({
                 <DialogTitle className="text-2xl font-bold leading-tight">
                   {service.title}
                 </DialogTitle>
+                <DialogDescription className="mt-2 text-sm text-gray-500">
+                  {service.shortDescription}
+                </DialogDescription>
               </div>
             </div>
           </DialogHeader>

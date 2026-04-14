@@ -14,15 +14,15 @@ interface PromptInputProps {
 const PromptInput = memo(
   ({ value, onChange, onSend, disabled = false }: PromptInputProps) => {
     return (
-      <div>
+      <div className="group transition-all duration-500">
         <MessageComposer
           value={value}
           onChange={onChange}
           onSend={onSend}
           disabled={disabled}
         />
-        <p className="mt-2 text-center text-xs text-gray-500">
-          Press Enter to send, Shift+Enter for new line
+        <p className="mt-4 text-center text-[9px] font-bold uppercase tracking-[0.25em] text-primary-100/20 transition-colors duration-500 group-focus-within:text-primary-500/40">
+          Command Enter to Transmit &bull; Shift Enter for New Lineage
         </p>
       </div>
     );

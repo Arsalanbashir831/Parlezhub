@@ -35,7 +35,7 @@ export default function MeetingPaymentButton({
         size="sm"
         variant="default"
         onClick={() => setIsPaymentModalOpen(true)}
-        className="bg-green-600 hover:bg-green-700"
+        className="h-10 rounded-xl bg-primary-500 px-4 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
       >
         <CreditCard className="mr-2 h-4 w-4" />
         Make Payment

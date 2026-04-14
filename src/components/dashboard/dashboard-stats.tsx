@@ -1,6 +1,6 @@
 'use client';
 
-import { CalendarIcon, MessageSquare, TrendingUp } from 'lucide-react';
+import { CalendarIcon, MessageSquare } from 'lucide-react';
 
 import { Meeting, useMeetings } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
@@ -23,21 +23,25 @@ export default function DashboardStatsCards({
     <>
       {/* Total Conversations Card */}
       <div className="lg:col-span-6">
-        <Card className="h-full border-blue-200 bg-gradient-to-br from-blue-50 to-blue-100 dark:border-blue-800 dark:from-blue-900/20 dark:to-blue-800/20">
-          <CardContent className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="rounded-xl bg-blue-500 p-3">
-                <MessageSquare className="h-6 w-6 text-white" />
+        <Card className="relative h-full overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
+          {/* Subtle Decorative Gradient */}
+          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl" />
+
+          <CardContent className="relative p-7">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/80">
+                  Total Conversations
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-4xl font-semibold tracking-tighter text-white">
+                    {totalConversations}
+                  </h2>
+                </div>
               </div>
-              <TrendingUp className="h-5 w-5 text-blue-600" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-blue-700 dark:text-blue-300">
-                Total Conversations
-              </p>
-              <p className="text-3xl font-bold text-blue-900 dark:text-blue-100">
-                {totalConversations}
-              </p>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+                <MessageSquare className="h-6 w-6" />
+              </div>
             </div>
           </CardContent>
         </Card>
@@ -45,24 +49,28 @@ export default function DashboardStatsCards({
 
       {/* Upcoming Meetings Card */}
       <div className="lg:col-span-6">
-        <Card className="h-full border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:border-purple-800 dark:from-purple-900/20 dark:to-purple-800/20">
-          <CardContent className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="rounded-xl bg-purple-500 p-3">
-                <CalendarIcon className="h-6 w-6 text-white" />
+        <Card className="relative h-full overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
+          {/* Subtle Decorative Gradient */}
+          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl" />
+
+          <CardContent className="relative p-7">
+            <div className="flex items-start justify-between">
+              <div className="space-y-1">
+                <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/80">
+                  Upcoming Meetings
+                </p>
+                <div className="flex items-baseline gap-2">
+                  <h2 className="text-4xl font-semibold tracking-tighter text-white">
+                    {counts.upcoming}
+                  </h2>
+                </div>
+                <p className="mt-1 text-[10px] font-medium text-white/40">
+                  {nextUpcomingLabel}
+                </p>
               </div>
-              <TrendingUp className="h-5 w-5 text-purple-600" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
-                Upcoming Meetings
-              </p>
-              <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
-                {counts.upcoming}
-              </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
-                Next: {nextUpcomingLabel}
-              </p>
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+                <CalendarIcon className="h-6 w-6" />
+              </div>
             </div>
           </CardContent>
         </Card>

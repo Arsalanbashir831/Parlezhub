@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 
 interface SettingsHeaderProps {
   title: string;
@@ -10,10 +10,8 @@ interface SettingsHeaderProps {
 const SettingsHeader = memo(({ title, description }: SettingsHeaderProps) => {
   return (
     <div>
-      <h1 className="text-3xl font-bold text-gray-900 dark:text-gray-100">
-        {title}
-      </h1>
-      <p className="mt-2 text-gray-600 dark:text-gray-400">{description}</p>
+      <h1 className="text-3xl font-bold text-primary-500">{title}</h1>
+      <p className="mt-2 text-primary-100/60">{description}</p>
     </div>
   );
 });

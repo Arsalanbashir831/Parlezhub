@@ -15,25 +15,32 @@ interface RealMessageProps {
 
 const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
   return (
-    <div className={cn('flex gap-3', isOwnMessage && 'flex-row-reverse')}>
-      <Avatar className="h-8 w-8">
-        <AvatarFallback className="bg-primary-100 text-xs text-primary-700">
-          {isOwnMessage ? 'Y' : 'U'}
+    <div className={cn('flex gap-3 px-2', isOwnMessage && 'flex-row-reverse')}>
+      <Avatar className="h-8 w-8 shrink-0 border border-primary-500/20">
+        <AvatarFallback className="bg-primary-500/10 text-[10px] font-bold text-primary-400">
+          {isOwnMessage ? 'ME' : 'YOU'}
         </AvatarFallback>
       </Avatar>
       <div
         className={cn(
-          'max-w-xs rounded-lg px-4 py-2 lg:max-w-md',
+          'max-w-[75%] rounded-2xl px-4 py-2.5 shadow-lg transition-all sm:max-w-md',
           isOwnMessage
-            ? 'bg-primary-500 text-white'
-            : 'bg-gray-100 text-gray-900'
+            ? 'rounded-tr-none bg-primary-500 text-primary-950 shadow-primary-500/5'
+            : 'rounded-tl-none border border-primary-500/10 bg-white/5 text-primary-100 backdrop-blur-sm'
         )}
       >
-        <MessageBody content={message.content} />
+        <div
+          className={cn(
+            'text-sm leading-relaxed',
+            isOwnMessage ? 'font-medium' : 'font-normal'
+          )}
+        >
+          <MessageBody content={message.content} />
+        </div>
         <p
           className={cn(
-            'mt-1 text-xs',
-            isOwnMessage ? 'text-primary-100' : 'text-gray-500'
+            'mt-1.5 text-[9px] font-bold uppercase tracking-wider',
+            isOwnMessage ? 'text-primary-950/40' : 'text-primary-100/30'
           )}
         >
           {new Date(

@@ -65,30 +65,30 @@ export default function AuthCallbackPage() {
 
   if (status === 'error') {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-        <div className="w-full max-w-md space-y-4 rounded-xl border border-red-200 bg-white p-8 text-center shadow-lg">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4">
+        <div className="w-full max-w-md space-y-4 rounded-xl border border-red-200 bg-white/5 p-8 text-center shadow-lg">
           <div className="text-4xl">⚠️</div>
           <h1 className="text-xl font-semibold text-red-600">
             Verification Failed
           </h1>
-          <p className="text-sm text-gray-600">{errorMsg}</p>
-          <p className="text-xs text-gray-400">Redirecting to sign-in…</p>
+          <p className="text-sm text-primary-100">{errorMsg}</p>
+          <p className="text-xs text-primary-600">Redirecting to sign-in…</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4">
-      <div className="w-full max-w-md space-y-6 rounded-xl border border-gray-200 bg-white p-8 text-center shadow-lg">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4">
+      <div className="w-full max-w-md space-y-6 rounded-xl border border-primary-500/50 bg-white/5 p-8 text-center shadow-lg">
         <div className="flex justify-center">
           <div className="h-12 w-12 animate-spin rounded-full border-4 border-blue-100 border-t-blue-600" />
         </div>
         <div className="space-y-1">
-          <h1 className="text-xl font-semibold text-gray-900">
+          <h1 className="text-xl font-semibold text-primary-100">
             Verifying your email…
           </h1>
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-primary-600">
             Please wait while we confirm your account.
           </p>
         </div>

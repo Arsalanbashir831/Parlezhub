@@ -212,7 +212,8 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           tooltip={isCollapsed ? item.label : undefined}
           className={cn(
             'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
-            isActive && 'bg-primary-500 font-bold text-primary-950'
+            isActive &&
+              'bg-primary-500 font-bold text-primary-950 hover:bg-primary-500/90 hover:text-primary-950/90'
           )}
         >
           <Link
@@ -230,7 +231,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-none border-primary-300/60 bg-background"
+      className="border-r border-primary-300/60 bg-background"
     >
       <SidebarHeader
         className={cn(
@@ -254,7 +255,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-primary-300/10 bg-background p-4">
+      <SidebarFooter className="border-t border-primary-300/10 bg-background">
         {isAuthenticated ? (
           <>
             {roleLabel !== 'Agent' ? (

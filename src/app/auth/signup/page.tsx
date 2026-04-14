@@ -8,6 +8,7 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { GoogleSignupWithRole } from '@/components/auth/google-signup-with-role';
@@ -90,16 +91,14 @@ export default function SignupPage() {
 
         {/* Role Selection */}
         <div className="space-y-2">
-          <label className="text-sm font-medium text-gray-700 dark:text-gray-300">
-            I am a:
-          </label>
+          <label className="text-sm font-medium text-primary-50">I am a:</label>
           <div className="flex space-x-4">
             <label className="flex items-center space-x-2">
               <input
                 type="radio"
                 value="STUDENT"
                 {...register('role')}
-                className="text-blue-600 focus:ring-blue-500"
+                className="text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm">Student</span>
             </label>
@@ -108,7 +107,7 @@ export default function SignupPage() {
                 type="radio"
                 value="TEACHER"
                 {...register('role')}
-                className="text-blue-600 focus:ring-blue-500"
+                className="text-primary-600 focus:ring-primary-500"
               />
               <span className="text-sm">Teacher</span>
             </label>
@@ -124,25 +123,26 @@ export default function SignupPage() {
           Create Account
         </AuthButton>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-              Or continue with
-            </span>
-          </div>
+        <div className="flex items-center justify-center gap-2">
+          <Separator
+            orientation="horizontal"
+            className="w-full bg-primary-100"
+          />
+          <p className="px-2 text-primary-100">OR</p>
+          <Separator
+            orientation="horizontal"
+            className="w-full bg-primary-100"
+          />
         </div>
 
         <GoogleSignupWithRole disabled={isLoading} className="w-full" />
 
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-primary-100">
             Already have an account?{' '}
             <Link
               href={ROUTES.AUTH.LOGIN}
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Sign in
             </Link>

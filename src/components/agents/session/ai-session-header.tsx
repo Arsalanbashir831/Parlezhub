@@ -26,49 +26,52 @@ export default function AiSessionHeader({
   rightContent,
   bottomContent,
 }: Props) {
-  const BackButton = () => (
-    <Button
-      variant="ghost"
-      size="sm"
-      className="flex-shrink-0 justify-self-start text-gray-700 hover:bg-black/5 dark:text-white dark:hover:bg-white/10"
-      onClick={onBackClick}
-    >
-      <ArrowLeft className="h-4 w-4 text-gray-700 hover:text-black dark:text-white sm:mr-2" />
-      <span className="hidden sm:inline">{backButtonText}</span>
-    </Button>
-  );
-
   return (
-    <div className="w-full border-b border-gray-200 bg-white/50 text-black backdrop-blur-sm dark:border-gray-700 dark:bg-black/20 dark:text-white">
-      <div className="flex flex-wrap items-center justify-between gap-3 p-3 sm:p-4 lg:p-6">
+    <div className="relative z-50 w-full border-b border-primary-500/10 bg-background/80 text-white backdrop-blur-xl">
+      <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 lg:p-6 lg:px-8">
         {/* Left side - Back button */}
-        <div className="w-1/3 flex-shrink-0">
+        <div className="min-w-0 flex-1">
           {showBackButton &&
             !sessionActive &&
             (onBackClick ? (
-              <BackButton />
+              <Button
+                variant="ghost"
+                size="sm"
+                className="group flex items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-primary-100/40 transition-all hover:bg-white/5 hover:text-primary-500"
+                onClick={onBackClick}
+              >
+                <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                <span className="hidden sm:inline">{backButtonText}</span>
+              </Button>
             ) : (
               <Link href={backButtonHref}>
-                <BackButton />
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="group flex items-center gap-2 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-primary-100/40 transition-all hover:bg-white/5 hover:text-primary-500"
+                >
+                  <ArrowLeft className="h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                  <span className="hidden sm:inline">{backButtonText}</span>
+                </Button>
               </Link>
             ))}
         </div>
 
         {/* Center content - Timer */}
-        <div className="flex w-full flex-1 justify-end">{children}</div>
+        <div className="flex flex-1 justify-center">{children}</div>
 
         {/* Right side - Controls */}
-        {rightContent && (
-          <div className="w-full flex-shrink-0 md:w-1/3">
+        <div className="flex flex-1 justify-end">
+          {rightContent && (
             <div className="flex flex-col items-stretch justify-end gap-2 md:flex-row md:items-center md:justify-end md:gap-3">
               {rightContent}
             </div>
-          </div>
-        )}
+          )}
+        </div>
       </div>
       {/* Bottom Content */}
       {bottomContent && (
-        <div className="flex flex-col items-center justify-center gap-2 p-3 sm:p-4 sm:pt-0">
+        <div className="flex flex-col items-center justify-center gap-2 p-6 pt-0 duration-500 animate-in fade-in slide-in-from-top-2">
           <div className="flex w-full justify-center md:flex-1">
             {bottomContent}
           </div>

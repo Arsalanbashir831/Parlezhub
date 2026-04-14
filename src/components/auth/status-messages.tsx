@@ -28,8 +28,8 @@ export const InfoMessage: React.FC<StatusMessageProps> = ({
   message,
   icon: Icon,
 }) => (
-  <div className="rounded-lg border border-blue-200 bg-blue-50 p-4">
-    <div className="flex items-start text-blue-800">
+  <div className="rounded-lg border border-primary-500/50 bg-primary-500/5 p-4">
+    <div className="flex items-start text-primary-800">
       {Icon && <Icon className="mr-2 mt-0.5 h-4 w-4 flex-shrink-0" />}
       <p className="text-sm">{message}</p>
     </div>

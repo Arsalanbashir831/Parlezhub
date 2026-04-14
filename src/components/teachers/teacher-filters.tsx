@@ -69,7 +69,7 @@ export const TeacherFilters = React.memo<TeacherFiltersProps>(
                 <Filter className="h-4 w-4" />
                 Filters
               </Button>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-primary-100">
                 {resultsCount} teachers found
               </p>
             </div>

@@ -29,10 +29,10 @@ export default function ConversationsPage() {
     <div className="space-y-6">
       {/* Header */}
       <div>
-        <h1 className="text-2xl font-bold text-gray-900 dark:text-white">
+        <h1 className="text-3xl font-bold text-primary-500">
           All Conversations
         </h1>
-        <p className="text-gray-600">
+        <p className="mt-2 text-primary-100/60">
           Review your AI conversation history and progress
         </p>
       </div>

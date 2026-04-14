@@ -48,11 +48,16 @@ const RealMessageList = memo(
       <ScrollArea className="flex-1 px-4 pt-4" ref={scrollAreaRef}>
         <div className="space-y-4">
           {memoizedMessages.length === 0 ? (
-            <div className="flex h-32 items-center justify-center text-center text-gray-500">
-              <div>
-                <p className="text-sm">No messages yet</p>
-                <p className="text-xs">
-                  Start the conversation by sending a message
+            <div className="flex h-64 items-center justify-center p-8 text-center">
+              <div className="space-y-4">
+                <div className="inline-block rounded-full border border-primary-500/10 bg-primary-500/5 p-4">
+                  <div className="h-2 w-2 animate-ping rounded-full bg-primary-500" />
+                </div>
+                <h3 className="font-serif text-lg font-bold text-primary-300">
+                  No messages yet
+                </h3>
+                <p className="text-xs uppercase tracking-widest text-primary-100/40">
+                  Start the conversation to reveal your destiny
                 </p>
               </div>
             </div>

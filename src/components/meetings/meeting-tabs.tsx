@@ -9,6 +9,7 @@ import {
   XCircle,
 } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import { Meeting, MeetingStatus, useMeetings } from '@/hooks/useMeetings';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -154,12 +155,6 @@ export default function MeetingTabs() {
     status: MeetingStatus,
     overrideLabel?: 'pending' | 'upcoming' | 'completed' | 'cancelled'
   ) => {
-    const variant =
-      status === 'PENDING'
-        ? 'default'
-        : status === 'CONFIRMED'
-          ? 'secondary'
-          : 'destructive';
     const label = overrideLabel
       ? overrideLabel
       : status === 'PENDING'
@@ -167,10 +162,18 @@ export default function MeetingTabs() {
         : status === 'CONFIRMED'
           ? 'confirmed'
           : 'cancelled';
+
     return (
       <Badge
-        variant={variant as 'default' | 'secondary' | 'destructive'}
-        className="capitalize"
+        variant="outline"
+        className={cn(
+          'border px-3 py-0.5 text-[10px] font-bold capitalize tracking-widest transition-all duration-300',
+          status === 'PENDING'
+            ? 'border-primary-500/30 bg-primary-500/5 text-primary-400'
+            : status === 'CONFIRMED'
+              ? 'border-green-500/30 bg-green-500/5 text-green-400 shadow-[0_0_10px_rgba(34,197,94,0.1)]'
+              : 'border-red-500/30 bg-red-500/5 text-red-400'
+        )}
       >
         {label}
       </Badge>
@@ -193,12 +196,18 @@ export default function MeetingTabs() {
     meeting: Meeting,
     overrideLabel?: 'pending' | 'upcoming' | 'completed' | 'cancelled'
   ) => (
-    <Card key={meeting.id} className="mb-4">
-      <CardHeader className="pb-3">
+    <Card
+      key={meeting.id}
+      className="group relative mb-6 overflow-hidden rounded-2xl border-primary-500/10 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]"
+    >
+      <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500/50 shadow-[0_0_10px_rgba(212,175,55,0.2)] transition-colors group-hover:bg-primary-500" />
+      <CardHeader className="pb-4">
         <div className="flex items-start justify-between">
-          <div className="flex items-center gap-2">
-            {getStatusIcon(meeting.status)}
-            <CardTitle className="text-lg">
+          <div className="flex items-center gap-4">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
+              {getStatusIcon(meeting.status)}
+            </div>
+            <CardTitle className="font-serif text-xl font-bold tracking-tight text-white">
               {meeting.subject ||
                 (userRole === 'student'
                   ? `Lesson with ${meeting.teacherName ?? ''}`
@@ -209,75 +218,98 @@ export default function MeetingTabs() {
         </div>
       </CardHeader>
       <CardContent>
-        <div className="space-y-2">
-          <div className="flex items-center gap-2 text-sm text-gray-600">
-            <Calendar className="h-4 w-4" />
-            <span>
-              {formatDate(meeting.date)} at {formatTime(meeting.date)}
-            </span>
-            <span>({meeting.duration} min)</span>
+        <div className="space-y-4">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
+            <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
+              <Calendar className="h-4 w-4 text-primary-500" />
+              <span>
+                {formatDate(meeting.date)} at {formatTime(meeting.date)}
+              </span>
+              <span className="ml-1 text-primary-500/40">
+                ({meeting.duration} min)
+              </span>
+            </div>
+
+            {userRole === 'student' && meeting.teacherName && (
+              <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
+                <Badge
+                  variant="outline"
+                  className="border-primary-500/20 bg-primary-500/5 text-[9px] uppercase tracking-widest text-primary-400"
+                >
+                  Teacher
+                </Badge>
+                {meeting.teacherName}
+              </div>
+            )}
+
+            {userRole === 'teacher' && meeting.studentName && (
+              <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
+                <Badge
+                  variant="outline"
+                  className="border-primary-500/20 bg-primary-500/5 text-[9px] uppercase tracking-widest text-primary-400"
+                >
+                  Student
+                </Badge>
+                {meeting.studentName}
+              </div>
+            )}
           </div>
-
-          {userRole === 'student' && meeting.teacherName && (
-            <p className="text-sm text-gray-600">
-              Teacher: {meeting.teacherName}
-            </p>
-          )}
-
-          {userRole === 'teacher' && meeting.studentName && (
-            <p className="text-sm text-gray-600">
-              Student: {meeting.studentName}
-            </p>
-          )}
 
           {overrideLabel !== 'completed' &&
             ((meeting.status === 'PENDING' && !isFuture(meeting)) ||
               meeting.status === 'CONFIRMED') && (
-              <div className="flex flex-wrap gap-2 pt-2">
-                {/* Only teachers can approve pending */}
-                {userRole === 'teacher' && meeting.status === 'PENDING' && (
-                  <Button size="sm" onClick={() => approveBooking(meeting.id)}>
-                    Approve
-                  </Button>
-                )}
-                {/* Payment button for students with unpaid confirmed meetings */}
-                {userRole === 'student' &&
-                  meeting.status === 'CONFIRMED' &&
-                  meeting.paymentStatus === 'UNPAID' && (
-                    <MeetingPaymentButton meeting={meeting} />
+              <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.05] pt-4">
+                <div className="flex flex-wrap gap-2">
+                  {/* Only teachers can approve pending */}
+                  {userRole === 'teacher' && meeting.status === 'PENDING' && (
+                    <Button
+                      size="sm"
+                      onClick={() => approveBooking(meeting.id)}
+                      className="h-10 rounded-xl bg-primary-500 px-6 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
+                    >
+                      Approve Session
+                    </Button>
                   )}
-                {/* Join button visible only for confirmed and paid */}
-                {meeting.status === 'CONFIRMED' &&
-                  meeting.paymentStatus === 'PAID' && (
-                    <div className="flex gap-2">
-                      <Button
-                        size="sm"
-                        onClick={() => handleJoinMeeting(meeting)}
-                        // Enable join only during the meeting window with grace
-                        disabled={!canJoin(meeting)}
-                      >
-                        Join Meeting
-                      </Button>
-
-                      {userRole === 'student' && (
+                  {/* Payment button for students with unpaid confirmed meetings */}
+                  {userRole === 'student' &&
+                    meeting.status === 'CONFIRMED' &&
+                    meeting.paymentStatus === 'UNPAID' && (
+                      <MeetingPaymentButton meeting={meeting} />
+                    )}
+                  {/* Join button visible only for confirmed and paid */}
+                  {meeting.status === 'CONFIRMED' &&
+                    meeting.paymentStatus === 'PAID' && (
+                      <div className="flex flex-wrap gap-3">
                         <Button
                           size="sm"
-                          variant="outline"
-                          onClick={() => openReschedule(meeting.id)}
+                          onClick={() => handleJoinMeeting(meeting)}
+                          disabled={!canJoin(meeting)}
+                          className="h-10 rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-shadow hover:bg-primary-600 active:scale-95 disabled:bg-primary-500/10 disabled:text-primary-500/30"
                         >
-                          Reschedule
+                          Join Call
                         </Button>
-                      )}
-                    </div>
-                  )}
+
+                        {userRole === 'student' && (
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            onClick={() => openReschedule(meeting.id)}
+                            className="h-10 rounded-xl border-primary-500/20 px-6 text-[10px] font-bold uppercase tracking-widest text-primary-400 hover:bg-primary-500/10"
+                          >
+                            Reschedule
+                          </Button>
+                        )}
+                      </div>
+                    )}
+                </div>
 
                 <Button
                   size="sm"
-                  variant="destructive"
+                  variant="ghost"
                   onClick={() => openCancel(meeting.id)}
-                  className="ml-auto"
+                  className="ml-auto h-10 rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-red-400 hover:bg-red-500/10 hover:text-red-300"
                 >
-                  Cancel
+                  Cancel Call
                 </Button>
               </div>
             )}
@@ -287,55 +319,21 @@ export default function MeetingTabs() {
   );
 
   const renderPendingContent = () => (
-    <div className="mt-6">
+    <div className="mt-8">
       {activeTab === 'pending' && filteredMeetings?.length > 0 ? (
-        filteredMeetings?.map((m) => (
-          <Card key={m.id} className="mb-4">
-            <CardHeader className="pb-3">
-              <div className="flex items-start justify-between">
-                <div className="flex items-center gap-2">
-                  {getStatusIcon(m.status)}
-                  <CardTitle className="text-lg">
-                    {userRole === 'student'
-                      ? `Lesson with ${m.teacherName ?? ''}`
-                      : `Lesson with ${m.studentName ?? ''}`}
-                  </CardTitle>
-                </div>
-                {getStatusBadge(m.status, 'pending')}
-              </div>
-            </CardHeader>
-            <CardContent>
-              <div className="space-y-2">
-                <div className="flex items-center gap-2 text-sm text-gray-600">
-                  <Calendar className="h-4 w-4" />
-                  <span>
-                    {formatDate(m.date)} at {formatTime(m.date)}
-                  </span>
-                </div>
-                <div className="flex gap-2 pt-2">
-                  {userRole === 'teacher' && (
-                    <Button size="sm" onClick={() => approveBooking(m.id)}>
-                      Approve
-                    </Button>
-                  )}
-                  <Button
-                    size="sm"
-                    variant="destructive"
-                    onClick={() => openCancel(m.id)}
-                  >
-                    Cancel
-                  </Button>
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))
+        filteredMeetings?.map((m) => renderMeetingCard(m, 'pending'))
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No pending meetings</h3>
-            <p className="text-gray-600">New requests will appear here.</p>
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] backdrop-blur-sm">
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+              <Clock className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-primary-300">
+              No pending meetings
+            </h3>
+            <p className="text-sm tracking-wide text-primary-100/40">
+              New requests will appear in this cycle.
+            </p>
           </CardContent>
         </Card>
       )}
@@ -343,17 +341,20 @@ export default function MeetingTabs() {
   );
 
   const renderUpcomingContent = () => (
-    <div className="mt-6">
+    <div className="mt-8">
       {activeTab === 'upcoming' && filteredMeetings?.length > 0 ? (
         filteredMeetings?.map((m) => renderMeetingCard(m, 'upcoming'))
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <Clock className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No upcoming meetings</h3>
-            <p className="text-gray-600">
-              Schedule a meeting to get started with your language learning
-              journey.
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] backdrop-blur-sm">
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+              <Clock className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-primary-300">
+              No upcoming meetings
+            </h3>
+            <p className="mx-auto max-w-sm text-sm tracking-wide text-primary-100/40">
+              Schedule a session to continue your language learning journey.
             </p>
           </CardContent>
         </Card>
@@ -362,16 +363,20 @@ export default function MeetingTabs() {
   );
 
   const renderPendingPaymentContent = () => (
-    <div className="mt-6">
+    <div className="mt-8">
       {activeTab === 'pendingPayment' && filteredMeetings?.length > 0 ? (
         filteredMeetings?.map((m) => renderMeetingCard(m, 'upcoming'))
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <CreditCard className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No pending payments</h3>
-            <p className="text-gray-600">
-              Meetings requiring payment will appear here after teacher
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] backdrop-blur-sm">
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+              <CreditCard className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-primary-300">
+              No pending payments
+            </h3>
+            <p className="mx-auto max-w-sm text-sm tracking-wide text-primary-100/40">
+              Sessions requiring payment will appear here after teacher
               approval.
             </p>
           </CardContent>
@@ -381,16 +386,20 @@ export default function MeetingTabs() {
   );
 
   const renderCompletedContent = () => (
-    <div className="mt-6">
+    <div className="mt-8">
       {activeTab === 'completed' && filteredMeetings?.length > 0 ? (
         filteredMeetings?.map((m) => renderMeetingCard(m, 'completed'))
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <CheckCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No completed meetings</h3>
-            <p className="text-gray-600">
-              Your completed meetings will appear here.
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] backdrop-blur-sm">
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+              <CheckCircle className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-primary-300">
+              No completed sessions
+            </h3>
+            <p className="text-sm tracking-wide text-primary-100/40">
+              Your previous learning archives will appear here.
             </p>
           </CardContent>
         </Card>
@@ -399,16 +408,20 @@ export default function MeetingTabs() {
   );
 
   const renderCancelledContent = () => (
-    <div className="mt-6">
+    <div className="mt-8">
       {activeTab === 'cancelled' && filteredMeetings?.length > 0 ? (
         filteredMeetings?.map((m) => renderMeetingCard(m, 'cancelled'))
       ) : (
-        <Card>
-          <CardContent className="py-8 text-center">
-            <XCircle className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No cancelled meetings</h3>
-            <p className="text-gray-600">
-              Cancelled meetings will appear here.
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] backdrop-blur-sm">
+          <CardContent className="py-16 text-center">
+            <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+              <XCircle className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-primary-300">
+              No cancelled calls
+            </h3>
+            <p className="text-sm tracking-wide text-primary-100/40">
+              Any sessions that were cancelled will be archived here.
             </p>
           </CardContent>
         </Card>
@@ -436,9 +449,9 @@ export default function MeetingTabs() {
   return (
     <>
       {/* Mobile Dropdown */}
-      <div className="mb-6 block md:hidden">
+      <div className="mb-8 block md:hidden">
         <Select value={activeTab} onValueChange={handleTabChange}>
-          <SelectTrigger className="w-full">
+          <SelectTrigger className="h-12 w-full rounded-xl border-white/10 bg-white/[0.03] font-bold text-primary-100 focus:ring-primary-500/30">
             <SelectValue>
               {activeTab === 'pending' && `Pending (${counts.pending})`}
               {activeTab === 'pendingPayment' &&
@@ -472,22 +485,31 @@ export default function MeetingTabs() {
       {/* Desktop Tabs */}
       <div className="hidden md:block">
         <Tabs value={activeTab} onValueChange={handleTabChange}>
-          <TabsList className="grid w-full grid-cols-5">
-            <TabsTrigger value="pending">
-              Pending ({counts.pending})
-            </TabsTrigger>
-            <TabsTrigger value="pendingPayment">
-              Payment ({counts.pendingPayment})
-            </TabsTrigger>
-            <TabsTrigger value="upcoming">
-              Upcoming ({counts.upcoming})
-            </TabsTrigger>
-            <TabsTrigger value="completed">
-              Completed ({counts.completed})
-            </TabsTrigger>
-            <TabsTrigger value="cancelled">
-              Cancelled ({counts.cancelled})
-            </TabsTrigger>
+          <TabsList className="mb-8 grid h-14 w-full grid-cols-5 rounded-2xl border border-white/[0.05] bg-white/[0.03] p-1">
+            {[
+              { id: 'pending', label: 'Pending', count: counts.pending },
+              {
+                id: 'pendingPayment',
+                label: 'Payment',
+                count: counts.pendingPayment,
+              },
+              { id: 'upcoming', label: 'Upcoming', count: counts.upcoming },
+              { id: 'completed', label: 'Completed', count: counts.completed },
+              { id: 'cancelled', label: 'Cancelled', count: counts.cancelled },
+            ].map((tab) => (
+              <TabsTrigger
+                key={tab.id}
+                value={tab.id}
+                className={cn(
+                  'h-full rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300',
+                  'data-[state=active]:bg-primary-500 data-[state=active]:text-primary-950 data-[state=active]:shadow-lg data-[state=active]:shadow-primary-500/20',
+                  'text-primary-100/40 hover:text-primary-100'
+                )}
+              >
+                {tab.label}{' '}
+                <span className="ml-1 opacity-50">({tab.count})</span>
+              </TabsTrigger>
+            ))}
           </TabsList>
 
           <TabsContent value="pending">{renderPendingContent()}</TabsContent>

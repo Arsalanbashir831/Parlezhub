@@ -3,49 +3,85 @@
 import { Calendar, Clock, Video } from 'lucide-react';
 
 import { useMeetings } from '@/hooks/useMeetings';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 
 export default function MeetingStats() {
   const { counts, nextUpcomingLabel, totalCompletedHours, userRole } =
     useMeetings();
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">
-            Upcoming Meetings
-          </CardTitle>
-          <Calendar className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{counts.upcoming}</div>
-          <p className="text-xs text-muted-foreground">
-            Next: {nextUpcomingLabel}
-          </p>
+      {/* Upcoming Meetings Card */}
+      <Card className="relative overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
+        <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl" />
+        <CardContent className="relative p-7">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/80">
+                Upcoming Meetings
+              </p>
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-4xl font-semibold tracking-tighter text-white">
+                  {counts.upcoming}
+                </h2>
+              </div>
+              <p className="mt-1 text-[10px] font-medium text-white/40">
+                Next: {nextUpcomingLabel}
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+              <Calendar className="h-6 w-6" />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Completed</CardTitle>
-          <Clock className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{counts.completed}</div>
-          <p className="text-xs text-muted-foreground">This month</p>
+      {/* Completed Meetings Card */}
+      <Card className="relative overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
+        <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl" />
+        <CardContent className="relative p-7">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/80">
+                Completed
+              </p>
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-4xl font-semibold tracking-tighter text-white">
+                  {counts.completed}
+                </h2>
+              </div>
+              <p className="mt-1 text-[10px] font-medium text-white/40">
+                This month
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+              <Clock className="h-6 w-6" />
+            </div>
+          </div>
         </CardContent>
       </Card>
 
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-          <CardTitle className="text-sm font-medium">Total Hours</CardTitle>
-          <Video className="h-4 w-4 text-muted-foreground" />
-        </CardHeader>
-        <CardContent>
-          <div className="text-2xl font-bold">{totalCompletedHours}h</div>
-          <p className="text-xs text-muted-foreground">
-            {userRole === 'student' ? 'Learning time' : 'Teaching time'}
-          </p>
+      {/* Total Hours Card */}
+      <Card className="relative overflow-hidden border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
+        <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl" />
+        <CardContent className="relative p-7">
+          <div className="flex items-start justify-between">
+            <div className="space-y-1">
+              <p className="text-[11px] font-bold uppercase tracking-[0.2em] text-primary-500/80">
+                Total Hours
+              </p>
+              <div className="flex items-baseline gap-2">
+                <h2 className="text-4xl font-semibold tracking-tighter text-white">
+                  {totalCompletedHours}h
+                </h2>
+              </div>
+              <p className="mt-1 text-[10px] font-medium text-white/40">
+                {userRole === 'student' ? 'Learning time' : 'Teaching time'}
+              </p>
+            </div>
+            <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+              <Video className="h-6 w-6" />
+            </div>
+          </div>
         </CardContent>
       </Card>
     </div>

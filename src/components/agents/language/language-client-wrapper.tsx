@@ -1,36 +1,42 @@
 'use client';
 
-import { useTeachers } from '@/hooks/useTeachers';
+// import { useTeachers } from '@/hooks/useTeachers';
 import { ScrollArea } from '@/components/ui/scroll-area';
 import { MainContent } from '@/components/agents/language/main-content';
-import { ServiceDetailsModal, ServicesList } from '@/components/teachers';
+
+// import { ServiceDetailsModal, ServicesList } from '@/components/teachers';
 
 export function LanguageClientWrapper() {
-  const {
-    services,
-    selectedService,
-    isModalOpen,
-    handleCloseModal,
-    handleSelectService,
-  } = useTeachers();
+  // const {
+  //   services,
+  //   selectedService,
+  //   isModalOpen,
+  //   handleCloseModal,
+  //   handleSelectService,
+  // } = useTeachers();
 
   return (
-    <div className="flex flex-1">
+    <div className="relative flex flex-1 bg-background selection:bg-primary-500/30">
       <ScrollArea className="h-[calc(100vh-4rem)] w-3/4 flex-1">
         <MainContent />
       </ScrollArea>
-      <ScrollArea className="hidden h-[calc(100vh-4rem)] max-w-[350px] border-l border-gray-200 bg-white p-6 lg:block">
+      {/* <ScrollArea className="hidden h-[calc(100vh-4rem)] max-w-[350px] border-l border-primary-500/10 bg-background/50 backdrop-blur-xl p-6 lg:block">
+        <div className="mb-6">
+          <h2 className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40 ml-1">
+            Linguistic Services
+          </h2>
+        </div>
         <ServicesList
           services={services}
           onSelectService={handleSelectService}
         />
-      </ScrollArea>
+      </ScrollArea> */}
 
-      <ServiceDetailsModal
+      {/* <ServiceDetailsModal
         serviceCard={selectedService}
         isOpen={isModalOpen}
         onClose={handleCloseModal}
-      />
+      /> */}
     </div>
   );
 }

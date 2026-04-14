@@ -3,10 +3,10 @@
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { useUser } from '@/contexts/user-context';
+import { MessageSquare } from 'lucide-react';
 
 import { ChatRoom } from '@/types/chat';
 import { useRealChat } from '@/hooks/useRealChat';
-import { Card, CardContent } from '@/components/ui/card';
 import BookingDialog from '@/components/chat/booking-dialog';
 import MessageInput from '@/components/chat/message-input';
 import RealChatHeader from '@/components/chat/real-chat-header';
@@ -88,16 +88,17 @@ export default function ChatPage() {
   if (!user) {
     return (
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full">
-          <CardContent className="h-full p-0">
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center text-gray-500">
-                <h3 className="mb-2 text-lg font-medium">Loading...</h3>
-                <p>Please wait while we load your chat data</p>
-              </div>
-            </div>
-          </CardContent>
-        </Card>
+        <div className="flex h-full items-center justify-center rounded-3xl bg-background shadow-2xl">
+          <div className="space-y-4 text-center">
+            <div className="inline-block h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+            <h3 className="font-serif text-xl font-bold text-primary-500">
+              Aligning the Stars...
+            </h3>
+            <p className="text-sm uppercase tracking-widest text-primary-100/60">
+              Fetching your chat history
+            </p>
+          </div>
+        </div>
       </div>
     );
   }
@@ -105,69 +106,72 @@ export default function ChatPage() {
   return (
     <>
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full">
-          <CardContent className="h-full p-0">
-            <div className="flex h-full w-full">
-              {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
+        <div className="h-full overflow-hidden rounded-3xl border border-primary-500/10 bg-background shadow-2xl">
+          <div className="flex h-full w-full">
+            {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
+            <div
+              className={`w-full md:w-auto ${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedChat ? 'md:flex' : 'flex'}`}
+            >
+              <RealConversationList
+                chats={filteredChats}
+                selectedChatId={selectedChat?.id || ''}
+                searchQuery={searchQuery}
+                currentUserRole="student"
+                onSearchChange={setSearchQuery}
+                onChatSelect={handleChatSelect}
+              />
+            </div>
+
+            {/* Chat Area - Desktop: show when selected, Mobile: show only when showChatOnMobile is true */}
+            {selectedChat && (
               <div
-                className={`w-full md:w-auto ${showChatOnMobile ? 'hidden md:flex' : 'flex'} ${selectedChat ? 'md:flex' : 'flex'}`}
+                className={`${showChatOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col bg-white/[0.02]`}
               >
-                <RealConversationList
-                  chats={filteredChats}
-                  selectedChatId={selectedChat?.id || ''}
-                  searchQuery={searchQuery}
+                {/* Chat Header */}
+                <RealChatHeader
+                  chat={selectedChat}
                   currentUserRole="student"
-                  onSearchChange={setSearchQuery}
-                  onChatSelect={handleChatSelect}
+                  isConnected={isConnected}
+                  isTyping={isTyping}
+                  onBookCall={handleBookCall}
+                  onBack={handleBackToList}
+                  showBackButton={true}
+                />
+
+                {/* Messages */}
+                <RealMessageList
+                  messages={currentMessages}
+                  currentUserId={user.id}
+                />
+
+                {/* Message Input */}
+                <MessageInput
+                  value={newMessage}
+                  onChange={setNewMessage}
+                  onSend={sendMessage}
+                  disabled={isLoading || !isConnected}
                 />
               </div>
+            )}
 
-              {/* Chat Area - Desktop: show when selected, Mobile: show only when showChatOnMobile is true */}
-              {selectedChat && (
-                <div
-                  className={`${showChatOnMobile ? 'flex' : 'hidden md:flex'} flex-1 flex-col`}
-                >
-                  {/* Chat Header */}
-                  <RealChatHeader
-                    chat={selectedChat}
-                    currentUserRole="student"
-                    isConnected={isConnected}
-                    isTyping={isTyping}
-                    onBookCall={handleBookCall}
-                    onBack={handleBackToList}
-                    showBackButton={true}
-                  />
-
-                  {/* Messages */}
-                  <RealMessageList
-                    messages={currentMessages}
-                    currentUserId={user.id}
-                  />
-
-                  {/* Message Input */}
-                  <MessageInput
-                    value={newMessage}
-                    onChange={setNewMessage}
-                    onSend={sendMessage}
-                    disabled={isLoading || !isConnected}
-                  />
-                </div>
-              )}
-
-              {/* No conversation selected state - Desktop only */}
-              {!selectedChat && (
-                <div className="hidden flex-1 items-center justify-center md:flex">
-                  <div className="text-center text-gray-500">
-                    <h3 className="mb-2 text-lg font-medium">
-                      No conversation selected
-                    </h3>
-                    <p>Select a conversation to start chatting</p>
+            {/* No conversation selected state - Desktop only */}
+            {!selectedChat && (
+              <div className="hidden flex-1 items-center justify-center bg-white/[0.02] md:flex">
+                <div className="text-center">
+                  <div className="mb-6 inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+                    <MessageSquare className="h-10 w-10 text-primary-500" />
                   </div>
+                  <h3 className="mb-2 font-serif text-2xl font-bold text-primary-500">
+                    No conversation selected
+                  </h3>
+                  <p className="text-sm tracking-wide text-primary-100/60">
+                    Select a conversation to start chatting
+                  </p>
                 </div>
-              )}
-            </div>
-          </CardContent>
-        </Card>
+              </div>
+            )}
+          </div>
+        </div>
       </div>
 
       {/* Booking Dialog */}

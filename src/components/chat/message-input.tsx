@@ -14,7 +14,7 @@ interface MessageInputProps {
 const MessageInput = memo(
   ({ value, onChange, onSend, disabled = false }: MessageInputProps) => {
     return (
-      <div className="border-t bg-white p-4">
+      <div className="border-t border-primary-500/10 bg-background/80 p-6 backdrop-blur-xl">
         <MessageComposer
           value={value}
           onChange={onChange}

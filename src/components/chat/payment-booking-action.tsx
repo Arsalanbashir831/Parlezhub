@@ -34,16 +34,16 @@ export default function PaymentBookingAction({
 
   return (
     <>
-      <div className="mt-2">
+      <div className="mt-4">
         <Button
           size="sm"
           variant="default"
           onClick={() => setIsPaymentModalOpen(true)}
-          className="bg-green-600 hover:bg-green-700"
+          className="h-9 rounded-xl bg-primary-500 px-6 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
         >
           Make Payment
         </Button>
-        <p className="mt-1 text-xs text-gray-500">
+        <p className="mt-2 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
           Payment required to confirm your booking
         </p>
       </div>

@@ -4,7 +4,6 @@ import { SESSION_DURATION } from '@/constants/ai-session';
 import { Timer } from 'lucide-react';
 
 import { formatTime, getProgressPercentage } from '@/lib/ai-session-utils';
-import { Progress } from '@/components/ui/progress';
 
 interface SessionTimerProps {
   timeRemaining: number;
@@ -12,21 +11,33 @@ interface SessionTimerProps {
 
 export default function SessionTimer({ timeRemaining }: SessionTimerProps) {
   return (
-    <div className="flex items-center gap-2 md:gap-6">
-      {/* Timer */}
-      <div className="flex items-center gap-2 rounded-full border border-black/5 bg-black/5 px-2 py-1 backdrop-blur-sm dark:border-white/20 dark:bg-white/10 md:px-4 md:py-1">
-        <Timer className="h-4 w-4 text-orange-400" />
-        <span className="font-mono text-sm md:text-base">
+    <div className="flex items-center gap-4 md:gap-8">
+      {/* Timer Container */}
+      <div className="group flex items-center gap-3 rounded-2xl border border-primary-500/10 bg-white/[0.03] px-4 py-2 shadow-lg backdrop-blur-md">
+        <div className="relative">
+          <Timer className="relative z-10 h-4 w-4 text-primary-500 transition-transform group-hover:rotate-12" />
+          <div className="absolute -inset-1 rounded-full bg-primary-500/20 opacity-0 blur-[2px] transition-opacity group-hover:opacity-100" />
+        </div>
+        <span className="font-serif text-lg font-bold tracking-widest text-primary-100">
           {formatTime(timeRemaining)}
         </span>
       </div>
 
-      {/* Progress */}
-      <div className="w-24 md:w-32">
-        <Progress
-          value={getProgressPercentage(timeRemaining, SESSION_DURATION)}
-          className="h-3 bg-black/5 dark:bg-white/20"
-        />
+      {/* Archival Progress Container */}
+      <div className="relative w-24 pt-1 md:w-48">
+        <div className="mb-1 flex items-end justify-between">
+          <span className="text-[8px] font-black uppercase tracking-[0.2em] text-primary-100/20">
+            Session Lineage
+          </span>
+        </div>
+        <div className="h-1 w-full overflow-hidden rounded-full border border-white/5 bg-white/5">
+          <div
+            className="h-full bg-gradient-to-r from-primary-500/50 to-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.4)] transition-all duration-1000"
+            style={{
+              width: `${getProgressPercentage(timeRemaining, SESSION_DURATION)}%`,
+            }}
+          />
+        </div>
       </div>
     </div>
   );

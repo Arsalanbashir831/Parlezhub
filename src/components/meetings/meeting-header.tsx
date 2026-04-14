@@ -1,5 +1,3 @@
-import React from 'react';
-
 type Props = {
   title?: string;
   description?: string;
@@ -12,8 +10,8 @@ export default function MeetingHeader({
   return (
     <div className="flex items-center justify-between">
       <div>
-        <h1 className="text-2xl font-bold text-gray-900">{title}</h1>
-        <p className="text-gray-600">{description}</p>
+        <h1 className="text-3xl font-bold text-primary-500">{title}</h1>
+        <p className="mt-2 text-primary-100/60">{description}</p>
       </div>
     </div>
   );

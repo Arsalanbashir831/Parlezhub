@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 
 import { setCookie } from '@/lib/cookie-utils';
+import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { GoogleOAuthButton } from '@/components/auth/google-oauth-button';
@@ -129,15 +130,16 @@ export default function LoginPage() {
           Sign In
         </AuthButton>
 
-        <div className="relative">
-          <div className="absolute inset-0 flex items-center">
-            <span className="w-full border-t border-gray-300 dark:border-gray-600" />
-          </div>
-          <div className="relative flex justify-center text-xs uppercase">
-            <span className="bg-white px-2 text-gray-500 dark:bg-gray-900 dark:text-gray-400">
-              Or continue with
-            </span>
-          </div>
+        <div className="flex items-center justify-center gap-2">
+          <Separator
+            orientation="horizontal"
+            className="w-full bg-primary-100"
+          />
+          <p className="px-2 text-primary-100">OR</p>
+          <Separator
+            orientation="horizontal"
+            className="w-full bg-primary-100"
+          />
         </div>
 
         <GoogleOAuthButton
@@ -147,11 +149,11 @@ export default function LoginPage() {
         />
 
         <div className="text-center">
-          <p className="text-sm text-gray-600 dark:text-gray-400">
+          <p className="text-sm text-primary-100">
             Don&apos;t have an account?{' '}
             <Link
               href={ROUTES.AUTH.SIGNUP}
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Sign up
             </Link>
@@ -159,7 +161,7 @@ export default function LoginPage() {
           <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
             <Link
               href={ROUTES.AUTH.FORGOT_PASSWORD}
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Forgot your password?
             </Link>

@@ -33,22 +33,25 @@ export default function AvatarUploader({ value, onChange, disabled }: Props) {
   );
 
   return (
-    <div className="flex items-center gap-3">
-      <div className="h-10 w-10 overflow-hidden rounded-full border border-gray-200 bg-gray-100 dark:border-gray-700 dark:bg-gray-800">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img
-          src={value || '/placeholders/avatar.jpg'}
-          alt="Agent avatar"
-          className="h-full w-full object-cover"
-        />
+    <div className="group flex items-center gap-4">
+      <div className="relative">
+        <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 to-primary-500/0 opacity-20 blur-[2px] transition-opacity duration-500 group-hover:opacity-40" />
+        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-primary-500/20 bg-white/5 shadow-lg backdrop-blur-md">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src={value || '/placeholders/avatar.jpg'}
+            alt="Agent avatar"
+            className="h-full w-full object-cover brightness-[0.9] filter transition-all duration-500 group-hover:brightness-100"
+          />
+        </div>
       </div>
       <button
         type="button"
         onClick={handleSelect}
         disabled={disabled}
-        className="rounded-md border border-gray-300 bg-white px-3 py-2 text-sm font-medium text-gray-900 shadow-sm transition hover:bg-gray-50 disabled:cursor-not-allowed disabled:opacity-60 dark:border-gray-700 dark:bg-black dark:text-white dark:hover:bg-white/5"
+        className="h-12 rounded-2xl border border-primary-500/10 bg-white/[0.03] px-5 py-2 text-[10px] font-bold uppercase tracking-[0.15em] text-primary-100/60 shadow-lg transition-all duration-300 hover:border-primary-500/30 hover:bg-white/[0.08] hover:text-primary-300 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
       >
-        {value ? 'Change Avatar' : 'Upload Avatar'}
+        {value ? 'Reshape Vessel' : 'Summon Avatar'}
       </button>
       <input
         ref={inputRef}

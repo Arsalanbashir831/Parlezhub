@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -94,18 +95,26 @@ export default function RescheduleDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <Calendar className="h-5 w-5" />
+      <DialogContent className="overflow-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl sm:max-w-md">
+        <DialogHeader className="p-8 pb-4">
+          <DialogTitle className="flex items-center gap-3 font-serif text-2xl font-bold text-primary-500">
+            <Calendar className="h-6 w-6" />
             Reschedule {meetingTitle}
           </DialogTitle>
+          <DialogDescription className="text-sm font-medium text-primary-100/60">
+            Proposed new alignment for this linguistic cycle
+          </DialogDescription>
         </DialogHeader>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          <div className="space-y-4">
-            <div>
-              <Label htmlFor="date">New Date</Label>
+        <form onSubmit={handleSubmit} className="space-y-6 px-8 pb-8">
+          <div className="space-y-5">
+            <div className="space-y-2">
+              <Label
+                htmlFor="date"
+                className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+              >
+                New Date
+              </Label>
               <Input
                 id="date"
                 type="date"
@@ -114,12 +123,18 @@ export default function RescheduleDialog({
                 min={today}
                 required
                 disabled={isSubmitting}
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-3">
-              <div>
-                <Label htmlFor="startTime">Start Time</Label>
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label
+                  htmlFor="startTime"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Start Time
+                </Label>
                 <Input
                   id="startTime"
                   type="time"
@@ -127,22 +142,33 @@ export default function RescheduleDialog({
                   onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
                   disabled={isSubmitting}
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
                 />
               </div>
-              <div>
-                <Label htmlFor="endTime">End Time (1 hour duration)</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="endTime"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  End Time (1 hour)
+                </Label>
                 <Input
                   id="endTime"
                   type="time"
                   value={endTime}
                   disabled={true}
-                  className="cursor-not-allowed bg-gray-50"
+                  className="h-12 cursor-not-allowed rounded-xl border-white/5 bg-white/[0.02] text-primary-100/30"
                 />
               </div>
             </div>
 
-            <div>
-              <Label htmlFor="reason">Reason for Rescheduling</Label>
+            <div className="space-y-2">
+              <Label
+                htmlFor="reason"
+                className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+              >
+                Reason for Rescheduling
+              </Label>
               <Textarea
                 id="reason"
                 placeholder="Please provide a reason for rescheduling..."
@@ -151,17 +177,18 @@ export default function RescheduleDialog({
                 required
                 disabled={isSubmitting}
                 rows={3}
+                className="resize-none rounded-2xl border-primary-500/10 bg-white/5 p-4 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
             </div>
           </div>
 
-          <div className="flex gap-2 pt-4">
+          <div className="flex gap-4 pt-2">
             <Button
               type="button"
               variant="outline"
               onClick={handleCancel}
               disabled={isSubmitting}
-              className="flex-1"
+              className="h-12 flex-1 rounded-2xl border-primary-500/20 text-[10px] font-bold uppercase tracking-widest text-primary-400 hover:bg-primary-500/10"
             >
               Cancel
             </Button>
@@ -174,7 +201,7 @@ export default function RescheduleDialog({
                 !endTime ||
                 !reason.trim()
               }
-              className="flex-1"
+              className="h-12 flex-1 rounded-2xl bg-primary-500 text-[10px] font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
             >
               {isSubmitting ? 'Rescheduling...' : 'Reschedule Meeting'}
             </Button>

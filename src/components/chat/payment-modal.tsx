@@ -6,12 +6,13 @@ import { useMutation, useQuery } from '@tanstack/react-query';
 import { CreditCard, Plus } from 'lucide-react';
 import { toast } from 'sonner';
 
+import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent } from '@/components/ui/card';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -170,34 +171,49 @@ export default function PaymentModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="sm:max-w-md">
-        <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <CreditCard className="h-5 w-5" />
+      <DialogContent className="overflow-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl sm:max-w-md">
+        <DialogHeader className="p-8 pb-4">
+          <DialogTitle className="flex items-center gap-3 font-serif text-2xl font-bold text-primary-500">
+            <CreditCard className="h-6 w-6" />
             Complete Payment
           </DialogTitle>
+          <DialogDescription className="text-sm font-medium text-primary-100/60">
+            Finalize your linguistic investment with secure archival processing
+          </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4">
+        <div className="space-y-6 px-8 pb-8">
           {/* Payment Method Selection */}
           {paymentMethods.length > 0 && (
-            <div className="space-y-3">
-              <div className="flex gap-2">
+            <div className="space-y-4">
+              <div className="flex gap-2 rounded-2xl border border-primary-500/10 bg-white/[0.03] p-1">
                 <Button
-                  variant={paymentMode === 'saved' ? 'default' : 'outline'}
+                  variant={paymentMode === 'saved' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setPaymentMode('saved')}
                   disabled={isProcessing}
+                  className={cn(
+                    'h-9 flex-1 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all',
+                    paymentMode === 'saved'
+                      ? 'bg-primary-500 text-primary-950 hover:bg-primary-600'
+                      : 'text-primary-100/40 hover:bg-primary-500/10 hover:text-primary-300'
+                  )}
                 >
                   Saved Cards
                 </Button>
                 <Button
-                  variant={paymentMode === 'new' ? 'default' : 'outline'}
+                  variant={paymentMode === 'new' ? 'default' : 'ghost'}
                   size="sm"
                   onClick={() => setPaymentMode('new')}
                   disabled={isProcessing}
+                  className={cn(
+                    'h-9 flex-1 rounded-xl text-[10px] font-bold uppercase tracking-widest transition-all',
+                    paymentMode === 'new'
+                      ? 'bg-primary-500 text-primary-950 hover:bg-primary-600'
+                      : 'text-primary-100/40 hover:bg-primary-500/10 hover:text-primary-300'
+                  )}
                 >
-                  <Plus className="mr-1 h-4 w-4" />
+                  <Plus className="mr-1.5 h-3.5 w-3.5" />
                   New Card
                 </Button>
               </div>
@@ -206,83 +222,132 @@ export default function PaymentModal({
 
           {/* Loading State */}
           {isLoadingMethods && (
-            <div className="flex items-center justify-center py-8">
-              <div className="border-primary h-6 w-6 animate-spin rounded-full border-b-2"></div>
+            <div className="flex flex-col items-center justify-center space-y-4 py-12">
+              <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent shadow-[0_0_15px_rgba(212,175,55,0.2)]"></div>
+              <p className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                Syncing with stars...
+              </p>
             </div>
           )}
 
           {/* Error State */}
           {methodsError && (
-            <div className="py-4 text-center text-sm text-red-600">
-              Failed to load payment methods. Please try again.
+            <div className="py-8 text-center">
+              <p className="text-sm font-bold uppercase tracking-wide text-destructive">
+                Failed to load payment methods. Please try again.
+              </p>
             </div>
           )}
 
           {/* Saved Cards */}
           {paymentMode === 'saved' && paymentMethods.length > 0 && (
-            <div className="space-y-2">
-              <Label>Select Payment Method</Label>
-              {paymentMethods.map((method) => (
-                <Card
-                  key={method.id}
-                  className={`cursor-pointer transition-colors ${
-                    selectedPaymentMethod === method.stripe_payment_method_id
-                      ? 'ring-primary ring-2'
-                      : 'hover:bg-gray-50'
-                  }`}
-                  onClick={() =>
-                    setSelectedPaymentMethod(method.stripe_payment_method_id)
-                  }
-                >
-                  <CardContent className="p-3">
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center gap-3">
-                        <CreditCard className="h-4 w-4" />
+            <div className="space-y-3">
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">
+                Select Payment Method
+              </Label>
+              <div className="custom-scrollbar max-h-[300px] space-y-2 overflow-y-auto pr-1">
+                {paymentMethods.map((method) => (
+                  <div
+                    key={method.id}
+                    className={cn(
+                      'group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300',
+                      selectedPaymentMethod === method.stripe_payment_method_id
+                        ? 'border-primary-500/40 bg-white/[0.08] shadow-[0_0_20px_rgba(212,175,55,0.05)]'
+                        : 'border-primary-500/10 bg-white/[0.03] hover:border-primary-500/20 hover:bg-white/[0.05]'
+                    )}
+                    onClick={() =>
+                      setSelectedPaymentMethod(method.stripe_payment_method_id)
+                    }
+                  >
+                    <div className="relative z-10 flex items-center justify-between">
+                      <div className="flex items-center gap-4">
+                        <div
+                          className={cn(
+                            'flex h-10 w-10 items-center justify-center rounded-xl border transition-colors',
+                            selectedPaymentMethod ===
+                              method.stripe_payment_method_id
+                              ? 'border-primary-500/30 bg-primary-500/10 text-primary-500'
+                              : 'border-white/10 bg-white/5 text-primary-100/40'
+                          )}
+                        >
+                          <CreditCard className="h-6 w-6" />
+                        </div>
                         <div>
-                          <div className="font-medium">
-                            {method.card_brand.toUpperCase()} ••••{' '}
+                          <div
+                            className={cn(
+                              'font-bold tracking-wide transition-colors',
+                              selectedPaymentMethod ===
+                                method.stripe_payment_method_id
+                                ? 'text-white'
+                                : 'text-primary-100/80'
+                            )}
+                          >
+                            {method.card_brand.toUpperCase()}{' '}
+                            <span className="mx-1 text-primary-500/40">•</span>{' '}
                             {method.card_last_four}
                           </div>
-                          <div className="text-sm text-gray-500">
+                          <div className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary-100/30">
                             Expires {method.card_exp_month}/
                             {method.card_exp_year}
                           </div>
                         </div>
                       </div>
-                      <div className="flex h-4 w-4 items-center justify-center rounded-full border-2 border-gray-300">
+                      <div
+                        className={cn(
+                          'flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
+                          selectedPaymentMethod ===
+                            method.stripe_payment_method_id
+                            ? 'border-primary-500 bg-primary-500'
+                            : 'border-primary-500/20'
+                        )}
+                      >
                         {selectedPaymentMethod ===
                           method.stripe_payment_method_id && (
-                          <div className="bg-primary h-2 w-2 rounded-full"></div>
+                          <div className="h-2 w-2 rounded-full bg-primary-950" />
                         )}
                       </div>
                     </div>
-                  </CardContent>
-                </Card>
-              ))}
+                  </div>
+                ))}
+              </div>
             </div>
           )}
 
           {/* New Card Form */}
           {paymentMode === 'new' && (
-            <div className="space-y-4">
-              <Separator />
+            <div className="space-y-6">
+              <Separator className="bg-primary-500/10" />
 
-              <div className="space-y-3">
-                <div>
-                  <Label htmlFor="cardNumber">Card Number</Label>
-                  <Input
-                    id="cardNumber"
-                    placeholder="1234 5678 9012 3456"
-                    value={cardNumber}
-                    onChange={handleCardNumberChange}
-                    disabled={isProcessing}
-                    maxLength={19}
-                  />
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="cardNumber"
+                    className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                  >
+                    Card Number
+                  </Label>
+                  <div className="relative">
+                    <CreditCard className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-500/40" />
+                    <Input
+                      id="cardNumber"
+                      placeholder="1234 5678 9012 3456"
+                      value={cardNumber}
+                      onChange={handleCardNumberChange}
+                      disabled={isProcessing}
+                      maxLength={19}
+                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 pl-11 text-white focus-visible:ring-primary-500/30"
+                    />
+                  </div>
                 </div>
 
                 <div className="grid grid-cols-3 gap-3">
-                  <div>
-                    <Label htmlFor="expMonth">Month</Label>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="expMonth"
+                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                    >
+                      Month
+                    </Label>
                     <Input
                       id="expMonth"
                       placeholder="MM"
@@ -299,10 +364,16 @@ export default function PaymentModal({
                       }}
                       disabled={isProcessing}
                       maxLength={2}
+                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="expYear">Year</Label>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="expYear"
+                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                    >
+                      Year
+                    </Label>
                     <Input
                       id="expYear"
                       placeholder="YYYY"
@@ -315,10 +386,16 @@ export default function PaymentModal({
                       }}
                       disabled={isProcessing}
                       maxLength={4}
+                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
                     />
                   </div>
-                  <div>
-                    <Label htmlFor="cvc">CVC</Label>
+                  <div className="space-y-2">
+                    <Label
+                      htmlFor="cvc"
+                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                    >
+                      CVC
+                    </Label>
                     <Input
                       id="cvc"
                       placeholder="123"
@@ -331,22 +408,29 @@ export default function PaymentModal({
                       }}
                       disabled={isProcessing}
                       maxLength={4}
+                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
                     />
                   </div>
                 </div>
 
-                <div>
-                  <Label htmlFor="cardholderName">Cardholder Name</Label>
+                <div className="space-y-2">
+                  <Label
+                    htmlFor="cardholderName"
+                    className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                  >
+                    Cardholder Name
+                  </Label>
                   <Input
                     id="cardholderName"
-                    placeholder="John Doe"
+                    placeholder="E.g. John Doe"
                     value={cardholderName}
                     onChange={(e) => setCardholderName(e.target.value)}
                     disabled={isProcessing}
+                    className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
                   />
                 </div>
 
-                <div className="flex items-center space-x-2">
+                <div className="flex items-center space-x-3 p-1">
                   <Checkbox
                     id="saveCard"
                     checked={saveCard}
@@ -354,8 +438,12 @@ export default function PaymentModal({
                       setSaveCard(checked as boolean)
                     }
                     disabled={isProcessing}
+                    className="rounded-md border-primary-500/30 data-[state=checked]:bg-primary-500 data-[state=checked]:text-primary-950"
                   />
-                  <Label htmlFor="saveCard" className="text-sm">
+                  <Label
+                    htmlFor="saveCard"
+                    className="cursor-pointer select-none text-xs text-primary-100/60"
+                  >
                     Save this card for future payments
                   </Label>
                 </div>
@@ -364,19 +452,19 @@ export default function PaymentModal({
           )}
 
           {/* Action Buttons */}
-          <div className="flex gap-2 pt-4">
+          <div className="flex gap-3 pt-6">
             <Button
               variant="outline"
               onClick={onClose}
               disabled={isProcessing}
-              className="flex-1"
+              className="h-12 flex-1 rounded-2xl border-primary-500/20 text-[10px] font-bold uppercase tracking-widest text-primary-400 hover:bg-primary-500/10"
             >
               Cancel
             </Button>
             <Button
               onClick={handlePayment}
               disabled={isProcessing}
-              className="flex-1"
+              className="h-12 flex-1 rounded-2xl bg-primary-500 text-[10px] font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
             >
               {isProcessing ? 'Processing...' : 'Pay Now'}
             </Button>

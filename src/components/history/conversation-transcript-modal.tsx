@@ -1,12 +1,14 @@
 'use client';
 
 import React from 'react';
-import { Bot, User } from 'lucide-react';
+import { Bot, FileText, User } from 'lucide-react';
 
+import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 import {
   Dialog,
   DialogContent,
+  DialogDescription,
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
@@ -55,81 +57,106 @@ export const ConversationTranscriptModal: React.FC<
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="flex h-[85vh] max-w-4xl flex-col p-0">
-        <DialogHeader className="flex-shrink-0 border-b border-gray-200 p-6 pb-4 dark:border-gray-700">
+      <DialogContent className="flex h-[85vh] max-w-4xl flex-col overflow-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl">
+        <DialogHeader className="flex-shrink-0 border-b border-primary-500/10 p-8 pb-6">
           <div className="flex items-start justify-between">
             <div className="min-w-0 flex-1">
-              <DialogTitle className="mb-2 text-xl font-semibold text-gray-900 dark:text-white">
+              <DialogTitle className="mb-4 font-serif text-2xl font-bold text-primary-500">
                 Conversation Transcript
               </DialogTitle>
-              <div className="space-y-2">
-                <h3 className="text-lg font-medium text-gray-800 dark:text-gray-200">
+              <DialogDescription className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary-500/40">
+                Detailed archival transcript of the linguistic cycle
+              </DialogDescription>
+              <div className="space-y-3">
+                <h3 className="text-xl font-bold tracking-tight text-white">
                   {conversationTitle}
                 </h3>
-                <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
-                  <span>{conversationLanguage}</span>
-                  <span>•</span>
-                  <span>{new Date(conversationDate).toLocaleDateString()}</span>
-                  <span>•</span>
-                  <span>{conversationDuration} minutes</span>
+                <div className="flex flex-wrap items-center gap-3">
+                  <span className="rounded-md border border-primary-500/20 bg-primary-500/10 px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest text-primary-400">
+                    {conversationLanguage}
+                  </span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                    {new Date(conversationDate).toLocaleDateString()}
+                  </span>
+                  <span className="text-primary-500/20">•</span>
+                  <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                    {conversationDuration} MINUTES
+                  </span>
                 </div>
               </div>
             </div>
           </div>
         </DialogHeader>
 
-        <div className="flex-1 overflow-hidden">
-          <ScrollArea className="h-full px-6">
-            <div className="space-y-4 py-6">
+        <div className="flex-1 overflow-hidden bg-white/[0.01]">
+          <ScrollArea className="custom-scrollbar h-full px-8">
+            <div className="space-y-6 py-8">
               {transcript.length > 0 ? (
                 transcript.map((message) => (
                   <div
                     key={message.id}
-                    className={`flex gap-3 ${
+                    className={`flex gap-4 ${
                       message.sender === 'user'
-                        ? 'justify-end'
-                        : 'justify-start'
+                        ? 'flex-row-reverse'
+                        : 'flex-row'
                     }`}
                   >
-                    {message.sender === 'ai' && (
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarFallback className="bg-primary-100 text-xs text-primary-700">
-                          <Bot className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
+                    <Avatar
+                      className={cn(
+                        'h-10 w-10 flex-shrink-0 border-2 transition-colors',
+                        message.sender === 'ai'
+                          ? 'border-primary-500/20 bg-primary-500/5'
+                          : 'border-primary-100/10 bg-white/5'
+                      )}
+                    >
+                      <AvatarFallback
+                        className={cn(
+                          'text-xs font-bold',
+                          message.sender === 'ai'
+                            ? 'text-primary-500'
+                            : 'text-primary-100/40'
+                        )}
+                      >
+                        {message.sender === 'ai' ? (
+                          <Bot className="h-5 w-5" />
+                        ) : (
+                          <User className="h-5 w-5" />
+                        )}
+                      </AvatarFallback>
+                    </Avatar>
+
                     <div
-                      className={`max-w-[70%] rounded-lg px-4 py-2 ${
+                      className={cn(
+                        'relative max-w-[75%] rounded-2xl px-5 py-3 shadow-lg',
                         message.sender === 'user'
-                          ? 'bg-primary-500 text-white'
-                          : 'bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-gray-100'
-                      }`}
+                          ? 'rounded-tr-none bg-primary-500 font-medium text-primary-950'
+                          : 'rounded-tl-none border border-primary-500/10 bg-white/5 text-primary-100 backdrop-blur-sm'
+                      )}
                     >
                       <p className="text-sm leading-relaxed">
                         {message.content}
                       </p>
                       <p
-                        className={`mt-1 text-xs ${
+                        className={cn(
+                          'mt-2 text-[9px] font-bold uppercase tracking-widest',
                           message.sender === 'user'
-                            ? 'text-primary-100'
-                            : 'text-gray-500 dark:text-gray-400'
-                        }`}
+                            ? 'text-primary-950/60'
+                            : 'text-primary-100/30'
+                        )}
                       >
                         {formatTime(message.timestamp)}
                       </p>
                     </div>
-                    {message.sender === 'user' && (
-                      <Avatar className="h-8 w-8 flex-shrink-0">
-                        <AvatarFallback className="bg-gray-100 text-xs text-gray-600">
-                          <User className="h-4 w-4" />
-                        </AvatarFallback>
-                      </Avatar>
-                    )}
                   </div>
                 ))
               ) : (
-                <div className="py-8 text-center text-gray-500 dark:text-gray-400">
-                  <p>No transcript available for this conversation.</p>
+                <div className="py-20 text-center">
+                  <div className="mb-6 inline-flex h-16 w-16 items-center justify-center rounded-full border border-white/10 bg-white/5">
+                    <FileText className="h-8 w-8 text-primary-100/20" />
+                  </div>
+                  <p className="text-sm font-bold uppercase tracking-widest text-primary-100/20">
+                    No transcript available for this cycle
+                  </p>
                 </div>
               )}
             </div>

@@ -102,24 +102,32 @@ export function MainContent() {
   }
 
   return (
-    <div className="flex h-full min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center bg-background">
-      <div className="flex w-full flex-1 flex-col items-center justify-center p-8">
+    <div className="relative flex h-full min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center overflow-hidden bg-background">
+      {/* Celestial Background Accents */}
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden">
+        <div className="absolute right-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
+      </div>
+
+      <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center p-8">
         {currentStep === 'prompt' && (
-          <>
-            <h1 className="mb-4 text-center text-3xl font-bold text-primary-600 md:text-4xl">
-              What would you like to learn today?
+          <div className="flex flex-col items-center text-center duration-700 animate-in fade-in slide-in-from-bottom-4">
+            <h1 className="mb-6 max-w-3xl font-serif text-4xl font-bold leading-tight text-primary-500 drop-shadow-sm md:text-5xl">
+              What would you like to explore today?
             </h1>
-            <p className="mb-8 max-w-2xl text-center text-muted-foreground">
+            <p className="mb-12 max-w-2xl text-[15px] font-medium leading-relaxed tracking-tight text-primary-100/60">
               Ask me anything about language learning, practice conversations,
-              or get personalized lessons
+              or get personalized lessons in our archival linguistic chamber.
             </p>
 
-            <QuickPromptList
-              quickActions={quickLanguagePrompts}
-              onQuickActionClick={handleQuickPromptClick}
-            />
+            <div className="w-full max-w-4xl">
+              <QuickPromptList
+                quickActions={quickLanguagePrompts}
+                onQuickActionClick={handleQuickPromptClick}
+              />
+            </div>
 
-            <div className="mb-8 w-full max-w-2xl">
+            <div className="mt-8 w-full max-w-2xl">
               <PromptInput
                 value={prompt}
                 onChange={setPrompt}
@@ -127,15 +135,19 @@ export function MainContent() {
                 disabled={false}
               />
             </div>
-          </>
+          </div>
         )}
 
         {currentStep === 'native-language' && (
-          <div className="w-full max-w-4xl">
-            <div className="mb-6 flex items-center">
-              <Button variant="ghost" onClick={handleBack} className="mr-4">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+          <div className="w-full max-w-4xl duration-500 animate-in fade-in slide-in-from-right-4">
+            <div className="mb-8 flex items-center">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                className="group rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-primary-100/40 transition-all hover:bg-white/5 hover:text-primary-500"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                Back to Archives
               </Button>
             </div>
             <NativeLanguageSelection onSelection={handleNativeLanguageSelect} />
@@ -143,11 +155,15 @@ export function MainContent() {
         )}
 
         {currentStep === 'target-language' && (
-          <div className="w-full max-w-4xl">
-            <div className="mb-6 flex items-center">
-              <Button variant="ghost" onClick={handleBack} className="mr-4">
-                <ArrowLeft className="mr-2 h-4 w-4" />
-                Back
+          <div className="w-full max-w-4xl duration-500 animate-in fade-in slide-in-from-right-4">
+            <div className="mb-8 flex items-center">
+              <Button
+                variant="ghost"
+                onClick={handleBack}
+                className="group rounded-xl px-4 text-[10px] font-bold uppercase tracking-widest text-primary-100/40 transition-all hover:bg-white/5 hover:text-primary-500"
+              >
+                <ArrowLeft className="mr-2 h-4 w-4 transition-transform group-hover:-translate-x-1" />
+                Return to Origin
               </Button>
             </div>
             <TargetLanguageSelection onSelection={handleTargetLanguageSelect} />

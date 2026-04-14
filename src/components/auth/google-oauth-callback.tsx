@@ -274,13 +274,13 @@ export function GoogleOAuthCallback() {
 
   if (showRoleSelection) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md border-primary-500/50 bg-white/5">
           <CardHeader className="space-y-1 text-center">
             <CardTitle className="text-2xl font-bold">
               Complete Your Profile
             </CardTitle>
-            <p className="text-sm text-gray-600">
+            <p className="text-sm text-primary-600">
               Please select your role to continue using ParlezHub
             </p>
           </CardHeader>
@@ -296,24 +296,24 @@ export function GoogleOAuthCallback() {
               >
                 <Label
                   htmlFor="student"
-                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-primary-500/50 p-4 hover:bg-primary-500/5"
                 >
                   <RadioGroupItem value="STUDENT" id="student" />
                   <div className="flex-1">
                     <div className="font-medium">Student</div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-primary-600">
                       I want to learn languages and book sessions with teachers
                     </p>
                   </div>
                 </Label>
                 <Label
                   htmlFor="teacher"
-                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-gray-200 p-4 hover:bg-gray-50"
+                  className="flex cursor-pointer items-center space-x-3 rounded-lg border border-primary-500/50 p-4 hover:bg-primary-500/5"
                 >
                   <RadioGroupItem value="TEACHER" id="teacher" />
                   <div className="flex-1">
                     <div className="font-medium">Teacher</div>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-primary-600">
                       I want to teach languages and offer sessions to students
                     </p>
                   </div>
@@ -338,16 +338,16 @@ export function GoogleOAuthCallback() {
 
   if (error) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-        <Card className="w-full max-w-md">
+      <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+        <Card className="w-full max-w-md border-primary-500/50 bg-white/5">
           <CardHeader className="text-center">
             <CardTitle className="text-red-600">
               Authentication Failed
             </CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
-            <p className="text-center text-sm text-gray-600">{error}</p>
-            <p className="text-center text-xs text-gray-500">
+            <p className="text-center text-sm text-primary-200">{error}</p>
+            <p className="text-center text-xs text-primary-200">
               Redirecting to sign-in page...
             </p>
           </CardContent>
@@ -357,19 +357,19 @@ export function GoogleOAuthCallback() {
   }
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gray-50 px-4 py-12 sm:px-6 lg:px-8">
-      <Card className="w-full max-w-md">
-        <CardHeader className="text-center">
+    <div className="flex min-h-screen items-center justify-center bg-background px-4 py-12 sm:px-6 lg:px-8">
+      <Card className="w-full max-w-md border-primary-500/50 bg-white/5">
+        <CardHeader className="text-center text-primary-600">
           <CardTitle>Completing Authentication</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>
           </div>
-          <p className="text-center text-sm text-gray-600">
+          <p className="text-center text-sm text-primary-200">
             Processing your Google authentication...
           </p>
-          <p className="text-center text-xs text-gray-500">
+          <p className="text-center text-xs text-primary-200">
             Please wait while we complete the setup.
           </p>
         </CardContent>

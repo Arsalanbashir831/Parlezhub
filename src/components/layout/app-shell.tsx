@@ -91,10 +91,10 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       <SidebarInset>
         {/* Top bar */}
-        <header className="border-gray-200 bg-white shadow-sm dark:border-gray-700 dark:bg-gray-800">
-          <div className="flex h-16 shrink-0 items-center gap-2 border-b px-4">
-            <SidebarTrigger className="-ml-1" />
-            <h1 className="text-xl font-semibold capitalize text-gray-900 dark:text-gray-100">
+        <header className="bg-background shadow-sm">
+          <div className="flex h-16 shrink-0 items-center gap-2 border-b border-primary-300/60 px-4">
+            <SidebarTrigger className="-ml-1 text-primary-50" />
+            <h1 className="text-xl font-semibold capitalize text-primary-50">
               {pageTitle}
             </h1>
             <div className="ml-auto flex items-center gap-4">
@@ -111,7 +111,7 @@ export const AppShell: React.FC<AppShellProps> = ({
         {/* Page content */}
         <main
           className={cn(
-            'flex flex-1 flex-col gap-4 bg-gray-50 dark:bg-gray-900',
+            'flex flex-1 flex-col gap-4 bg-background',
             roleLabel === 'Agent' ? '' : 'p-4 sm:p-6'
           )}
         >

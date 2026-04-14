@@ -1,6 +1,6 @@
 'use client';
 
-import React, { memo } from 'react';
+import { memo } from 'react';
 import { Eye, EyeOff, Shield } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -49,20 +49,27 @@ const SecuritySettings = memo(
     };
 
     return (
-      <Card className="dark:border-gray-700 dark:bg-gray-800">
-        <CardHeader>
-          <div className="flex items-center gap-2">
-            <Shield className="h-5 w-5 text-primary-600" />
-            <CardTitle className="dark:text-gray-100">Security</CardTitle>
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <CardHeader className="p-8 pb-4">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
+              <Shield className="h-5 w-5" />
+            </div>
+            <CardTitle className="font-serif text-2xl font-bold text-primary-500">
+              Security
+            </CardTitle>
           </div>
-          <CardDescription className="dark:text-gray-400">
+          <CardDescription className="ml-13 font-medium text-primary-100/60">
             Manage your password and security preferences
           </CardDescription>
         </CardHeader>
-        <CardContent className="space-y-6">
-          <div className="space-y-4">
+        <CardContent className="space-y-8 p-8 pt-4">
+          <div className="space-y-5">
             <div className="space-y-2">
-              <Label htmlFor="currentPassword" className="dark:text-gray-200">
+              <Label
+                htmlFor="currentPassword"
+                className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+              >
                 Current Password
               </Label>
               <div className="relative">
@@ -74,13 +81,13 @@ const SecuritySettings = memo(
                     handleFieldChange('currentPassword', e.target.value)
                   }
                   placeholder="Enter current password"
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 pr-12 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                 />
                 <Button
                   type="button"
                   variant="ghost"
                   size="sm"
-                  className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+                  className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg p-0 text-primary-500/40 hover:bg-white/5 hover:text-primary-500"
                   onClick={onTogglePasswordVisibility}
                 >
                   {showPassword ? (
@@ -92,9 +99,12 @@ const SecuritySettings = memo(
               </div>
             </div>
 
-            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <div className="grid grid-cols-1 gap-6 sm:grid-cols-2">
               <div className="space-y-2">
-                <Label htmlFor="newPassword" className="dark:text-gray-200">
+                <Label
+                  htmlFor="newPassword"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
                   New Password
                 </Label>
                 <Input
@@ -105,11 +115,14 @@ const SecuritySettings = memo(
                     handleFieldChange('newPassword', e.target.value)
                   }
                   placeholder="Enter new password"
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="confirmPassword" className="dark:text-gray-200">
+                <Label
+                  htmlFor="confirmPassword"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
                   Confirm Password
                 </Label>
                 <Input
@@ -120,19 +133,19 @@ const SecuritySettings = memo(
                     handleFieldChange('confirmPassword', e.target.value)
                   }
                   placeholder="Confirm new password"
-                  className="dark:border-gray-600 dark:bg-gray-700 dark:text-gray-100"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                 />
               </div>
             </div>
           </div>
 
-          <div className="flex justify-end">
+          <div className="flex justify-end pt-4">
             <Button
               onClick={onSave}
               disabled={isLoading}
-              className="bg-primary-500 hover:bg-primary-600"
+              className="h-12 rounded-2xl bg-primary-500 px-12 text-[10px] font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
             >
-              {isLoading ? 'Saving...' : 'Update Security'}
+              {isLoading ? 'Updating Archives...' : 'Update Security'}
             </Button>
           </div>
         </CardContent>

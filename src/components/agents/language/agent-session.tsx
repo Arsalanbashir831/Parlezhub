@@ -39,7 +39,7 @@ interface AgentSessionProps {
   onEnd: () => void;
 }
 
-// Inner component that uses OpenAI conversation hookssssssss
+// Inner component that handles the voice conversation session
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const router = useRouter();
   const { config, updateConfig } = useSession();
@@ -324,53 +324,59 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   };
 
   return (
-    <div className="relative min-h-screen overflow-hidden bg-white text-white">
+    <div className="relative min-h-screen overflow-hidden bg-background text-white selection:bg-primary-500/30">
+      {/* Celestial Background Accents */}
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden">
+        <div className="absolute right-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full bg-primary-500/5 blur-[120px]" />
+        <div className="absolute bottom-[-10%] left-[-10%] h-[50%] w-[50%] rounded-full bg-primary-500/5 blur-[120px]" />
+      </div>
+
       {/* Header */}
       <AiSessionHeader
-        backButtonText="Back"
+        backButtonText="Exit Session"
         backButtonHref="#"
         onBackClick={handleBack}
         sessionActive={sessionState === 'active'}
         bottomContent={
-          <div className="flex w-full items-center justify-between gap-6">
-            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                Native language
+          <div className="mx-auto flex w-full max-w-7xl flex-wrap items-center justify-center gap-6">
+            <div className="flex min-w-[200px] max-w-[280px] flex-1 flex-col gap-2">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                Native Origin
               </label>
               <LanguageCombobox
                 value={config.nativeLanguage}
                 onChange={(val) => updateConfig('nativeLanguage', val)}
                 options={NATIVE_LANGUAGES}
-                placeholder="Select native language"
+                placeholder="Native Language"
                 disabled={sessionState !== 'idle'}
               />
             </div>
-            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                Target language
+            <div className="flex min-w-[200px] max-w-[280px] flex-1 flex-col gap-2">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                Linguistic Destination
               </label>
               <LanguageCombobox
                 value={config.language}
                 onChange={(val) => updateConfig('language', val)}
                 options={LANGUAGES}
-                placeholder="Select target language"
+                placeholder="Target Language"
                 disabled={sessionState !== 'idle'}
               />
             </div>
-            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
-                Voice
+            <div className="flex min-w-[200px] max-w-[280px] flex-1 flex-col gap-2">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                Archival Voice
               </label>
               <VoiceCombobox
                 value={config.voice}
                 onChange={(val) => updateConfig('voice', val)}
                 options={OPENAI_VOICES}
-                placeholder="Select voice"
+                placeholder="Select Voice"
                 disabled={sessionState !== 'idle'}
               />
             </div>
-            <div className="flex flex-1 flex-col gap-1 md:min-w-[220px]">
-              <label className="text-xs font-medium text-gray-600 dark:text-gray-300">
+            <div className="flex min-w-[200px] max-w-[280px] flex-1 flex-col gap-2">
+              <label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
                 Avatar
               </label>
               <AvatarUploader
@@ -393,7 +399,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       </AiSessionHeader>
 
       {/* Main Content */}
-      <div className="relative z-10 flex min-h-[calc(100vh-120px)] flex-1 flex-col items-center justify-center p-6">
+      <div className="relative z-10 flex min-h-[calc(100vh-250px)] flex-1 flex-col items-center justify-center p-6 pb-12">
         <SessionInfo
           config={config}
           sessionState={sessionState}
@@ -403,18 +409,21 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
           statusText={getStatusText()}
         />
 
-        <SessionBlob
-          sessionState={sessionState}
-          isUserSpeaking={isUserSpeaking}
-          isAISpeaking={isAISpeaking}
-          audioLevel={getAudioLevel()}
-          statusText={getStatusText()}
-          aiSettings={aiSettings}
-        />
+        <div className="group relative my-8">
+          <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500/20 to-primary-500/5 opacity-25 blur transition duration-1000 group-hover:opacity-50 group-hover:duration-200"></div>
+          <SessionBlob
+            sessionState={sessionState}
+            isUserSpeaking={isUserSpeaking}
+            isAISpeaking={isAISpeaking}
+            audioLevel={getAudioLevel()}
+            statusText={getStatusText()}
+            aiSettings={aiSettings}
+          />
+        </div>
 
         <SessionControls
           sessionState={sessionState}
-          isMuted={false} // OpenAI doesn't have direct mute state
+          isMuted={false}
           onStart={handleStartSession}
           onPause={handlePauseSession}
           onResume={handleResumeSession}
@@ -423,7 +432,11 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
           startDisabled={!config.nativeLanguage || !config.language}
         />
 
-        {sessionState === 'idle' && <SessionInstructions />}
+        {sessionState === 'idle' && (
+          <div className="mt-12 duration-1000 animate-in fade-in slide-in-from-bottom-2">
+            <SessionInstructions />
+          </div>
+        )}
       </div>
     </div>
   );

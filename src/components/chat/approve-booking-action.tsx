@@ -76,8 +76,13 @@ export default function ApproveBookingAction({
     }
   };
   return (
-    <div className="mt-2">
-      <Button size="sm" variant="secondary" onClick={handleApprove}>
+    <div className="mt-4">
+      <Button
+        size="sm"
+        variant="default"
+        onClick={handleApprove}
+        className="h-9 rounded-xl bg-primary-500 px-6 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
+      >
         Approve Booking
       </Button>
     </div>

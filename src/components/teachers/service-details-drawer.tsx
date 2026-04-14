@@ -23,6 +23,7 @@ import { Separator } from '@/components/ui/separator';
 import {
   Sheet,
   SheetContent,
+  SheetDescription,
   SheetHeader,
   SheetTitle,
 } from '@/components/ui/sheet';
@@ -53,14 +54,6 @@ export function ServiceDetailsDrawer({
     teacherLocation,
   } = serviceCard;
 
-  const formatDate = (dateString: string) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    });
-  };
-
   const handleStartChat = async () => {
     if (!user) {
       toast.error('Please log in to start a chat');
@@ -88,64 +81,73 @@ export function ServiceDetailsDrawer({
 
   return (
     <Sheet open={isOpen} onOpenChange={onClose}>
-      <SheetContent className="w-full overflow-y-auto sm:max-w-xl">
+      <SheetContent className="w-full overflow-y-auto border-l border-primary-500/10 bg-background shadow-2xl sm:max-w-xl">
         <SheetHeader>
           <div className="flex items-start justify-between">
-            <div className="space-y-2">
+            <div className="space-y-4">
               <div className="flex items-center gap-2">
-                <Badge variant="outline" className="text-sm">
+                <Badge
+                  variant="outline"
+                  className="border-primary-500/30 text-xs font-bold uppercase tracking-widest text-primary-400"
+                >
                   {getServiceTypeLabel(service.type)}
                 </Badge>
-                {/* Removed service status badge for public/students */}
               </div>
-              <SheetTitle className="text-2xl font-bold leading-tight">
+              <SheetTitle className="font-serif text-3xl font-bold leading-tight text-primary-500">
                 {service.title}
               </SheetTitle>
+              <SheetDescription className="mt-2 line-clamp-2 text-sm font-medium text-primary-100/60">
+                {service.shortDescription}
+              </SheetDescription>
             </div>
           </div>
         </SheetHeader>
 
-        <div className="space-y-6 px-2 pb-6">
+        <div className="space-y-6 px-2 py-6">
           {/* Teacher Information */}
-          <div className="rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <h3 className="mb-3 text-lg font-semibold">About the Teacher</h3>
+          <div className="rounded-2xl border border-primary-500/10 bg-white/5 p-6 backdrop-blur-sm">
+            <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-primary-300">
+              About the Teacher
+            </h3>
             <div className="flex items-start gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage
                   src={teacherAvatar || '/placeholders/avatar.jpg'}
                 />
-                <AvatarFallback className="bg-primary-100 text-lg text-primary-700">
+                <AvatarFallback className="bg-primary-500/20 text-lg text-primary-300">
                   {teacherName
                     .split(' ')
                     .map((n) => n[0])
                     .join('')}
                 </AvatarFallback>
               </Avatar>
-              <div className="flex-1 space-y-2">
+              <div className="flex-1 space-y-3">
                 <div>
-                  <h4 className="font-semibold">{teacherName}</h4>
+                  <h4 className="text-lg font-bold text-white">
+                    {teacherName}
+                  </h4>
                   {teacherQualification && (
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                    <p className="text-sm text-primary-400">
                       {teacherQualification}
                     </p>
                   )}
                 </div>
-                <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
+                <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-wider text-primary-100/60">
                   {teacherLocation && (
-                    <div className="flex items-center gap-1">
-                      <MapPin className="h-4 w-4" />
+                    <div className="flex items-center gap-1.5">
+                      <MapPin className="h-3.5 w-3.5 text-primary-500/70" />
                       <span>{teacherLocation}</span>
                     </div>
                   )}
                   {teacherExperience > 0 && (
-                    <div className="flex items-center gap-1">
-                      <User className="h-4 w-4" />
-                      <span>{teacherExperience}+ years experience</span>
+                    <div className="flex items-center gap-1.5">
+                      <User className="h-3.5 w-3.5 text-primary-500/70" />
+                      <span>{teacherExperience}+ yrs exp</span>
                     </div>
                   )}
                 </div>
                 {teacherBio && (
-                  <p className="text-sm text-gray-700 dark:text-gray-300">
+                  <p className="text-sm leading-relaxed text-primary-100/80">
                     {teacherBio}
                   </p>
                 )}
@@ -154,51 +156,68 @@ export function ServiceDetailsDrawer({
           </div>
 
           {/* Service Statistics */}
-          <div className="grid grid-cols-2 gap-4 rounded-lg bg-gray-50 p-4 dark:bg-gray-800">
-            <div className="flex items-center gap-2">
-              <DollarSign className="h-4 w-4 text-green-600" />
+          <div className="grid grid-cols-2 gap-4 rounded-2xl border border-primary-500/10 bg-white/5 p-6 shadow-sm">
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
+                <DollarSign className="h-5 w-5" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Price per Session
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary-400">
+                  Rate
                 </p>
-                <p className="font-semibold">${service.price}</p>
+                <p className="text-xl font-bold text-white">${service.price}</p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
-              <Clock className="h-4 w-4 text-blue-600" />
+            <div className="flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
+                <Clock className="h-5 w-5" />
+              </div>
               <div>
-                <p className="text-sm text-gray-600 dark:text-gray-400">
-                  Session Duration
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary-400">
+                  Duration
                 </p>
-                <p className="font-semibold">{service.duration} minutes</p>
+                <p className="text-xl font-bold text-white">
+                  {service.duration}m
+                </p>
               </div>
             </div>
           </div>
 
           {/* Service Description */}
-          <div>
-            <h3 className="mb-2 text-lg font-semibold">Service Overview</h3>
-            <p className="text-gray-700 dark:text-gray-300">
-              {service.shortDescription}
-            </p>
-          </div>
+          <div className="space-y-6">
+            <div>
+              <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-300">
+                Service Overview
+              </h3>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-primary-100/90">
+                {service.shortDescription}
+              </p>
+            </div>
 
-          {/* Detailed Description */}
-          <div>
-            <h3 className="mb-2 text-lg font-semibold">Detailed Description</h3>
-            <p className="whitespace-pre-wrap text-gray-700 dark:text-gray-300">
-              {service.description}
-            </p>
+            <div>
+              <h3 className="mb-3 text-xs font-bold uppercase tracking-widest text-primary-300">
+                Detailed Description
+              </h3>
+              <p className="whitespace-pre-wrap text-sm leading-relaxed text-primary-100/80">
+                {service.description}
+              </p>
+            </div>
           </div>
 
           {/* Tags */}
           {service.tags && service.tags.length > 0 && (
             <div>
-              <h3 className="mb-2 text-lg font-semibold">Tags</h3>
+              <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-primary-300">
+                Expertise Tags
+              </h3>
               <div className="flex flex-wrap gap-2">
                 {service.tags.map((tag, index) => (
-                  <Badge key={index} variant="secondary">
-                    <Tag className="mr-1 h-3 w-3" />
+                  <Badge
+                    key={index}
+                    variant="secondary"
+                    className="border border-primary-500/20 bg-primary-500/10 font-medium text-primary-400 hover:bg-primary-500/20"
+                  >
+                    <Tag className="mr-1.5 h-3 w-3" />
                     {tag}
                   </Badge>
                 ))}
@@ -209,14 +228,14 @@ export function ServiceDetailsDrawer({
           {/* What You Provide */}
           {service.whatYouProvide && service.whatYouProvide.length > 0 && (
             <div>
-              <h3 className="mb-2 text-lg font-semibold">
+              <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-primary-300">
                 What You&rsquo;ll Get
               </h3>
-              <ul className="space-y-1">
+              <ul className="space-y-3">
                 {service.whatYouProvide.map((item, index) => (
-                  <li key={index} className="flex items-start gap-2">
-                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-green-600" />
-                    <span className="text-gray-700 dark:text-gray-300">
+                  <li key={index} className="flex items-start gap-3">
+                    <CheckCircle className="mt-0.5 h-4 w-4 flex-shrink-0 text-primary-500" />
+                    <span className="text-sm leading-relaxed text-primary-100/80">
                       {item}
                     </span>
                   </li>
@@ -225,14 +244,23 @@ export function ServiceDetailsDrawer({
             </div>
           )}
 
-          <Separator />
+          <Separator className="bg-primary-500/10" />
 
           {/* Action Buttons */}
           <div className="flex justify-end gap-3 pt-4">
-            <Button variant="outline" onClick={onClose}>
+            <Button
+              variant="outline"
+              onClick={onClose}
+              className="border-primary-500/30 text-primary-400 transition-all hover:bg-primary-500/10 hover:text-primary-300"
+            >
               Close
             </Button>
-            <Button onClick={handleStartChat}>Chat with {teacherName}</Button>
+            <Button
+              onClick={handleStartChat}
+              className="bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
+            >
+              Chat with {teacherName}
+            </Button>
           </div>
         </div>
       </SheetContent>

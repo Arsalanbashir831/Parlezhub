@@ -80,19 +80,23 @@ export default function MeetingEmptyCard() {
   const { title, description, showButton } = getEmptyMessage();
 
   return (
-    <Card className="py-12 text-center">
-      <CardContent>
-        <div className="flex flex-col items-center gap-4">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-            <Calendar className="h-8 w-8 text-gray-400" />
+    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.02] shadow-2xl backdrop-blur-sm transition-all duration-300">
+      <CardContent className="py-20 text-center">
+        <div className="flex flex-col items-center gap-6">
+          <div className="inline-flex h-20 w-20 items-center justify-center rounded-full bg-primary-500/10 shadow-lg shadow-primary-500/5">
+            <Calendar className="h-10 w-10 text-primary-500" />
           </div>
           <div>
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
-            <p className="mt-1 text-gray-600">{description}</p>
+            <h3 className="font-serif text-2xl font-bold text-primary-300">
+              {title}
+            </h3>
+            <p className="mx-auto mt-2 max-w-sm text-sm tracking-wide text-primary-100/40">
+              {description}
+            </p>
           </div>
           {showButton && (
             <Link href={ROUTES.STUDENT.TEACHERS}>
-              <Button className="bg-primary-500 hover:bg-primary-600">
+              <Button className="h-11 rounded-xl bg-primary-500 px-12 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
                 Find Teachers
               </Button>
             </Link>

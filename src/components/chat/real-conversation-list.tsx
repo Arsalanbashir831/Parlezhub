@@ -36,18 +36,20 @@ const RealConversationList = memo(
     }, [chats, searchQuery, currentUserRole]);
 
     return (
-      <div className="w-full min-w-0 overflow-hidden border-r bg-gray-50 md:w-80 md:min-w-80 md:max-w-80">
-        <div className="border-b bg-white p-4">
-          <div className="mb-3">
-            <h2 className="text-lg font-semibold">Messages</h2>
+      <div className="w-full min-w-0 overflow-hidden border-r border-primary-500/10 bg-background md:w-80 md:min-w-80 md:max-w-80">
+        <div className="border-b border-primary-500/10 bg-background/50 p-6 backdrop-blur-md">
+          <div className="mb-4">
+            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500">
+              Messages
+            </h2>
           </div>
-          <div className="relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+          <div className="group relative">
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-primary-500/50 transition-colors group-focus-within:text-primary-500" />
             <Input
-              placeholder="Search conversations..."
+              placeholder="Seek a consultant..."
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full pl-10"
+              className="w-full rounded-xl border-primary-500/10 bg-white/[0.03] pl-10 text-primary-100 placeholder:text-primary-100/30 focus-visible:ring-primary-500/30"
             />
           </div>
         </div>
@@ -55,10 +57,12 @@ const RealConversationList = memo(
         <ScrollArea className="h-[calc(100%-5rem)]">
           <div className="space-y-1 p-2">
             {filteredChats.length === 0 ? (
-              <div className="flex h-32 items-center justify-center text-center text-gray-500">
+              <div className="flex h-48 items-center justify-center p-6 text-center">
                 <div>
-                  <p className="text-sm">No conversations found</p>
-                  <p className="text-xs">
+                  <p className="text-sm font-bold text-primary-300">
+                    No conversations found
+                  </p>
+                  <p className="mt-1 text-[10px] uppercase tracking-wider text-primary-100/40">
                     {currentUserRole === 'student'
                       ? 'Start a conversation with a teacher from their service details'
                       : 'Students will start conversations with you'}

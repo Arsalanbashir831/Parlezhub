@@ -44,7 +44,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link
               href={ROUTES.AUTH.LOGIN}
-              className="font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Back to sign in
             </Link>
@@ -67,7 +67,7 @@ export default function ForgotPasswordPage() {
           <div className="text-center">
             <Link
               href={ROUTES.AUTH.LOGIN}
-              className="text-sm font-medium text-blue-600 hover:text-blue-500 dark:text-blue-400 dark:hover:text-blue-300"
+              className="text-sm font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
             >
               Back to sign in
             </Link>

@@ -1,9 +1,10 @@
 'use client';
 
 import { memo } from 'react';
-import { ArrowLeft, Calendar, Wifi, WifiOff } from 'lucide-react';
+import { ArrowLeft, Calendar } from 'lucide-react';
 
 import { ChatRoom } from '@/types/chat';
+import { cn } from '@/lib/utils';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -38,15 +39,17 @@ const RealChatHeader = memo(
     return (
       <>
         {showBackButton && (
-          <div className="flex items-center justify-between px-4 py-2 md:hidden">
+          <div className="flex items-center justify-between border-b border-primary-500/10 bg-background/50 px-4 py-3 backdrop-blur-md md:hidden">
             <Button
               variant="ghost"
               size="sm"
               onClick={onBack}
-              className="items-center self-start p-2 md:hidden"
+              className="items-center text-primary-400 hover:bg-primary-500/10 hover:text-primary-300"
             >
-              <ArrowLeft className="h-2 w-4" />
-              <span className="text-sm">Back</span>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              <span className="text-xs font-bold uppercase tracking-widest">
+                Back
+              </span>
             </Button>
 
             <div className="flex items-center gap-2">
@@ -55,59 +58,76 @@ const RealChatHeader = memo(
                   variant="outline"
                   size="sm"
                   onClick={onBookCall}
-                  className="h-fit bg-primary-500 px-2 py-2 text-xs text-white hover:bg-primary-600"
+                  className="h-9 rounded-xl border-none bg-primary-500 px-4 font-bold text-primary-950 shadow-lg shadow-primary-500/20 hover:bg-primary-600"
                 >
                   <Calendar className="mr-2 h-4 w-4" />
-                  Book a Call
+                  Book Call
                 </Button>
               )}
             </div>
           </div>
         )}
-        <div className="flex flex-col justify-between border-b bg-white px-4 pb-2 pt-0 md:flex-row md:items-center md:pb-4 md:pt-4">
-          <div className="flex w-full items-center gap-3">
-            <Avatar className="h-10 w-10">
-              <AvatarImage
-                src={otherParticipantAvatar || '/placeholders/avatar.jpg'}
+        <div className="flex flex-col justify-between border-b border-primary-500/10 bg-background/80 px-6 py-4 backdrop-blur-xl md:flex-row md:items-center">
+          <div className="flex w-full items-center gap-4">
+            <div className="relative">
+              <Avatar className="h-12 w-12 border-2 border-primary-500/20 p-0.5">
+                <AvatarImage
+                  src={otherParticipantAvatar || '/placeholders/avatar.jpg'}
+                  className="rounded-full"
+                />
+                <AvatarFallback className="bg-primary-500/10 font-bold text-primary-400">
+                  {otherParticipantName
+                    .split(' ')
+                    .map((n) => n[0])
+                    .join('')}
+                </AvatarFallback>
+              </Avatar>
+              <div
+                className={cn(
+                  'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background shadow-sm',
+                  isConnected ? 'bg-green-500' : 'bg-gray-500'
+                )}
               />
-              <AvatarFallback className="bg-primary-100 text-primary-700">
-                {otherParticipantName
-                  .split(' ')
-                  .map((n) => n[0])
-                  .join('')}
-              </AvatarFallback>
-            </Avatar>
-            <div className="flex-1">
-              <div className="flex items-center justify-between gap-2 md:justify-start">
-                <div className="flex items-center gap-2">
-                  <h3 className="font-semibold">{otherParticipantName}</h3>
-                  {isConnected ? (
-                    <Wifi className="h-3 w-3 text-green-500" />
-                  ) : (
-                    <WifiOff className="h-3 w-3 text-gray-400" />
-                  )}
-                </div>
-
-                <Badge variant="outline" className="text-xs">
+            </div>
+            <div className="min-w-0 flex-1">
+              <div className="flex items-center gap-3">
+                <h3 className="truncate text-lg font-bold text-white">
+                  {otherParticipantName}
+                </h3>
+                <Badge
+                  variant="outline"
+                  className="hidden border-primary-500/30 bg-primary-500/5 text-[10px] font-bold uppercase tracking-widest text-primary-400 sm:inline-flex"
+                >
                   {currentUserRole === 'student' ? 'Teacher' : 'Student'}
                 </Badge>
               </div>
-              <p className="text-sm text-gray-500">
-                {isTyping ? 'Typing...' : isConnected ? 'Online' : 'Offline'}
-              </p>
+              <div className="mt-0.5 flex items-center gap-2">
+                <p
+                  className={cn(
+                    'text-[10px] font-bold uppercase tracking-widest transition-colors',
+                    isTyping
+                      ? 'animate-pulse text-primary-400'
+                      : isConnected
+                        ? 'text-green-500/80'
+                        : 'text-primary-100/30'
+                  )}
+                >
+                  {isTyping ? 'Writing...' : isConnected ? 'Online' : 'Offline'}
+                </p>
+              </div>
             </div>
           </div>
 
-          <div className="hidden items-center gap-2 self-end md:flex">
+          <div className="hidden shrink-0 items-center gap-4 self-center md:flex">
             {currentUserRole === 'student' && (
               <Button
                 variant="outline"
                 size="sm"
                 onClick={onBookCall}
-                className="bg-primary-500 text-white hover:bg-primary-600"
+                className="h-10 rounded-xl border-none bg-primary-500 px-6 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
               >
                 <Calendar className="mr-2 h-4 w-4" />
-                Book a Call
+                Schedule Consultation
               </Button>
             )}
           </div>

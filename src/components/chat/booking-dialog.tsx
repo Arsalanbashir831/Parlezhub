@@ -270,46 +270,52 @@ const BookingDialog = memo(
 
     return (
       <Dialog open={isOpen} onOpenChange={onClose}>
-        <DialogContent className="sm:max-w-lg">
-          <DialogHeader>
-            <DialogTitle>Schedule a session</DialogTitle>
-            <DialogDescription>
+        <DialogContent className="overflow-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl sm:max-w-lg">
+          <DialogHeader className="p-8 pb-4">
+            <DialogTitle className="font-serif text-3xl font-bold text-primary-500">
+              Schedule Consultation
+            </DialogTitle>
+            <DialogDescription className="mt-2 text-sm leading-relaxed text-primary-100/60">
               Select a date and time within the teacher&lsquo;s available slots.
               <br />
-              <span className="text-xs text-muted-foreground">
+              <span className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-primary-500/60">
                 Note: For sessions that cross midnight (e.g., 10 PM to 2 AM),
                 the end time will automatically be set to the next day.
               </span>
             </DialogDescription>
           </DialogHeader>
 
-          <div className="space-y-4">
+          <div className="custom-scrollbar max-h-[70vh] space-y-6 overflow-y-auto px-8 pb-8">
             {/* Weekly schedule overview */}
-            <div className="rounded-md border p-3">
-              <p className="mb-2 text-sm font-medium">Weekly availability</p>
+            <div className="rounded-2xl border border-primary-500/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+              <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-300">
+                Weekly Availability
+              </p>
               {loading && (
-                <p className="text-sm text-muted-foreground">Loading...</p>
+                <p className="animate-pulse text-sm text-primary-100/40">
+                  Loading...
+                </p>
               )}
               {!loading && (
-                <ul className="space-y-2">
+                <ul className="space-y-3">
                   {weeklyGrouped.map((d) => (
                     <li
                       key={d.name}
-                      className="flex items-start justify-between gap-2"
+                      className="flex items-start justify-between gap-4"
                     >
-                      <span className="min-w-24 text-sm font-medium">
-                        {d.name}
+                      <span className="mt-1 min-w-20 text-[11px] font-bold uppercase tracking-widest text-primary-100/60">
+                        {d.name.slice(0, 3)}
                       </span>
                       {d.slots.length === 0 ? (
-                        <span className="text-sm text-muted-foreground">
+                        <span className="mt-1 text-[10px] font-bold uppercase tracking-[0.1em] text-primary-100/20">
                           Not available
                         </span>
                       ) : (
-                        <div className="flex flex-wrap gap-2">
+                        <div className="flex flex-wrap justify-end gap-2">
                           {d.slots.map((s, idx) => (
                             <span
                               key={`${d.name}-${s.start}-${idx}`}
-                              className="rounded border px-2 py-0.5 text-xs"
+                              className="rounded-lg border border-primary-500/20 bg-primary-500/5 px-2.5 py-1 text-[11px] font-medium text-primary-400"
                             >
                               {s.start} - {s.end}
                             </span>
@@ -322,125 +328,161 @@ const BookingDialog = memo(
               )}
             </div>
 
-            {/* Date */}
-            <div className="grid gap-2">
-              <Label htmlFor="booking-date">Date</Label>
-              <Input
-                id="booking-date"
-                type="date"
-                value={date}
-                min={todayStr}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDate(val && val < todayStr ? todayStr : val);
-                }}
-              />
+            <div className="grid gap-6 sm:grid-cols-2">
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="booking-date"
+                  className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Date
+                </Label>
+                <Input
+                  id="booking-date"
+                  type="date"
+                  value={date}
+                  min={todayStr}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDate(val && val < todayStr ? todayStr : val);
+                  }}
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                />
+              </div>
+
+              <div className="grid gap-2">
+                <Label
+                  htmlFor="booking-service"
+                  className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Visionary Service
+                </Label>
+                {servicesLoading ? (
+                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
+                    Loading...
+                  </div>
+                ) : teacherServices.length === 0 ? (
+                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
+                    No services shared
+                  </div>
+                ) : (
+                  <Select
+                    value={selectedServiceId}
+                    onValueChange={setSelectedServiceId}
+                  >
+                    <SelectTrigger
+                      id="booking-service"
+                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white hover:border-primary-500/30 focus:ring-primary-500/30"
+                    >
+                      <SelectValue placeholder="Choose a field" />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border-primary-500/10 bg-background text-white shadow-2xl">
+                      {teacherServices.map((service) => (
+                        <SelectItem
+                          key={service.id}
+                          value={service.id}
+                          className="focus:bg-primary-500/10 focus:text-primary-500"
+                        >
+                          <div className="flex flex-col py-1">
+                            <span className="line-clamp-1 text-sm font-bold tracking-wide">
+                              {service.title}
+                            </span>
+                            <span className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary-400">
+                              ${service.price} • {service.duration}m cycle
+                            </span>
+                          </div>
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                )}
+              </div>
             </div>
 
-            {/* Start (selectable) / End (auto +1h) */}
-            <div className="grid gap-3 sm:grid-cols-2">
+            <div className="grid gap-4 sm:grid-cols-2">
               <div className="grid gap-2">
-                <Label htmlFor="booking-start">Start time</Label>
+                <Label
+                  htmlFor="booking-start"
+                  className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Start Time
+                </Label>
                 <Input
                   id="booking-start"
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
                 />
               </div>
               <div className="grid gap-2">
-                <Label htmlFor="booking-end">End time</Label>
+                <Label
+                  htmlFor="booking-end"
+                  className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  End Time
+                </Label>
                 <Input
                   id="booking-end"
                   type="time"
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   min={startTime || undefined}
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
                 />
                 {startTime &&
                   endTime &&
                   calculateDuration(startTime, endTime) <= 0 && (
-                    <p className="text-xs text-destructive">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-destructive">
                       End time must be after start time
                     </p>
                   )}
               </div>
             </div>
 
-            {/* Service Selection */}
-            <div className="grid gap-2">
-              <Label htmlFor="booking-service">Select Service</Label>
-              {servicesLoading ? (
-                <div className="flex h-10 items-center px-3 text-sm text-muted-foreground">
-                  Loading services...
-                </div>
-              ) : teacherServices.length === 0 ? (
-                <div className="flex h-10 items-center px-3 text-sm text-muted-foreground">
-                  No services available
-                </div>
-              ) : (
-                <Select
-                  value={selectedServiceId}
-                  onValueChange={setSelectedServiceId}
-                >
-                  <SelectTrigger id="booking-service">
-                    <SelectValue placeholder="Choose a service" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {teacherServices.map((service) => (
-                      <SelectItem key={service.id} value={service.id}>
-                        <div className="flex flex-col">
-                          <span className="line-clamp-1 font-medium">
-                            {service.title}
-                          </span>
-                          <span className="text-sm text-muted-foreground">
-                            ${service.price} • {service.duration} minutes
-                          </span>
-                        </div>
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              )}
-            </div>
-
             {/* Price Display */}
             {selectedServiceId && startTime && endTime && (
-              <div className="rounded-md border bg-muted/50 p-4">
-                <div className="space-y-2">
+              <div className="relative overflow-hidden rounded-2xl border border-primary-500/20 bg-primary-500/5 p-6">
+                <div className="absolute right-0 top-0 -mr-16 -mt-16 h-32 w-32 rounded-full bg-primary-500/5 blur-3xl" />
+                <div className="relative space-y-4">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Duration:</span>
-                    <span className="text-sm">
-                      {calculateDuration(startTime, endTime)} minutes
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary-300">
+                      Duration
+                    </span>
+                    <span className="text-sm font-bold text-primary-100">
+                      {calculateDuration(startTime, endTime)}m
                       {calculateDuration(startTime, endTime) > 0 && (
-                        <span className="ml-1 text-muted-foreground">
+                        <span className="ml-2 font-medium text-primary-100/40">
                           (
                           {Math.round(
                             (calculateDuration(startTime, endTime) / 60) * 100
-                          ) / 100}{' '}
-                          hours)
+                          ) / 100}
+                          h)
                         </span>
                       )}
                     </span>
                   </div>
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium">Rate:</span>
-                    <span className="text-sm">
+                    <span className="text-[10px] font-bold uppercase tracking-widest text-primary-300">
+                      Rate
+                    </span>
+                    <span className="text-sm font-bold text-primary-100">
                       $
                       {teacherServices.find((s) => s.id === selectedServiceId)
                         ?.price || 0}
-                      /hour
+                      /h
                     </span>
                   </div>
                   {calculateDuration(startTime, endTime) <= 0 && (
-                    <div className="text-sm text-destructive">
+                    <div className="text-center text-[10px] font-bold uppercase tracking-widest text-destructive">
                       End time must be after start time
                     </div>
                   )}
-                  <Separator />
+                  <Separator className="bg-primary-500/10" />
                   <div className="flex items-center justify-between">
-                    <span className="font-semibold">Total Amount:</span>
-                    <span className="text-primary text-lg font-bold">
+                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500">
+                      Total Amount
+                    </span>
+                    <span className="font-serif text-2xl font-bold text-primary-500 drop-shadow-[0_0_10px_rgba(212,175,55,0.2)]">
                       ${calculateTotalPrice().toFixed(2)}
                     </span>
                   </div>
@@ -450,19 +492,29 @@ const BookingDialog = memo(
 
             {/* Notes */}
             <div className="grid gap-2">
-              <Label htmlFor="booking-notes">Notes (optional)</Label>
+              <Label
+                htmlFor="booking-notes"
+                className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+              >
+                Notes (optional)
+              </Label>
               <Textarea
                 id="booking-notes"
-                placeholder="Any specific requirements or topics you'd like to focus on..."
+                placeholder="Share your constellation details or specific focuses..."
                 value={notes}
                 onChange={(e) => setNotes(e.target.value)}
                 rows={3}
+                className="resize-none rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
               />
             </div>
 
-            <Separator />
-            <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={onClose}>
+            <Separator className="bg-primary-500/10" />
+            <div className="flex justify-end gap-3">
+              <Button
+                variant="outline"
+                onClick={onClose}
+                className="rounded-xl border-primary-500/20 px-6 text-primary-400 hover:bg-primary-500/10"
+              >
                 Cancel
               </Button>
               <Button
@@ -475,6 +527,7 @@ const BookingDialog = memo(
                   !selectedServiceId ||
                   calculateDuration(startTime, endTime) <= 0
                 }
+                className="rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
               >
                 {submitting ? 'Scheduling...' : 'Schedule'}
               </Button>

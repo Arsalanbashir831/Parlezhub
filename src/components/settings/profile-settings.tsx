@@ -178,35 +178,44 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
   };
 
   return (
-    <Card>
-      <CardHeader>
+    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <CardHeader className="p-8 pb-4">
         <div className="flex items-center justify-between">
-          <CardTitle>Profile Information</CardTitle>
-          <Button variant="outline" onClick={handleToggleEditMode}>
+          <CardTitle className="font-serif text-2xl font-bold text-primary-500">
+            Profile Information
+          </CardTitle>
+          <Button
+            variant="ghost"
+            onClick={handleToggleEditMode}
+            className="h-10 rounded-2xl border border-primary-500/10 px-6 text-[10px] font-bold uppercase tracking-widest text-primary-400 hover:bg-primary-500/10"
+          >
             {isEditMode ? 'Cancel' : 'Edit Profile'}
           </Button>
         </div>
       </CardHeader>
-      <CardContent className="space-y-6">
+      <CardContent className="space-y-8 p-8 pt-4">
         {/* Avatar Section */}
-        <div className="flex items-center gap-4">
-          <Avatar className="h-20 w-20">
-            <AvatarImage
-              src={profileData.avatar || user?.profile_picture || undefined}
-              alt={user?.first_name + ' ' + user?.last_name}
-            />
-            <AvatarFallback>
-              <User className="h-8 w-8" />
-            </AvatarFallback>
-          </Avatar>
+        <div className="flex items-center gap-6">
+          <div className="group relative">
+            <Avatar className="h-24 w-24 border-2 border-primary-500/20 shadow-2xl shadow-primary-500/10 transition-colors group-hover:border-primary-500">
+              <AvatarImage
+                src={profileData.avatar || user?.profile_picture || undefined}
+                alt={user?.first_name + ' ' + user?.last_name}
+              />
+              <AvatarFallback className="bg-primary-500/10 font-bold text-primary-500">
+                <User className="h-10 w-10" />
+              </AvatarFallback>
+            </Avatar>
+            <div className="absolute inset-0 flex items-center justify-center rounded-full bg-primary-950/40 opacity-0 backdrop-blur-[2px] transition-opacity group-hover:opacity-100">
+              <Camera className="h-6 w-6 text-white" />
+            </div>
+          </div>
           <div>
             <Label htmlFor="avatar" className="cursor-pointer">
-              <Button variant="outline" size="sm" asChild>
-                <span>
-                  <Camera className="mr-2 h-4 w-4" />
-                  Change Photo
-                </span>
-              </Button>
+              <span className="inline-flex h-10 items-center justify-center rounded-xl border border-primary-500/10 bg-white/5 px-6 text-[10px] font-bold uppercase tracking-widest text-primary-400 transition-colors hover:bg-primary-500/10">
+                <Camera className="mr-2 h-4 w-4" />
+                Change Photo
+              </span>
             </Label>
             <input
               id="avatar"
@@ -219,61 +228,90 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
         </div>
 
         {/* Profile Fields */}
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2">
-          <div>
-            <Label htmlFor="username">Full Name</Label>
+        <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+          <div className="space-y-2">
+            <Label
+              htmlFor="username"
+              className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+            >
+              Full Name
+            </Label>
             <Input
               id="username"
               value={profileData.username}
               onChange={handleInputChange('username')}
               disabled={!isEditMode}
               placeholder="Enter your full name"
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
           </div>
 
-          <div>
-            <Label htmlFor="email">Email</Label>
+          <div className="space-y-2">
+            <Label
+              htmlFor="email"
+              className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+            >
+              Email
+            </Label>
             <Input
               id="email"
               value={profileData.email}
               disabled={true}
               placeholder="Enter your email"
+              className="h-12 cursor-not-allowed rounded-xl border-white/5 bg-white/[0.02] text-primary-100/30"
             />
           </div>
 
-          <div>
-            <Label htmlFor="phoneNumber">Phone Number</Label>
+          <div className="space-y-2">
+            <Label
+              htmlFor="phoneNumber"
+              className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+            >
+              Phone Number
+            </Label>
             <Input
               id="phoneNumber"
               value={profileData.phoneNumber}
               onChange={handleInputChange('phoneNumber')}
               disabled={!isEditMode}
               placeholder="Enter your phone number"
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
           </div>
 
-          <div>
-            <Label htmlFor="city">City</Label>
+          <div className="space-y-2">
+            <Label
+              htmlFor="city"
+              className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+            >
+              City
+            </Label>
             <Input
               id="city"
               value={profileData.city}
               onChange={handleInputChange('city')}
               disabled={!isEditMode}
               placeholder="Enter your city"
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
           </div>
 
-          <div>
-            <Label htmlFor="country">Country</Label>
+          <div className="space-y-2">
+            <Label
+              htmlFor="country"
+              className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+            >
+              Country
+            </Label>
             <Select
               value={profileData.country}
               onValueChange={handleSelectChange('country')}
               disabled={!isEditMode}
             >
-              <SelectTrigger>
+              <SelectTrigger className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-sm text-white focus:ring-primary-500/30">
                 <SelectValue placeholder="Select your country" />
               </SelectTrigger>
-              <SelectContent>
+              <SelectContent className="border-primary-500/10 bg-background">
                 {countries.map((country) => (
                   <SelectItem key={country} value={country}>
                     {country}
@@ -286,19 +324,30 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
           {/* Teacher-specific fields */}
           {userRole === 'teacher' && (
             <>
-              <div>
-                <Label htmlFor="qualification">Qualification</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="qualification"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Qualification
+                </Label>
                 <Input
                   id="qualification"
                   value={profileData.qualification}
                   onChange={handleInputChange('qualification')}
                   disabled={!isEditMode}
                   placeholder="e.g., Bachelor's in Education, TEFL Certificate"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                 />
               </div>
 
-              <div>
-                <Label htmlFor="experience_years">Years of Experience</Label>
+              <div className="space-y-2">
+                <Label
+                  htmlFor="experience_years"
+                  className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+                >
+                  Years of Experience
+                </Label>
                 <Input
                   id="experience_years"
                   type="number"
@@ -308,14 +357,20 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
                   onChange={handleInputChange('experience_years')}
                   disabled={!isEditMode}
                   placeholder="Enter years of teaching experience"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                 />
               </div>
             </>
           )}
         </div>
 
-        <div>
-          <Label htmlFor="bio">Bio</Label>
+        <div className="space-y-2">
+          <Label
+            htmlFor="bio"
+            className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
+          >
+            Bio
+          </Label>
           <Textarea
             id="bio"
             value={profileData.bio}
@@ -323,15 +378,24 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
             disabled={!isEditMode}
             placeholder="Tell us about yourself..."
             rows={4}
+            className="resize-none rounded-2xl border-primary-500/10 bg-white/5 p-4 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
           />
         </div>
 
         {isEditMode && (
-          <div className="flex justify-end gap-2">
-            <Button variant="outline" onClick={handleToggleEditMode}>
+          <div className="flex justify-end gap-3 pt-4">
+            <Button
+              variant="ghost"
+              onClick={handleToggleEditMode}
+              className="h-12 rounded-2xl border border-primary-500/10 px-8 text-[10px] font-bold uppercase tracking-widest text-primary-400 hover:bg-primary-500/10"
+            >
               Cancel
             </Button>
-            <Button onClick={handleSave} disabled={isUpdatingProfile}>
+            <Button
+              onClick={handleSave}
+              disabled={isUpdatingProfile}
+              className="h-12 rounded-2xl bg-primary-500 px-10 text-[10px] font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
+            >
               <Save className="mr-2 h-4 w-4" />
               {isUpdatingProfile ? 'Saving...' : 'Save Changes'}
             </Button>
