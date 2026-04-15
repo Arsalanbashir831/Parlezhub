@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { Users } from 'lucide-react';
 import { useUser } from '@/contexts/user-context';
 
 import { ChatRoom } from '@/types/chat';
@@ -85,12 +86,13 @@ export default function ChatPage() {
   if (!user) {
     return (
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full">
+        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
           <CardContent className="h-full p-0">
-            <div className="flex h-full items-center justify-center">
-              <div className="text-center text-gray-500">
-                <h3 className="mb-2 text-lg font-medium">Loading...</h3>
-                <p>Please wait while we load your chat data</p>
+            <div className="flex h-full flex-col items-center justify-center gap-6">
+              <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-primary-500"></div>
+              <div className="text-center">
+                <h3 className="mb-2 font-serif text-3xl font-bold text-white">Loading...</h3>
+                <p className="text-primary-100/60 font-medium">Please wait while we load your chat data</p>
               </div>
             </div>
           </CardContent>
@@ -102,7 +104,7 @@ export default function ChatPage() {
   return (
     <>
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full">
+        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
           <CardContent className="h-full p-0">
             <div className="flex h-full w-full">
               {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}
@@ -153,12 +155,15 @@ export default function ChatPage() {
 
               {/* No conversation selected state - Desktop only */}
               {!selectedChat && (
-                <div className="hidden flex-1 items-center justify-center md:flex">
-                  <div className="text-center text-gray-500">
-                    <h3 className="mb-2 text-lg font-medium">
+                <div className="hidden flex-1 flex-col items-center justify-center gap-6 md:flex">
+                  <div className="flex h-20 w-20 items-center justify-center rounded-3xl border border-primary-500/10 bg-primary-500/5 text-primary-500/20">
+                    <Users className="h-10 w-10 text-primary-500/40" />
+                  </div>
+                  <div className="text-center">
+                    <h3 className="mb-2 font-serif text-2xl font-bold text-white">
                       No conversation selected
                     </h3>
-                    <p>Select a conversation to start chatting</p>
+                    <p className="text-primary-100/60 font-medium">Select a conversation to start chatting with your students</p>
                   </div>
                 </div>
               )}

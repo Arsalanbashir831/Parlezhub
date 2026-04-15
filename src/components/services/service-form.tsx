@@ -175,8 +175,8 @@ export default function ServiceForm({
     <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
       {/* Error Display */}
       {error && (
-        <Alert variant="destructive">
-          <AlertDescription>{error}</AlertDescription>
+        <Alert variant="destructive" className="rounded-2xl border-red-500/20 bg-red-500/10 text-red-200">
+          <AlertDescription className="font-medium">{error}</AlertDescription>
         </Alert>
       )}
 
@@ -195,12 +195,12 @@ export default function ServiceForm({
                 onValueChange={(value: ServiceType) => setValue('type', value)}
                 disabled={mode === 'edit'}
               >
-                <SelectTrigger className="w-full cursor-pointer bg-white/5 border-primary-500/10 shadow-2xl backdrop-blur-md transition-all duration-300">
+                <SelectTrigger className="h-12 w-full rounded-xl border-primary-500/10 bg-white/5 text-primary-100 placeholder:text-primary-100/20 focus:ring-primary-500/30">
                   <SelectValue placeholder="Select service type" />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-primary-500/10 bg-background text-white">
                   {availableTypes.map((type) => (
-                    <SelectItem key={type} value={type}>
+                    <SelectItem key={type} value={type} className="focus:bg-primary-500 focus:text-primary-950">
                       {getServiceTypeLabel(type)}
                     </SelectItem>
                   ))}
@@ -223,9 +223,9 @@ export default function ServiceForm({
                 maxLength={80}
                 className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
-              <div className="mt-1 flex justify-between text-sm text-gray-500">
+              <div className="mt-1 flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
                 {errors.title && (
-                  <span className="text-red-600">{errors.title.message}</span>
+                  <span className="text-red-400">{errors.title.message}</span>
                 )}
                 <span className="ml-auto">
                   {watchedFields.title?.length || 0}/80
@@ -244,9 +244,9 @@ export default function ServiceForm({
                 maxLength={160}
                 className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
-              <div className="mt-1 flex justify-between text-sm text-gray-500">
+              <div className="mt-1 flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
                 {errors.shortDescription && (
-                  <span className="text-red-600">
+                  <span className="text-red-400">
                     {errors.shortDescription.message}
                   </span>
                 )}
@@ -275,9 +275,9 @@ export default function ServiceForm({
                 disabled={isGeneratingDescription}
                 className="h-12 mt-2 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
-              <div className="mt-1 flex justify-between text-sm text-gray-500">
+              <div className="mt-1 flex justify-between text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
                 {errors.description && (
-                  <span className="text-red-600">
+                  <span className="text-red-400">
                     {errors.description.message}
                   </span>
                 )}
@@ -335,7 +335,7 @@ export default function ServiceForm({
                 />
               </div>
               {errors.duration && (
-                <p className="mt-1 text-sm text-red-600">
+                <p className="mt-1 text-sm text-red-400">
                   {errors.duration.message}
                 </p>
               )}
@@ -371,11 +371,11 @@ export default function ServiceForm({
               <Badge
                 key={index}
                 variant="secondary"
-                className="flex items-center gap-1"
+                className="flex items-center gap-2 rounded-lg border-primary-500/20 bg-primary-500/10 px-3 py-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-400"
               >
                 {tag}
                 <X
-                  className="h-3 w-3 cursor-pointer hover:text-red-500"
+                  className="h-3.5 w-3.5 cursor-pointer transition-colors hover:text-red-400"
                   onClick={() => removeTag(tag)}
                 />
               </Badge>
@@ -415,15 +415,15 @@ export default function ServiceForm({
             </Button>
           </div>
 
-          <div className="space-y-2">
+          <div className="grid grid-cols-1 gap-2">
             {watchedFields.whatYouProvide?.map((item, index) => (
               <div
                 key={index}
-                className="flex items-center justify-between rounded bg-gray-50 p-2 dark:bg-gray-800"
+                className="group flex items-center justify-between rounded-xl border border-white/5 bg-white/[0.02] p-3 transition-colors hover:bg-white/5"
               >
-                <span className="text-sm">{item}</span>
+                <span className="text-sm font-medium text-primary-100/80">{item}</span>
                 <X
-                  className="h-4 w-4 cursor-pointer hover:text-red-500"
+                  className="h-4 w-4 cursor-pointer text-primary-100/20 transition-colors hover:text-red-400 group-hover:text-primary-100/40"
                   onClick={() => removeService(index)}
                 />
               </div>
@@ -439,13 +439,22 @@ export default function ServiceForm({
       </Card>
 
       {/* Form Actions */}
-      <div className="flex justify-end gap-3">
+      <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
         {onCancel && (
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-8 font-bold"
+          >
             Cancel
           </Button>
         )}
-        <Button type="submit" disabled={isLoading || isGeneratingDescription}>
+        <Button 
+          type="submit" 
+          disabled={isLoading || isGeneratingDescription}
+          className="h-12 rounded-xl bg-primary-500 px-10 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
+        >
           {isLoading
             ? 'Saving...'
             : mode === 'create'

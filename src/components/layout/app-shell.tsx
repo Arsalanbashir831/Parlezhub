@@ -91,16 +91,20 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       <SidebarInset>
         {/* Top bar */}
-        <header className="bg-background shadow-sm">
-          <div className="flex h-16 shrink-0 items-center gap-2 border-b border-primary-300/60 px-4">
-            <SidebarTrigger className="-ml-1 text-primary-50" />
-            <h1 className="text-xl font-semibold capitalize text-primary-50">
+        <header className="sticky top-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md">
+          <div className="flex h-20 shrink-0 items-center gap-4 px-8">
+            <SidebarTrigger className="-ml-2 h-10 w-10 rounded-xl text-primary-50 transition-all hover:bg-white/5" />
+            <h1 className="font-serif text-2xl font-bold capitalize tracking-tight text-white">
               {pageTitle}
             </h1>
             <div className="ml-auto flex items-center gap-4">
-              <Avatar className="h-8 w-8">
+              <div className="flex flex-col items-end">
+                <p className="text-sm font-bold text-white leading-none">{user?.first_name} {user?.last_name}</p>
+                <p className="text-[10px] font-bold uppercase tracking-widest text-primary-500">{roleLabel}</p>
+              </div>
+              <Avatar className="h-10 w-10 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10">
                 <AvatarImage src={user?.profile_picture ?? undefined} />
-                <AvatarFallback className="bg-primary-100 text-sm text-primary-700 dark:bg-primary-800 dark:text-primary-200">
+                <AvatarFallback className="bg-primary-500/10 font-serif text-lg font-bold text-primary-500">
                   {user?.first_name?.charAt(0).toUpperCase()}
                 </AvatarFallback>
               </Avatar>

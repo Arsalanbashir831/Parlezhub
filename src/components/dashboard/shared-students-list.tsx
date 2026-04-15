@@ -18,37 +18,36 @@ export function SharedStudentsList() {
 
   return (
     <Card className="lg:col-span-12 h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
-      <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
+      <CardHeader className="p-8">
         <div className="space-y-1">
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary-500">
-            <Users className="h-6 w-6 text-primary-500" />
-            Shared Astrology Students
+          <CardTitle className="font-serif text-3xl font-bold text-white">
+            Shared <span className="text-primary-500">Astrology Students</span>
           </CardTitle>
-          <p className="text-sm text-muted-foreground">
-            Students who have granted you access to their astrological charts.
+          <p className="text-primary-100/60 font-medium">
+            Students who have granted you access to their astrological charts for deeper insights.
           </p>
         </div>
       </CardHeader>
       <CardContent>
-        <div className="grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">
+        <div className="grid grid-cols-1 gap-6 p-8 pt-0 md:grid-cols-2 lg:grid-cols-3">
           {students.map((record: SharedStudentAccess) => (
             <div
               key={record.id}
-              className="group relative flex items-center justify-between p-4 rounded-xl border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]"
+              className="group relative flex items-center justify-between p-5 rounded-2xl border border-white/5 bg-white/[0.02] transition-all duration-300 hover:bg-white/[0.05] hover:shadow-2xl hover:shadow-primary-500/5"
             >
               <div className="flex min-w-0 items-center gap-4">
-                <Avatar className="h-12 w-12 border-2 border-primary-500/10">
+                <Avatar className="h-14 w-14 border-2 border-primary-500/10 transition-colors group-hover:border-primary-500">
                   <AvatarImage src={record.student.profile_picture || ''} />
-                  <AvatarFallback className=" border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+                  <AvatarFallback className="font-serif text-lg font-bold bg-primary-500/20 text-primary-500">
                     {(record.student.full_name || 'S')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
-                  <p className="truncate font-semibold text-primary-500/80">
+                  <p className="truncate font-serif text-base font-bold text-white transition-colors group-hover:text-primary-500">
                     {record.student.full_name}
                   </p>
-                  <p className="flex items-center gap-1 text-xs text-slate-500">
-                    <Star className="h-3 w-3 fill-primary-500 text-primary-500" />
+                  <p className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+                    <Star className="h-3 w-3 fill-primary-500/40 text-primary-500/40" />
                     Student Access
                   </p>
                 </div>
@@ -58,11 +57,10 @@ export function SharedStudentsList() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-primary-600 hover:bg-primary-500/80 hover:text-white"
+                className="h-10 w-10 rounded-xl p-0 text-primary-500 transition-all hover:bg-primary-500 hover:text-primary-950"
               >
-                <Link href={`/astrology?student_id=${record.student.id}`}>
-                  <ExternalLink className="mr-2 h-4 w-4" />
-                  View Chart
+                <Link href={`/astrology?student_id=${record.student.id}`} title="View Chart">
+                  <ExternalLink className="h-5 w-5" />
                 </Link>
               </Button>
             </div>

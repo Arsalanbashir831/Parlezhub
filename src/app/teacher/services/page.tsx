@@ -121,23 +121,28 @@ export default function ServicesPage() {
   return (
     <div className="space-y-8">
       {/* Header */}
-      <div className="flex flex-col items-start justify-between gap-4 sm:flex-row sm:items-center">
+      <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">My Services</h1>
-          <p className="text-gray-600 dark:text-gray-400">
+          <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
+            My <span className="text-primary-500">Services</span>
+          </h1>
+          <p className="mt-2 text-primary-100/60 font-medium">
             Manage your service offerings and track performance
           </p>
         </div>
 
         <div className="flex gap-3">
           {availableServiceTypes.length > 0 && (
-            <Button onClick={handleCreateService}>
-              <Plus className="mr-2 h-4 w-4" />
+            <Button 
+              onClick={handleCreateService}
+              className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
+            >
+              <Plus className="mr-2 h-5 w-5" />
               Create New Service
             </Button>
           )}
           {availableServiceTypes.length === 0 && (
-            <div className="text-sm text-gray-500">
+            <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-sm font-medium text-primary-100/40">
               All service types created
             </div>
           )}
@@ -176,18 +181,23 @@ export default function ServicesPage() {
           ))}
         </div>
       ) : (
-        <Card>
-          <CardContent className="py-12 text-center">
-            <Briefcase className="mx-auto mb-4 h-12 w-12 text-gray-400" />
-            <h3 className="mb-2 text-lg font-medium">No services found</h3>
-            <p className="mb-6 text-gray-600 dark:text-gray-400">
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md">
+          <CardContent className="flex flex-col items-center justify-center py-16 text-center">
+            <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
+              <Briefcase className="h-10 w-10 text-primary-500" />
+            </div>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-white">No services found</h3>
+            <p className="mb-8 max-w-sm text-primary-100/60 font-medium">
               {filters.searchQuery || filters.type || filters.status
-                ? 'Try adjusting your filters to see more results.'
-                : 'Create your first service to start offering your expertise.'}
+                ? 'Try adjusting your filters to see more results and find what you are looking for.'
+                : 'Create your first service to start offering your expertise to your students.'}
             </p>
             {availableServiceTypes.length > 0 && (
-              <Button onClick={handleCreateService}>
-                <Plus className="mr-2 h-4 w-4" />
+              <Button 
+                onClick={handleCreateService}
+                className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
+              >
+                <Plus className="mr-2 h-5 w-5" />
                 Create Your First Service
               </Button>
             )}

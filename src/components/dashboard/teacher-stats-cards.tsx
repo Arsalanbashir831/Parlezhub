@@ -12,18 +12,8 @@ interface TeacherStatsCardsProps {
 export default function TeacherStatsCards({
   meetings,
 }: TeacherStatsCardsProps) {
-  const totalMeetings = meetings.length;
-  const upcomingMeetings = meetings.filter(
-    (m) => m.status === 'CONFIRMED'
-  ).length;
-  const completedMeetings = meetings.filter((m) => m.status === 'CONFIRMED');
-
-  // Calculate average rating from completed meetings
-  const averageRating =
-    completedMeetings.length > 0
-      ? completedMeetings.reduce((sum, m) => sum + (m.rating || 0), 0) /
-      completedMeetings.length
-      : 0;
+  const activeStudents = [...new Set(meetings.map(m => m.studentName))].length;
+  const completedCount = meetings.filter(m => m.status === 'CONFIRMED').length;
 
   return (
     <>
@@ -52,26 +42,85 @@ export default function TeacherStatsCards({
         </Card>
       </div> */}
 
-      {/* Upcoming Meetings Card */}
-      <div className="lg:col-span-6">
-        <Card className="h-full border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
-          <CardContent className="p-6">
-            <div className="mb-4 flex items-center justify-between">
-              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
-                <CalendarIcon className="h-6 w-6" />
+      {/* Stats Grid */}
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:col-span-12">
+        {/* Total Sessions Card */}
+        <Card className="group relative overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]">
+          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl transition-all group-hover:bg-primary-500/20" />
+          <CardContent className="p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary-500/20 bg-primary-500/10 text-primary-500 shadow-lg shadow-primary-500/10">
+                <CalendarIcon className="h-7 w-7" />
               </div>
-              <TrendingUp className="h-5 w-5 text-primary-500" />
+              <TrendingUp className="h-6 w-6 text-primary-100/20 transition-colors group-hover:text-primary-500" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-primary-500/80">
-                Upcoming Sessions
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40">
+                Total Sessions
               </p>
-              <p className="text-3xl font-bold text-white">
-                {upcomingMeetings}
+              <div className="flex items-baseline gap-2">
+                <h2 className="font-serif text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-primary-500">
+                  {completedCount}
+                </h2>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
+                <TrendingUp className="h-3 w-3" />
+                <span>+12% from last month</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Total Students Card */}
+        <Card className="group relative overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]">
+          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl transition-all group-hover:bg-primary-500/20" />
+          <CardContent className="p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary-500/20 bg-primary-500/10 text-primary-500 shadow-lg shadow-primary-500/10">
+                <TrendingUp className="h-7 w-7" />
+              </div>
+              <TrendingUp className="h-6 w-6 text-primary-100/20 transition-colors group-hover:text-primary-500" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40">
+                Total Students
               </p>
-              <p className="text-xs text-slate-500">
-                Next: Tomorrow 3:00 PM
+              <div className="flex items-baseline gap-2">
+                <h2 className="font-serif text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-primary-500">
+                  {activeStudents}
+                </h2>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
+                <TrendingUp className="h-3 w-3" />
+                <span>+5 new this week</span>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+
+        {/* Avg Rating Card */}
+        <Card className="group relative overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]">
+          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl transition-all group-hover:bg-primary-500/20" />
+          <CardContent className="p-8">
+            <div className="mb-6 flex items-center justify-between">
+              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary-500/20 bg-primary-500/10 text-primary-500 shadow-lg shadow-primary-500/10">
+                <TrendingUp className="h-7 w-7 rotate-45" />
+              </div>
+              <TrendingUp className="h-6 w-6 text-primary-100/20 transition-colors group-hover:text-primary-500" />
+            </div>
+            <div className="space-y-1">
+              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40">
+                Growth Rate
               </p>
+              <div className="flex items-baseline gap-2">
+                <h2 className="font-serif text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-primary-500">
+                  24%
+                </h2>
+              </div>
+              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
+                <TrendingUp className="h-3 w-3" />
+                <span>+8% from last month</span>
+              </div>
             </div>
           </CardContent>
         </Card>

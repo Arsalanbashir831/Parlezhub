@@ -87,50 +87,55 @@ export default function EditBlogPage() {
 
   if (isLoading) {
     return (
-      <div className="flex min-h-[400px] items-center justify-center">
-        <div className="text-gray-500">Loading blog...</div>
+      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500"></div>
+        <div className="font-serif text-lg font-bold text-primary-100/60">Loading blog...</div>
       </div>
     );
   }
 
   return (
-    <div className="space-y-6">
-      <div className="flex items-center justify-between">
+    <div className="space-y-8">
+      <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div>
-          <h1 className="text-3xl font-bold">Edit Blog</h1>
-          <p className="text-gray-600 dark:text-gray-400">
-            Update your blog post
+          <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
+            Edit <span className="text-primary-500">Blog</span>
+          </h1>
+          <p className="mt-2 text-primary-100/60 font-medium">
+            Refine your story and keep your audience engaged with fresh updates.
           </p>
         </div>
         <Button
           variant="outline"
           onClick={() => router.push(ROUTES.TEACHER.BLOGS)}
+          className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-6 font-bold"
         >
           Cancel
         </Button>
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
-          <CardHeader>
-            <CardTitle>Blog Details</CardTitle>
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+          <CardHeader className="p-8 pb-4">
+            <CardTitle className="font-serif text-2xl font-bold text-primary-500">Blog Details</CardTitle>
           </CardHeader>
-          <CardContent className="space-y-6">
+          <CardContent className="space-y-6 p-8 pt-4">
             {/* Title */}
             <div className="space-y-2">
-              <Label htmlFor="title">Title *</Label>
+              <Label htmlFor="title" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Title *</Label>
               <Input
                 id="title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter blog title"
                 required
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
             </div>
 
             {/* Meta Description */}
             <div className="space-y-2">
-              <Label htmlFor="meta-description">Meta Description</Label>
+              <Label htmlFor="meta-description" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Meta Description</Label>
               <Textarea
                 id="meta-description"
                 value={metaDescription}
@@ -138,28 +143,29 @@ export default function EditBlogPage() {
                 placeholder="Brief description for SEO (recommended 150-160 characters)"
                 rows={3}
                 maxLength={160}
+                className="rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
-              <p className="text-xs text-gray-500">
+              <p className="ml-1 text-xs text-primary-100/40">
                 {metaDescription.length}/160 characters
               </p>
             </div>
 
             {/* Thumbnail */}
             <div className="space-y-2">
-              <Label>Thumbnail Image</Label>
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Thumbnail Image</Label>
               <ImageUpload
                 value={thumbnail}
                 onChange={setThumbnail}
                 placeholder="Upload new thumbnail image (optional)"
               />
-              <p className="text-xs text-gray-500">
+              <p className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/20">
                 Leave empty to keep existing thumbnail
               </p>
             </div>
 
             {/* Tags */}
             <div className="space-y-2">
-              <Label>Tags</Label>
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Tags</Label>
               <TagsInput
                 value={tags}
                 onChange={setTags}
@@ -169,8 +175,8 @@ export default function EditBlogPage() {
             </div>
 
             {/* Content */}
-            <div className="space-y-2">
-              <Label>Content *</Label>
+            <div className="space-y-4">
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Content *</Label>
               <MarkdownEditor
                 value={content}
                 onChange={setContent}
@@ -181,17 +187,17 @@ export default function EditBlogPage() {
 
             {/* Status */}
             <div className="space-y-2">
-              <Label>Status</Label>
+              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Status</Label>
               <Select
                 value={status}
                 onValueChange={(value: 'draft' | 'published') =>
                   setStatus(value)
                 }
               >
-                <SelectTrigger className="w-48">
+                <SelectTrigger className="h-12 w-48 rounded-xl border-primary-500/10 bg-white/5 text-primary-100 focus:ring-primary-500/30">
                   <SelectValue />
                 </SelectTrigger>
-                <SelectContent>
+                <SelectContent className="border-primary-500/10 bg-background text-white">
                   <SelectItem value="draft">Save as Draft</SelectItem>
                   <SelectItem value="published">Publish Now</SelectItem>
                 </SelectContent>
@@ -199,18 +205,20 @@ export default function EditBlogPage() {
             </div>
 
             {/* Actions */}
-            <div className="flex justify-end gap-3 pt-4">
+            <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
               <Button
                 type="button"
                 variant="outline"
                 onClick={() => router.push(ROUTES.TEACHER.BLOGS)}
                 disabled={isSubmitting}
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-8 font-bold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
                 disabled={!title.trim() || !content.trim() || isSubmitting}
+                className="h-12 rounded-xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
               >
                 {isSubmitting ? 'Updating...' : 'Update Blog'}
               </Button>

@@ -118,13 +118,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
         <SidebarMenuButton
           tooltip={isCollapsed ? label : undefined}
           className={cn(
-            'px-4 py-6 font-medium transition-all hover:bg-primary-500 hover:text-primary-950',
+            'px-4 py-6 font-bold uppercase tracking-widest text-[10px] transition-all hover:bg-primary-500 hover:text-primary-950',
             role === 'TEACHER' && 'text-primary-300',
             role === 'STUDENT' && 'text-primary-400'
           )}
           onClick={action}
         >
-          <IconComponent className="shrink-0" />
+          <IconComponent className="shrink-0 h-5 w-5" />
           {!isCollapsed && <span>{label}</span>}
         </SidebarMenuButton>
       </SidebarMenuItem>
@@ -184,7 +184,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                           className={cn(
                             'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
                             isSubActive &&
-                              'border-r-2 border-primary-500 bg-primary-500/20 font-bold text-primary-300'
+                            'border-r-2 border-primary-500 bg-primary-500/20 font-bold text-primary-300'
                           )}
                         >
                           <Link href={subItem.href!}>
@@ -211,16 +211,17 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           isActive={isActive}
           tooltip={isCollapsed ? item.label : undefined}
           className={cn(
-            'px-4 py-6 transition-all hover:bg-primary-500/10 hover:text-primary-300',
+            'px-5 py-7 rounded-2xl text-[11px] font-bold uppercase tracking-[0.15em] transition-all duration-300',
+            'hover:bg-primary-500/5 hover:text-primary-300',
             isActive &&
-              'bg-primary-500 font-bold text-primary-950 hover:bg-primary-500/90 hover:text-primary-950/90'
+            'bg-primary-500 text-primary-950 shadow-lg shadow-primary-500/20 hover:bg-primary-600 hover:text-primary-950'
           )}
         >
           <Link
             href={item.href!}
             className={cn(isCollapsed && 'justify-center')}
           >
-            <item.icon className="shrink-0" />
+            <item.icon className={cn("shrink-0 h-5 w-5", isActive ? "text-primary-950" : "text-primary-500/60")} />
             {!isCollapsed && <span>{item.label}</span>}
           </Link>
         </SidebarMenuButton>
@@ -231,12 +232,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   return (
     <Sidebar
       collapsible="icon"
-      className="border-r border-primary-300/60 bg-background"
+      className="border-r border-white/5 bg-background shadow-2xl"
     >
       <SidebarHeader
         className={cn(
-          'border-b border-primary-300/60 bg-background',
-          isCollapsed ? 'py-4' : 'p-4'
+          'border-b border-white/5 bg-background',
+          isCollapsed ? 'py-4' : 'p-6'
         )}
       >
         <Logo size="sm" isCollapsed={isCollapsed} />
@@ -244,13 +245,13 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
 
       <SidebarContent
         className={cn(
-          'border-b border-primary-300/60 bg-background',
-          !isCollapsed ? 'px-2' : ''
+          'border-b border-white/5 bg-background',
+          !isCollapsed ? 'px-3' : ''
         )}
       >
         <SidebarGroup>
           <SidebarGroupContent>
-            <SidebarMenu>{nav.map(renderMenuItem)}</SidebarMenu>
+            <SidebarMenu className="gap-2">{nav.map(renderMenuItem)}</SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
