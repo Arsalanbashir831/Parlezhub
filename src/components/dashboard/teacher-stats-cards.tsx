@@ -63,10 +63,6 @@ export default function TeacherStatsCards({
                   {completedCount}
                 </h2>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
-                <TrendingUp className="h-3 w-3" />
-                <span>+12% from last month</span>
-              </div>
             </div>
           </CardContent>
         </Card>
@@ -90,10 +86,7 @@ export default function TeacherStatsCards({
                   {activeStudents}
                 </h2>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
-                <TrendingUp className="h-3 w-3" />
-                <span>+5 new this week</span>
-              </div>
+
             </div>
           </CardContent>
         </Card>
@@ -117,10 +110,7 @@ export default function TeacherStatsCards({
                   24%
                 </h2>
               </div>
-              <div className="mt-4 flex items-center gap-2 text-xs font-medium text-green-400">
-                <TrendingUp className="h-3 w-3" />
-                <span>+8% from last month</span>
-              </div>
+
             </div>
           </CardContent>
         </Card>
