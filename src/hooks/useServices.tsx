@@ -14,6 +14,8 @@ import {
 } from '@/types/service';
 import { getErrorMessage } from '@/lib/error-utils';
 
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+
 interface UseServicesReturn {
   services: Service[];
   filteredServices: Service[];
@@ -28,7 +30,7 @@ interface UseServicesReturn {
     serviceId: string,
     updates: Partial<ServiceFormData>
   ) => Promise<Service | null>;
-  deleteExistingService: (serviceId: string) => Promise<boolean>;
+  deleteExistingService: (serviceId: string) => Promise<string>;
   toggleServiceStatus: (
     serviceId: string,
     status: ServiceStatus
@@ -43,187 +45,123 @@ interface UseServicesReturn {
   getService: (serviceId: string) => Promise<Service | null>;
   loadService: (serviceId: string) => Promise<Service | null>;
   refreshServices: () => void;
+  isProcessing: boolean;
 }
 
 export function useServices(): UseServicesReturn {
-  const [services, setServices] = useState<Service[]>([]);
+  const queryClient = useQueryClient();
   const [filters, setFiltersState] = useState<ServiceFilters>({});
-  const [isLoading, setIsLoading] = useState(false); // Changed to false since we don't auto-load
-  const [error, setError] = useState<string | null>(null);
+
+  const {
+    data: servicesList = [],
+    isLoading,
+    error: queryError,
+    refetch,
+  } = useQuery({
+    queryKey: ['services'],
+    queryFn: async () => {
+      const response = await serviceApi.getServices();
+      return (response.results || []).map(serviceUtils.apiResponseToService) as Service[];
+    },
+    staleTime: 5 * 60 * 1000, // 5 minutes
+  });
+
+  const services = servicesList;
+  const error = queryError ? getErrorMessage(queryError, 'fetch-services') : null;
 
   // Remove automatic loading on mount - let components decide when to load
   // useEffect(() => {
   //   refreshServices();
   // }, []);
 
-  // Create new service
-  const createNewService = useCallback(
-    async (formData: ServiceFormData): Promise<Service> => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Convert form data to API request format
-        const apiRequest = serviceUtils.formDataToApiRequest(formData);
-
-        // Call API to create service
-        const apiResponse = await serviceApi.createService(apiRequest);
-
-        // Convert API response to frontend format
-        const newService = serviceUtils.apiResponseToService(apiResponse);
-
-        // Add to local state
-        setServices((prev) => [...prev, newService as Service]);
-
-        // Show success toast
-        toast.success('Service Created Successfully!', {
-          description: 'Your new service has been created and is now active.',
-        });
-
-        return newService as Service;
-      } catch (err) {
-        const errorMessage = getErrorMessage(err, 'service-creation');
-        setError(errorMessage);
-        toast.error('Failed to Create Service', {
-          description: errorMessage,
-        });
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+  const createMutation = useMutation({
+    mutationFn: async (formData: ServiceFormData) => {
+      const apiRequest = serviceUtils.formDataToApiRequest(formData);
+      const apiResponse = await serviceApi.createService(apiRequest);
+      return serviceUtils.apiResponseToService(apiResponse) as Service;
     },
-    []
-  );
-
-  // Update existing service
-  const updateExistingService = useCallback(
-    async (
-      serviceId: string,
-      updates: Partial<ServiceFormData>
-    ): Promise<Service | null> => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Convert updates to API request format
-        const apiRequest = serviceUtils.formDataToApiRequest(
-          updates as ServiceFormData
-        );
-
-        // Call API to update service
-        const apiResponse = await serviceApi.updateService(
-          serviceId,
-          apiRequest
-        );
-
-        // Convert API response to frontend format
-        const updatedService = serviceUtils.apiResponseToService(apiResponse);
-
-        // Update local state
-        setServices((prev) =>
-          prev.map((s) =>
-            s.id === serviceId ? (updatedService as Service) : s
-          )
-        );
-
-        // Show success toast
-        toast.success('Service Updated Successfully!', {
-          description: 'Your service has been updated.',
-        });
-
-        return updatedService as Service;
-      } catch (err) {
-        const errorMessage = getErrorMessage(err, 'service-update');
-        setError(errorMessage);
-        toast.error('Failed to Update Service', {
-          description: errorMessage,
-        });
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+    onSuccess: (newService) => {
+      queryClient.setQueryData(['services'], (old: Service[] = []) => [
+        ...old,
+        newService,
+      ]);
+      toast.success('Service Created Successfully!');
     },
-    []
-  );
-
-  // Delete service
-  const deleteExistingService = useCallback(
-    async (serviceId: string): Promise<boolean> => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        // Call API to delete service
-        await serviceApi.deleteService(serviceId);
-
-        // Remove from local state
-        setServices((prev) => prev.filter((s) => s.id !== serviceId));
-
-        // Show success toast
-        toast.success('Service Deleted Successfully!', {
-          description: 'Your service has been permanently deleted.',
-        });
-
-        return true;
-      } catch (err) {
-        const errorMessage = getErrorMessage(err, 'service-deletion');
-        setError(errorMessage);
-        toast.error('Failed to Delete Service', {
-          description: errorMessage,
-        });
-        throw new Error(errorMessage);
-      } finally {
-        setIsLoading(false);
-      }
+    onError: (err) => {
+      toast.error('Failed to Create Service', {
+        description: getErrorMessage(err),
+      });
     },
-    []
-  );
+  });
 
-  // Toggle service status
-  const toggleServiceStatus = useCallback(
-    async (
-      serviceId: string,
-      status: ServiceStatus
-    ): Promise<Service | null> => {
-      try {
-        setError(null);
-
-        // Convert status to API format
-        const apiStatus = status === 'active' ? 'active' : 'inactive';
-
-        // Call API to update service status
-        await serviceApi.updateServiceStatus(serviceId, apiStatus);
-
-        // Fetch the full service details after status update
-        const fullServiceResponse = await serviceApi.getServiceById(serviceId);
-        const updatedService =
-          serviceUtils.apiResponseToService(fullServiceResponse);
-
-        // Update local state
-        setServices((prev) =>
-          prev.map((s) =>
-            s.id === serviceId ? (updatedService as Service) : s
-          )
-        );
-
-        // Show success toast
-        const statusText = status === 'active' ? 'activated' : 'deactivated';
-        toast.success(`Service ${statusText}!`, {
-          description: `Your service has been ${statusText}.`,
-        });
-
-        return updatedService as Service;
-      } catch (err) {
-        const errorMessage = getErrorMessage(err, 'service-status-update');
-        setError(errorMessage);
-        toast.error('Failed to Update Service Status', {
-          description: errorMessage,
-        });
-        throw new Error(errorMessage);
-      }
+  const updateMutation = useMutation({
+    mutationFn: async ({
+      id,
+      updates,
+    }: {
+      id: string;
+      updates: Partial<ServiceFormData>;
+    }) => {
+      const apiRequest = serviceUtils.formDataToApiRequest(updates as ServiceFormData);
+      const apiResponse = await serviceApi.updateService(id, apiRequest);
+      return serviceUtils.apiResponseToService(apiResponse) as Service;
     },
-    []
-  );
+    onSuccess: (updatedService) => {
+      queryClient.setQueryData(['services'], (old: Service[] = []) =>
+        old.map((s) => (s.id === updatedService.id ? updatedService : s))
+      );
+      toast.success('Service Updated Successfully!');
+    },
+    onError: (err) => {
+      toast.error('Failed to Update Service', {
+        description: getErrorMessage(err),
+      });
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: async (id: string) => {
+      await serviceApi.deleteService(id);
+      return id;
+    },
+    onSuccess: (deletedId) => {
+      queryClient.setQueryData(['services'], (old: Service[] = []) =>
+        old.filter((s) => s.id !== deletedId)
+      );
+      toast.success('Service Deleted Successfully!');
+    },
+    onError: (err) => {
+      toast.error('Failed to Delete Service', {
+        description: getErrorMessage(err),
+      });
+    },
+  });
+
+  const statusMutation = useMutation({
+    mutationFn: async ({
+      id,
+      status,
+    }: {
+      id: string;
+      status: ServiceStatus;
+    }) => {
+      const apiStatus = status === 'active' ? 'active' : 'inactive';
+      await serviceApi.updateServiceStatus(id, apiStatus);
+      const fullServiceResponse = await serviceApi.getServiceById(id);
+      return serviceUtils.apiResponseToService(fullServiceResponse) as Service;
+    },
+    onSuccess: (updatedService) => {
+      queryClient.setQueryData(['services'], (old: Service[] = []) =>
+        old.map((s) => (s.id === updatedService.id ? updatedService : s))
+      );
+      toast.success('Status Updated Successfully!');
+    },
+    onError: (err) => {
+      toast.error('Failed to Update Status', {
+        description: getErrorMessage(err),
+      });
+    },
+  });
 
   // Filter services
   const filteredServices = useMemo(() => {
@@ -292,28 +230,12 @@ export function useServices(): UseServicesReturn {
   // Get single service
   const getService = useCallback(
     async (serviceId: string): Promise<Service | null> => {
-      // First try to find in local state
       const localService = services.find((s) => s.id === serviceId);
-      if (localService) {
-        return localService;
-      }
+      if (localService) return localService;
 
-      console.error('Service not found in local state, fetching from API...');
-      // If not found locally, fetch from API
       try {
         const apiResponse = await serviceApi.getServiceById(serviceId);
-        const fetchedService = serviceUtils.apiResponseToService(apiResponse);
-
-        // Add to local state for future use
-        setServices((prev) => {
-          const exists = prev.some((s) => s.id === serviceId);
-          if (!exists) {
-            return [...prev, fetchedService as Service];
-          }
-          return prev;
-        });
-
-        return fetchedService as Service;
+        return serviceUtils.apiResponseToService(apiResponse) as Service;
       } catch (error) {
         console.error('Failed to fetch service by ID:', error);
         return null;
@@ -322,55 +244,18 @@ export function useServices(): UseServicesReturn {
     [services]
   );
 
-  // Load individual service (for edit pages)
+  // Load individual service
   const loadService = useCallback(
     async (serviceId: string): Promise<Service | null> => {
-      try {
-        setIsLoading(true);
-        setError(null);
-
-        const service = await getService(serviceId);
-        return service;
-      } catch (error) {
-        const errorMessage = getErrorMessage(error, 'fetch-service');
-        setError(errorMessage);
-        toast.error('Failed to Load Service', {
-          description: errorMessage,
-        });
-        return null;
-      } finally {
-        setIsLoading(false);
-      }
+      return getService(serviceId);
     },
     [getService]
   );
 
   // Refresh services
-  const refreshServices = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
-      // Call API to get services
-      const apiResponse = await serviceApi.getServices();
-
-      // Convert API responses to frontend format
-      const servicesList = (apiResponse.results || []).map(
-        serviceUtils.apiResponseToService
-      );
-
-      // Update local state
-      setServices(servicesList as Service[]);
-    } catch (err) {
-      const errorMessage = getErrorMessage(err, 'fetch-services');
-      setError(errorMessage);
-      toast.error('Failed to Load Services', {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+  const refreshServices = useCallback(() => {
+    refetch();
+  }, [refetch]);
 
   return {
     services,
@@ -381,10 +266,12 @@ export function useServices(): UseServicesReturn {
     error,
 
     // Actions
-    createNewService,
-    updateExistingService,
-    deleteExistingService,
-    toggleServiceStatus,
+    createNewService: createMutation.mutateAsync,
+    updateExistingService: (id: string, updates: Partial<ServiceFormData>) =>
+      updateMutation.mutateAsync({ id, updates }),
+    deleteExistingService: deleteMutation.mutateAsync,
+    toggleServiceStatus: (id: string, status: ServiceStatus) =>
+      statusMutation.mutateAsync({ id, status }),
 
     // Filters
     setFilters,
@@ -395,8 +282,12 @@ export function useServices(): UseServicesReturn {
     getService,
     loadService,
     refreshServices,
+    isProcessing:
+      createMutation.isPending ||
+      updateMutation.isPending ||
+      deleteMutation.isPending ||
+      statusMutation.isPending,
   };
 }
 
-// Blogs hook (frontend only; localStorage-backed)
-// (blogs hook moved to src/hooks/useBlogs.tsx)
+export default useServices;

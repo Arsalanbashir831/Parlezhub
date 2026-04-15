@@ -89,17 +89,20 @@ export function useMeetings() {
   const { user } = useUser();
   const queryClient = useQueryClient();
 
-  // UI state
-  const [meetings, setMeetings] = useState<Meeting[]>([]);
-
   // Load meetings from API
-  useQuery<ApiBooking[], Error, Meeting[], [string, string | undefined]>({
+  const {
+    data: meetings = [],
+    isLoading,
+    isError,
+    error,
+    refetch,
+  } = useQuery<ApiBooking[], Error, Meeting[]>({
     queryKey: ['bookings', user?.role],
     queryFn: async () =>
       bookingService.getMy(user?.role as 'TEACHER' | 'STUDENT'),
     select: (data: ApiBooking[]) => {
       const role = (user?.role || '').toLowerCase();
-      const mapped: Meeting[] = (data || []).map((b: ApiBooking) => {
+      return (data || []).map((b: ApiBooking) => {
         const startIso = b.start_time;
         const endIso = b.end_time || b.finish_time;
         const durationMin =
@@ -113,7 +116,7 @@ export function useMeetings() {
                 )
               )
             : 60);
-        const mappedMeeting = {
+        return {
           id: String(b.id),
           teacherName: b.teacher_name,
           studentName: b.student_name,
@@ -131,78 +134,15 @@ export function useMeetings() {
           joinLink: b.zoom_join_url,
           hostLink: b.zoom_start_url,
           notes: b.notes,
-          // Payment information for refunds
           paymentId: b.payment_id || b.payment_details?.payment_id,
           amountPaid: b.payment_details?.amount_paid,
         };
-
-        return mappedMeeting;
       });
-      return mapped;
     },
     enabled: Boolean(user?.id && user?.role),
     staleTime: 60_000,
     refetchOnWindowFocus: false,
   });
-
-  // Keep local state in sync with query result via a second query call
-  const localQuery = useQuery<
-    ApiBooking[],
-    Error,
-    Meeting[],
-    ['bookings-local', string | undefined]
-  >({
-    queryKey: ['bookings-local', user?.role],
-    queryFn: async () =>
-      bookingService.getMy(user?.role as 'TEACHER' | 'STUDENT'),
-    select: (data: ApiBooking[]) => {
-      const role = (user?.role || '').toLowerCase();
-      const mapped: Meeting[] = (data || []).map((b: ApiBooking) => ({
-        id: String(b.id),
-        teacherName: b.teacher_name,
-        studentName: b.student_name,
-        subject: 'Language Session',
-        date: b.start_time,
-        endDate: b.end_time || b.finish_time,
-        duration:
-          b.duration_minutes ??
-          (b.end_time
-            ? Math.max(
-                0,
-                Math.round(
-                  (new Date(b.end_time).getTime() -
-                    new Date(b.start_time).getTime()) /
-                    60000
-                )
-              )
-            : 60),
-        status: (b.status as MeetingStatus) || 'PENDING',
-        paymentStatus:
-          (b.payment_status as 'PAID' | 'UNPAID' | 'PENDING') || 'UNPAID',
-        language: b.language || 'N/A',
-        price: b.price || 0,
-        location: 'Online',
-        meetingLink: role === 'teacher' ? b.zoom_start_url : b.zoom_join_url,
-        joinLink: b.zoom_join_url,
-        hostLink: b.zoom_start_url,
-        notes: b.notes,
-        // Payment information for refunds
-        paymentId: b.payment_id || b.payment_details?.payment_id,
-        amountPaid: b.payment_details?.amount_paid,
-      }));
-      return mapped;
-    },
-    enabled: Boolean(user?.id && user?.role),
-    staleTime: 30_000,
-    refetchOnWindowFocus: false,
-  });
-
-  // Sync local state from the localQuery result whenever it changes
-  useEffect(() => {
-    if (localQuery.data) {
-      setMeetings(localQuery.data);
-    }
-  }, [localQuery.data]);
 
   const cancelMutation = useMutation({
     mutationFn: async ({
@@ -247,10 +187,7 @@ export function useMeetings() {
             : 'Booking cancelled and refund processed';
       }
       toast.success(message);
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
-        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     },
     onError: (error, variables) => {
       let message = 'Failed to cancel booking';
@@ -267,10 +204,7 @@ export function useMeetings() {
     mutationFn: async (bookingId: string) => bookingService.approve(bookingId),
     onSuccess: async () => {
       toast.success('Booking approved');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
-        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     },
     onError: () => toast.error('Failed to approve booking'),
   });
@@ -284,10 +218,7 @@ export function useMeetings() {
     }) => bookingService.reschedule(bookingId, data),
     onSuccess: async () => {
       toast.success('Meeting rescheduled successfully');
-      await Promise.all([
-        queryClient.invalidateQueries({ queryKey: ['bookings'] }),
-        queryClient.invalidateQueries({ queryKey: ['bookings-local'] }),
-      ]);
+      await queryClient.invalidateQueries({ queryKey: ['bookings'] });
     },
     onError: () => toast.error('Failed to reschedule meeting'),
   });
@@ -414,7 +345,10 @@ export function useMeetings() {
 
   return {
     meetings,
-    setMeetings,
+    isLoading,
+    isError,
+    error,
+    refresh: refetch,
     userRole,
     searchQuery,
     setSearchQuery,
@@ -436,5 +370,9 @@ export function useMeetings() {
     approveBooking: (bookingId: string) => approveMutation.mutate(bookingId),
     rescheduleBooking: (bookingId: string, data: RescheduleBookingRequest) =>
       rescheduleMutation.mutate({ bookingId, data }),
+    isProcessing:
+      cancelMutation.isPending ||
+      approveMutation.isPending ||
+      rescheduleMutation.isPending,
   };
 }

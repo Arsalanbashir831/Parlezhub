@@ -26,7 +26,7 @@ import { Textarea } from '@/components/ui/textarea';
 
 export default function CreateBlogPage() {
   const router = useRouter();
-  const { create } = useBlogs();
+  const { create, isProcessing } = useBlogs();
   const { isGenerating: isGeneratingContent, generateContent } =
     useAIGeneration();
   const [title, setTitle] = useState('');
@@ -35,7 +35,6 @@ export default function CreateBlogPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +44,6 @@ export default function CreateBlogPage() {
       return;
     }
 
-    setIsSubmitting(true);
 
     try {
       await create({
@@ -62,9 +60,6 @@ export default function CreateBlogPage() {
       router.push(ROUTES.TEACHER.BLOGS);
     } catch (error) {
       console.error('Failed to create blog:', error);
-      toast.error('Failed to create blog. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -209,7 +204,7 @@ export default function CreateBlogPage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.push(ROUTES.TEACHER.BLOGS)}
-                disabled={isSubmitting}
+                disabled={isProcessing}
                 className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-8 font-bold"
               >
                 Cancel
@@ -218,13 +213,12 @@ export default function CreateBlogPage() {
                 type="submit"
                 disabled={
                   !title.trim() ||
-                  !content.trim() ||
-                  isSubmitting ||
+                  isProcessing ||
                   isGeneratingContent
                 }
                 className="h-12 rounded-xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
               >
-                {isSubmitting ? 'Creating...' : 'Create Blog'}
+                {isProcessing ? 'Creating...' : 'Create Blog'}
               </Button>
             </div>
           </CardContent>

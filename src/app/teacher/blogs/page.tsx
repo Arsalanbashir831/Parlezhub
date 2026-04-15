@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useMemo, useState } from 'react';
 import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
 import { toast } from 'sonner';
@@ -10,47 +10,30 @@ import { BlogFilters, BlogPagination, BlogTable } from '@/components/blog';
 import { Button } from '@/components/ui/button';
 
 export default function BlogsPage() {
+  const [statusFilter, setStatusFilter] = useState<'all' | 'draft' | 'published'>('all');
+  const [searchQuery, setSearchQuery] = useState('');
+  const [pageSize, setPageSize] = useState(10);
+  const [currentPage, setCurrentPage] = useState(1);
+
+  const queryParams = useMemo(() => {
+    const params: any = {
+      page: currentPage,
+      page_size: pageSize,
+    };
+    if (statusFilter !== 'all') params.status = statusFilter;
+    if (searchQuery.trim()) params.search = searchQuery.trim();
+    return params;
+  }, [currentPage, pageSize, statusFilter, searchQuery]);
+
   const {
     blogs,
     isLoading,
     totalCount,
-    currentPage,
     hasNext,
     hasPrevious,
-    refresh,
     remove,
     toggleVisibility,
-  } = useBlogs();
-
-  // Filter states
-  const [statusFilter, setStatusFilter] = useState<
-    'all' | 'draft' | 'published'
-  >('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [pageSize, setPageSize] = useState(10);
-
-  // Apply filters
-  useEffect(() => {
-    const params: {
-      page?: number;
-      page_size?: number;
-      status?: 'draft' | 'published';
-      search?: string;
-    } = {
-      page: 1,
-      page_size: pageSize,
-    };
-
-    if (statusFilter !== 'all') {
-      params.status = statusFilter;
-    }
-
-    if (searchQuery.trim()) {
-      params.search = searchQuery.trim();
-    }
-
-    refresh(params);
-  }, [statusFilter, searchQuery, pageSize, refresh]);
+  } = useBlogs(queryParams);
 
   const handleDelete = (id: number, title: string) => {
     toast('Are you sure you want to delete this blog?', {
@@ -61,33 +44,15 @@ export default function BlogsPage() {
           remove(id);
         },
       },
-      cancel: {
+      cancel: { 
         label: 'Cancel',
-        onClick: () => {},
+        onClick: () => {} 
       },
     });
   };
 
   const handlePageChange = (newPage: number) => {
-    const params: {
-      page?: number;
-      page_size?: number;
-      status?: 'draft' | 'published';
-      search?: string;
-    } = {
-      page: newPage,
-      page_size: pageSize,
-    };
-
-    if (statusFilter !== 'all') {
-      params.status = statusFilter;
-    }
-
-    if (searchQuery.trim()) {
-      params.search = searchQuery.trim();
-    }
-
-    refresh(params);
+    setCurrentPage(newPage);
   };
 
   const formatDate = (dateString: string) => {
@@ -120,11 +85,11 @@ export default function BlogsPage() {
       {/* Filters */}
       <BlogFilters
         searchQuery={searchQuery}
-        setSearchQuery={setSearchQuery}
+        setSearchQuery={(q) => { setSearchQuery(q); setCurrentPage(1); }}
         statusFilter={statusFilter}
-        setStatusFilter={setStatusFilter}
+        setStatusFilter={(s) => { setStatusFilter(s); setCurrentPage(1); }}
         pageSize={pageSize}
-        setPageSize={setPageSize}
+        setPageSize={(s) => { setPageSize(s); setCurrentPage(1); }}
       />
 
       {/* Table */}

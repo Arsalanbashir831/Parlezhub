@@ -26,7 +26,7 @@ export default function EditBlogPage() {
   const router = useRouter();
   const params = useParams();
   const blogId = params.id as string;
-  const { loadOne, update } = useBlogs();
+  const { loadOne, update, isProcessing } = useBlogs();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -35,7 +35,6 @@ export default function EditBlogPage() {
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
   const [isLoading, setIsLoading] = useState(true);
-  const [isSubmitting, setIsSubmitting] = useState(false);
 
   useEffect(() => {
     const load = async () => {
@@ -62,7 +61,6 @@ export default function EditBlogPage() {
       return;
     }
 
-    setIsSubmitting(true);
 
     try {
       await update(blogId, {
@@ -79,9 +77,6 @@ export default function EditBlogPage() {
       router.push(ROUTES.TEACHER.BLOGS);
     } catch (error) {
       console.error('Failed to update blog:', error);
-      toast.error('Failed to update blog. Please try again.');
-    } finally {
-      setIsSubmitting(false);
     }
   };
 
@@ -210,17 +205,17 @@ export default function EditBlogPage() {
                 type="button"
                 variant="outline"
                 onClick={() => router.push(ROUTES.TEACHER.BLOGS)}
-                disabled={isSubmitting}
+                disabled={isProcessing}
                 className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-8 font-bold"
               >
                 Cancel
               </Button>
               <Button
                 type="submit"
-                disabled={!title.trim() || !content.trim() || isSubmitting}
+                disabled={!title.trim() || !content.trim() || isProcessing}
                 className="h-12 rounded-xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
               >
-                {isSubmitting ? 'Updating...' : 'Update Blog'}
+                {isProcessing ? 'Updating...' : 'Update Blog'}
               </Button>
             </div>
           </CardContent>

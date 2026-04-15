@@ -1,117 +1,98 @@
 'use client';
 
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { blogService } from '@/services/blog';
 import { toast } from 'sonner';
 
 import type { BlogFormData, BlogPost } from '@/types/blog';
 
-export function useBlogs() {
-  const [blogs, setBlogs] = useState<BlogPost[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [totalCount, setTotalCount] = useState(0);
-  const [currentPage, setCurrentPage] = useState(1);
-  const [hasNext, setHasNext] = useState(false);
-  const [hasPrevious, setHasPrevious] = useState(false);
+export interface UseBlogsParams {
+  page?: number;
+  page_size?: number;
+  status?: 'draft' | 'published';
+  search?: string;
+  enabled?: boolean;
+}
 
-  const refresh = useCallback(
-    async (params?: {
-      page?: number;
-      page_size?: number;
-      status?: 'draft' | 'published';
-      search?: string;
-    }) => {
-      setIsLoading(true);
-      setError(null);
-      try {
-        const response = await blogService.list(params);
-        setBlogs(response.results);
-        setTotalCount(response.count);
-        setHasNext(!!response.next);
-        setHasPrevious(!!response.previous);
-        if (params?.page) {
-          setCurrentPage(params.page);
-        }
-      } catch {
-        setError('Failed to load blogs');
-        toast.error('Failed to load blogs');
-      } finally {
-        setIsLoading(false);
-      }
-    },
-    []
-  );
+export function useBlogs(params: UseBlogsParams = {}) {
+  const queryClient = useQueryClient();
+  const { enabled = true, ...queryParams } = params;
 
-  useEffect(() => {
-    void refresh();
-  }, [refresh]);
+  const {
+    data,
+    isLoading,
+    error,
+    refetch,
+  } = useQuery({
+    queryKey: ['blogs', queryParams],
+    queryFn: () => blogService.list(queryParams),
+    enabled,
+    staleTime: 60 * 1000,
+  });
 
-  const create = useCallback(
-    async (data: BlogFormData) => {
-      const created = await blogService.create(data);
+  const createMutation = useMutation({
+    mutationFn: (data: BlogFormData) => blogService.create(data),
+    onSuccess: () => {
       toast.success('Blog created');
-      await refresh();
-      return created;
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
     },
-    [refresh]
-  );
+    onError: () => toast.error('Failed to create blog'),
+  });
 
-  const update = useCallback(
-    async (id: string, data: Partial<BlogFormData>) => {
-      const updated = await blogService.update(id, data);
+  const updateMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string | number; data: Partial<BlogFormData> }) =>
+      blogService.update(id, data),
+    onSuccess: () => {
       toast.success('Blog updated');
-      await refresh();
-      return updated;
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
     },
-    [refresh]
-  );
+    onError: () => toast.error('Failed to update blog'),
+  });
 
-  const remove = useCallback(
-    async (id: string | number) => {
-      await blogService.remove(id);
+  const removeMutation = useMutation({
+    mutationFn: (id: string | number) => blogService.remove(id),
+    onSuccess: () => {
       toast.success('Blog deleted');
-      await refresh();
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
     },
-    [refresh]
-  );
+    onError: () => toast.error('Failed to delete blog'),
+  });
 
-  const toggleVisibility = useCallback(
-    async (id: string | number) => {
-      const current = (await blogService.get(id))?.status;
-      const next = current === 'published' ? 'draft' : 'published';
-      const updated = await blogService.setStatus(
-        id,
-        next as 'draft' | 'published'
-      );
+  const statusMutation = useMutation({
+    mutationFn: async ({ id, status }: { id: string | number; status: BlogPost['status'] }) =>
+      blogService.setStatus(id, status),
+    onSuccess: (updated) => {
       toast.success(
         updated?.status === 'published' ? 'Blog published' : 'Saved as draft'
       );
-      await refresh();
-      return updated;
+      queryClient.invalidateQueries({ queryKey: ['blogs'] });
     },
-    [refresh]
-  );
-
-  const loadOne = useCallback(async (id: string | number) => {
-    return blogService.get(id);
-  }, []);
+    onError: () => toast.error('Failed to update status'),
+  });
 
   return {
-    blogs,
+    blogs: data?.results || [],
+    totalCount: data?.count || 0,
+    hasNext: !!data?.next,
+    hasPrevious: !!data?.previous,
     isLoading,
-    error,
-    totalCount,
-    currentPage,
-    hasNext,
-    hasPrevious,
-    refresh,
-    create,
-    update,
-    remove,
-    toggleVisibility,
-    loadOne,
-  } as const;
+    error: error ? 'Failed to load blogs' : null,
+    refresh: refetch,
+    create: createMutation.mutateAsync,
+    update: (id: string | number, data: Partial<BlogFormData>) => updateMutation.mutateAsync({ id, data }),
+    remove: removeMutation.mutateAsync,
+    toggleVisibility: async (id: string | number) => {
+      const current = (await blogService.get(id))?.status;
+      const next = current === 'published' ? 'draft' : 'published';
+      return statusMutation.mutateAsync({ id, status: next });
+    },
+    loadOne: (id: string | number) => blogService.get(id),
+    isProcessing: 
+      createMutation.isPending || 
+      updateMutation.isPending || 
+      removeMutation.isPending || 
+      statusMutation.isPending,
+  };
 }
 
 export default useBlogs;

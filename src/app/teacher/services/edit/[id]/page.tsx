@@ -15,35 +15,31 @@ export default function EditServicePage() {
   const router = useRouter();
   const params = useParams();
   const serviceId = params.id as string;
-  const { updateExistingService, loadService, isLoading, error } =
-    useServices();
+  const { updateExistingService, loadService, isProcessing, error } = useServices();
+  
   const [service, setService] = useState<Service | null>(null);
   const [serviceNotFound, setServiceNotFound] = useState(false);
   const [isLoadingService, setIsLoadingService] = useState(true);
 
   useEffect(() => {
-    const loadServiceData = async () => {
-      if (serviceId) {
-        setIsLoadingService(true);
-        setServiceNotFound(false);
-
-        try {
-          const foundService = await loadService(serviceId);
-          if (foundService) {
-            setService(foundService);
-          } else {
-            setServiceNotFound(true);
-          }
-        } catch (error) {
-          console.error('Error loading service:', error);
+    const fetchService = async () => {
+      try {
+        const data = await loadService(serviceId);
+        if (!data) {
           setServiceNotFound(true);
-        } finally {
-          setIsLoadingService(false);
+        } else {
+          setService(data);
         }
+      } catch (err) {
+        setServiceNotFound(true);
+      } finally {
+        setIsLoadingService(false);
       }
     };
 
-    loadServiceData();
+    if (serviceId) {
+      fetchService();
+    }
   }, [serviceId, loadService]);
 
   const handleSubmit = async (data: ServiceFormData) => {
@@ -51,10 +47,9 @@ export default function EditServicePage() {
 
     try {
       await updateExistingService(service.id, data);
-      // Success toast is handled by the hook
       router.push(ROUTES.TEACHER.SERVICES);
     } catch {
-      // Error toast is handled by the hook
+      // Error handled by hook
     }
   };
 
@@ -70,7 +65,7 @@ export default function EditServicePage() {
             variant="ghost"
             size="sm"
             onClick={handleCancel}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-10 rounded-xl border-primary-500/10 bg-white/5 text-white px-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Services
@@ -81,8 +76,7 @@ export default function EditServicePage() {
           <CardContent className="py-16 text-center">
             <h3 className="mb-2 font-serif text-2xl font-bold text-white">Service Not Found</h3>
             <p className="mb-8 max-w-sm mx-auto text-primary-100/60 font-medium">
-              The service you&rsquo;re trying to edit doesn&rsquo;t exist or may
-              have been deleted.
+              The service you're trying to edit doesn't exist or may have been deleted.
             </p>
             <Button 
               onClick={handleCancel}
@@ -104,19 +98,17 @@ export default function EditServicePage() {
             variant="ghost"
             size="sm"
             onClick={handleCancel}
-            className="flex items-center gap-2"
+            className="flex items-center gap-2 h-10 rounded-xl border-primary-500/10 bg-white/5 text-white px-4"
           >
             <ArrowLeft className="h-4 w-4" />
             Back to Services
           </Button>
         </div>
-
         <ServiceFormSkeleton />
       </div>
     );
   }
 
-  // Convert Service to ServiceFormData
   const initialData: Partial<ServiceFormData> = {
     type: service.type,
     title: service.title,
@@ -143,26 +135,23 @@ export default function EditServicePage() {
         </Button>
       </div>
 
-      <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
-        <div>
-          <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
-            Edit <span className="text-primary-500">Service</span>
-          </h1>
-          <p className="mt-2 text-primary-100/60 font-medium">
-            Update your service offering details to reflect your evolving expertise.
-          </p>
-        </div>
+      <div>
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
+          Edit <span className="text-primary-500">Service</span>
+        </h1>
+        <p className="mt-2 text-primary-100/60 font-medium">
+          Update your service offering details to reflect your evolving expertise.
+        </p>
       </div>
 
-      {/* Form */}
       <ServiceForm
         initialData={initialData}
         onSubmit={handleSubmit}
         onCancel={handleCancel}
-        isLoading={isLoading}
+        isLoading={isProcessing}
         error={error}
         mode="edit"
-        availableTypes={[service.type]} // Only allow current type when editing
+        availableTypes={[service.type]}
       />
     </div>
   );

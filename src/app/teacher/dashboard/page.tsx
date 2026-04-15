@@ -4,11 +4,15 @@ import { ROUTES } from '@/constants/routes';
 
 import { useMeetings } from '@/hooks/useMeetings';
 import WelcomeSection from '@/components/common/welcome-section';
-import { TeacherMeetings, TeacherStatsCards } from '@/components/dashboard';
+import { TeacherMeetings, TeacherStatsCards, TeacherDashboardSkeleton } from '@/components/dashboard';
 import { SharedStudentsList } from '@/components/dashboard/shared-students-list';
 
 export default function TeacherDashboardPage() {
-  const { meetings } = useMeetings();
+  const { meetings, isLoading } = useMeetings();
+
+  if (isLoading) {
+    return <TeacherDashboardSkeleton />;
+  }
 
   return (
     <div className="space-y-8">
