@@ -3,10 +3,19 @@
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import { Briefcase, Filter, Plus, Search } from 'lucide-react';
+import { Briefcase, Plus } from 'lucide-react';
 
 import { Service, ServiceStatus, ServiceType } from '@/types/service';
 import { useServices } from '@/hooks/useServices';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import {
+  ServiceCard,
+  ServiceCardSkeleton,
+  ServiceDetailsModal,
+  ServicesFilters,
+  ServiceStats,
+} from '@/components/services';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -17,22 +26,6 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import {
-  ServiceCard,
-  ServiceCardSkeleton,
-  ServiceDetailsModal,
-  ServiceStats,
-} from '@/components/services';
 
 export default function ServicesPage() {
   const router = useRouter();
@@ -155,70 +148,11 @@ export default function ServicesPage() {
       <ServiceStats stats={stats} />
 
       {/* Filters */}
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <Filter className="h-5 w-5" />
-            Filters
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col gap-4 sm:flex-row">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
-                <Input
-                  placeholder="Search services..."
-                  value={filters.searchQuery || ''}
-                  onChange={(e) => setFilters({ searchQuery: e.target.value })}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-
-            <Select
-              value={filters.type || 'all'}
-              onValueChange={(value) =>
-                setFilters({
-                  type: value === 'all' ? undefined : (value as ServiceType),
-                })
-              }
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by type" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Types</SelectItem>
-                <SelectItem value="language">Language Consultation</SelectItem>
-                <SelectItem value="astrology">Astrology Reading</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Select
-              value={filters.status || 'all'}
-              onValueChange={(value) =>
-                setFilters({
-                  status:
-                    value === 'all' ? undefined : (value as ServiceStatus),
-                })
-              }
-            >
-              <SelectTrigger className="w-full sm:w-48">
-                <SelectValue placeholder="Filter by status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="all">All Status</SelectItem>
-                <SelectItem value="active">Active</SelectItem>
-                <SelectItem value="inactive">Pause</SelectItem>
-              </SelectContent>
-            </Select>
-
-            <Button variant="outline" onClick={clearFilters}>
-              Clear
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+      <ServicesFilters
+        filters={filters}
+        setFilters={setFilters}
+        clearFilters={clearFilters}
+      />
 
       {/* Services Grid */}
       {isLoading ? (
