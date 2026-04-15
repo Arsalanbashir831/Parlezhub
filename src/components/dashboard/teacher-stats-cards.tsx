@@ -22,7 +22,7 @@ export default function TeacherStatsCards({
   const averageRating =
     completedMeetings.length > 0
       ? completedMeetings.reduce((sum, m) => sum + (m.rating || 0), 0) /
-        completedMeetings.length
+      completedMeetings.length
       : 0;
 
   return (
@@ -54,22 +54,22 @@ export default function TeacherStatsCards({
 
       {/* Upcoming Meetings Card */}
       <div className="lg:col-span-6">
-        <Card className="h-full border-purple-200 bg-gradient-to-br from-purple-50 to-purple-100 dark:border-purple-800 dark:from-purple-900/20 dark:to-purple-800/20">
+        <Card className="h-full border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]">
           <CardContent className="p-6">
             <div className="mb-4 flex items-center justify-between">
-              <div className="rounded-xl bg-purple-500 p-3">
-                <CalendarIcon className="h-6 w-6 text-white" />
+              <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
+                <CalendarIcon className="h-6 w-6" />
               </div>
-              <TrendingUp className="h-5 w-5 text-purple-600" />
+              <TrendingUp className="h-5 w-5 text-primary-500" />
             </div>
             <div className="space-y-1">
-              <p className="text-sm font-medium text-purple-700 dark:text-purple-300">
+              <p className="text-sm font-medium text-primary-500/80">
                 Upcoming Sessions
               </p>
-              <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">
+              <p className="text-3xl font-bold text-white">
                 {upcomingMeetings}
               </p>
-              <p className="text-xs text-purple-600 dark:text-purple-400">
+              <p className="text-xs text-slate-500">
                 Next: Tomorrow 3:00 PM
               </p>
             </div>

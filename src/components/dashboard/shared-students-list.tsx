@@ -34,17 +34,17 @@ export function SharedStudentsList() {
           {students.map((record: SharedStudentAccess) => (
             <div
               key={record.id}
-              className="group relative flex items-center justify-between rounded-xl border border-slate-200/60 bg-white p-4 shadow-sm transition-all hover:border-primary-500/30 hover:shadow-md"
+              className="group relative flex items-center justify-between p-4 rounded-xl border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]"
             >
               <div className="flex min-w-0 items-center gap-4">
                 <Avatar className="h-12 w-12 border-2 border-primary-500/10">
                   <AvatarImage src={record.student.profile_picture || ''} />
-                  <AvatarFallback className="bg-primary-50 font-medium text-primary-700">
+                  <AvatarFallback className=" border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500">
                     {(record.student.full_name || 'S')[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
                 <div className="flex min-w-0 flex-col">
-                  <p className="truncate font-semibold text-slate-900">
+                  <p className="truncate font-semibold text-primary-500/80">
                     {record.student.full_name}
                   </p>
                   <p className="flex items-center gap-1 text-xs text-slate-500">
@@ -58,7 +58,7 @@ export function SharedStudentsList() {
                 asChild
                 variant="ghost"
                 size="sm"
-                className="text-primary-600 hover:bg-primary-50 hover:text-primary-700"
+                className="text-primary-600 hover:bg-primary-500/80 hover:text-white"
               >
                 <Link href={`/astrology?student_id=${record.student.id}`}>
                   <ExternalLink className="mr-2 h-4 w-4" />
