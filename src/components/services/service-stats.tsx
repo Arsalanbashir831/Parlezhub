@@ -16,61 +16,61 @@ export default function ServiceStatsComponent({ stats }: ServiceStatsProps) {
       title: 'Total Services',
       value: stats.totalServices,
       icon: Briefcase,
-      color: 'bg-blue-500',
+      color: 'border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500',
       gradient:
-        'from-blue-50 to-blue-100 dark:from-blue-900/20 dark:to-blue-800/20',
-      border: 'border-blue-200 dark:border-blue-800',
-      textColor: 'text-blue-700 dark:text-blue-300',
-      valueColor: 'text-blue-900 dark:text-blue-100',
-      subColor: 'text-blue-600 dark:text-blue-400',
+        'border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]',
+      border: 'border-primary-500/20',
+      textColor: 'text-primary-500/80',
+      valueColor: 'text-white',
+      subColor: 'text-slate-500',
     },
     {
       title: 'Active Services',
       value: stats.activeServices,
       icon: TrendingUp,
-      color: 'bg-green-500',
+      color: 'border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500',
       gradient:
-        'from-green-50 to-green-100 dark:from-green-900/20 dark:to-green-800/20',
-      border: 'border-green-200 dark:border-green-800',
-      textColor: 'text-green-700 dark:text-green-300',
-      valueColor: 'text-green-900 dark:text-green-100',
-      subColor: 'text-green-600 dark:text-green-400',
+        'border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]',
+      border: 'border-primary-500/20',
+      textColor: 'text-primary-500/80',
+      valueColor: 'text-white',
+      subColor: 'text-slate-500'
     },
     {
       title: 'Total Sessions',
       value: stats.totalSessions,
       icon: Users,
-      color: 'bg-purple-500',
+      color: 'border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500',
       gradient:
-        'from-purple-50 to-purple-100 dark:from-purple-900/20 dark:to-purple-800/20',
-      border: 'border-purple-200 dark:border-purple-800',
-      textColor: 'text-purple-700 dark:text-purple-300',
-      valueColor: 'text-purple-900 dark:text-purple-100',
-      subColor: 'text-purple-600 dark:text-purple-400',
+        'border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]',
+      border: 'border-primary-500/20',
+      textColor: 'text-primary-500/80',
+      valueColor: 'text-white',
+      subColor: 'text-slate-500'
     },
     {
       title: 'Total Earnings',
       value: `$${stats.totalEarnings.toLocaleString()}`,
       icon: DollarSign,
-      color: 'bg-yellow-500',
+      color: 'border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500',
       gradient:
-        'from-yellow-50 to-yellow-100 dark:from-yellow-900/20 dark:to-yellow-800/20',
-      border: 'border-yellow-200 dark:border-yellow-800',
-      textColor: 'text-yellow-700 dark:text-yellow-300',
-      valueColor: 'text-yellow-900 dark:text-yellow-100',
-      subColor: 'text-yellow-600 dark:text-yellow-400',
+        'border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]',
+      border: 'border-primary-500/20',
+      textColor: 'text-primary-500/80',
+      valueColor: 'text-white',
+      subColor: 'text-slate-500'
     },
     {
       title: 'Average Rating',
       value: stats.averageRating > 0 ? stats.averageRating.toFixed(1) : 'N/A',
       icon: Star,
-      color: 'bg-orange-500',
+      color: 'border border-primary-500/20 bg-gradient-to-br from-primary-500/20 to-primary-500/5 text-primary-500',
       gradient:
-        'from-orange-50 to-orange-100 dark:from-orange-900/20 dark:to-orange-800/20',
-      border: 'border-orange-200 dark:border-orange-800',
-      textColor: 'text-orange-700 dark:text-orange-300',
-      valueColor: 'text-orange-900 dark:text-orange-100',
-      subColor: 'text-orange-600 dark:text-orange-400',
+        'border-white/10 bg-gradient-to-br from-white/[0.08] to-transparent shadow-xl transition-all duration-300 hover:bg-white/[0.12]',
+      border: 'border-primary-500/20',
+      textColor: 'text-primary-500/80',
+      valueColor: 'text-white',
+      subColor: 'text-slate-500'
     },
   ];
 
@@ -86,9 +86,9 @@ export default function ServiceStatsComponent({ stats }: ServiceStatsProps) {
             <CardContent className="p-6">
               <div className="mb-4 flex items-center justify-between">
                 <div className={`p-3 ${stat.color} rounded-xl`}>
-                  <Icon className="h-6 w-6 text-white" />
+                  <Icon className="h-6 w-6" />
                 </div>
-                <TrendingUp className={`h-5 w-5 ${stat.subColor}`} />
+                <TrendingUp className="h-5 w-5 text-primary-500/80" />
               </div>
               <div className="space-y-1">
                 <p className={`text-sm font-medium ${stat.textColor}`}>
