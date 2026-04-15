@@ -107,9 +107,9 @@ export default function CreateBlogPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card>
+        <Card className="rounded-2xl border-white/5 bg-white/[0.03] shadow-xl backdrop-blur-md">
           <CardHeader>
-            <CardTitle>Blog Details</CardTitle>
+            <CardTitle className="text-primary">Blog Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-6">
             {/* Title */}
