@@ -1,6 +1,7 @@
 'use client';
 
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   serviceApi,
   serviceUtils,
@@ -23,43 +24,30 @@ export interface ServiceCardData {
 }
 
 export const useTeachers = () => {
-  const [services, setServices] = useState<PublicService[]>([]);
+  const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
   const [priceRange, setPriceRange] = useState([0, 100]);
   const [showFilters, setShowFilters] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
   const [selectedService, setSelectedService] =
     useState<ServiceCardData | null>(null);
   const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const loadPublicServices = useCallback(async () => {
-    try {
-      setIsLoading(true);
-      setError(null);
-
+  const { data: services = [], isLoading, error: queryError } = useQuery({
+    queryKey: ['public-services'],
+    queryFn: async () => {
       const apiResponse = await serviceApi.getPublicServices();
-      const publicServices = apiResponse.map(
-        serviceUtils.publicApiResponseToService
-      );
-      setServices(publicServices);
-    } catch (err) {
-      const errorMessage = getErrorMessage(err, 'fetch-public-services');
-      setError(errorMessage);
-      toast.error('Failed to Load Services', {
-        description: errorMessage,
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  }, []);
+      return apiResponse.map(serviceUtils.publicApiResponseToService);
+    },
+    staleTime: 10 * 60 * 1000, // Keep data fresh for 10 minutes
+    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+  });
 
-  // Load public services on mount
-  useEffect(() => {
-    loadPublicServices();
-  }, [loadPublicServices]);
+  const error = useMemo(() => {
+    if (!queryError) return null;
+    return getErrorMessage(queryError, 'fetch-public-services');
+  }, [queryError]);
 
   // Convert services to service card data format
   const serviceCards = useMemo(() => {
@@ -137,8 +125,8 @@ export const useTeachers = () => {
   }, []);
 
   const refreshTeachers = useCallback(async () => {
-    await loadPublicServices();
-  }, [loadPublicServices]);
+    await queryClient.invalidateQueries({ queryKey: ['public-services'] });
+  }, [queryClient]);
 
   const handleSelectService = useCallback((serviceCard: ServiceCardData) => {
     setSelectedService(serviceCard);

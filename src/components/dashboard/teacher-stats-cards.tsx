@@ -43,7 +43,7 @@ export default function TeacherStatsCards({
       </div> */}
 
       {/* Stats Grid */}
-      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3 lg:col-span-12">
+      <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:col-span-12">
         {/* Total Sessions Card */}
         <Card className="group relative overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]">
           <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl transition-all group-hover:bg-primary-500/20" />
@@ -84,30 +84,6 @@ export default function TeacherStatsCards({
               <div className="flex items-baseline gap-2">
                 <h2 className="font-serif text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-primary-500">
                   {activeStudents}
-                </h2>
-              </div>
-
-            </div>
-          </CardContent>
-        </Card>
-
-        {/* Avg Rating Card */}
-        <Card className="group relative overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]">
-          <div className="absolute -right-4 -top-12 h-24 w-24 rounded-full bg-primary-500/10 blur-3xl transition-all group-hover:bg-primary-500/20" />
-          <CardContent className="p-8">
-            <div className="mb-6 flex items-center justify-between">
-              <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-primary-500/20 bg-primary-500/10 text-primary-500 shadow-lg shadow-primary-500/10">
-                <TrendingUp className="h-7 w-7 rotate-45" />
-              </div>
-              <TrendingUp className="h-6 w-6 text-primary-100/20 transition-colors group-hover:text-primary-500" />
-            </div>
-            <div className="space-y-1">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40">
-                Growth Rate
-              </p>
-              <div className="flex items-baseline gap-2">
-                <h2 className="font-serif text-4xl font-bold tracking-tight text-white transition-colors group-hover:text-primary-500">
-                  24%
                 </h2>
               </div>
 
