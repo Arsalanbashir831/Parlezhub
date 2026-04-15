@@ -65,11 +65,11 @@ export default function ServiceCard({
   const statusAction = getStatusAction();
 
   return (
-    <Card className="h-full transition-shadow duration-200 hover:shadow-lg">
+    <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">
-            <Badge variant="outline" className="text-xs capitalize">
+            <Badge variant="outline" className="text-xs capitalize border-primary-500/80">
               {getServiceTypeLabel(service.type)}
             </Badge>
             <Badge
@@ -126,10 +126,10 @@ export default function ServiceCard({
       <CardContent className="space-y-4">
         {/* Service Title */}
         <div>
-          <h3 className="mb-2 line-clamp-2 text-lg font-semibold">
+          <h3 className="mb-2 line-clamp-2 text-lg font-semibold text-primary-500/80">
             {service.title}
           </h3>
-          <p className="line-clamp-3 text-sm text-gray-600 dark:text-gray-400">
+          <p className="line-clamp-3 text-sm text-gray-500 dark:text-gray-400">
             {service.shortDescription}
           </p>
         </div>
@@ -190,7 +190,7 @@ export default function ServiceCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onView(service)}
-                className="flex-1"
+                className="mt-4 h-12 w-full rounded-2xl border-primary-500/10 bg-transparent text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95"
               >
                 <Eye className="mr-2 h-4 w-4" />
                 View
@@ -201,7 +201,7 @@ export default function ServiceCard({
                 variant="outline"
                 size="sm"
                 onClick={() => onEdit(service)}
-                className="flex-1"
+                className="mt-4 h-12 w-full rounded-2xl border-primary-500/10 bg-transparent text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95"
               >
                 <Edit3 className="mr-2 h-4 w-4" />
                 Edit

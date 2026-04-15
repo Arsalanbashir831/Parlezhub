@@ -182,20 +182,20 @@ export default function ServiceForm({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Basic Information */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Basic Information</CardTitle>
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+          <CardHeader className="p-8 pb-4">
+            <CardTitle className="font-serif text-2xl font-bold text-primary-500">Basic Information</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Service Type */}
             <div>
-              <Label htmlFor="type">Service Type</Label>
+              <Label htmlFor="type" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Service Type</Label>
               <Select
                 value={watchedFields.type}
                 onValueChange={(value: ServiceType) => setValue('type', value)}
                 disabled={mode === 'edit'}
               >
-                <SelectTrigger>
+                <SelectTrigger className="w-full cursor-pointer bg-white/5 border-primary-500/10 shadow-2xl backdrop-blur-md transition-all duration-300">
                   <SelectValue placeholder="Select service type" />
                 </SelectTrigger>
                 <SelectContent>
@@ -215,12 +215,13 @@ export default function ServiceForm({
 
             {/* Title */}
             <div>
-              <Label htmlFor="title">Service Title</Label>
+              <Label htmlFor="title" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Service Title</Label>
               <Input
                 id="title"
                 {...register('title')}
                 placeholder="I will provide professional language consultation..."
                 maxLength={80}
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
               <div className="mt-1 flex justify-between text-sm text-gray-500">
                 {errors.title && (
@@ -234,13 +235,14 @@ export default function ServiceForm({
 
             {/* Short Description */}
             <div>
-              <Label htmlFor="shortDescription">Short Description</Label>
+              <Label htmlFor="shortDescription" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Short Description</Label>
               <Textarea
                 id="shortDescription"
                 {...register('shortDescription')}
                 placeholder="Brief summary of what you offer..."
                 rows={2}
                 maxLength={160}
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
               <div className="mt-1 flex justify-between text-sm text-gray-500">
                 {errors.shortDescription && (
@@ -257,7 +259,7 @@ export default function ServiceForm({
             {/* Description */}
             <div>
               <div className="flex items-center justify-between">
-                <Label htmlFor="description">Full Description</Label>
+                <Label htmlFor="description" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Full Description</Label>
                 <AIGenerateButton
                   onClick={handleGenerateDescription}
                   disabled={!canGenerateDescription}
@@ -270,8 +272,8 @@ export default function ServiceForm({
                 placeholder="Detailed description of your service..."
                 rows={6}
                 maxLength={1200}
-                className="mt-2"
                 disabled={isGeneratingDescription}
+                className="h-12 mt-2 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
               />
               <div className="mt-1 flex justify-between text-sm text-gray-500">
                 {errors.description && (
@@ -288,24 +290,25 @@ export default function ServiceForm({
         </Card>
 
         {/* Pricing & Session Details */}
-        <Card>
-          <CardHeader>
-            <CardTitle>Pricing & Session Details</CardTitle>
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+          <CardHeader className="p-8 pb-4">
+            <CardTitle className="font-serif text-2xl font-bold text-primary-500">Pricing & Session Details</CardTitle>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Price */}
             <div>
-              <Label htmlFor="price">Price per Session (USD)</Label>
+              <Label htmlFor="price" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Price per Session (USD)</Label>
               <div className="relative">
                 <DollarSign className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 <Input
                   id="price"
                   type="number"
                   {...register('price', { valueAsNumber: true })}
-                  className="pl-10"
+                  className="pl-10 h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                   placeholder="25"
                   min={5}
                   max={1000}
+
                 />
               </div>
               {errors.price && (
@@ -317,14 +320,14 @@ export default function ServiceForm({
 
             {/* Duration */}
             <div>
-              <Label htmlFor="duration">Session Duration (minutes)</Label>
+              <Label htmlFor="duration" className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Session Duration (minutes)</Label>
               <div className="relative">
                 <Clock className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
                 <Input
                   id="duration"
                   type="number"
                   {...register('duration', { valueAsNumber: true })}
-                  className="pl-10"
+                  className="pl-10 h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
                   placeholder="60"
                   min={15}
                   max={300}
@@ -342,9 +345,9 @@ export default function ServiceForm({
       </div>
 
       {/* Tags */}
-      <Card>
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
         <CardHeader>
-          <CardTitle>Tags</CardTitle>
+          <CardTitle className="font-serif text-2xl font-bold text-primary-500">Tags</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -356,8 +359,9 @@ export default function ServiceForm({
                 e.key === 'Enter' && (e.preventDefault(), addTag())
               }
               maxLength={20}
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
-            <Button type="button" onClick={addTag} variant="outline" size="sm">
+            <Button type="button" onClick={addTag} variant="outline" size="sm" className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30">
               <Plus className="h-4 w-4" />
             </Button>
           </div>
@@ -385,9 +389,9 @@ export default function ServiceForm({
       </Card>
 
       {/* What You Provide */}
-      <Card>
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
         <CardHeader>
-          <CardTitle>What You Provide</CardTitle>
+          <CardTitle className="font-serif text-2xl font-bold text-primary-500">What You Provide</CardTitle>
         </CardHeader>
         <CardContent className="space-y-4">
           <div className="flex gap-2">
@@ -398,12 +402,14 @@ export default function ServiceForm({
               onKeyPress={(e) =>
                 e.key === 'Enter' && (e.preventDefault(), addService())
               }
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
             <Button
               type="button"
               onClick={addService}
               variant="outline"
               size="sm"
+              className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             >
               <Plus className="h-4 w-4" />
             </Button>

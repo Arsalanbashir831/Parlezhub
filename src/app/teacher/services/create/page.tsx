@@ -50,7 +50,7 @@ export default function CreateServicePage() {
           variant="ghost"
           size="sm"
           onClick={handleCancel}
-          className="flex items-center gap-2"
+          className="flex items-center gap-2 h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
         >
           <ArrowLeft className="h-4 w-4" />
           Back to Services
@@ -58,8 +58,8 @@ export default function CreateServicePage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold">Create New Service</h1>
-        <p className="mt-2 text-gray-600 dark:text-gray-400">
+        <h1 className="text-3xl font-bold font-serif text-primary-500">Create New Service</h1>
+        <p className="mt-2 text-gray-500 dark:text-gray-400">
           Set up your service offering and start earning from your expertise
         </p>
       </div>

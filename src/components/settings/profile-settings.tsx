@@ -87,17 +87,17 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
 
   const handleInputChange =
     (field: keyof ProfileData) =>
-    (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-      const value =
-        field === 'experience_years'
-          ? parseInt(e.target.value) || 0
-          : e.target.value;
+      (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+        const value =
+          field === 'experience_years'
+            ? parseInt(e.target.value) || 0
+            : e.target.value;
 
-      setProfileData({
-        ...profileData,
-        [field]: value,
-      });
-    };
+        setProfileData({
+          ...profileData,
+          [field]: value,
+        });
+      };
 
   const handleSelectChange = (field: keyof ProfileData) => (value: string) => {
     setProfileData({
