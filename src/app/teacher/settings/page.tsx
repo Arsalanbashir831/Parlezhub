@@ -121,11 +121,11 @@ export default function TeacherSettingsPage() {
               newPassword: '',
               confirmPassword: '',
             }}
-            onSecurityChange={() => {}}
-            onSave={async () => {}}
+            onSecurityChange={() => { }}
+            onSave={async () => { }}
             isLoading={false}
             showPassword={false}
-            onTogglePasswordVisibility={() => {}}
+            onTogglePasswordVisibility={() => { }}
           />
         </div>
 

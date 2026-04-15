@@ -20,13 +20,13 @@ import { Separator } from '@/components/ui/separator';
 
 export type AvailabilityDay = {
   day:
-    | 'Monday'
-    | 'Tuesday'
-    | 'Wednesday'
-    | 'Thursday'
-    | 'Friday'
-    | 'Saturday'
-    | 'Sunday';
+  | 'Monday'
+  | 'Tuesday'
+  | 'Wednesday'
+  | 'Thursday'
+  | 'Friday'
+  | 'Saturday'
+  | 'Sunday';
   isAvailable: boolean;
   startTime: string; // HH:mm
   endTime: string; // HH:mm
@@ -165,16 +165,17 @@ export default function AvailabilityCalendar({
   };
 
   const content = (
-    <Card className="w-full">
-      <CardHeader className="flex flex-col justify-between sm:flex-row md:items-center">
-        <CardTitle>{title}</CardTitle>
+    <Card className="w-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <CardHeader className="flex flex-col justify-between gap-4 p-8 pb-4 sm:flex-row md:items-center">
+        <CardTitle className="font-serif text-2xl font-bold text-primary-500">{title}</CardTitle>
 
-        <div className="flex justify-end gap-2 self-end pt-2">
+        <div className="flex justify-end gap-3 self-end pt-2">
           {!isEditing ? (
             <Button
               variant="outline"
               size="sm"
               onClick={() => setIsEditing((prev) => !prev)}
+              className="h-10 rounded-xl border-primary-500/10 bg-white/5 px-6 font-bold text-white transition-all hover:bg-white/10"
             >
               Edit Schedule
             </Button>
@@ -188,40 +189,50 @@ export default function AvailabilityCalendar({
                   if (readOnly) setIsEditing(false);
                   if (asDialog) onOpenChange?.(false);
                 }}
+                className="h-10 rounded-xl border-primary-500/10 bg-white/5 px-6 font-bold text-white transition-all hover:bg-white/10"
               >
                 Cancel
               </Button>
-              <Button onClick={handleSave} disabled={isSaving}>
+              <Button 
+                onClick={handleSave} 
+                disabled={isSaving}
+                className="h-10 rounded-xl bg-primary-500 px-6 text-xs font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
+              >
                 {isSaving ? 'Saving...' : 'Save Availability'}
               </Button>
             </>
           )}
         </div>
       </CardHeader>
-      <CardContent className="space-y-4">
-        <p className="text-sm text-muted-foreground">{description}</p>
-        <Separator />
+      <CardContent className="space-y-6 p-8 pt-4">
+        <p className="ml-1 text-sm font-medium text-primary-100/60">{description}</p>
+        <Separator className="bg-white/5" />
         <div className="grid grid-cols-1 gap-3 sm:gap-4">
           {schedule.map((d, idx) => (
             <div
               key={d.day}
-              className="flex flex-col gap-3 rounded-md border p-3 sm:flex-row sm:items-center sm:justify-between"
+              className={`flex flex-col gap-4 rounded-2xl border p-4 transition-all duration-300 sm:flex-row sm:items-center sm:justify-between ${
+                d.isAvailable 
+                ? 'border-primary-500/20 bg-primary-500/5' 
+                : 'border-white/5 bg-white/[0.02] opacity-60'
+              }`}
             >
-              <div className="flex min-w-0 items-center gap-2">
+              <div className="flex min-w-0 items-center gap-3">
                 <Checkbox
                   id={`avail-${d.day}`}
                   checked={d.isAvailable}
                   onCheckedChange={(c) => handleToggleDay(idx, Boolean(c))}
                   disabled={!isEditing}
+                  className="h-5 w-5 rounded-lg border-primary-500/30 data-[state=checked]:bg-primary-500 data-[state=checked]:text-white"
                 />
                 <label
                   htmlFor={`avail-${d.day}`}
-                  className="text-sm font-medium"
+                  className="font-serif text-lg font-bold text-white"
                 >
                   {d.day}
                 </label>
               </div>
-              <div className="flex w-full flex-col items-stretch gap-2 sm:w-auto sm:flex-row sm:items-center">
+              <div className="flex w-full flex-col items-stretch gap-3 sm:w-auto sm:flex-row sm:items-center">
                 <Input
                   type="time"
                   value={d.startTime}
@@ -229,9 +240,9 @@ export default function AvailabilityCalendar({
                     handleTimeChange(idx, 'startTime', e.target.value)
                   }
                   disabled={!isEditing || !d.isAvailable}
-                  className="w-full sm:w-28"
+                  className="h-10 w-full rounded-xl border-primary-500/10 bg-white/5 text-sm font-bold text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30 sm:w-32"
                 />
-                <span className="text-center text-xs text-muted-foreground">
+                <span className="text-center text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
                   to
                 </span>
                 <Input
@@ -241,7 +252,7 @@ export default function AvailabilityCalendar({
                     handleTimeChange(idx, 'endTime', e.target.value)
                   }
                   disabled={!isEditing || !d.isAvailable}
-                  className="w-full sm:w-28"
+                  className="h-10 w-full rounded-xl border-primary-500/10 bg-white/5 text-sm font-bold text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30 sm:w-32"
                 />
               </div>
             </div>
@@ -255,12 +266,16 @@ export default function AvailabilityCalendar({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="sm:max-w-2xl">
-        <DialogHeader>
-          <DialogTitle>{title}</DialogTitle>
-          <DialogDescription>{description}</DialogDescription>
+      <DialogContent className="overflow-hidden rounded-3xl border-white/5 bg-background/95 p-0 shadow-2xl backdrop-blur-md sm:max-w-2xl">
+        <DialogHeader className="p-8 pb-0">
+          <DialogTitle className="font-serif text-3xl font-bold text-primary-500">{title}</DialogTitle>
+          <DialogDescription className="mt-2 text-primary-100/60 font-medium">
+            {description}
+          </DialogDescription>
         </DialogHeader>
-        {content}
+        <div className="px-2 pb-2">
+          {content}
+        </div>
         <DialogFooter />
       </DialogContent>
     </Dialog>
