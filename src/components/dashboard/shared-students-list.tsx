@@ -17,10 +17,10 @@ export function SharedStudentsList() {
   }
 
   return (
-    <Card className="lg:col-span-12">
+    <Card className="lg:col-span-12 h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
       <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-7">
         <div className="space-y-1">
-          <CardTitle className="flex items-center gap-2 text-2xl font-bold">
+          <CardTitle className="flex items-center gap-2 text-2xl font-bold text-primary-500">
             <Users className="h-6 w-6 text-primary-500" />
             Shared Astrology Students
           </CardTitle>

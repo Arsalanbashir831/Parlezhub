@@ -23,15 +23,15 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
 
   return (
     <div className="lg:col-span-12">
-      <Card className="h-full">
+      <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
         <CardHeader className="pb-4">
           <div className="flex items-center justify-between">
-            <CardTitle className="text-lg">Your Students & Sessions</CardTitle>
+            <CardTitle className="text-lg font-bold text-primary-500">Your Students & Sessions</CardTitle>
             <Link href={ROUTES.TEACHER.MEETINGS}>
               <Button
                 variant="ghost"
                 size="sm"
-                className="text-primary-600 hover:text-primary-700"
+                className="h-8 w-8 rounded-full p-0 text-primary-500 hover:bg-white/5 hover:text-primary-400"
               >
                 <ArrowRight className="h-4 w-4" />
               </Button>
@@ -53,9 +53,9 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
                   <AvatarFallback className="bg-primary-100 font-semibold text-primary-700 dark:bg-primary-800 dark:text-primary-200">
                     {meeting.studentName
                       ? meeting.studentName
-                          .split(' ')
-                          .map((n) => n[0])
-                          .join('')
+                        .split(' ')
+                        .map((n) => n[0])
+                        .join('')
                       : 'S'}
                   </AvatarFallback>
                 </Avatar>
@@ -98,7 +98,10 @@ export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
             </div>
           )}
           <Link href={ROUTES.TEACHER.MEETINGS}>
-            <Button variant="outline" className="mt-4 w-full bg-transparent">
+            <Button
+              variant="outline"
+              className="mt-4 h-12 w-full rounded-2xl border-primary-500/10 bg-transparent text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95"
+            >
               View All Sessions
             </Button>
           </Link>
