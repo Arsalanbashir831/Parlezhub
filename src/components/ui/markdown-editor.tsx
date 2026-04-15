@@ -12,8 +12,8 @@ const MDEditor = dynamic(
   {
     ssr: false,
     loading: () => (
-      <div className="flex min-h-[300px] w-full items-center justify-center rounded border bg-gray-50">
-        <div className="text-gray-500">Loading editor...</div>
+      <div className="flex min-h-[300px] w-full items-center justify-center rounded-2xl border border-primary-500/10 bg-white/5 backdrop-blur-md">
+        <div className="text-primary-100/40 font-medium">Loading editor...</div>
       </div>
     ),
   }
@@ -40,24 +40,24 @@ export default function MarkdownEditor({
 
   if (!mounted) {
     return (
-      <div className="flex min-h-[300px] w-full items-center justify-center rounded border bg-gray-50">
-        <div className="text-gray-500">Loading editor...</div>
+      <div className="flex min-h-[300px] w-full items-center justify-center rounded-2xl border border-primary-500/10 bg-white/5 backdrop-blur-md">
+        <div className="text-primary-100/40 font-medium">Loading editor...</div>
       </div>
     );
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full overflow-hidden rounded-2xl border border-primary-500/10">
       <MDEditor
         value={value}
         onChange={(val) => onChange(val || '')}
         height={height}
-        data-color-mode="light"
+        data-color-mode="dark"
         textareaProps={{
           placeholder,
           style: {
             fontSize: 14,
-            lineHeight: 1.5,
+            lineHeight: 1.6,
           },
         }}
         preview="edit"

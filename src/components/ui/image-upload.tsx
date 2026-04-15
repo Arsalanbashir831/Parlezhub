@@ -121,7 +121,7 @@ export default function ImageUpload({
       {value && preview ? (
         // Preview mode
         <div className="relative">
-          <div className="relative aspect-video max-h-[300px] w-full overflow-hidden rounded-lg border bg-gray-50">
+          <div className="relative aspect-video max-h-[300px] w-full overflow-hidden rounded-2xl border border-primary-500/10 bg-white/5 backdrop-blur-md">
             <img
               src={preview}
               alt="Thumbnail preview"
@@ -131,13 +131,13 @@ export default function ImageUpload({
               type="button"
               variant="destructive"
               size="sm"
-              className="absolute right-2 top-2"
+              className="absolute right-3 top-3 rounded-lg bg-red-500/80 backdrop-blur-md hover:bg-red-500"
               onClick={removeFile}
             >
               <X className="h-4 w-4" />
             </Button>
           </div>
-          <p className="mt-2 text-sm text-gray-600">
+          <p className="mt-3 ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
             {value.name} ({(value.size / 1024 / 1024).toFixed(2)} MB)
           </p>
         </div>
@@ -145,10 +145,10 @@ export default function ImageUpload({
         // Upload mode
         <div
           className={cn(
-            'relative cursor-pointer rounded-lg border-2 border-dashed p-6 transition-colors',
+            'relative cursor-pointer rounded-2xl border-2 border-dashed p-8 transition-all duration-300',
             dragActive
-              ? 'border-blue-500 bg-blue-50'
-              : 'border-gray-300 hover:border-gray-400'
+              ? 'border-primary-500 bg-primary-500/10'
+              : 'border-primary-500/20 bg-white/5 hover:border-primary-500/40'
           )}
           onDragEnter={handleDrag}
           onDragLeave={handleDrag}
@@ -165,23 +165,23 @@ export default function ImageUpload({
           />
 
           <div className="flex flex-col items-center justify-center text-center">
-            <div className="mb-4 rounded-full bg-gray-100 p-3">
+            <div className={`mb-4 rounded-2xl p-4 transition-colors ${dragActive ? 'bg-primary-500/20' : 'bg-primary-500/5'}`}>
               {dragActive ? (
-                <Upload className="h-6 w-6 text-blue-500" />
+                <Upload className="h-8 w-8 text-primary-500" />
               ) : (
-                <ImageIcon className="h-6 w-6 text-gray-400" />
+                <ImageIcon className="h-8 w-8 text-primary-500/60" />
               )}
             </div>
 
-            <p className="mb-1 text-sm font-medium text-gray-900">
+            <p className="mb-2 font-serif text-lg font-bold text-white">
               {dragActive ? 'Drop image here' : placeholder}
             </p>
 
-            <p className="text-xs text-gray-500">
+            <p className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
               PNG, JPG, GIF up to {maxSize}MB
             </p>
 
-            <Button type="button" variant="outline" size="sm" className="mt-4">
+            <Button type="button" variant="outline" size="sm" className="mt-6 h-10 rounded-xl border-primary-500/10 bg-white/5 text-xs font-bold uppercase tracking-widest text-primary-500 hover:bg-primary-500/10">
               Choose File
             </Button>
           </div>

@@ -66,18 +66,18 @@ export default function TagsInput({
 
   return (
     <div className={cn('w-full', className)}>
-      <div className="flex min-h-[42px] flex-wrap gap-2 rounded-md border bg-white p-3 focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+      <div className="flex min-h-[48px] flex-wrap gap-2 rounded-xl border border-primary-500/10 bg-white/5 p-3 focus-within:ring-1 focus-within:ring-primary-500/30">
         {value.map((tag) => (
           <Badge
             key={tag}
             variant="secondary"
-            className="flex items-center gap-1 px-2 py-1"
+            className="flex items-center gap-1 bg-primary-500/20 text-primary-500 border-primary-500/20 px-2 py-1"
           >
-            <span className="text-xs">{tag}</span>
+            <span className="text-xs font-bold uppercase tracking-wider">{tag}</span>
             <button
               type="button"
               onClick={() => removeTag(tag)}
-              className="ml-1 rounded-full p-0.5 hover:bg-gray-200"
+              className="ml-1 rounded-full p-0.5 hover:bg-primary-500/20"
             >
               <X className="h-3 w-3" />
             </button>
@@ -91,12 +91,12 @@ export default function TagsInput({
             onKeyDown={handleKeyDown}
             onBlur={handleInputBlur}
             placeholder={value.length === 0 ? placeholder : ''}
-            className="h-auto min-w-[120px] flex-1 border-none p-0 text-sm shadow-none focus-visible:ring-0"
+            className="h-auto min-w-[120px] flex-1 border-none bg-transparent p-0 text-sm italic text-white placeholder:text-primary-100/20 shadow-none focus-visible:ring-0"
           />
         )}
       </div>
 
-      <p className="mt-1 text-xs text-gray-500">
+      <p className="mt-2 ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
         Press Enter or comma to add tags. {value.length}/{maxTags} tags
       </p>
     </div>
