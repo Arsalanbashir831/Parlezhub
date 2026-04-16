@@ -10,6 +10,7 @@ import {
   Languages,
   MessageCircle,
   Settings,
+  Star,
   Users,
   Zap,
 } from 'lucide-react';
@@ -103,6 +104,12 @@ export const teacherNav: NavItem[] = [
     label: 'Dashboard',
     icon: Home,
     href: ROUTES.TEACHER.DASHBOARD,
+  },
+  {
+    id: 'astrology-students',
+    label: 'Astro Students',
+    icon: Star,
+    href: ROUTES.TEACHER.ASTROLOGY_STUDENTS,
   },
   {
     id: 'services',

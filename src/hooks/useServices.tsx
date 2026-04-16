@@ -48,7 +48,7 @@ interface UseServicesReturn {
   isProcessing: boolean;
 }
 
-export function useServices(): UseServicesReturn {
+export function useServices(options: { enabled?: boolean } = {}): UseServicesReturn {
   const queryClient = useQueryClient();
   const [filters, setFiltersState] = useState<ServiceFilters>({});
 
@@ -64,6 +64,7 @@ export function useServices(): UseServicesReturn {
       return (response.results || []).map(serviceUtils.apiResponseToService) as Service[];
     },
     staleTime: 5 * 60 * 1000, // 5 minutes
+    enabled: options.enabled ?? true,
   });
 
   const services = servicesList;

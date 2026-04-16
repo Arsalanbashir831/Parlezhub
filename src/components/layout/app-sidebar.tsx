@@ -267,7 +267,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     hasTeacherRole &&
                     renderRoleSwitchMenuItem(
                       'TEACHER',
-                      'Teacher Dashboard',
+                      'Consultant Dashboard',
                       Users,
                       () => switchRole('TEACHER')
                     )}
@@ -284,7 +284,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                     !hasTeacherRole &&
                     renderRoleSwitchMenuItem(
                       'TEACHER',
-                      'Become Teacher',
+                      'Become Consultant',
                       Users,
                       becomeTeacher
                     )}

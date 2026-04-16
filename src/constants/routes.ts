@@ -35,6 +35,7 @@ export const ROUTES = {
     BLOGS: '/teacher/blogs',
     CREATE_BLOG: '/teacher/blogs/create',
     EDIT_BLOG: (blogId: string | number) => `/teacher/blogs/edit/${blogId}`,
+    ASTROLOGY_STUDENTS: '/teacher/astrology-students',
   },
   AI_SESSION: {
     ROOT: '/ai-session',
