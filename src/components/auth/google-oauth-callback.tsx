@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
@@ -40,7 +40,13 @@ export function GoogleOAuthCallback() {
   const searchParams = useSearchParams();
   const { setIsAuthenticated, setUserRole } = useAuth();
 
+  const hasRun = useRef(false);
+
   useEffect(() => {
+    // Prevent double-execution (React Strict Mode, hot reload, etc.)
+    if (hasRun.current) return;
+    hasRun.current = true;
+
     const handleCallback = async () => {
       try {
         // Get the tokens from URL hash (Supabase OAuth returns them in the hash)
@@ -50,19 +56,18 @@ export function GoogleOAuthCallback() {
         const accessToken = params.get('access_token');
         const refreshToken = params.get('refresh_token');
 
+        // Clear the URL hash ASAP to remove tokens from browser history
+        if (window.location.hash) {
+          window.history.replaceState(null, '', window.location.pathname);
+        }
+
         if (!accessToken || !refreshToken) {
-          // If tokens are missing, redirect to sign-in without processing
-          setError('Invalid OAuth callback. Please sign in again.');
-
-          // Clear the URL hash to remove any partial tokens from the URL
-          if (window.location.hash) {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
-
+          // Delay error to avoid flash on first render before hash is parsed
           setTimeout(() => {
-            router.push(ROUTES.AUTH.LOGIN);
-          }, 3000);
-          return; // Exit early without processing
+            setError('Invalid OAuth callback. Please sign in again.');
+            setTimeout(() => router.push(ROUTES.AUTH.LOGIN), 3000);
+          }, 300);
+          return;
         }
 
         // Get stored OAuth mode and role from sessionStorage
@@ -77,28 +82,19 @@ export function GoogleOAuthCallback() {
 
         if (!oauthMode) {
           // If oauth_mode is missing (e.g., page refresh), redirect to sign-in
-          // Don't process tokens or set cookies - this prevents the issue where
-          // tokens get saved even when the OAuth flow is incomplete
-          setError(
-            'OAuth session expired. This usually happens when you refresh the page during sign-in. Please try signing in again.'
-          );
-
-          // Show toast notification
           toast.error('OAuth session expired', {
             description:
               'Please try signing in again. Do not refresh the page during sign-in.',
           });
 
-          // Clear the URL hash to remove tokens from the URL
-          if (window.location.hash) {
-            window.history.replaceState(null, '', window.location.pathname);
-          }
+          setError(
+            'OAuth session expired. This usually happens when you refresh the page during sign-in. Please try signing in again.'
+          );
 
-          // Clear any existing tokens and redirect after delay
           setTimeout(() => {
             router.push(ROUTES.AUTH.LOGIN);
           }, 3000);
-          return; // Exit early without processing tokens
+          return;
         }
 
         // Prepare callback request
