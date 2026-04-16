@@ -231,16 +231,17 @@ const VedicChart: React.FC<ChartProps> = ({
           const rad = (angle * Math.PI) / 180;
           const textAngle = angle - 15; // Label in center of sign
           const textRad = (textAngle * Math.PI) / 180;
+          const outerR = transitPlanets.length > 0 ? outerRadius : midRadius;
+          const textLabelRadius = transitPlanets.length > 0 ? outerRadius : midRadius;
           const textX = Number(
-            (center + (outerRadius + 30) * Math.cos(textRad)).toFixed(2)
+            (center + (textLabelRadius + 30) * Math.cos(textRad)).toFixed(2)
           );
           const textY = Number(
-            (center + (outerRadius + 30) * Math.sin(textRad)).toFixed(2)
+            (center + (textLabelRadius + 30) * Math.sin(textRad)).toFixed(2)
           );
 
           const x1 = Number((center + innerRadius * Math.cos(rad)).toFixed(2));
           const y1 = Number((center + innerRadius * Math.sin(rad)).toFixed(2));
-          const outerR = transitPlanets.length > 0 ? outerRadius : midRadius;
           const x2 = Number((center + outerR * Math.cos(rad)).toFixed(2));
           const y2 = Number((center + outerR * Math.sin(rad)).toFixed(2));
 
