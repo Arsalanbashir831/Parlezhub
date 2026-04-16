@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (profileData: UnifiedProfileResponse) => {
       const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
 
-      if (profileData.has_consultant) {
+      if (profileData.has_teacher) {
         availableRoles.push('TEACHER');
       }
       if (profileData.has_student) {

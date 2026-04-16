@@ -140,10 +140,10 @@ export const userApi = {
 
   getConsultantProfile: async (): Promise<UserProfile> => {
     const unifiedProfile = await authApi.getUnifiedProfile();
-    if (!unifiedProfile.has_consultant || !unifiedProfile.consultant_profile) {
+    if (!unifiedProfile.has_teacher || !unifiedProfile.teacher_profile) {
       throw new Error('Consultant profile not found');
     }
-    return mapProfileToUserProfile(unifiedProfile.consultant_profile, 'TEACHER');
+    return mapProfileToUserProfile(unifiedProfile.teacher_profile, 'TEACHER');
   },
 
   updateStudentProfile: async (

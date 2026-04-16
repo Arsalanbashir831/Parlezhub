@@ -9,7 +9,7 @@ export const API_ROUTES = {
     GOOGLE_INITIATE: '/auth/google/initiate/',
     GOOGLE_CALLBACK: '/auth/google/callback/',
     ME: '/accounts/profiles/me/roles/',
-    BECOME_TEACHER: '/accounts/become-consultant/',
+    BECOME_TEACHER: '/accounts/become-teacher/',
     BECOME_STUDENT: '/accounts/become-student/',
   },
   STUDENT: {

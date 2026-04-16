@@ -97,7 +97,7 @@ export interface ConsultantProfile {
   gender: string | null;
   date_of_birth: string | null;
   role: 'STUDENT'; // Note: role might still be STUDENT even with consultant profile
-  has_consultant: boolean;
+  has_teacher: boolean;
   has_student: boolean;
   profile_picture: string | null;
   created_at: string;
@@ -115,8 +115,8 @@ export interface ConsultantProfile {
 }
 
 export interface UnifiedProfileResponse {
-  has_consultant: boolean;
-  consultant_profile: ConsultantProfile | null;
+  has_teacher: boolean;
+  teacher_profile: ConsultantProfile | null;
   has_student: boolean;
   student_profile: StudentProfile | null;
 }
