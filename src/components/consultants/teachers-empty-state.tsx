@@ -6,11 +6,11 @@ import { Search } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
-interface TeachersEmptyStateProps {
+interface ConsultantsEmptyStateProps {
   onClearFilters: () => void;
 }
 
-export const TeachersEmptyState = React.memo<TeachersEmptyStateProps>(
+export const ConsultantsEmptyState = React.memo<ConsultantsEmptyStateProps>(
   ({ onClearFilters }) => {
     return (
       <Card className="py-12 text-center">
@@ -21,7 +21,7 @@ export const TeachersEmptyState = React.memo<TeachersEmptyStateProps>(
             </div>
             <div>
               <h3 className="text-lg font-semibold text-gray-900">
-                No teachers found
+                No consultants found
               </h3>
               <p className="mt-1 text-gray-600">
                 Try adjusting your search criteria or filters
@@ -37,4 +37,4 @@ export const TeachersEmptyState = React.memo<TeachersEmptyStateProps>(
   }
 );
 
-TeachersEmptyState.displayName = 'TeachersEmptyState';
+ConsultantsEmptyState.displayName = 'ConsultantsEmptyState';

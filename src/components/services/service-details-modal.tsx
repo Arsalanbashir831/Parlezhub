@@ -62,10 +62,10 @@ export function ServiceDetailsModal({
     }
 
     try {
-      // Create a new chat with the teacher
+      // Create a new chat with the consultant
       const newChat = await chatService.createChat({
         student_id: user.id,
-        teacher_id: service.teacherId,
+        consultant_id: service.teacherId,
       });
 
       if (newChat) {
@@ -227,7 +227,7 @@ export function ServiceDetailsModal({
               {onEdit ? (
                 <Button onClick={() => onEdit(service)}>Edit Service</Button>
               ) : (
-                <Button onClick={handleStartChat}>Chat with Teacher</Button>
+                <Button onClick={handleStartChat}>Chat with Consultant</Button>
               )}
             </div>
           </div>

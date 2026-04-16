@@ -9,7 +9,7 @@ import { Badge } from '@/components/ui/badge';
 
 interface RealConversationItemProps {
   chat: ChatRoom;
-  currentUserRole: 'student' | 'teacher';
+  currentUserRole: 'student' | 'consultant';
   isSelected: boolean;
   onSelect: (chat: ChatRoom) => void;
 }
@@ -27,13 +27,13 @@ const RealConversationItem = memo(
 
     // Determine the other participant's name and avatar
     const otherParticipantName =
-      currentUserRole === 'student' ? chat.teacher_name : chat.student_name;
+      currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
 
     const otherParticipantAvatar =
-      currentUserRole === 'student' ? chat.teacher_avatar : chat.student_avatar;
+      currentUserRole === 'student' ? chat.consultant_avatar : chat.student_avatar;
 
     // Determine the role badge
-    const roleBadge = currentUserRole === 'student' ? 'teacher' : 'student';
+    const roleBadge = currentUserRole === 'student' ? 'consultant' : 'student';
 
     return (
       <div

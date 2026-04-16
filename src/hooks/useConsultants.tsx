@@ -14,16 +14,16 @@ import { getErrorMessage } from '@/lib/error-utils';
 export interface ServiceCardData {
   id: string;
   service: PublicService;
-  teacherName: string;
-  teacherAvatar: string | null;
-  teacherQualification: string;
-  teacherExperience: number;
-  teacherBio: string;
-  teacherLocation: string;
-  teacherEmail: string;
+  consultantName: string;
+  consultantAvatar: string | null;
+  consultantQualification: string;
+  consultantExperience: number;
+  consultantBio: string;
+  consultantLocation: string;
+  consultantEmail: string;
 }
 
-export const useTeachers = () => {
+export const useConsultants = () => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedLanguage, setSelectedLanguage] = useState('all');
@@ -54,13 +54,13 @@ export const useTeachers = () => {
     return services.map((service) => ({
       id: service.id,
       service,
-      teacherName: service.teacherName,
-      teacherAvatar: service.teacherAvatar,
-      teacherQualification: service.teacherQualification,
-      teacherExperience: service.teacherExperience,
-      teacherBio: service.teacherBio,
-      teacherLocation: service.teacherLocation,
-      teacherEmail: service.teacherEmail || '',
+      consultantName: service.consultantName,
+      consultantAvatar: service.consultantAvatar,
+      consultantQualification: service.consultantQualification,
+      consultantExperience: service.consultantExperience,
+      consultantBio: service.consultantBio,
+      consultantLocation: service.consultantLocation,
+      consultantEmail: service.consultantEmail || '',
     }));
   }, [services]);
 
@@ -79,7 +79,7 @@ export const useTeachers = () => {
       const { service } = serviceCard;
 
       const matchesSearch =
-        service.teacherName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        service.consultantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
         service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
         service.shortDescription
           .toLowerCase()
@@ -124,7 +124,7 @@ export const useTeachers = () => {
     setShowFilters(false);
   }, []);
 
-  const refreshTeachers = useCallback(async () => {
+  const refreshConsultants = useCallback(async () => {
     await queryClient.invalidateQueries({ queryKey: ['public-services'] });
   }, [queryClient]);
 
@@ -171,6 +171,6 @@ export const useTeachers = () => {
     handleSelectService,
     handleCloseDetailsPanel,
     handleCloseModal,
-    refreshTeachers,
+    refreshConsultants,
   };
 };

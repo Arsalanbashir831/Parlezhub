@@ -24,7 +24,7 @@ export interface RecentConversation {
 
 export interface UpcomingMeeting {
   id: string;
-  teacherName: string;
+  consultantName: string;
   subject: string;
   date: string;
   duration: number;

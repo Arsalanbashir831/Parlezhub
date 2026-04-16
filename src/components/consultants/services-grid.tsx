@@ -1,6 +1,6 @@
 'use client';
 
-import { ServiceCardData } from '@/hooks/useTeachers';
+import { ServiceCardData } from '@/hooks/useConsultants';
 
 import { ServiceCard } from './service-card';
 

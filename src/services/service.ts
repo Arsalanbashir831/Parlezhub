@@ -51,7 +51,7 @@ export interface ServicesListResponse {
 
 export interface PublicServiceResponse {
   id: number;
-  teacher: number;
+  consultant: number;
   teacher_details: {
     id: string;
     email: string;
@@ -85,7 +85,7 @@ export interface PublicServicesListResponse {
   count: number;
   results: PublicServiceResponse[];
   filters_applied: {
-    teacher_id: string | null;
+    consultant_id: string | null;
     category: string | null;
     service_type: string | null;
     min_price: number | null;
@@ -100,13 +100,13 @@ export interface PublicServicesListResponse {
 export interface PublicService {
   id: string;
   teacherId: string;
-  teacherName: string;
-  teacherAvatar: string | null;
-  teacherQualification: string;
-  teacherExperience: number;
-  teacherBio: string;
-  teacherLocation: string;
-  teacherEmail: string;
+  consultantName: string;
+  consultantAvatar: string | null;
+  consultantQualification: string;
+  consultantExperience: number;
+  consultantBio: string;
+  consultantLocation: string;
+  consultantEmail: string;
   type: ServiceType;
   title: string;
   description: string;
@@ -139,7 +139,7 @@ export const serviceApi = {
     return response.data;
   },
 
-  // Get all services for the current teacher
+  // Get all services for the current consultant
   getServices: async (): Promise<ServicesListResponse> => {
     const response = await apiCaller(
       API_ROUTES.TEACHER.CREATE_SERVICE, // Using the same endpoint for GET
@@ -253,12 +253,12 @@ export const serviceApi = {
     }
   },
 
-  // Get services for a specific teacher
-  getTeacherServices: async (
+  // Get services for a specific consultant
+  getConsultantServices: async (
     teacherId: string
   ): Promise<PublicServiceResponse[]> => {
     const response = await apiCaller(
-      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?teacher_id=${teacherId}`,
+      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?consultant_id=${teacherId}`,
       'GET',
       undefined,
       {},
@@ -292,7 +292,7 @@ export const serviceApi = {
 export const blogApi = {
   list: async (): Promise<BlogPost[]> => {
     if (typeof window === 'undefined') return [];
-    const raw = localStorage.getItem('teacher_blogs');
+    const raw = localStorage.getItem('consultant_blogs');
     return raw ? (JSON.parse(raw) as BlogPost[]) : [];
   },
   create: async (data: BlogFormData): Promise<BlogPost> => {
@@ -314,14 +314,14 @@ export const blogApi = {
       created_at: now,
       updated_at: now,
       tag_list: data.tags.join(','),
-      author_name: 'Teacher',
+      author_name: 'Consultant',
       published_at: now,
       read_time: 0,
       view_count: 0,
       is_published: true,
     };
     const updated = [post, ...all];
-    localStorage.setItem('teacher_blogs', JSON.stringify(updated));
+    localStorage.setItem('consultant_blogs', JSON.stringify(updated));
     return post;
   },
   get: async (id: string): Promise<BlogPost | null> => {
@@ -350,14 +350,14 @@ export const blogApi = {
       updated_at: new Date().toISOString(),
     };
     all[idx] = updated;
-    localStorage.setItem('teacher_blogs', JSON.stringify(all));
+    localStorage.setItem('consultant_blogs', JSON.stringify(all));
     return updated;
   },
   remove: async (id: string): Promise<void> => {
     const all = await blogApi.list();
     // Ensure both id and b.id are compared as strings to avoid type mismatch
     const filtered = all.filter((b) => String(b.id) !== String(id));
-    localStorage.setItem('teacher_blogs', JSON.stringify(filtered));
+    localStorage.setItem('consultant_blogs', JSON.stringify(filtered));
     return;
   },
   toggleVisibility: async (id: string): Promise<BlogPost | null> => {
@@ -428,16 +428,16 @@ export const serviceUtils = {
     return {
       id: apiResponse.id.toString(),
       teacherId: apiResponse.teacher_details.id,
-      teacherName: apiResponse.teacher_details.full_name,
-      teacherAvatar: apiResponse.teacher_details.profile_picture,
-      teacherQualification: apiResponse.teacher_details.qualification,
-      teacherExperience: apiResponse.teacher_details.experience_years,
-      teacherBio: apiResponse.teacher_details.bio,
-      teacherLocation:
+      consultantName: apiResponse.teacher_details.full_name,
+      consultantAvatar: apiResponse.teacher_details.profile_picture,
+      consultantQualification: apiResponse.teacher_details.qualification,
+      consultantExperience: apiResponse.teacher_details.experience_years,
+      consultantBio: apiResponse.teacher_details.bio,
+      consultantLocation:
         `${apiResponse.teacher_details.city}, ${apiResponse.teacher_details.country}`
           .replace(/^,\s*/, '')
           .replace(/,\s*$/, ''),
-      teacherEmail: apiResponse.teacher_details.email,
+      consultantEmail: apiResponse.teacher_details.email,
       type: apiResponse.category as ServiceType,
       title: apiResponse.service_title,
       description: apiResponse.full_description,

@@ -3,7 +3,7 @@ export { default as RecentSessions } from './recent-sessions';
 export { default as UpcomingMeetings } from './upcoming-meetings';
 export { default as DashboardSkeleton } from './dashboard-skeleton';
 
-// Teacher-specific components
-export { default as TeacherStatsCards } from './teacher-stats-cards';
-export { default as TeacherMeetings } from './teacher-meetings';
-export { default as TeacherDashboardSkeleton } from './teacher-dashboard-skeleton';
+// Consultant-specific components
+export { default as ConsultantStatsCards } from './teacher-stats-cards';
+export { default as ConsultantMeetings } from './teacher-meetings';
+export { default as ConsultantDashboardSkeleton } from './teacher-dashboard-skeleton';

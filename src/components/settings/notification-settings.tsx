@@ -13,8 +13,8 @@ interface NotificationData {
   pushNotifications: boolean;
   sessionReminders: boolean;
   weeklyReports: boolean;
-  teacherMessages?: boolean; // For students
-  studentMessages?: boolean; // For teachers
+  consultantMessages?: boolean; // For students
+  studentMessages?: boolean; // For consultants
   marketingEmails: boolean;
 }
 
@@ -23,7 +23,7 @@ interface NotificationSettingsProps {
   onNotificationChange: (data: NotificationData) => void;
   onSave: () => void;
   isLoading: boolean;
-  userRole?: 'student' | 'teacher'; // Role-based configuration
+  userRole?: 'student' | 'consultant'; // Role-based configuration
 }
 
 const NotificationSettings = memo(
@@ -63,7 +63,7 @@ const NotificationSettings = memo(
           key: 'weeklyReports' as const,
           label: 'Weekly Reports',
           description:
-            userRole === 'teacher'
+            userRole === 'consultant'
               ? 'Teaching performance summaries'
               : 'Progress summaries',
         },
@@ -71,16 +71,16 @@ const NotificationSettings = memo(
 
       // Role-specific message notification
       const messageOption =
-        userRole === 'teacher'
+        userRole === 'consultant'
           ? {
               key: 'studentMessages' as const,
               label: 'Student Messages',
               description: 'Messages from your students',
             }
           : {
-              key: 'teacherMessages' as const,
-              label: 'Teacher Messages',
-              description: 'Messages from your teachers',
+              key: 'consultantMessages' as const,
+              label: 'Consultant Messages',
+              description: 'Messages from your consultants',
             };
 
       const marketingOption = {

@@ -11,7 +11,7 @@ import {
 
 export interface UseRealChatOptions {
   currentUserId: string;
-  currentUserRole: 'student' | 'teacher';
+  currentUserRole: 'student' | 'consultant';
 }
 
 export interface UseRealChatReturn {
@@ -62,7 +62,7 @@ export const useRealChat = ({
     if (!searchQuery.trim()) return chats;
     return chats.filter((chat) => {
       const searchName =
-        currentUserRole === 'student' ? chat.teacher_name : chat.student_name;
+        currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
       return searchName.toLowerCase().includes(searchQuery.toLowerCase());
     });
   }, [chats, searchQuery, currentUserRole]);
@@ -77,11 +77,11 @@ export const useRealChat = ({
     (c: BackendChat): ChatRoom => ({
       id: c.id,
       student_id: c.student_details.id,
-      teacher_id: c.teacher_details.id,
+      consultant_id: c.teacher_details.id,
       student_name: c.student_details.name,
-      teacher_name: c.teacher_details.name,
+      consultant_name: c.teacher_details.name,
       student_avatar: c.student_details.profile_picture || undefined,
-      teacher_avatar: c.teacher_details.profile_picture || undefined,
+      consultant_avatar: c.teacher_details.profile_picture || undefined,
       // last message fields are not provided in the new response
       last_message: undefined,
       last_message_timestamp: undefined,
@@ -145,7 +145,7 @@ export const useRealChat = ({
         setIsLoading(true);
         const newChat = await chatService.createChat({
           student_id: studentId,
-          teacher_id: teacherId,
+          consultant_id: teacherId,
         });
 
         // Add the new chat to the list

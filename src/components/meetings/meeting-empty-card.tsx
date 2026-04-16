@@ -11,13 +11,13 @@ import { Card, CardContent } from '@/components/ui/card';
 
 export default function MeetingEmptyCard() {
   const pathname = usePathname();
-  const isTeacher = pathname?.includes('/teacher/');
+  const isConsultant = pathname?.includes('/consultant/');
   const { filteredMeetings, activeTab } = useMeetings();
   if (filteredMeetings.length > 0) return null;
 
   const getEmptyMessage = () => {
-    if (isTeacher) {
-      // Teacher-specific messages
+    if (isConsultant) {
+      // Consultant-specific messages
       switch (activeTab) {
         case 'upcoming':
           return {
@@ -51,7 +51,7 @@ export default function MeetingEmptyCard() {
           return {
             title: 'No upcoming meetings',
             description:
-              "You don't have any upcoming meetings. Book a lesson with a teacher!",
+              "You don't have any upcoming meetings. Book a lesson with a consultant!",
             showButton: true,
           };
         case 'completed':
@@ -97,7 +97,7 @@ export default function MeetingEmptyCard() {
           {showButton && (
             <Link href={ROUTES.STUDENT.TEACHERS}>
               <Button className="h-11 rounded-xl bg-primary-500 px-12 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
-                Find Teachers
+                Find Consultants
               </Button>
             </Link>
           )}

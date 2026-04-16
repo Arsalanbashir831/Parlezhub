@@ -86,7 +86,7 @@ export default function RoleManagement() {
                 {getRoleIcon(activeRole)}
                 <div>
                   <div className="font-medium">
-                    {activeRole === 'TEACHER' ? 'Teacher' : 'Student'}
+                    {activeRole === 'TEACHER' ? 'Consultant' : 'Student'}
                   </div>
                   <div className="text-sm opacity-80">
                     {getRoleDescription(activeRole)}
@@ -148,7 +148,7 @@ export default function RoleManagement() {
                         : 'text-gray-400'
                     }`}
                   >
-                    Learn languages with AI tutors and human teachers
+                    Learn languages with AI tutors and human consultants
                   </div>
                 </div>
               </div>
@@ -161,7 +161,7 @@ export default function RoleManagement() {
               </div>
             </div>
 
-            {/* Teacher Role */}
+            {/* Consultant Role */}
             <div
               className={`flex items-center justify-between rounded-lg border p-4 ${
                 hasTeacherRole
@@ -185,7 +185,7 @@ export default function RoleManagement() {
                         : 'text-gray-500'
                     }`}
                   >
-                    Teacher
+                    Consultant
                   </div>
                   <div
                     className={`text-sm ${

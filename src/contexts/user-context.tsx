@@ -5,7 +5,7 @@ import { createContext, useContext, useEffect, useState } from 'react';
 import {
   userApi,
   type UpdateStudentProfileRequest,
-  type UpdateTeacherProfileRequest,
+  type UpdateConsultantProfileRequest,
   type UserProfile,
 } from '@/services/user';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
@@ -25,8 +25,8 @@ interface UserContextType {
   updateStudentProfile: (
     data: UpdateStudentProfileRequest
   ) => Promise<UserProfile>;
-  updateTeacherProfile: (
-    data: UpdateTeacherProfileRequest
+  updateConsultantProfile: (
+    data: UpdateConsultantProfileRequest
   ) => Promise<UserProfile>;
   isUpdatingProfile: boolean;
   uploadProfilePicture: (file: File) => Promise<{ profile_picture: string }>;
@@ -62,7 +62,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (userRole === 'STUDENT') {
         return userApi.getStudentProfile();
       } else {
-        return userApi.getTeacherProfile();
+        return userApi.getConsultantProfile();
       }
     },
     enabled: !!userRole, // Only run when role is available
@@ -113,10 +113,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  // Update teacher profile mutation
-  const updateTeacherMutation = useMutation({
-    mutationFn: (data: UpdateTeacherProfileRequest) =>
-      userApi.updateTeacherProfile(data),
+  // Update consultant profile mutation
+  const updateConsultantMutation = useMutation({
+    mutationFn: (data: UpdateConsultantProfileRequest) =>
+      userApi.updateConsultantProfile(data),
     onSuccess: (updatedProfile) => {
       // Update the user profile in the cache and local state
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
@@ -128,7 +128,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       });
     },
     onError: (error: unknown) => {
-      console.error('Failed to update teacher profile:', error);
+      console.error('Failed to update consultant profile:', error);
       const errorMessage = getErrorMessage(error, 'profile-update');
       toast.error('Profile Update Failed', {
         description: errorMessage,
@@ -202,10 +202,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return updateStudentMutation.mutateAsync(data);
   };
 
-  const updateTeacherProfile = async (
-    data: UpdateTeacherProfileRequest
+  const updateConsultantProfile = async (
+    data: UpdateConsultantProfileRequest
   ): Promise<UserProfile> => {
-    return updateTeacherMutation.mutateAsync(data);
+    return updateConsultantMutation.mutateAsync(data);
   };
 
   const uploadProfilePicture = async (file: File) => {
@@ -247,9 +247,9 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         clearUser,
         setUserRole: handleSetUserRole,
         updateStudentProfile,
-        updateTeacherProfile,
+        updateConsultantProfile,
         isUpdatingProfile:
-          updateStudentMutation.isPending || updateTeacherMutation.isPending,
+          updateStudentMutation.isPending || updateConsultantMutation.isPending,
         uploadProfilePicture,
       }}
     >

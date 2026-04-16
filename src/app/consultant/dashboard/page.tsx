@@ -4,13 +4,13 @@ import { ROUTES } from '@/constants/routes';
 
 import { useMeetings } from '@/hooks/useMeetings';
 import WelcomeSection from '@/components/common/welcome-section';
-import { TeacherMeetings, TeacherStatsCards, TeacherDashboardSkeleton } from '@/components/dashboard';
+import { ConsultantMeetings, ConsultantStatsCards, ConsultantDashboardSkeleton } from '@/components/dashboard';
 
-export default function TeacherDashboardPage() {
+export default function ConsultantDashboardPage() {
   const { meetings, isLoading } = useMeetings();
 
   if (isLoading) {
-    return <TeacherDashboardSkeleton />;
+    return <ConsultantDashboardSkeleton />;
   }
 
   return (
@@ -24,11 +24,11 @@ export default function TeacherDashboardPage() {
 
       {/* Main Content Grid */}
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Teacher Stats Cards */}
-        <TeacherStatsCards meetings={meetings} />
+        {/* Consultant Stats Cards */}
+        <ConsultantStatsCards meetings={meetings} />
 
-        {/* Teacher Sessions */}
-        <TeacherMeetings meetings={meetings} />
+        {/* Consultant Sessions */}
+        <ConsultantMeetings meetings={meetings} />
       </div>
     </div>
   );

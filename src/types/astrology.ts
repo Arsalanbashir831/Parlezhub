@@ -169,7 +169,7 @@ export interface AstrologicalInsight {
   insight_text: string;
 }
 
-export interface AstrologyTeacher {
+export interface AstrologyConsultant {
   id: string;
   first_name: string | null;
   last_name: string | null;
@@ -182,7 +182,7 @@ export interface AstrologyTeacher {
 
 export interface AstrologyAccess {
   id: number;
-  teacher: {
+  consultant: {
     id: string;
     email: string;
     full_name: string;

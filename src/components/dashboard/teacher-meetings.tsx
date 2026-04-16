@@ -11,11 +11,11 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
-interface TeacherMeetingsProps {
+interface ConsultantMeetingsProps {
   meetings: Meeting[];
 }
 
-export default function TeacherMeetings({ meetings }: TeacherMeetingsProps) {
+export default function ConsultantMeetings({ meetings }: ConsultantMeetingsProps) {
   const upcomingMeetings = meetings
     .filter((m) => m.status === 'CONFIRMED')
     .slice(0, 5)

@@ -20,7 +20,7 @@ import {
 import { Textarea } from '@/components/ui/textarea';
 
 interface ProfileSettingsProps {
-  userRole?: 'student' | 'teacher';
+  userRole?: 'student' | 'consultant';
 }
 
 const countries = [
@@ -51,7 +51,7 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
   const {
     user,
     updateStudentProfile,
-    updateTeacherProfile,
+    updateConsultantProfile,
     isUpdatingProfile,
     uploadProfilePicture,
   } = useUser();
@@ -137,8 +137,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
           country: profileData.country,
           bio: profileData.bio,
         });
-      } else if (userRole === 'teacher') {
-        await updateTeacherProfile({
+      } else if (userRole === 'consultant') {
+        await updateConsultantProfile({
           first_name: firstName,
           last_name: lastName,
           phone_number: profileData.phoneNumber,
@@ -321,8 +321,8 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
             </Select>
           </div>
 
-          {/* Teacher-specific fields */}
-          {userRole === 'teacher' && (
+          {/* Consultant-specific fields */}
+          {userRole === 'consultant' && (
             <>
               <div className="space-y-2">
                 <Label

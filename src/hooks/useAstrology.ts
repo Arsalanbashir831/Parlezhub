@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import {
   AstrologicalInsight,
   AstrologyAccess,
-  AstrologyTeacher,
+  AstrologyConsultant,
   BirthProfile,
   NakshatraPredictionResponse,
   NatalChartResponse,
@@ -19,8 +19,8 @@ export const ASTROLOGY_QUERY_KEYS = {
   NATAL_CHART: ['astrology', 'natal-chart'],
   TRANSITS: ['astrology', 'transits'],
   ACCESS_LIST: ['astrology', 'access-list'],
-  SEARCH_TEACHERS: ['astrology', 'search-teachers'],
-  SHARED_STUDENTS: ['astrology', 'teacher', 'shared-students'],
+  SEARCH_TEACHERS: ['astrology', 'search-consultants'],
+  SHARED_STUDENTS: ['astrology', 'consultant', 'shared-students'],
 };
 
 export function useBirthProfile(studentId?: string) {
@@ -163,7 +163,7 @@ export function useSearchAstrologers(searchQuery: string) {
         `${API_ROUTES.ASTROLOGY.ASTROLOGER_SEARCH}?gig_category=astrology&search=${encodeURIComponent(searchQuery)}`,
         'GET'
       );
-      return response.data as AstrologyTeacher[];
+      return response.data as AstrologyConsultant[];
     },
     enabled: searchQuery.length > 0,
   });
@@ -185,7 +185,7 @@ export function useGrantAstrologyAccess() {
   return useMutation({
     mutationFn: async (teacherId: string) => {
       const response = await apiCaller(API_ROUTES.ASTROLOGY.ACCESS, 'POST', {
-        teacher_id: teacherId,
+        consultant_id: teacherId,
       });
       return response.data;
     },
@@ -224,7 +224,7 @@ export function useRevokeAstrologyAccess() {
   });
 }
 
-export function useTeacherSharedStudents() {
+export function useConsultantSharedStudents() {
   return useQuery({
     queryKey: ASTROLOGY_QUERY_KEYS.SHARED_STUDENTS,
     queryFn: async () => {

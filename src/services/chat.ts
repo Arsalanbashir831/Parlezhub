@@ -17,11 +17,11 @@ export interface ChatMessage {
 export interface ChatRoom {
   id: string;
   student_id: string;
-  teacher_id: string;
+  consultant_id: string;
   student_name: string;
-  teacher_name: string;
+  consultant_name: string;
   student_avatar?: string;
-  teacher_avatar?: string;
+  consultant_avatar?: string;
   last_message?: string;
   last_message_timestamp?: string;
   created_at: string;
@@ -30,7 +30,7 @@ export interface ChatRoom {
 
 export interface CreateChatRequest {
   student_id: string;
-  teacher_id: string;
+  consultant_id: string;
 }
 
 export interface WebSocketMessage {

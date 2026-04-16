@@ -46,8 +46,8 @@ export const studentNav: NavItem[] = [
     href: ROUTES.AGENT.LANGUAGE,
   },
   {
-    id: 'teachers',
-    label: 'Teachers',
+    id: 'consultants',
+    label: 'Consultants',
     icon: Users,
     href: ROUTES.STUDENT.TEACHERS,
   },
@@ -98,7 +98,7 @@ export const studentNav: NavItem[] = [
   },
 ];
 
-export const teacherNav: NavItem[] = [
+export const consultantNav: NavItem[] = [
   {
     id: 'dashboard',
     label: 'Dashboard',

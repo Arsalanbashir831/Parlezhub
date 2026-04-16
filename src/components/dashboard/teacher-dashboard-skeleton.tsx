@@ -2,7 +2,7 @@
 
 import { Card, CardContent } from '@/components/ui/card';
 
-export default function TeacherDashboardSkeleton() {
+export default function ConsultantDashboardSkeleton() {
   return (
     <div className="space-y-8 animate-in fade-in duration-500">
       {/* Welcome Section Skeleton */}

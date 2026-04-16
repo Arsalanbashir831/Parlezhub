@@ -5,13 +5,13 @@ import { CalendarIcon, TrendingUp } from 'lucide-react';
 import { Meeting } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
 
-interface TeacherStatsCardsProps {
+interface ConsultantStatsCardsProps {
   meetings: Meeting[];
 }
 
-export default function TeacherStatsCards({
+export default function ConsultantStatsCards({
   meetings,
-}: TeacherStatsCardsProps) {
+}: ConsultantStatsCardsProps) {
   const activeStudents = [...new Set(meetings.map(m => m.studentName))].length;
   const completedCount = meetings.filter(m => m.status === 'CONFIRMED').length;
 

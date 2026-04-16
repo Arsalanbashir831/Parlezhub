@@ -8,7 +8,7 @@ import {
   getServiceTypeLabel,
 } from '@/lib/service-utils';
 import { cn } from '@/lib/utils';
-import { ServiceCardData } from '@/hooks/useTeachers';
+import { ServiceCardData } from '@/hooks/useConsultants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent } from '@/components/ui/card';
@@ -20,7 +20,7 @@ interface ServiceCardProps {
 
 export const ServiceCard = React.memo<ServiceCardProps>(
   ({ serviceCard, onSelectService }) => {
-    const { service, teacherName, teacherAvatar, teacherLocation } =
+    const { service, consultantName, consultantAvatar, consultantLocation } =
       serviceCard;
 
     const handleSelectService = React.useCallback(() => {
@@ -36,16 +36,16 @@ export const ServiceCard = React.memo<ServiceCardProps>(
         <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500 opacity-0 shadow-[2px_0_15px_rgba(212,175,55,0.4)] transition-opacity duration-300 group-hover:opacity-100" />
 
         <CardContent className="relative z-10 p-6">
-          {/* Teacher Info */}
+          {/* Consultant Info */}
           <div className="mb-6 flex items-center justify-between">
             <div className="flex items-center gap-4">
               <div className="relative">
                 <Avatar className="h-14 w-14 border-2 border-primary-500/20 shadow-2xl shadow-primary-500/10 transition-colors group-hover:border-primary-500">
                   <AvatarImage
-                    src={teacherAvatar || '/placeholders/avatar.jpg'}
+                    src={consultantAvatar || '/placeholders/avatar.jpg'}
                   />
                   <AvatarFallback className="bg-primary-500/10 font-bold text-primary-500">
-                    {teacherName
+                    {consultantName
                       .split(' ')
                       .map((n) => n[0])
                       .join('')}
@@ -55,12 +55,12 @@ export const ServiceCard = React.memo<ServiceCardProps>(
               </div>
               <div className="min-w-0 flex-1">
                 <h3 className="truncate font-serif text-base font-bold tracking-tight text-white transition-colors group-hover:text-primary-300">
-                  {teacherName}
+                  {consultantName}
                 </h3>
                 <div className="mt-1 flex items-center gap-2 text-[10px] font-bold uppercase tracking-widest text-primary-100/40 transition-colors group-hover:text-primary-100/60">
                   <MapPin className="h-3.5 w-3.5 text-primary-500/40" />
                   <span className="truncate">
-                    {teacherLocation || 'CITIZEN OF EARTH'}
+                    {consultantLocation || 'CITIZEN OF EARTH'}
                   </span>
                 </div>
               </div>

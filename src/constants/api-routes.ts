@@ -9,7 +9,7 @@ export const API_ROUTES = {
     GOOGLE_INITIATE: '/auth/google/initiate/',
     GOOGLE_CALLBACK: '/auth/google/callback/',
     ME: '/accounts/profiles/me/roles/',
-    BECOME_TEACHER: '/accounts/become-teacher/',
+    BECOME_TEACHER: '/accounts/become-consultant/',
     BECOME_STUDENT: '/accounts/become-student/',
   },
   STUDENT: {
@@ -18,7 +18,7 @@ export const API_ROUTES = {
     REFUND_BOOKING: '/payments/refund/request/',
   },
   TEACHER: {
-    UPDATE_PROFILE: '/accounts/teachers/my-profile/',
+    UPDATE_PROFILE: '/accounts/consultants/my-profile/',
     CREATE_SERVICE: '/accounts/gigs/',
     GET_YOUR_SERVICES: '/accounts/gigs/',
     GET_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
@@ -36,11 +36,11 @@ export const API_ROUTES = {
       `/bookings/bookings/${bookingId}/reschedule/`,
     REFUND_BOOKING: '/payments/refund/request/',
     // Blogs
-    BLOGS: '/blogs/teacher/blogs/',
-    BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
-    CREATE_BLOG: '/blogs/teacher/blogs/',
-    UPDATE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
-    DELETE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
+    BLOGS: '/blogs/consultant/blogs/',
+    BLOG_DETAIL: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
+    CREATE_BLOG: '/blogs/consultant/blogs/',
+    UPDATE_BLOG: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
+    DELETE_BLOG: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
@@ -49,7 +49,7 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
     GET_TEACHER_AVAILABILITY: (teacherId: string) =>
-      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
+      `/bookings/availability/weekly/?consultant_id=${teacherId}`,
     SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {
@@ -73,8 +73,8 @@ export const API_ROUTES = {
     NAKSHATRA_PREDICTIONS: '/astrology/nakshatra-predictions/',
     INSIGHTS: '/astrology/insights',
     ACCESS: '/astrology/access/',
-    ASTROLOGER_SEARCH: '/accounts/teachers/',
-    TEACHER_STUDENTS: '/astrology/teacher/students/',
+    ASTROLOGER_SEARCH: '/accounts/consultants/',
+    TEACHER_STUDENTS: '/astrology/consultant/students/',
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
   },
 };

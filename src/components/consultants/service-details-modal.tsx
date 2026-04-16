@@ -12,7 +12,7 @@ import {
 } from 'lucide-react';
 
 import { getServiceTypeLabel } from '@/lib/service-utils';
-import { ServiceCardData } from '@/hooks/useTeachers';
+import { ServiceCardData } from '@/hooks/useConsultants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -40,12 +40,12 @@ export function ServiceDetailsModal({
 
   const {
     service,
-    teacherName,
-    teacherAvatar,
-    teacherQualification,
-    teacherExperience,
-    teacherBio,
-    teacherLocation,
+    consultantName,
+    consultantAvatar,
+    consultantQualification,
+    consultantExperience,
+    consultantBio,
+    consultantLocation,
   } = serviceCard;
 
   return (
@@ -73,18 +73,18 @@ export function ServiceDetailsModal({
         </DialogHeader>
 
         <div className="space-y-8 px-6 pb-6">
-          {/* Teacher Information */}
+          {/* Consultant Information */}
           <div className="rounded-2xl border border-primary-500/10 bg-white/5 p-4 backdrop-blur-sm sm:p-6">
             <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-primary-300">
-              About the Teacher
+              About the Consultant
             </h3>
             <div className="flex flex-col items-start gap-4 sm:flex-row sm:items-center">
               <Avatar className="h-16 w-16 shrink-0 border-2 border-primary-500/20">
                 <AvatarImage
-                  src={teacherAvatar || '/placeholders/avatar.jpg'}
+                  src={consultantAvatar || '/placeholders/avatar.jpg'}
                 />
                 <AvatarFallback className="bg-primary-500/10 text-lg text-primary-300">
-                  {teacherName
+                  {consultantName
                     .split(' ')
                     .map((n) => n[0])
                     .join('')}
@@ -93,33 +93,33 @@ export function ServiceDetailsModal({
               <div className="min-w-0 flex-1 space-y-2">
                 <div>
                   <h4 className="truncate text-lg font-bold text-white sm:whitespace-normal">
-                    {teacherName}
+                    {consultantName}
                   </h4>
-                  {teacherQualification && (
+                  {consultantQualification && (
                     <p className="line-clamp-2 text-sm text-primary-400">
-                      {teacherQualification}
+                      {consultantQualification}
                     </p>
                   )}
                 </div>
                 <div className="flex flex-wrap items-center gap-3 text-[10px] font-bold uppercase tracking-widest text-primary-100/50">
-                  {teacherLocation && (
+                  {consultantLocation && (
                     <div className="flex items-center gap-1.5 brightness-150 grayscale">
                       <MapPin className="h-3.5 w-3.5" />
-                      <span>{teacherLocation}</span>
+                      <span>{consultantLocation}</span>
                     </div>
                   )}
-                  {teacherExperience > 0 && (
+                  {consultantExperience > 0 && (
                     <div className="flex items-center gap-1.5">
                       <User className="h-3.5 w-3.5" />
-                      <span>{teacherExperience}+ yrs exp</span>
+                      <span>{consultantExperience}+ yrs exp</span>
                     </div>
                   )}
                 </div>
               </div>
             </div>
-            {teacherBio && (
+            {consultantBio && (
               <p className="mt-4 break-words text-sm leading-relaxed text-primary-100/80">
-                {teacherBio}
+                {consultantBio}
               </p>
             )}
           </div>

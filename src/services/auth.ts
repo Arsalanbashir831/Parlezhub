@@ -88,7 +88,7 @@ export interface StudentProfile {
   learning_language: string;
 }
 
-export interface TeacherProfile {
+export interface ConsultantProfile {
   id: string;
   email: string;
   first_name: string;
@@ -96,8 +96,8 @@ export interface TeacherProfile {
   phone_number: string | null;
   gender: string | null;
   date_of_birth: string | null;
-  role: 'STUDENT'; // Note: role might still be STUDENT even with teacher profile
-  has_teacher: boolean;
+  role: 'STUDENT'; // Note: role might still be STUDENT even with consultant profile
+  has_consultant: boolean;
   has_student: boolean;
   profile_picture: string | null;
   created_at: string;
@@ -115,8 +115,8 @@ export interface TeacherProfile {
 }
 
 export interface UnifiedProfileResponse {
-  has_teacher: boolean;
-  teacher_profile: TeacherProfile | null;
+  has_consultant: boolean;
+  consultant_profile: ConsultantProfile | null;
   has_student: boolean;
   student_profile: StudentProfile | null;
 }
@@ -162,7 +162,7 @@ export interface GoogleCallbackResponse {
 export interface BecomeRoleResponse {
   message: string;
   created: boolean;
-  profile: StudentProfile | TeacherProfile;
+  profile: StudentProfile | ConsultantProfile;
 }
 
 export const authApi = {
@@ -262,7 +262,7 @@ export const authApi = {
     return response.data;
   },
 
-  becomeTeacher: async (): Promise<BecomeRoleResponse> => {
+  becomeConsultant: async (): Promise<BecomeRoleResponse> => {
     const response = await apiCaller(
       API_ROUTES.AUTH.BECOME_TEACHER,
       'POST',

@@ -16,7 +16,7 @@ import {
   SettingsHeader,
 } from '@/components/settings';
 
-export default function TeacherSettingsPage() {
+export default function ConsultantSettingsPage() {
   const { user } = useUser();
   const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [savingAvailability, setSavingAvailability] = useState(false);
@@ -80,7 +80,7 @@ export default function TeacherSettingsPage() {
         {/* Profile Settings */}
         <div className="space-y-8 lg:col-span-2">
           {/* Profile Information */}
-          <ProfileSettings userRole="teacher" />
+          <ProfileSettings userRole="consultant" />
 
           {/* Availability Calendar */}
           <AvailabilityCalendar
@@ -146,13 +146,13 @@ export default function TeacherSettingsPage() {
               sessionReminders: false,
               weeklyReports: false,
               marketingEmails: false,
-              teacherMessages: false,
+              consultantMessages: false,
               studentMessages: false,
             }}
             onNotificationChange={() => {}}
             onSave={async () => {}}
             isLoading={false}
-            userRole="teacher"
+            userRole="consultant"
           /> */}
         </div>
       </div>

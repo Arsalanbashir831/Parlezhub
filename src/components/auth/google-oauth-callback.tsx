@@ -302,17 +302,17 @@ export function GoogleOAuthCallback() {
                   <div className="flex-1">
                     <div className="font-medium">Student</div>
                     <p className="text-sm text-primary-600">
-                      I want to learn languages and book sessions with teachers
+                      I want to learn languages and book sessions with consultants
                     </p>
                   </div>
                 </Label>
                 <Label
-                  htmlFor="teacher"
+                  htmlFor="consultant"
                   className="flex cursor-pointer items-center space-x-3 rounded-lg border border-primary-500/50 p-4 hover:bg-primary-500/5"
                 >
-                  <RadioGroupItem value="TEACHER" id="teacher" />
+                  <RadioGroupItem value="TEACHER" id="consultant" />
                   <div className="flex-1">
-                    <div className="font-medium">Teacher</div>
+                    <div className="font-medium">Consultant</div>
                     <p className="text-sm text-primary-600">
                       I want to teach languages and offer sessions to students
                     </p>

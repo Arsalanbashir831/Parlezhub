@@ -24,7 +24,7 @@ export interface UserProfile {
   status?: string;
   native_language?: string;
   learning_language?: string;
-  // Teacher specific fields
+  // Consultant specific fields
   qualification?: string;
   experience_years?: number;
   certificates?: string[];
@@ -46,7 +46,7 @@ export interface UpdateStudentProfileRequest {
   learning_language?: string;
 }
 
-export interface UpdateTeacherProfileRequest {
+export interface UpdateConsultantProfileRequest {
   first_name?: string;
   last_name?: string;
   phone_number?: string;
@@ -117,7 +117,7 @@ const mapProfileToUserProfile = (
   status: profile.status || undefined,
   native_language: profile.native_language || undefined,
   learning_language: profile.learning_language || undefined,
-  // Teacher-specific fields
+  // Consultant-specific fields
   qualification: profile.qualification || undefined,
   experience_years: profile.experience_years || undefined,
   certificates: profile.certificates || undefined,
@@ -138,12 +138,12 @@ export const userApi = {
     return mapProfileToUserProfile(unifiedProfile.student_profile, 'STUDENT');
   },
 
-  getTeacherProfile: async (): Promise<UserProfile> => {
+  getConsultantProfile: async (): Promise<UserProfile> => {
     const unifiedProfile = await authApi.getUnifiedProfile();
-    if (!unifiedProfile.has_teacher || !unifiedProfile.teacher_profile) {
-      throw new Error('Teacher profile not found');
+    if (!unifiedProfile.has_consultant || !unifiedProfile.consultant_profile) {
+      throw new Error('Consultant profile not found');
     }
-    return mapProfileToUserProfile(unifiedProfile.teacher_profile, 'TEACHER');
+    return mapProfileToUserProfile(unifiedProfile.consultant_profile, 'TEACHER');
   },
 
   updateStudentProfile: async (
@@ -160,8 +160,8 @@ export const userApi = {
     return response.data.profile;
   },
 
-  updateTeacherProfile: async (
-    data: UpdateTeacherProfileRequest
+  updateConsultantProfile: async (
+    data: UpdateConsultantProfileRequest
   ): Promise<UserProfile> => {
     const response = await apiCaller(
       API_ROUTES.TEACHER.UPDATE_PROFILE,

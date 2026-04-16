@@ -52,11 +52,11 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
 
                 <Avatar className="h-12 w-12 border-2 border-primary-500/20 transition-colors group-hover:border-primary-500">
                   <AvatarImage
-                    src={meeting.teacherAvatar || '/placeholders/avatar.jpg'}
+                    src={meeting.consultantAvatar || '/placeholders/avatar.jpg'}
                   />
                   <AvatarFallback className="bg-primary-500/10 font-bold text-primary-500">
-                    {meeting.teacherName
-                      ? meeting.teacherName
+                    {meeting.consultantName
+                      ? meeting.consultantName
                           .split(' ')
                           .map((n) => n[0])
                           .join('')
@@ -69,7 +69,7 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
                   </p>
                   <div className="mt-0.5 flex items-center gap-2">
                     <p className="text-[10px] font-extrabold uppercase tracking-widest text-primary-400">
-                      WITH {meeting.teacherName || 'TEACHER'}
+                      WITH {meeting.consultantName || 'TEACHER'}
                     </p>
                     <span className="text-[10px] text-primary-500/20">•</span>
                     <p className="text-[10px] font-bold uppercase tracking-widest text-primary-100/30 transition-colors group-hover:text-primary-100/40">

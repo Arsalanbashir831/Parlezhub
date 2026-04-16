@@ -41,7 +41,7 @@ export default function ChatPage() {
     filteredChats,
   } = useRealChat({
     currentUserId: user?.id || '',
-    currentUserRole: 'teacher',
+    currentUserRole: 'consultant',
   });
 
   const handleBookCall = useCallback(() => {
@@ -115,7 +115,7 @@ export default function ChatPage() {
                   chats={filteredChats}
                   selectedChatId={selectedChat?.id || ''}
                   searchQuery={searchQuery}
-                  currentUserRole="teacher"
+                  currentUserRole="consultant"
                   onSearchChange={setSearchQuery}
                   onChatSelect={handleChatSelect}
                 />
@@ -129,7 +129,7 @@ export default function ChatPage() {
                   {/* Chat Header */}
                   <RealChatHeader
                     chat={selectedChat}
-                    currentUserRole="teacher"
+                    currentUserRole="consultant"
                     isConnected={isConnected}
                     isTyping={isTyping}
                     onBookCall={handleBookCall}
@@ -174,7 +174,7 @@ export default function ChatPage() {
 
       {/* Booking Dialog */}
       <BookingDialog
-        teacherId={selectedChat?.teacher_id}
+        teacherId={selectedChat?.consultant_id}
         isOpen={isBookingDialogOpen}
         onClose={handleBookingDialogClose}
       />

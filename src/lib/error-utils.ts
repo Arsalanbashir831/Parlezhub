@@ -150,7 +150,7 @@ export const getErrorMessage = (error: unknown, context?: string): string => {
     'service-status-update':
       'Failed to update service status. Please try again.',
     'fetch-services': 'Failed to load services. Please try again.',
-    'fetch-public-services': 'Failed to load teachers. Please try again.',
+    'fetch-public-services': 'Failed to load consultants. Please try again.',
     'resend-verification-email':
       'Failed to resend verification email. Please try again.',
   };

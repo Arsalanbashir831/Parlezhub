@@ -163,7 +163,7 @@ const InsightView: React.FC<InsightViewProps> = ({
             )}
           </div>
 
-          {/* AI Chat Section - Only visible for the user, not for teachers viewing a student */}
+          {/* AI Chat Section - Only visible for the user, not for consultants viewing a student */}
           {!isLoading && !isError && data && !studentId && (
             <div ref={chatSectionRef} className="scroll-mt-10">
               <div className="mx-auto max-w-4xl px-2">

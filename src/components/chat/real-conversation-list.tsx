@@ -13,7 +13,7 @@ interface RealConversationListProps {
   chats: ChatRoom[];
   selectedChatId: string;
   searchQuery: string;
-  currentUserRole: 'student' | 'teacher';
+  currentUserRole: 'student' | 'consultant';
   onSearchChange: (query: string) => void;
   onChatSelect: (chat: ChatRoom) => void;
 }
@@ -30,7 +30,7 @@ const RealConversationList = memo(
     const filteredChats = useMemo(() => {
       return chats.filter((chat) => {
         const searchName =
-          currentUserRole === 'student' ? chat.teacher_name : chat.student_name;
+          currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
         return searchName?.toLowerCase().includes(searchQuery.toLowerCase());
       });
     }, [chats, searchQuery, currentUserRole]);
@@ -64,7 +64,7 @@ const RealConversationList = memo(
                   </p>
                   <p className="mt-1 text-[10px] uppercase tracking-wider text-primary-100/40">
                     {currentUserRole === 'student'
-                      ? 'Start a conversation with a teacher from their service details'
+                      ? 'Start a conversation with a consultant from their service details'
                       : 'Students will start conversations with you'}
                   </p>
                 </div>

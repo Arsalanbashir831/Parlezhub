@@ -15,7 +15,7 @@ import {
 import { toast } from 'sonner';
 
 import { getServiceTypeLabel } from '@/lib/service-utils';
-import { ServiceCardData } from '@/hooks/useTeachers';
+import { ServiceCardData } from '@/hooks/useConsultants';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
@@ -46,12 +46,12 @@ export function ServiceDetailsDrawer({
 
   const {
     service,
-    teacherName,
-    teacherAvatar,
-    teacherQualification,
-    teacherExperience,
-    teacherBio,
-    teacherLocation,
+    consultantName,
+    consultantAvatar,
+    consultantQualification,
+    consultantExperience,
+    consultantBio,
+    consultantLocation,
   } = serviceCard;
 
   const handleStartChat = async () => {
@@ -61,14 +61,14 @@ export function ServiceDetailsDrawer({
     }
 
     try {
-      // Create a new chat with the teacher
+      // Create a new chat with the consultant
       const newChat = await chatService.createChat({
         student_id: user.id,
-        teacher_id: service.teacherId,
+        consultant_id: service.teacherId,
       });
 
       if (newChat) {
-        toast.success(`Chat started with ${teacherName}`);
+        toast.success(`Chat started with ${consultantName}`);
         // Navigate to the chat page with chatId param
         router.push(`${ROUTES.STUDENT.CHAT}?chatId=${newChat.id}`);
         onClose();
@@ -104,18 +104,18 @@ export function ServiceDetailsDrawer({
         </SheetHeader>
 
         <div className="space-y-6 px-2 py-6">
-          {/* Teacher Information */}
+          {/* Consultant Information */}
           <div className="rounded-2xl border border-primary-500/10 bg-white/5 p-6 backdrop-blur-sm">
             <h3 className="mb-4 text-xs font-bold uppercase tracking-widest text-primary-300">
-              About the Teacher
+              About the Consultant
             </h3>
             <div className="flex items-start gap-4">
               <Avatar className="h-16 w-16">
                 <AvatarImage
-                  src={teacherAvatar || '/placeholders/avatar.jpg'}
+                  src={consultantAvatar || '/placeholders/avatar.jpg'}
                 />
                 <AvatarFallback className="bg-primary-500/20 text-lg text-primary-300">
-                  {teacherName
+                  {consultantName
                     .split(' ')
                     .map((n) => n[0])
                     .join('')}
@@ -124,31 +124,31 @@ export function ServiceDetailsDrawer({
               <div className="flex-1 space-y-3">
                 <div>
                   <h4 className="text-lg font-bold text-white">
-                    {teacherName}
+                    {consultantName}
                   </h4>
-                  {teacherQualification && (
+                  {consultantQualification && (
                     <p className="text-sm text-primary-400">
-                      {teacherQualification}
+                      {consultantQualification}
                     </p>
                   )}
                 </div>
                 <div className="flex items-center gap-4 text-xs font-medium uppercase tracking-wider text-primary-100/60">
-                  {teacherLocation && (
+                  {consultantLocation && (
                     <div className="flex items-center gap-1.5">
                       <MapPin className="h-3.5 w-3.5 text-primary-500/70" />
-                      <span>{teacherLocation}</span>
+                      <span>{consultantLocation}</span>
                     </div>
                   )}
-                  {teacherExperience > 0 && (
+                  {consultantExperience > 0 && (
                     <div className="flex items-center gap-1.5">
                       <User className="h-3.5 w-3.5 text-primary-500/70" />
-                      <span>{teacherExperience}+ yrs exp</span>
+                      <span>{consultantExperience}+ yrs exp</span>
                     </div>
                   )}
                 </div>
-                {teacherBio && (
+                {consultantBio && (
                   <p className="text-sm leading-relaxed text-primary-100/80">
-                    {teacherBio}
+                    {consultantBio}
                   </p>
                 )}
               </div>
@@ -259,7 +259,7 @@ export function ServiceDetailsDrawer({
               onClick={handleStartChat}
               className="bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
             >
-              Chat with {teacherName}
+              Chat with {consultantName}
             </Button>
           </div>
         </div>

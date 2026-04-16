@@ -50,7 +50,7 @@ export interface PaymentResponse {
   booking_details: {
     start_time: string;
     end_time: string;
-    teacher_name: string;
+    consultant_name: string;
     gig_title: string;
   };
 }

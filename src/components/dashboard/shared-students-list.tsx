@@ -5,14 +5,14 @@ import Link from 'next/link';
 import { ExternalLink, Search, Star, UserCheck, UserX } from 'lucide-react';
 
 import { SharedStudentAccess } from '@/types/astrology';
-import { useTeacherSharedStudents } from '@/hooks/useAstrology';
+import { useConsultantSharedStudents } from '@/hooks/useAstrology';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 
 export function SharedStudentsList() {
-  const { data: students, isLoading } = useTeacherSharedStudents();
+  const { data: students, isLoading } = useConsultantSharedStudents();
   const [searchQuery, setSearchQuery] = useState('');
 
   if (isLoading) {

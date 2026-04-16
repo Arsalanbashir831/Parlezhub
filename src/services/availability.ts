@@ -38,7 +38,7 @@ export const availabilityService = {
     return response.data;
   },
 
-  // Get teacher weekly availability
+  // Get consultant weekly availability
   getWeekly: async (teacherId: string): Promise<ApiAvailabilityItem[]> => {
     const response = await apiCaller(
       API_ROUTES.PUBLIC.GET_TEACHER_AVAILABILITY(teacherId),
@@ -90,7 +90,7 @@ export const availabilityService = {
 };
 
 export interface CreateBookingRequest {
-  teacher: string; // teacher_id
+  consultant: string; // consultant_id
   gig: number; // service/gig id
   start_time: string; // ISO string with Z
   end_time: string; // ISO string with Z
@@ -101,7 +101,7 @@ export interface CreateBookingRequest {
 export interface BookingResponse {
   id: number;
   student_name: string;
-  teacher_name: string;
+  consultant_name: string;
   duration_hours: string;
   start_time: string;
   end_time: string;
@@ -117,7 +117,7 @@ export interface BookingResponse {
   notes?: string;
   cancellation_reason?: string;
   student: string;
-  teacher: string;
+  consultant: string;
   gig: number;
 }
 

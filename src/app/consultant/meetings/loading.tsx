@@ -1,7 +1,7 @@
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 
-export default function TeacherMessagesLoading() {
+export default function ConsultantMessagesLoading() {
   return (
     <div className="flex h-[calc(100vh-8rem)] flex-col gap-6 lg:flex-row">
       {/* Conversations List Skeleton */}

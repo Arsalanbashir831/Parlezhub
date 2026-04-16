@@ -63,7 +63,7 @@ export function RoleSwitcher({
   };
 
   const getRoleLabel = (role: 'TEACHER' | 'STUDENT') => {
-    return role === 'TEACHER' ? 'Teacher' : 'Student';
+    return role === 'TEACHER' ? 'Consultant' : 'Student';
   };
 
   const getRoleColor = (role: 'TEACHER' | 'STUDENT') => {
@@ -116,7 +116,7 @@ export function RoleSwitcher({
             className="gap-2"
           >
             <Users className="h-4 w-4" />
-            <span>Teacher</span>
+            <span>Consultant</span>
             {activeRole === 'TEACHER' && <Check className="ml-auto h-4 w-4" />}
           </DropdownMenuItem>
         )}

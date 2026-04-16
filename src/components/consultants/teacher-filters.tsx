@@ -16,7 +16,7 @@ import {
 } from '@/components/ui/select';
 import { Slider } from '@/components/ui/slider';
 
-interface TeacherFiltersProps {
+interface ConsultantFiltersProps {
   searchQuery: string;
   selectedLanguage: string;
   priceRange: number[];
@@ -30,7 +30,7 @@ interface TeacherFiltersProps {
   onClearFilters: () => void;
 }
 
-export const TeacherFilters = React.memo<TeacherFiltersProps>(
+export const ConsultantFilters = React.memo<ConsultantFiltersProps>(
   ({
     searchQuery,
     selectedLanguage,
@@ -70,7 +70,7 @@ export const TeacherFilters = React.memo<TeacherFiltersProps>(
                 Filters
               </Button>
               <p className="text-sm text-primary-100">
-                {resultsCount} teachers found
+                {resultsCount} consultants found
               </p>
             </div>
 
@@ -133,4 +133,4 @@ export const TeacherFilters = React.memo<TeacherFiltersProps>(
   }
 );
 
-TeacherFilters.displayName = 'TeacherFilters';
+ConsultantFilters.displayName = 'ConsultantFilters';

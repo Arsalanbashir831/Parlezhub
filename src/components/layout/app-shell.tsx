@@ -21,7 +21,7 @@ import { AppSidebar } from './app-sidebar';
 interface AppShellProps {
   children: React.ReactNode;
   nav: NavItem[];
-  roleLabel?: string; // e.g., "Teacher" | "Student"
+  roleLabel?: string; // e.g., "Consultant" | "Student"
 }
 
 export const AppShell: React.FC<AppShellProps> = ({

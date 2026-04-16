@@ -63,7 +63,7 @@ export default function SignupPage() {
       {
         username: data.full_name,
         email: data.email,
-        role: data.role.toLowerCase() as 'student' | 'teacher',
+        role: data.role.toLowerCase() as 'student' | 'consultant',
       },
       data.password
     );
@@ -109,7 +109,7 @@ export default function SignupPage() {
                 {...register('role')}
                 className="text-primary-600 focus:ring-primary-500"
               />
-              <span className="text-sm">Teacher</span>
+              <span className="text-sm">Consultant</span>
             </label>
           </div>
           {errors.role && (

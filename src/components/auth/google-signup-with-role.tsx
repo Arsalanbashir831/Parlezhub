@@ -85,14 +85,14 @@ export function GoogleSignupWithRole({
             <Label htmlFor="student" className="flex-1 cursor-pointer">
               <div className="font-medium">Student</div>
               <div className="text-sm text-gray-500">
-                Learn languages with AI tutors and connect with teachers
+                Learn languages with AI tutors and connect with consultants
               </div>
             </Label>
           </div>
           <div className="flex items-center space-x-3 rounded-lg border p-3 hover:bg-gray-50">
-            <RadioGroupItem value="TEACHER" id="teacher" />
-            <Label htmlFor="teacher" className="flex-1 cursor-pointer">
-              <div className="font-medium">Teacher</div>
+            <RadioGroupItem value="TEACHER" id="consultant" />
+            <Label htmlFor="consultant" className="flex-1 cursor-pointer">
+              <div className="font-medium">Consultant</div>
               <div className="text-sm text-gray-500">
                 Teach languages, create services, and manage students
               </div>

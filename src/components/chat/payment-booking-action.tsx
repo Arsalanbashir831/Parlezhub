@@ -26,7 +26,7 @@ export default function PaymentBookingAction({
 
     // Send locally for immediate feedback
     chatService.appendLocal(simpleSuccessMessage, user?.id);
-    // Also send via socket to notify the teacher
+    // Also send via socket to notify the consultant
     if (chatService.isConnected()) {
       chatService.sendMessage(simpleSuccessMessage);
     }

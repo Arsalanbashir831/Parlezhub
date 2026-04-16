@@ -3,7 +3,7 @@
 import React, { useState } from 'react';
 import { ChevronLeft, Loader2, Search, Trash2, UserPlus } from 'lucide-react';
 
-import { AstrologyAccess, AstrologyTeacher } from '@/types/astrology';
+import { AstrologyAccess, AstrologyConsultant } from '@/types/astrology';
 import { useDebounce } from '@/hooks/use-debounce';
 import {
   useAstrologyAccessList,
@@ -44,7 +44,7 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
   const isAlreadyGranted = (teacherId: string) => {
     if (!accessList) return false;
     return accessList.some(
-      (access: AstrologyAccess) => access.teacher.id === teacherId
+      (access: AstrologyAccess) => access.consultant.id === teacherId
     );
   };
 
@@ -108,30 +108,30 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
                   </div>
                 ) : (
                   <div className="flex max-h-[400px] flex-col divide-y divide-primary-500/10 overflow-y-auto">
-                    {searchResults.map((teacher: AstrologyTeacher) => {
-                      const granted = isAlreadyGranted(teacher.id);
+                    {searchResults.map((consultant: AstrologyConsultant) => {
+                      const granted = isAlreadyGranted(consultant.id);
                       return (
                         <div
-                          key={teacher.id}
+                          key={consultant.id}
                           className="flex items-center justify-between gap-4 p-4 px-6 transition-colors hover:bg-primary-500/5"
                         >
                           <div className="flex min-w-0 items-center gap-4">
                             <Avatar className="h-10 w-10 border-2 border-primary-500/20">
                               <AvatarImage
-                                src={teacher.profile_picture || ''}
+                                src={consultant.profile_picture || ''}
                               />
                               <AvatarFallback className="bg-primary-500/10 font-medium text-primary-300">
-                                {(teacher.first_name || 'A')[0].toUpperCase()}
+                                {(consultant.first_name || 'A')[0].toUpperCase()}
                               </AvatarFallback>
                             </Avatar>
                             <div className="flex min-w-0 flex-col">
                               <p className="truncate font-medium text-primary-100">
-                                {teacher.first_name || 'Astrologer'}{' '}
-                                {teacher.last_name || ''}
+                                {consultant.first_name || 'Astrologer'}{' '}
+                                {consultant.last_name || ''}
                               </p>
-                              {teacher.experience_years > 0 && (
+                              {consultant.experience_years > 0 && (
                                 <p className="truncate text-xs text-primary-500/60">
-                                  {teacher.experience_years} years experience
+                                  {consultant.experience_years} years experience
                                 </p>
                               )}
                             </div>
@@ -139,7 +139,7 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
                           <Button
                             variant={granted ? 'secondary' : 'default'}
                             size="sm"
-                            onClick={() => handleGrant(teacher.id)}
+                            onClick={() => handleGrant(consultant.id)}
                             disabled={isGranting || granted}
                             className={
                               granted
@@ -197,21 +197,21 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
               <div className="flex flex-col divide-y divide-primary-500/10">
                 {accessList.map((access: AstrologyAccess) => (
                   <div
-                    key={access.teacher.id}
+                    key={access.consultant.id}
                     className="flex items-center justify-between gap-4 p-4 px-6 transition-colors hover:bg-white/5"
                   >
                     <div className="flex min-w-0 items-center gap-4">
                       <Avatar className="h-10 w-10 border-2 border-primary-500/20">
                         <AvatarImage
-                          src={access.teacher.profile_picture || ''}
+                          src={access.consultant.profile_picture || ''}
                         />
                         <AvatarFallback className="bg-primary-500/10 font-medium text-primary-300">
-                          {(access.teacher.full_name || 'A')[0].toUpperCase()}
+                          {(access.consultant.full_name || 'A')[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex min-w-0 flex-col">
                         <p className="truncate font-medium text-primary-100">
-                          {access.teacher.full_name || 'Astrologer'}
+                          {access.consultant.full_name || 'Astrologer'}
                         </p>
                         <p className="truncate text-xs text-primary-500/60">
                           Granted on{' '}
@@ -222,7 +222,7 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRevoke(access.teacher.id)}
+                      onClick={() => handleRevoke(access.consultant.id)}
                       disabled={isRevoking}
                       className="shrink-0 font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300"
                     >

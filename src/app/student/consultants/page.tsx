@@ -1,7 +1,7 @@
 'use client';
 
 import { useIsMobile } from '@/hooks/use-mobile';
-import { useTeachers } from '@/hooks/useTeachers';
+import { useConsultants } from '@/hooks/useConsultants';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -9,12 +9,12 @@ import {
   ServiceDetailsDrawer,
   ServiceDetailsModal,
   ServicesGrid,
-  TeacherFilters,
-  TeachersEmptyState,
-  TeachersHeader,
-} from '@/components/teachers';
+  ConsultantFilters,
+  ConsultantsEmptyState,
+  ConsultantsHeader,
+} from '@/components/consultants';
 
-export default function TeachersPage() {
+export default function ConsultantsPage() {
   const {
     services,
     availableLanguages,
@@ -33,18 +33,18 @@ export default function TeachersPage() {
     handleClearFilters,
     handleSelectService,
     handleCloseDetailsPanel,
-    refreshTeachers,
-  } = useTeachers();
+    refreshConsultants,
+  } = useConsultants();
   const isMobile = useIsMobile();
 
   if (error) {
     return (
       <div className="space-y-8">
-        <TeachersHeader />
+        <ConsultantsHeader />
         <Card>
           <CardContent className="py-12 text-center">
             <p className="mb-4 text-red-600">Error loading services: {error}</p>
-            <Button onClick={refreshTeachers}>Try Again</Button>
+            <Button onClick={refreshConsultants}>Try Again</Button>
           </CardContent>
         </Card>
       </div>
@@ -54,7 +54,7 @@ export default function TeachersPage() {
   if (isLoading) {
     return (
       <div className="space-y-8">
-        <TeachersHeader />
+        <ConsultantsHeader />
         <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3">
           {[...Array(6)].map((_, i) => (
             <Card key={i} className="overflow-hidden">
@@ -86,9 +86,9 @@ export default function TeachersPage() {
 
   return (
     <div className="space-y-8">
-      <TeachersHeader />
+      <ConsultantsHeader />
 
-      <TeacherFilters
+      <ConsultantFilters
         searchQuery={searchQuery}
         selectedLanguage={selectedLanguage}
         priceRange={priceRange}
@@ -108,7 +108,7 @@ export default function TeachersPage() {
           onSelectService={handleSelectService}
         />
       ) : (
-        <TeachersEmptyState onClearFilters={handleClearFilters} />
+        <ConsultantsEmptyState onClearFilters={handleClearFilters} />
       )}
 
       {isMobile ? (

@@ -47,7 +47,7 @@ interface AuthContextType {
   ) => Promise<void>;
   switchRole: (role: 'TEACHER' | 'STUDENT') => Promise<void>;
   refreshUserProfile: () => Promise<void>;
-  becomeTeacher: () => Promise<void>;
+  becomeConsultant: () => Promise<void>;
   becomeStudent: () => Promise<void>;
   isLoading: boolean;
   error: string | null;
@@ -89,7 +89,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (profileData: UnifiedProfileResponse) => {
       const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
 
-      if (profileData.has_teacher) {
+      if (profileData.has_consultant) {
         availableRoles.push('TEACHER');
       }
       if (profileData.has_student) {
@@ -313,32 +313,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const becomeTeacherMutation = useMutation({
-    mutationFn: () => authApi.becomeTeacher(),
+  const becomeConsultantMutation = useMutation({
+    mutationFn: () => authApi.becomeConsultant(),
     onSuccess: async (data) => {
       setError(null);
 
       // Refresh profile to get updated roles
       await refreshUserProfile();
 
-      // Set teacher as active role and redirect (no validation needed since API succeeded)
+      // Set consultant as active role and redirect (no validation needed since API succeeded)
       setActiveRoleState('TEACHER');
       setActiveRole('TEACHER');
       setCookie('user_role', 'TEACHER');
 
-      // Redirect to teacher dashboard
+      // Redirect to consultant dashboard
       router.push(ROUTES.TEACHER.DASHBOARD);
 
       const message = data.created
-        ? 'Teacher profile created successfully!'
-        : 'Welcome back to teacher mode!';
+        ? 'Consultant profile created successfully!'
+        : 'Welcome back to consultant mode!';
       toast.success(message);
     },
     onError: (error: unknown) => {
-      console.error('Become teacher failed:', error);
-      const errorMessage = getErrorMessage(error, 'become-teacher');
+      console.error('Become consultant failed:', error);
+      const errorMessage = getErrorMessage(error, 'become-consultant');
       setError(errorMessage);
-      toast.error('Failed to Become Teacher', {
+      toast.error('Failed to Become Consultant', {
         description: errorMessage,
       });
     },
@@ -512,8 +512,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const becomeTeacher = async () => {
-    await becomeTeacherMutation.mutateAsync();
+  const becomeConsultant = async () => {
+    await becomeConsultantMutation.mutateAsync();
   };
 
   const becomeStudent = async () => {
@@ -532,7 +532,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         googleOAuthInitiate,
         switchRole,
         refreshUserProfile,
-        becomeTeacher,
+        becomeConsultant,
         becomeStudent,
         isLoading:
           isLoading ||
@@ -542,7 +542,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           resetPasswordMutation.isPending ||
           resendVerificationEmailMutation.isPending ||
           googleOAuthInitiateMutation.isPending ||
-          becomeTeacherMutation.isPending ||
+          becomeConsultantMutation.isPending ||
           becomeStudentMutation.isPending,
         error,
         isAuthenticated,

@@ -58,7 +58,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     activeRole,
     hasTeacherRole,
     hasStudentRole,
-    becomeTeacher,
+    becomeConsultant,
     becomeStudent,
     switchRole,
   } = useAuth();
@@ -279,16 +279,16 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                       GraduationCap,
                       () => switchRole('STUDENT')
                     )}
-                  {/* Become Teacher Button - show if student but not teacher */}
+                  {/* Become Consultant Button - show if student but not consultant */}
                   {activeRole === 'STUDENT' &&
                     !hasTeacherRole &&
                     renderRoleSwitchMenuItem(
                       'TEACHER',
                       'Become Consultant',
                       Users,
-                      becomeTeacher
+                      becomeConsultant
                     )}
-                  {/* Become Student Button - show if teacher but not student */}
+                  {/* Become Student Button - show if consultant but not student */}
                   {activeRole === 'TEACHER' &&
                     !hasStudentRole &&
                     renderRoleSwitchMenuItem(

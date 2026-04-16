@@ -5,13 +5,13 @@ import {
   ServiceType,
 } from '@/types/service';
 
-const SERVICES_STORAGE_KEY = 'teacher_services';
+const SERVICES_STORAGE_KEY = 'consultant_services';
 
 // Mock data for initial services
 const mockServices: Service[] = [
   {
     id: 'service-1',
-    teacherId: 'teacher-1',
+    teacherId: 'consultant-1',
     type: 'language',
     title: 'Business Spanish Consultation',
     description:
@@ -119,7 +119,7 @@ export function deleteService(serviceId: string): boolean {
   return true;
 }
 
-export function getServicesByTeacher(teacherId: string): Service[] {
+export function getServicesByConsultant(teacherId: string): Service[] {
   const services = loadServices();
   return services.filter((s) => s.teacherId === teacherId);
 }
@@ -133,8 +133,8 @@ export function canCreateServiceType(
   teacherId: string,
   type: ServiceType
 ): boolean {
-  const teacherServices = getServicesByTeacher(teacherId);
-  return !teacherServices.some((service) => service.type === type);
+  const consultantServices = getServicesByConsultant(teacherId);
+  return !consultantServices.some((service) => service.type === type);
 }
 
 export function updateServiceStatus(

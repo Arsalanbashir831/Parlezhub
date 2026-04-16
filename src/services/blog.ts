@@ -25,7 +25,7 @@ function createFormData(data: BlogFormData): FormData {
 }
 
 export const blogService = {
-  // Get all blogs for the current teacher with pagination and filters
+  // Get all blogs for the current consultant with pagination and filters
   list: async (params?: {
     page?: number;
     page_size?: number;

@@ -50,7 +50,7 @@ export function UserProfileDisplay() {
 
         {user.role === 'TEACHER' && (
           <div className="mt-4 rounded bg-green-50 p-3">
-            <h3 className="font-semibold">Teacher Information</h3>
+            <h3 className="font-semibold">Consultant Information</h3>
             <p>Qualification: {user.qualification || 'Not set'}</p>
             <p>Bio: {user.bio || 'Not set'}</p>
             <p>Hourly Rate: ${user.hourly_rate || 'Not set'}</p>

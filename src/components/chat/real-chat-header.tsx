@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 
 interface RealChatHeaderProps {
   chat: ChatRoom;
-  currentUserRole: 'student' | 'teacher';
+  currentUserRole: 'student' | 'consultant';
   isConnected: boolean;
   isTyping: boolean;
   onBookCall?: () => void;
@@ -31,10 +31,10 @@ const RealChatHeader = memo(
   }: RealChatHeaderProps) => {
     // Determine the other participant's name and avatar
     const otherParticipantName =
-      currentUserRole === 'student' ? chat.teacher_name : chat.student_name;
+      currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
 
     const otherParticipantAvatar =
-      currentUserRole === 'student' ? chat.teacher_avatar : chat.student_avatar;
+      currentUserRole === 'student' ? chat.consultant_avatar : chat.student_avatar;
 
     return (
       <>
@@ -98,7 +98,7 @@ const RealChatHeader = memo(
                   variant="outline"
                   className="hidden border-primary-500/30 bg-primary-500/5 text-[10px] font-bold uppercase tracking-widest text-primary-400 sm:inline-flex"
                 >
-                  {currentUserRole === 'student' ? 'Teacher' : 'Student'}
+                  {currentUserRole === 'student' ? 'Consultant' : 'Student'}
                 </Badge>
               </div>
               <div className="mt-0.5 flex items-center gap-2">

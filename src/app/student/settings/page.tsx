@@ -58,7 +58,7 @@ export default function SettingsPage() {
               sessionReminders: false,
               weeklyReports: false,
               marketingEmails: false,
-              teacherMessages: false,
+              consultantMessages: false,
               studentMessages: false,
             }}
             onNotificationChange={() => {}}

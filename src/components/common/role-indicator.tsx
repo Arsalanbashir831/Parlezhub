@@ -31,7 +31,7 @@ export function RoleIndicator({
   };
 
   const getRoleLabel = (role: 'TEACHER' | 'STUDENT') => {
-    return role === 'TEACHER' ? 'Teacher' : 'Student';
+    return role === 'TEACHER' ? 'Consultant' : 'Student';
   };
 
   const getRoleColor = (role: 'TEACHER' | 'STUDENT') => {

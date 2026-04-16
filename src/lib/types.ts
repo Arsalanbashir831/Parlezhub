@@ -1,4 +1,4 @@
-export type UserRole = 'student' | 'teacher';
+export type UserRole = 'student' | 'consultant';
 
 export interface User {
   id: string;
@@ -9,7 +9,7 @@ export interface User {
   country: string;
   postalCode: string;
   address: string;
-  qualification?: string; // Only for teachers
+  qualification?: string; // Only for consultants
   isVerified: boolean;
   avatar?: string;
   createdAt: Date;

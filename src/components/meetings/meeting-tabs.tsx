@@ -210,7 +210,7 @@ export default function MeetingTabs() {
             <CardTitle className="font-serif text-xl font-bold tracking-tight text-white">
               {meeting.subject ||
                 (userRole === 'student'
-                  ? `Lesson with ${meeting.teacherName ?? ''}`
+                  ? `Lesson with ${meeting.consultantName ?? ''}`
                   : `Lesson with ${meeting.studentName ?? ''}`)}
             </CardTitle>
           </div>
@@ -230,19 +230,19 @@ export default function MeetingTabs() {
               </span>
             </div>
 
-            {userRole === 'student' && meeting.teacherName && (
+            {userRole === 'student' && meeting.consultantName && (
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
                 <Badge
                   variant="outline"
                   className="border-primary-500/20 bg-primary-500/5 text-[9px] uppercase tracking-widest text-primary-400"
                 >
-                  Teacher
+                  Consultant
                 </Badge>
-                {meeting.teacherName}
+                {meeting.consultantName}
               </div>
             )}
 
-            {userRole === 'teacher' && meeting.studentName && (
+            {userRole === 'consultant' && meeting.studentName && (
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
                 <Badge
                   variant="outline"
@@ -260,8 +260,8 @@ export default function MeetingTabs() {
               meeting.status === 'CONFIRMED') && (
               <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.05] pt-4">
                 <div className="flex flex-wrap gap-2">
-                  {/* Only teachers can approve pending */}
-                  {userRole === 'teacher' && meeting.status === 'PENDING' && (
+                  {/* Only consultants can approve pending */}
+                  {userRole === 'consultant' && meeting.status === 'PENDING' && (
                     <Button
                       size="sm"
                       onClick={() => approveBooking(meeting.id)}
@@ -376,7 +376,7 @@ export default function MeetingTabs() {
               No pending payments
             </h3>
             <p className="mx-auto max-w-sm text-sm tracking-wide text-primary-100/40">
-              Sessions requiring payment will appear here after teacher
+              Sessions requiring payment will appear here after consultant
               approval.
             </p>
           </CardContent>

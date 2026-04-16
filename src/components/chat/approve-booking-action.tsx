@@ -31,7 +31,7 @@ export default function ApproveBookingAction({
         });
       const serviceName = fields['Service'] || 'Service';
 
-      const teacherSummary = [
+      const consultantSummary = [
         'Booking Approved',
         `- Service: ${serviceName}`,
         `- Status: ${booking?.status ?? 'APPROVED'}`,
@@ -65,8 +65,8 @@ export default function ApproveBookingAction({
         .filter(Boolean)
         .join('\n');
 
-      // Send the teacher summary locally so the teacher sees host URL immediatelyyy
-      chatService.appendLocal(teacherSummary, user?.id);
+      // Send the consultant summary locally so the consultant sees host URL immediatelyyy
+      chatService.appendLocal(consultantSummary, user?.id);
       // Also send the student-friendly summary via socket so it reaches the student
       if (chatService.isConnected()) chatService.sendMessage(studentSummary);
       else chatService.appendLocal(studentSummary);

@@ -55,23 +55,23 @@ const BookingDialog = memo(
       refetchOnWindowFocus: false,
     });
 
-    // Fetch teacher services
-    const { data: teacherServicesData, isLoading: servicesLoading } = useQuery({
-      queryKey: ['teacher-services', teacherId],
+    // Fetch consultant services
+    const { data: consultantServicesData, isLoading: servicesLoading } = useQuery({
+      queryKey: ['consultant-services', teacherId],
       queryFn: async () => {
         if (!teacherId) return [];
-        return serviceApi.getTeacherServices(teacherId);
+        return serviceApi.getConsultantServices(teacherId);
       },
       enabled: Boolean(isOpen && teacherId),
       staleTime: 5 * 60 * 1000,
       refetchOnWindowFocus: false,
     });
 
-    // Convert teacher services to frontend format
-    const teacherServices = useMemo(() => {
-      if (!teacherServicesData) return [];
-      return teacherServicesData.map(serviceUtils.publicApiResponseToService);
-    }, [teacherServicesData]);
+    // Convert consultant services to frontend format
+    const consultantServices = useMemo(() => {
+      if (!consultantServicesData) return [];
+      return consultantServicesData.map(serviceUtils.publicApiResponseToService);
+    }, [consultantServicesData]);
 
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
@@ -112,7 +112,7 @@ const BookingDialog = memo(
       const duration = calculateDuration(startTime, endTime);
       if (duration <= 0) return 0;
 
-      const selectedService = teacherServices.find(
+      const selectedService = consultantServices.find(
         (s) => s.id === selectedServiceId
       );
       if (!selectedService) return 0;
@@ -201,7 +201,7 @@ const BookingDialog = memo(
         const durationHours = duration / 60; // Convert minutes to hours
 
         const booking: BookingResponse = await bookingService.schedule({
-          teacher: teacherId,
+          consultant: teacherId,
           gig: parseInt(selectedServiceId), // Convert to number as required by API
           start_time: startIso,
           end_time: endIso,
@@ -212,14 +212,14 @@ const BookingDialog = memo(
         toast.success('Booking scheduled');
 
         // Send a booking summary message into the chat
-        const selectedService = teacherServices.find(
+        const selectedService = consultantServices.find(
           (s) => s.id === selectedServiceId
         );
 
         // Fallback: if service not found in local array, try to find by gig ID from API response
         const serviceFromApi =
           !selectedService && booking.gig
-            ? teacherServices.find((s) => parseInt(s.id) === booking.gig)
+            ? consultantServices.find((s) => parseInt(s.id) === booking.gig)
             : null;
 
         const serviceInfo = selectedService || serviceFromApi;
@@ -276,7 +276,7 @@ const BookingDialog = memo(
               Schedule Consultation
             </DialogTitle>
             <DialogDescription className="mt-2 text-sm leading-relaxed text-primary-100/60">
-              Select a date and time within the teacher&lsquo;s available slots.
+              Select a date and time within the consultant&lsquo;s available slots.
               <br />
               <span className="mt-4 block text-[10px] font-bold uppercase tracking-wider text-primary-500/60">
                 Note: For sessions that cross midnight (e.g., 10 PM to 2 AM),
@@ -360,7 +360,7 @@ const BookingDialog = memo(
                   <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
                     Loading...
                   </div>
-                ) : teacherServices.length === 0 ? (
+                ) : consultantServices.length === 0 ? (
                   <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
                     No services shared
                   </div>
@@ -376,7 +376,7 @@ const BookingDialog = memo(
                       <SelectValue placeholder="Choose a field" />
                     </SelectTrigger>
                     <SelectContent className="rounded-xl border-primary-500/10 bg-background text-white shadow-2xl">
-                      {teacherServices.map((service) => (
+                      {consultantServices.map((service) => (
                         <SelectItem
                           key={service.id}
                           value={service.id}
@@ -467,7 +467,7 @@ const BookingDialog = memo(
                     </span>
                     <span className="text-sm font-bold text-primary-100">
                       $
-                      {teacherServices.find((s) => s.id === selectedServiceId)
+                      {consultantServices.find((s) => s.id === selectedServiceId)
                         ?.price || 0}
                       /h
                     </span>

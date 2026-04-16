@@ -17,10 +17,10 @@ import { formatDateTime } from '@/lib/utils';
 export type MeetingStatus = 'PENDING' | 'CONFIRMED' | 'CANCELLED';
 export interface Meeting {
   id: string;
-  teacherName?: string; // Optional for teacher view
-  studentName?: string; // For teacher view
-  teacherAvatar?: string;
-  studentAvatar?: string; // For teacher view
+  consultantName?: string; // Optional for consultant view
+  studentName?: string; // For consultant view
+  consultantAvatar?: string;
+  studentAvatar?: string; // For consultant view
   subject: string;
   date: string; // ISO string
   endDate?: string; // ISO string (meeting end)
@@ -45,7 +45,7 @@ export interface Meeting {
 // API response shape for bookings
 interface ApiBooking {
   id: string | number;
-  teacher_name?: string;
+  consultant_name?: string;
   student_name?: string;
   start_time: string; // ISO
   end_time?: string; // ISO
@@ -66,7 +66,7 @@ interface ApiBooking {
   created_at?: string;
   updated_at?: string;
   student?: string;
-  teacher?: string;
+  consultant?: string;
   gig?: number;
   // Payment information
   payment_id?: number;
@@ -85,7 +85,7 @@ interface ApiBooking {
 export function useMeetings() {
   const router = useRouter();
 
-  // Determine if we're in teacher or student context
+  // Determine if we're in consultant or student context
   const { user } = useUser();
   const queryClient = useQueryClient();
 
@@ -118,7 +118,7 @@ export function useMeetings() {
             : 60);
         return {
           id: String(b.id),
-          teacherName: b.teacher_name,
+          consultantName: b.consultant_name,
           studentName: b.student_name,
           subject: 'Language Session',
           date: startIso,
@@ -130,7 +130,7 @@ export function useMeetings() {
           language: b.language || 'N/A',
           price: b.price || 0,
           location: 'Online',
-          meetingLink: role === 'teacher' ? b.zoom_start_url : b.zoom_join_url,
+          meetingLink: role === 'consultant' ? b.zoom_start_url : b.zoom_join_url,
           joinLink: b.zoom_join_url,
           hostLink: b.zoom_start_url,
           notes: b.notes,
@@ -228,23 +228,23 @@ export function useMeetings() {
   >('upcoming');
 
   // Normalized user role for consumers (e.g., UI components)
-  const userRole: 'teacher' | 'student' | '' = (
+  const userRole: 'consultant' | 'student' | '' = (
     user?.role ? user.role.toLowerCase() : ''
-  ) as 'teacher' | 'student' | '';
+  ) as 'consultant' | 'student' | '';
 
   // Handlers
   const handleJoinMeeting = useCallback((meeting: Meeting) => {
     if (meeting.meetingLink) window.open(meeting.meetingLink, '_blank');
   }, []);
 
-  const handleMessageTeacher = useCallback(
+  const handleMessageConsultant = useCallback(
     (personId: string) => {
       if (user?.role === 'TEACHER') {
-        // Teacher messaging a student
+        // Consultant messaging a student
         router.push(ROUTES.TEACHER.CHAT + '?student=' + personId);
       } else {
-        // Student messaging a teacher
-        router.push(ROUTES.STUDENT.CHAT + '?teacher=' + personId);
+        // Student messaging a consultant
+        router.push(ROUTES.STUDENT.CHAT + '?consultant=' + personId);
       }
     },
     [router, user?.role]
@@ -269,9 +269,9 @@ export function useMeetings() {
     const now = new Date();
 
     const filtered = (meetings || []).filter((m) => {
-      // Search matches both teacher and student names
+      // Search matches both consultant and student names
       const matchesSearch =
-        m.teacherName?.toLowerCase().includes(q) ||
+        m.consultantName?.toLowerCase().includes(q) ||
         m.studentName?.toLowerCase().includes(q) ||
         m.subject.toLowerCase().includes(q) ||
         m.language.toLowerCase().includes(q);
@@ -359,7 +359,7 @@ export function useMeetings() {
     totalCompletedHours,
     nextUpcomingLabel,
     handleJoinMeeting,
-    handleMessageTeacher,
+    handleMessageConsultant,
     getStatusColor,
     cancelBooking: (
       bookingId: string,

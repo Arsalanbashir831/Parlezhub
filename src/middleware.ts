@@ -151,7 +151,7 @@ export function middleware(request: NextRequest) {
   const isStudentRoute = STUDENT_ROUTES.some((route) =>
     pathname.startsWith(route)
   );
-  const isTeacherRoute = TEACHER_ROUTES.some((route) =>
+  const isConsultantRoute = TEACHER_ROUTES.some((route) =>
     pathname.startsWith(route)
   );
 
@@ -170,10 +170,10 @@ export function middleware(request: NextRequest) {
         return NextResponse.redirect(loginUrl);
       }
     }
-  } else if (isTeacherRoute) {
-    // Allow access if user has teacher role
+  } else if (isConsultantRoute) {
+    // Allow access if user has consultant role
     if (!userRoles.includes('TEACHER')) {
-      // User doesn't have teacher role, redirect to their default dashboard
+      // User doesn't have consultant role, redirect to their default dashboard
       const roleToUse = currentRole || userRoles[0];
       if (roleToUse === 'STUDENT') {
         return NextResponse.redirect(

@@ -99,7 +99,7 @@ export function StudentGuard({
   );
 }
 
-export function TeacherGuard({
+export function ConsultantGuard({
   children,
   fallbackPath,
 }: Omit<RoleGuardProps, 'allowedRoles'>) {
