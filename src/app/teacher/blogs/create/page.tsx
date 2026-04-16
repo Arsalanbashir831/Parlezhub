@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 export default function CreateBlogPage() {
   const router = useRouter();
   const { create, isProcessing } = useBlogs();
-  const { isGenerating: isGeneratingContent, generateContent } =
+  const { isGenerating: isGeneratingContent, generateContent, error: aiError } =
     useAIGeneration();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -69,16 +69,22 @@ export default function CreateBlogPage() {
       return;
     }
 
-    const generatedContent = await generateContent({
-      type: 'blog',
-      title: title.trim(),
-      metaDescription: metaDescription.trim(),
-      maxLength: 5000,
-    });
+    try {
+      const { content, error: generationError } = await generateContent({
+        type: 'blog',
+        title: title.trim(),
+        metaDescription: metaDescription.trim(),
+        maxLength: 5000,
+      });
 
-    if (generatedContent) {
-      setContent(generatedContent);
-      toast.success('Blog content generated successfully!');
+      if (content) {
+        setContent(content);
+        toast.success('Blog content generated successfully!');
+      } else if (generationError) {
+        toast.error(generationError);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate content');
     }
   };
 

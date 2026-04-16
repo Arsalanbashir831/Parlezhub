@@ -12,6 +12,7 @@
     "prepare": "husky"
   },
   "dependencies": {
+    "@google/genai": "^1.50.1",
     "@hookform/resolvers": "latest",
     "@openai/agents": "^0.0.15",
     "@radix-ui/react-accordion": "1.2.2",

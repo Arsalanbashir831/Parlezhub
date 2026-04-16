@@ -12,7 +12,7 @@ export interface AIGenerationConfig {
 export interface UseAIGenerationReturn {
   isGenerating: boolean;
   error: string | null;
-  generateContent: (config: AIGenerationConfig) => Promise<string | null>;
+  generateContent: (config: AIGenerationConfig) => Promise<{ content: string | null; error: string | null }>;
   clearError: () => void;
 }
 
@@ -22,21 +22,24 @@ export function useAIGeneration(): UseAIGenerationReturn {
 
   const generateContent = async (
     config: AIGenerationConfig
-  ): Promise<string | null> => {
+  ): Promise<{ content: string | null; error: string | null }> => {
     // Validate required fields
     if (!config.title?.trim()) {
-      setError('Title is required');
-      return null;
+      const err = 'Title is required';
+      setError(err);
+      return { content: null, error: err };
     }
 
     if (config.type === 'service' && !config.shortDescription?.trim()) {
-      setError('Short description is required for service content');
-      return null;
+      const err = 'Short description is required for service content';
+      setError(err);
+      return { content: null, error: err };
     }
 
     if (config.type === 'blog' && !config.metaDescription?.trim()) {
-      setError('Meta description is required for blog content');
-      return null;
+      const err = 'Meta description is required for blog content';
+      setError(err);
+      return { content: null, error: err };
     }
 
     setIsGenerating(true);
@@ -52,13 +55,20 @@ export function useAIGeneration(): UseAIGenerationReturn {
       });
 
       if (!response.ok) {
-        throw new Error('Failed to generate content');
+        let errorMessage = 'Failed to generate content';
+        try {
+          const errorData = await response.json();
+          errorMessage = errorData.error || errorMessage;
+        } catch {
+          errorMessage = `Server error: ${response.status} ${response.statusText}`;
+        }
+        throw new Error(errorMessage);
       }
 
       const data = await response.json();
 
       if (data.success && data.content) {
-        return data.content;
+        return { content: data.content, error: null };
       } else {
         throw new Error(data.error || 'Failed to generate content');
       }
@@ -67,7 +77,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
         err instanceof Error ? err.message : 'Unknown error occurred';
       setError(errorMessage);
       console.error('Error generating content:', err);
-      return null;
+      return { content: null, error: errorMessage };
     } finally {
       setIsGenerating(false);
     }

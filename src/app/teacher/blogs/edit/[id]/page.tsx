@@ -5,7 +5,9 @@ import { useParams, useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { toast } from 'sonner';
 
+import { useAIGeneration } from '@/hooks/useAIGeneration';
 import { useBlogs } from '@/hooks/useBlogs';
+import AIGenerateButton from '@/components/ui/ai-generate-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import ImageUpload from '@/components/ui/image-upload';
@@ -27,6 +29,8 @@ export default function EditBlogPage() {
   const params = useParams();
   const blogId = params.id as string;
   const { loadOne, update, isProcessing } = useBlogs();
+  const { isGenerating: isGeneratingContent, generateContent, error: aiError } =
+    useAIGeneration();
 
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');
@@ -45,8 +49,6 @@ export default function EditBlogPage() {
         setMetaDescription(blog.meta_description || '');
         setTags(blog.tags || []);
         setStatus(blog.status);
-        // Note: thumbnail from API is URL string, not File object
-        // We'll handle this differently - show existing thumbnail but allow new upload
       }
       setIsLoading(false);
     };
@@ -60,7 +62,6 @@ export default function EditBlogPage() {
       toast.error('Please fill in the title and content');
       return;
     }
-
 
     try {
       await update(blogId, {
@@ -79,6 +80,33 @@ export default function EditBlogPage() {
       console.error('Failed to update blog:', error);
     }
   };
+
+  const handleGenerateContent = async () => {
+    if (!title.trim() || !metaDescription.trim()) {
+      toast.error('Please fill in the title and meta description first');
+      return;
+    }
+
+    try {
+      const { content, error: generationError } = await generateContent({
+        type: 'blog',
+        title: title.trim(),
+        metaDescription: metaDescription.trim(),
+        maxLength: 5000,
+      });
+
+      if (content) {
+        setContent(content);
+        toast.success('Blog content generated successfully!');
+      } else if (generationError) {
+        toast.error(generationError);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate content');
+    }
+  };
+
+  const canGenerateContent = title.trim() && metaDescription.trim();
 
   if (isLoading) {
     return (
@@ -171,7 +199,14 @@ export default function EditBlogPage() {
 
             {/* Content */}
             <div className="space-y-4">
-              <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Content *</Label>
+              <div className="flex items-center justify-between">
+                <Label className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60">Content *</Label>
+                <AIGenerateButton
+                  onClick={handleGenerateContent}
+                  disabled={!canGenerateContent}
+                  isGenerating={isGeneratingContent}
+                />
+              </div>
               <MarkdownEditor
                 value={content}
                 onChange={setContent}

@@ -89,11 +89,11 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     (profileData: UnifiedProfileResponse) => {
       const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
 
-      if (profileData.has_student) {
-        availableRoles.push('STUDENT');
-      }
       if (profileData.has_teacher) {
         availableRoles.push('TEACHER');
+      }
+      if (profileData.has_student) {
+        availableRoles.push('STUDENT');
       }
 
       setUserRolesState(availableRoles);
@@ -177,10 +177,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           router.push(redirectTo);
         } else {
           const currentActiveRole = getActiveRole();
-          if (currentActiveRole === 'STUDENT') {
-            router.push(ROUTES.STUDENT.DASHBOARD);
-          } else if (currentActiveRole === 'TEACHER') {
+          if (currentActiveRole === 'TEACHER') {
             router.push(ROUTES.TEACHER.DASHBOARD);
+          } else if (currentActiveRole === 'STUDENT') {
+            router.push(ROUTES.STUDENT.DASHBOARD);
           } else {
             // Default to student dashboard if no active role set
             router.push(ROUTES.STUDENT.DASHBOARD);

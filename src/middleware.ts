@@ -131,14 +131,17 @@ export function middleware(request: NextRequest) {
 
   // Handle root path - redirect based on active role or first available role
   if (pathname === '/') {
-    const roleToUse = currentRole || userRoles[0];
-    if (roleToUse === 'STUDENT') {
-      return NextResponse.redirect(
-        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
-      );
-    } else if (roleToUse === 'TEACHER') {
+    // Prioritize TEACHER if available in roles, unless we have a specific active role
+    const hasTeacher = userRoles.includes('TEACHER');
+    const roleToUse = currentRole || (hasTeacher ? 'TEACHER' : userRoles[0]);
+
+    if (roleToUse === 'TEACHER') {
       return NextResponse.redirect(
         new URL(ROUTES.TEACHER.DASHBOARD, request.url)
+      );
+    } else if (roleToUse === 'STUDENT') {
+      return NextResponse.redirect(
+        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
       );
     }
   }

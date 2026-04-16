@@ -6,6 +6,8 @@ import { Clock, DollarSign, Plus, X } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
+import { toast } from 'sonner';
+
 import { ServiceFormData, ServiceType } from '@/types/service';
 import { getServiceTypeLabel } from '@/lib/service-utils';
 import { useAIGeneration } from '@/hooks/useAIGeneration';
@@ -80,7 +82,7 @@ export default function ServiceForm({
 }: ServiceFormProps) {
   const [newTag, setNewTag] = useState('');
   const [newService, setNewService] = useState('');
-  const { isGenerating: isGeneratingDescription, generateContent } =
+  const { isGenerating: isGeneratingDescription, generateContent, error: aiError } =
     useAIGeneration();
 
   const {
@@ -152,19 +154,27 @@ export default function ServiceForm({
     const serviceType = watchedFields.type;
 
     if (!title || !shortDescription) {
+      toast.error('Please enter a title and short description first');
       return;
     }
 
-    const generatedContent = await generateContent({
-      type: 'service',
-      title,
-      shortDescription,
-      serviceType,
-      maxLength: 1200,
-    });
+    try {
+      const { content, error: generationError } = await generateContent({
+        type: 'service',
+        title,
+        shortDescription,
+        serviceType,
+        maxLength: 1200,
+      });
 
-    if (generatedContent) {
-      setValue('description', generatedContent);
+      if (content) {
+        setValue('description', content);
+        toast.success('Description generated successfully!');
+      } else if (generationError) {
+        toast.error(generationError);
+      }
+    } catch (err) {
+      toast.error(err instanceof Error ? err.message : 'Failed to generate content');
     }
   };
 
