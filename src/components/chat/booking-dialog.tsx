@@ -201,7 +201,7 @@ const BookingDialog = memo(
         const durationHours = duration / 60; // Convert minutes to hours
 
         const booking: BookingResponse = await bookingService.schedule({
-          consultant: teacherId,
+          teacher: teacherId,
           gig: parseInt(selectedServiceId), // Convert to number as required by API
           start_time: startIso,
           end_time: endIso,

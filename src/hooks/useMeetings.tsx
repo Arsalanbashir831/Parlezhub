@@ -66,7 +66,7 @@ interface ApiBooking {
   created_at?: string;
   updated_at?: string;
   student?: string;
-  consultant?: string;
+  teacher?: string;
   gig?: number;
   // Payment information
   payment_id?: number;
