@@ -103,11 +103,11 @@ export default function MeetingTabs() {
   const handleTabChange = (value: string) => {
     setActiveTab(
       value as
-        | 'pending'
-        | 'pendingPayment'
-        | 'upcoming'
-        | 'completed'
-        | 'cancelled'
+      | 'pending'
+      | 'pendingPayment'
+      | 'upcoming'
+      | 'completed'
+      | 'cancelled'
     );
   };
 
@@ -242,7 +242,7 @@ export default function MeetingTabs() {
               </div>
             )}
 
-            {userRole === 'consultant' && meeting.studentName && (
+            {userRole === 'teacher' && meeting.studentName && (
               <div className="flex items-center gap-3 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3 text-sm font-medium text-primary-100/60">
                 <Badge
                   variant="outline"
@@ -256,12 +256,12 @@ export default function MeetingTabs() {
           </div>
 
           {overrideLabel !== 'completed' &&
-            ((meeting.status === 'PENDING' && !isFuture(meeting)) ||
+            ((meeting.status === 'PENDING' && isFuture(meeting)) ||
               meeting.status === 'CONFIRMED') && (
               <div className="mt-2 flex flex-wrap items-center justify-between gap-4 border-t border-white/[0.05] pt-4">
                 <div className="flex flex-wrap gap-2">
                   {/* Only consultants can approve pending */}
-                  {userRole === 'consultant' && meeting.status === 'PENDING' && (
+                  {userRole === 'teacher' && meeting.status === 'PENDING' && (
                     <Button
                       size="sm"
                       onClick={() => approveBooking(meeting.id)}
@@ -547,7 +547,7 @@ export default function MeetingTabs() {
         meetingTitle={
           rescheduleTargetId
             ? meetings.find((m) => m.id === rescheduleTargetId)?.subject ||
-              'Meeting'
+            'Meeting'
             : 'Meeting'
         }
       />

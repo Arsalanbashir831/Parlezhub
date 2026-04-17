@@ -45,7 +45,7 @@ export interface Meeting {
 // API response shape for bookings
 interface ApiBooking {
   id: string | number;
-  consultant_name?: string;
+  teacher_name?: string;
   student_name?: string;
   start_time: string; // ISO
   end_time?: string; // ISO
@@ -109,16 +109,16 @@ export function useMeetings() {
           b.duration_minutes ??
           (startIso && endIso
             ? Math.max(
-                0,
-                Math.round(
-                  (new Date(endIso).getTime() - new Date(startIso).getTime()) /
-                    60000
-                )
+              0,
+              Math.round(
+                (new Date(endIso).getTime() - new Date(startIso).getTime()) /
+                60000
               )
+            )
             : 60);
         return {
           id: String(b.id),
-          consultantName: b.consultant_name,
+          consultantName: b.teacher_name,
           studentName: b.student_name,
           subject: 'Language Session',
           date: startIso,
@@ -228,9 +228,9 @@ export function useMeetings() {
   >('upcoming');
 
   // Normalized user role for consumers (e.g., UI components)
-  const userRole: 'consultant' | 'student' | '' = (
+  const userRole: 'teacher' | 'student' | '' = (
     user?.role ? user.role.toLowerCase() : ''
-  ) as 'consultant' | 'student' | '';
+  ) as 'teacher' | 'student' | '';
 
   // Handlers
   const handleJoinMeeting = useCallback((meeting: Meeting) => {
