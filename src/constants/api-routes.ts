@@ -49,7 +49,7 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
     GET_TEACHER_AVAILABILITY: (teacherId: string) =>
-      `/bookings/availability/weekly/?consultant_id=${teacherId}`,
+      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
     SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {

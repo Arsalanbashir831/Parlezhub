@@ -185,7 +185,7 @@ export function useGrantAstrologyAccess() {
   return useMutation({
     mutationFn: async (teacherId: string) => {
       const response = await apiCaller(API_ROUTES.ASTROLOGY.ACCESS, 'POST', {
-        consultant_id: teacherId,
+        teacher_id: teacherId,
       });
       return response.data;
     },

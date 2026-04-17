@@ -65,7 +65,7 @@ export function ServiceDetailsModal({
       // Create a new chat with the consultant
       const newChat = await chatService.createChat({
         student_id: user.id,
-        consultant_id: service.teacherId,
+        teacher_id: service.teacherId,
       });
 
       if (newChat) {

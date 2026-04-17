@@ -29,7 +29,7 @@ export interface ChatMessage {
 export interface ChatRoom {
   id: string;
   student_id: string;
-  consultant_id: string;
+  teacher_id: string;
   student_name: string;
   consultant_name: string;
   student_avatar?: string;
@@ -42,7 +42,7 @@ export interface ChatRoom {
 
 export interface CreateChatRequest {
   student_id: string;
-  consultant_id: string;
+  teacher_id: string;
 }
 
 export interface WebSocketMessage {

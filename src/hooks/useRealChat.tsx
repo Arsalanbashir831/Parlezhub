@@ -77,7 +77,7 @@ export const useRealChat = ({
     (c: BackendChat): ChatRoom => ({
       id: c.id,
       student_id: c.student_details.id,
-      consultant_id: c.teacher_details.id,
+      teacher_id: c.teacher_details.id,
       student_name: c.student_details.name,
       consultant_name: c.teacher_details.name,
       student_avatar: c.student_details.profile_picture || undefined,
@@ -99,12 +99,12 @@ export const useRealChat = ({
       // Support both old (ChatRoom[]) and new (BackendChat[]) shapes
       const normalized: ChatRoom[] = Array.isArray(fetched)
         ? (fetched as unknown[]).map((item) => {
-            const maybe = item as BackendChat;
-            if ('student_details' in maybe && 'teacher_details' in maybe) {
-              return mapBackendChatToChatRoom(maybe as BackendChat);
-            }
-            return maybe as ChatRoom;
-          })
+          const maybe = item as BackendChat;
+          if ('student_details' in maybe && 'teacher_details' in maybe) {
+            return mapBackendChatToChatRoom(maybe as BackendChat);
+          }
+          return maybe as ChatRoom;
+        })
         : [];
       setChats(normalized);
       return normalized;
@@ -145,7 +145,7 @@ export const useRealChat = ({
         setIsLoading(true);
         const newChat = await chatService.createChat({
           student_id: studentId,
-          consultant_id: teacherId,
+          teacher_id: teacherId,
         });
 
         // Add the new chat to the list
@@ -240,10 +240,10 @@ export const useRealChat = ({
         prev.map((chat) =>
           chat.id === selectedChat.id
             ? {
-                ...chat,
-                last_message: optimisticMessage.content,
-                last_message_timestamp: optimisticMessage.timestamp,
-              }
+              ...chat,
+              last_message: optimisticMessage.content,
+              last_message_timestamp: optimisticMessage.timestamp,
+            }
             : chat
         )
       );
@@ -273,10 +273,10 @@ export const useRealChat = ({
           prev.map((chat) =>
             chat.id === selectedChat?.id
               ? {
-                  ...chat,
-                  last_message: newMessage.content,
-                  last_message_timestamp: newMessage.timestamp,
-                }
+                ...chat,
+                last_message: newMessage.content,
+                last_message_timestamp: newMessage.timestamp,
+              }
               : chat
           )
         );

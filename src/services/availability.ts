@@ -90,7 +90,7 @@ export const availabilityService = {
 };
 
 export interface CreateBookingRequest {
-  consultant: string; // consultant_id
+  consultant: string; // teacher_id
   gig: number; // service/gig id
   start_time: string; // ISO string with Z
   end_time: string; // ISO string with Z

@@ -85,7 +85,7 @@ export interface PublicServicesListResponse {
   count: number;
   results: PublicServiceResponse[];
   filters_applied: {
-    consultant_id: string | null;
+    teacher_id: string | null;
     category: string | null;
     service_type: string | null;
     min_price: number | null;
@@ -258,7 +258,7 @@ export const serviceApi = {
     teacherId: string
   ): Promise<PublicServiceResponse[]> => {
     const response = await apiCaller(
-      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?consultant_id=${teacherId}`,
+      `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?teacher_id=${teacherId}`,
       'GET',
       undefined,
       {},
