@@ -18,7 +18,7 @@ export const API_ROUTES = {
     REFUND_BOOKING: '/payments/refund/request/',
   },
   TEACHER: {
-    UPDATE_PROFILE: '/accounts/consultants/my-profile/',
+    UPDATE_PROFILE: '/accounts/teacher/my-profile/',
     CREATE_SERVICE: '/accounts/gigs/',
     GET_YOUR_SERVICES: '/accounts/gigs/',
     GET_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
@@ -49,7 +49,7 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
     GET_TEACHER_AVAILABILITY: (teacherId: string) =>
-      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
+      `/bookings/availability/weekly/?consultant_id=${teacherId}`,
     SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {
@@ -73,8 +73,8 @@ export const API_ROUTES = {
     NAKSHATRA_PREDICTIONS: '/astrology/nakshatra-predictions/',
     INSIGHTS: '/astrology/insights',
     ACCESS: '/astrology/access/',
-    ASTROLOGER_SEARCH: '/accounts/consultants/',
-    TEACHER_STUDENTS: '/astrology/consultant/students/',
+    ASTROLOGER_SEARCH: '/accounts/teachers/',
+    TEACHER_STUDENTS: '/astrology/teacher/students/',
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
   },
 };
