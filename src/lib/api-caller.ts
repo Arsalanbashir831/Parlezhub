@@ -8,9 +8,6 @@ import { clearAuthCookies, getCookie, setCookie } from '@/lib/cookie-utils';
 // Singleton instance
 const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
-  headers: {
-    'Content-Type': 'application/json',
-  },
 });
 
 interface FailedRequest {
@@ -142,19 +139,24 @@ const apiCaller = async (
   onErrorRefresh: boolean = false,
   signal?: AbortSignal
 ): Promise<AxiosResponse> => {
+  const headers = { ...(options.headers || {}) } as Record<string, string>;
+
+  // Set default Content-Type to JSON if not specified and not uploading a file
+  if (dataType === 'json' && !headers['Content-Type']) {
+    headers['Content-Type'] = 'application/json';
+  }
+
   const config: AxiosRequestConfig = {
     url,
     method,
     ...options,
     signal,
-    headers: {
-      ...(options.headers || {}),
-    },
+    headers,
   };
 
   if (!useAuth) {
     if (config.headers) {
-      delete config.headers.Authorization;
+      delete (config.headers as any).Authorization;
     }
   }
 
@@ -171,8 +173,9 @@ const apiCaller = async (
         });
       }
       config.data = formData;
-      if (config.headers && config.headers['Content-Type']) {
-        delete config.headers['Content-Type'];
+      // When using FormData, let Axios set the Content-Type automatically with boundary
+      if (config.headers && (config.headers as any)['Content-Type']) {
+        delete (config.headers as any)['Content-Type'];
       }
     } else {
       config.data = data;

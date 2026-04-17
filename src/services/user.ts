@@ -200,4 +200,18 @@ export const userApi = {
     );
     return response.data;
   },
+
+  changePassword: async (
+    currentPassword: string,
+    newPassword: string
+  ): Promise<{ message: string }> => {
+    const response = await apiCaller(
+      API_ROUTES.AUTH.CHANGE_PASSWORD,
+      'POST',
+      { current_password: currentPassword, new_password: newPassword },
+      {},
+      true
+    );
+    return response.data;
+  },
 };

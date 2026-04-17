@@ -11,6 +11,7 @@ export const API_ROUTES = {
     ME: '/accounts/profiles/me/roles/',
     BECOME_TEACHER: '/accounts/become-teacher/',
     BECOME_STUDENT: '/accounts/become-student/',
+    CHANGE_PASSWORD: '/change-password/',
   },
   STUDENT: {
     UPDATE_PROFILE: '/accounts/profiles/me/',
@@ -18,7 +19,7 @@ export const API_ROUTES = {
     REFUND_BOOKING: '/payments/refund/request/',
   },
   TEACHER: {
-    UPDATE_PROFILE: '/accounts/teacher/my-profile/',
+    UPDATE_PROFILE: '/accounts/teachers/my-profile/',
     CREATE_SERVICE: '/accounts/gigs/',
     GET_YOUR_SERVICES: '/accounts/gigs/',
     GET_SERVICE: (gigId: string) => `/accounts/gigs/${gigId}/`,
@@ -36,11 +37,11 @@ export const API_ROUTES = {
       `/bookings/bookings/${bookingId}/reschedule/`,
     REFUND_BOOKING: '/payments/refund/request/',
     // Blogs
-    BLOGS: '/blogs/consultant/blogs/',
-    BLOG_DETAIL: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
-    CREATE_BLOG: '/blogs/consultant/blogs/',
-    UPDATE_BLOG: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
-    DELETE_BLOG: (blogId: string | number) => `/blogs/consultant/blogs/${blogId}/`,
+    BLOGS: '/blogs/teacher/blogs/',
+    BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
+    CREATE_BLOG: '/blogs/teacher/blogs/',
+    UPDATE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
+    DELETE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
@@ -49,7 +50,7 @@ export const API_ROUTES = {
   PUBLIC: {
     GET_ALL_SERVICES: '/accounts/gigs/public/',
     GET_TEACHER_AVAILABILITY: (teacherId: string) =>
-      `/bookings/availability/weekly/?consultant_id=${teacherId}`,
+      `/bookings/availability/weekly/?teacher_id=${teacherId}`,
     SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {

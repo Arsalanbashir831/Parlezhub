@@ -107,16 +107,31 @@ const SecuritySettings = memo(
                 >
                   New Password
                 </Label>
-                <Input
-                  id="newPassword"
-                  type="password"
-                  value={securityData.newPassword}
-                  onChange={(e) =>
-                    handleFieldChange('newPassword', e.target.value)
-                  }
-                  placeholder="Enter new password"
-                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
-                />
+                <div className="relative">
+                  <Input
+                    id="newPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={securityData.newPassword}
+                    onChange={(e) =>
+                      handleFieldChange('newPassword', e.target.value)
+                    }
+                    placeholder="Enter new password"
+                    className="h-12 rounded-xl border-primary-500/10 bg-white/5 pr-12 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg p-0 text-primary-500/40 hover:bg-white/5 hover:text-primary-500"
+                    onClick={onTogglePasswordVisibility}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
               <div className="space-y-2">
                 <Label
@@ -125,16 +140,31 @@ const SecuritySettings = memo(
                 >
                   Confirm Password
                 </Label>
-                <Input
-                  id="confirmPassword"
-                  type="password"
-                  value={securityData.confirmPassword}
-                  onChange={(e) =>
-                    handleFieldChange('confirmPassword', e.target.value)
-                  }
-                  placeholder="Confirm new password"
-                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
-                />
+                <div className="relative">
+                  <Input
+                    id="confirmPassword"
+                    type={showPassword ? 'text' : 'password'}
+                    value={securityData.confirmPassword}
+                    onChange={(e) =>
+                      handleFieldChange('confirmPassword', e.target.value)
+                    }
+                    placeholder="Confirm new password"
+                    className="h-12 rounded-xl border-primary-500/10 bg-white/5 pr-12 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="absolute right-2 top-1/2 h-8 w-8 -translate-y-1/2 rounded-lg p-0 text-primary-500/40 hover:bg-white/5 hover:text-primary-500"
+                    onClick={onTogglePasswordVisibility}
+                  >
+                    {showPassword ? (
+                      <EyeOff className="h-4 w-4" />
+                    ) : (
+                      <Eye className="h-4 w-4" />
+                    )}
+                  </Button>
+                </div>
               </div>
             </div>
           </div>
@@ -145,7 +175,7 @@ const SecuritySettings = memo(
               disabled={isLoading}
               className="h-12 rounded-2xl bg-primary-500 px-12 text-[10px] font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
             >
-              {isLoading ? 'Updating Archives...' : 'Update Security'}
+              {isLoading ? 'Updating Password...' : 'Update Password'}
             </Button>
           </div>
         </CardContent>
