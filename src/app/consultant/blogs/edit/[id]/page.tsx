@@ -29,7 +29,7 @@ export default function EditBlogPage() {
   const params = useParams();
   const blogId = params.id as string;
   const { loadOne, update, isProcessing } = useBlogs();
-  const { isGenerating: isGeneratingContent, generateContent, error: aiError } =
+  const { isGenerating: isGeneratingContent, generateContent } =
     useAIGeneration();
 
   const [title, setTitle] = useState('');

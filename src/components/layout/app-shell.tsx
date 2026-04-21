@@ -31,7 +31,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 }) => {
   const pathname = usePathname();
   const { user } = useUser();
-  const { logout, isAuthenticated } = useAuth();
+  const { logout } = useAuth();
   const router = useRouter();
 
   const activeTab = React.useMemo(() => {

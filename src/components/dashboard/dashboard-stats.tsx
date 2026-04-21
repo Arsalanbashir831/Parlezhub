@@ -2,18 +2,16 @@
 
 import { CalendarIcon, MessageSquare } from 'lucide-react';
 
-import { Meeting, useMeetings } from '@/hooks/useMeetings';
+import { useMeetings } from '@/hooks/useMeetings';
 import { Card, CardContent } from '@/components/ui/card';
 import { ConversationData } from '@/components/history/conversation-card';
 
 interface DashboardStatsProps {
   conversations: ConversationData[];
-  meetings: Meeting[];
 }
 
 export default function DashboardStatsCards({
   conversations,
-  meetings,
 }: DashboardStatsProps) {
   const totalConversations = conversations.length;
 

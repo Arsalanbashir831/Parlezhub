@@ -6,6 +6,7 @@ import { toast } from 'sonner';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
+import Image from 'next/image';
 
 interface ImageUploadProps {
   value?: File | null;
@@ -122,10 +123,12 @@ export default function ImageUpload({
         // Preview mode
         <div className="relative">
           <div className="relative aspect-video max-h-[300px] w-full overflow-hidden rounded-2xl border border-primary-500/10 bg-white/5 backdrop-blur-md">
-            <img
+            <Image
               src={preview}
               alt="Thumbnail preview"
               className="h-full w-full object-contain"
+              width={500}
+              height={500}
             />
             <Button
               type="button"

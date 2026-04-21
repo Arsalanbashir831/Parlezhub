@@ -89,7 +89,7 @@ export default function LoginPage() {
     };
 
     void processHashLogin();
-  }, [hashParams, router, isAuthenticated]);
+  }, [hashParams, router, isAuthenticated, searchParams]);
 
   const {
     register,

@@ -25,7 +25,6 @@ export default function ChatPage() {
 
   // Initialize real chat hook
   const {
-    chats,
     selectedChat,
     currentMessages,
     newMessage,

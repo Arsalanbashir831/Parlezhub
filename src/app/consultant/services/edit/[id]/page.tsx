@@ -16,7 +16,7 @@ export default function EditServicePage() {
   const params = useParams();
   const serviceId = params.id as string;
   const { updateExistingService, loadService, isProcessing, error } = useServices();
-  
+
   const [service, setService] = useState<Service | null>(null);
   const [serviceNotFound, setServiceNotFound] = useState(false);
   const [isLoadingService, setIsLoadingService] = useState(true);
@@ -30,7 +30,7 @@ export default function EditServicePage() {
         } else {
           setService(data);
         }
-      } catch (err) {
+      } catch {
         setServiceNotFound(true);
       } finally {
         setIsLoadingService(false);
@@ -76,9 +76,9 @@ export default function EditServicePage() {
           <CardContent className="py-16 text-center">
             <h3 className="mb-2 font-serif text-2xl font-bold text-white">Service Not Found</h3>
             <p className="mb-8 max-w-sm mx-auto text-primary-100/60 font-medium">
-              The service you're trying to edit doesn't exist or may have been deleted.
+              The service you&apos;re trying to edit doesn&apos;t exist or may have been deleted.
             </p>
-            <Button 
+            <Button
               onClick={handleCancel}
               className="h-12 rounded-xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
             >

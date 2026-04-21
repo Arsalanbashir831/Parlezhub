@@ -4,8 +4,6 @@ type Props = {
 };
 
 export default function MeetingHeader({
-  title = 'My Meetings',
-  description = 'View your upcoming, completed, and cancelled meetings.',
 }: Props) {
   return (
     <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">

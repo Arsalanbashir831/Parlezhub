@@ -17,11 +17,10 @@ interface ConversationMessage {
 
 interface ConversationTranscriptProps {
   messages: ConversationMessage[];
-  tutorName: string;
 }
 
 export const ConversationTranscript = React.memo<ConversationTranscriptProps>(
-  ({ messages, tutorName }) => {
+  ({ messages }) => {
     return (
       <Card className="mb-6">
         <CardHeader>
@@ -32,9 +31,8 @@ export const ConversationTranscript = React.memo<ConversationTranscriptProps>(
             {messages.map((message) => (
               <div
                 key={message.id}
-                className={`flex gap-3 ${
-                  message.type === 'user' ? 'justify-end' : 'justify-start'
-                }`}
+                className={`flex gap-3 ${message.type === 'user' ? 'justify-end' : 'justify-start'
+                  }`}
               >
                 {message.type === 'ai' && (
                   <Avatar className="mt-1 h-8 w-8">
@@ -45,24 +43,21 @@ export const ConversationTranscript = React.memo<ConversationTranscriptProps>(
                   </Avatar>
                 )}
                 <div
-                  className={`max-w-xs lg:max-w-md ${
-                    message.type === 'user' ? 'text-right' : ''
-                  }`}
+                  className={`max-w-xs lg:max-w-md ${message.type === 'user' ? 'text-right' : ''
+                    }`}
                 >
                   <div
-                    className={`rounded-lg px-4 py-2 ${
-                      message.type === 'user'
-                        ? 'bg-primary-500 text-white'
-                        : 'bg-gray-100 text-gray-900'
-                    }`}
+                    className={`rounded-lg px-4 py-2 ${message.type === 'user'
+                      ? 'bg-primary-500 text-white'
+                      : 'bg-gray-100 text-gray-900'
+                      }`}
                   >
                     <p className="text-sm">{message.content}</p>
                     <p
-                      className={`mt-1 text-xs ${
-                        message.type === 'user'
-                          ? 'text-primary-100'
-                          : 'text-gray-500'
-                      }`}
+                      className={`mt-1 text-xs ${message.type === 'user'
+                        ? 'text-primary-100'
+                        : 'text-gray-500'
+                        }`}
                     >
                       {new Date(message.timestamp).toLocaleTimeString([], {
                         hour: '2-digit',

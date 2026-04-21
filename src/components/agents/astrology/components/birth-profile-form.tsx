@@ -110,12 +110,18 @@ export default function BirthProfileForm({
 
     if (type === 'guest') {
       if (guestProfileId) {
-        updateGuest({ ...payload, guest_name: data.guest_name }, { onSuccess });
+        updateGuest(
+          { ...payload, guest_name: data.guest_name },
+          { onSuccess }
+        );
       } else {
-        createGuest({ ...payload, guest_name: data.guest_name || 'Guest' } as any, { onSuccess });
+        createGuest(
+          { ...payload, guest_name: data.guest_name || 'Guest' },
+          { onSuccess }
+        );
       }
     } else {
-      savePersonalProfile(payload as any, { onSuccess });
+      savePersonalProfile(payload, { onSuccess });
     }
   };
 

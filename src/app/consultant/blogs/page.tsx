@@ -16,7 +16,7 @@ export default function BlogsPage() {
   const [currentPage, setCurrentPage] = useState(1);
 
   const queryParams = useMemo(() => {
-    const params: any = {
+    const params: Record<string, string | number> = {
       page: currentPage,
       page_size: pageSize,
     };

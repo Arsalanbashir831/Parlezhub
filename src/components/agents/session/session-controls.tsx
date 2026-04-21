@@ -9,8 +9,6 @@ interface SessionControlsProps {
   sessionState: SessionStatus;
   isMuted: boolean;
   onStart: () => void;
-  onPause: () => void;
-  onResume: () => void;
   onStop: () => void;
   onToggleMute: () => void;
   startDisabled?: boolean;
@@ -20,8 +18,6 @@ export default function SessionControls({
   sessionState,
   isMuted,
   onStart,
-  onPause,
-  onResume,
   onStop,
   onToggleMute,
   startDisabled = false,
@@ -96,11 +92,10 @@ export default function SessionControls({
           onClick={onToggleMute}
           variant="ghost"
           size="lg"
-          className={`group flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-500 ${
-            isMuted
+          className={`group flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-500 ${isMuted
               ? 'border-primary-500/50 bg-primary-500/20 text-primary-500 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
               : 'border-white/5 bg-white/5 text-primary-100/40 hover:border-primary-500/30 hover:bg-primary-500/10 hover:text-primary-500'
-          }`}
+            }`}
         >
           {isMuted ? (
             <VolumeX className="h-6 w-6" />

@@ -1,6 +1,5 @@
 'use client';
 
-import { Star } from 'lucide-react';
 import { SharedStudentsList } from '@/components/dashboard/shared-students-list';
 
 export default function AstrologyStudentsPage() {

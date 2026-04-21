@@ -21,7 +21,6 @@ export default function RoleManagement() {
     activeRole,
     hasTeacherRole,
     hasStudentRole,
-    switchRole,
     refreshUserProfile,
     isLoading,
   } = useAuth();
@@ -117,36 +116,32 @@ export default function RoleManagement() {
           <div className="space-y-3">
             {/* Student Role */}
             <div
-              className={`flex items-center justify-between rounded-lg border p-4 ${
-                hasStudentRole
+              className={`flex items-center justify-between rounded-lg border p-4 ${hasStudentRole
                   ? 'border-green-200 bg-green-50 dark:border-green-800 dark:bg-green-900/20'
                   : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <GraduationCap
-                  className={`h-5 w-5 ${
-                    hasStudentRole
+                  className={`h-5 w-5 ${hasStudentRole
                       ? 'text-green-600 dark:text-green-400'
                       : 'text-gray-400'
-                  }`}
+                    }`}
                 />
                 <div>
                   <div
-                    className={`font-medium ${
-                      hasStudentRole
+                    className={`font-medium ${hasStudentRole
                         ? 'text-green-700 dark:text-green-300'
                         : 'text-gray-500'
-                    }`}
+                      }`}
                   >
                     Student
                   </div>
                   <div
-                    className={`text-sm ${
-                      hasStudentRole
+                    className={`text-sm ${hasStudentRole
                         ? 'text-green-600 dark:text-green-400'
                         : 'text-gray-400'
-                    }`}
+                      }`}
                   >
                     Learn languages with AI tutors and human consultants
                   </div>
@@ -163,36 +158,32 @@ export default function RoleManagement() {
 
             {/* Consultant Role */}
             <div
-              className={`flex items-center justify-between rounded-lg border p-4 ${
-                hasTeacherRole
+              className={`flex items-center justify-between rounded-lg border p-4 ${hasTeacherRole
                   ? 'border-blue-200 bg-blue-50 dark:border-blue-800 dark:bg-blue-900/20'
                   : 'border-gray-200 bg-gray-50 dark:border-gray-700 dark:bg-gray-800'
-              }`}
+                }`}
             >
               <div className="flex items-center gap-3">
                 <Users
-                  className={`h-5 w-5 ${
-                    hasTeacherRole
+                  className={`h-5 w-5 ${hasTeacherRole
                       ? 'text-blue-600 dark:text-blue-400'
                       : 'text-gray-400'
-                  }`}
+                    }`}
                 />
                 <div>
                   <div
-                    className={`font-medium ${
-                      hasTeacherRole
+                    className={`font-medium ${hasTeacherRole
                         ? 'text-blue-700 dark:text-blue-300'
                         : 'text-gray-500'
-                    }`}
+                      }`}
                   >
                     Consultant
                   </div>
                   <div
-                    className={`text-sm ${
-                      hasTeacherRole
+                    className={`text-sm ${hasTeacherRole
                         ? 'text-blue-600 dark:text-blue-400'
                         : 'text-gray-400'
-                    }`}
+                      }`}
                   >
                     Teach students and manage language learning services
                   </div>

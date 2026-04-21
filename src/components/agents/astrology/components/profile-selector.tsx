@@ -3,7 +3,6 @@
 import { Check, ChevronDown, Edit2, Plus, Trash2, User, Users } from 'lucide-react';
 import { useAuth } from '@/contexts/auth-context';
 import { useConsultantSharedStudents, useGuestProfiles } from '@/hooks/useAstrology';
-import { cn } from '@/lib/utils';
 import {
   DropdownMenu,
   DropdownMenuContent,

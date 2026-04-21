@@ -24,9 +24,6 @@ interface NextStepsProps {
 export const NextSteps = React.memo<NextStepsProps>(
   ({
     recommendations,
-    currentLevel,
-    progressToNextLevel,
-    onStartRecommendation,
   }) => {
     const getIcon = (type: Recommendation['type']) => {
       switch (type) {

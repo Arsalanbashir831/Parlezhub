@@ -2,6 +2,7 @@ import { API_ROUTES } from '@/constants/api-routes';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import { AxiosError } from 'axios';
 import {
   AstrologicalInsight,
   AstrologyAccess,
@@ -12,7 +13,7 @@ import {
   SharedStudentAccess,
   TransitResponse,
 } from '@/types/astrology';
-import apiCaller from '@/lib/api-caller';
+import apiCaller, { RequestData } from '@/lib/api-caller';
 
 export const ASTROLOGY_QUERY_KEYS = {
   BIRTH_PROFILE: ['astrology', 'birth-profile'],
@@ -40,8 +41,8 @@ export function useBirthProfile(studentId?: string, guestProfileId?: string, ena
     queryKey: guestProfileId
       ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'guest', guestProfileId]
       : studentId
-      ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'student', studentId]
-      : ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE,
+        ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'student', studentId]
+        : ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE,
     queryFn: async () => {
       try {
         const url = buildAstroUrl(API_ROUTES.ASTROLOGY.BIRTH_PROFILE, studentId, guestProfileId);
@@ -64,8 +65,8 @@ export function useNatalChart(enabled: boolean = true, studentId?: string, guest
     queryKey: guestProfileId
       ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, 'guest', guestProfileId]
       : studentId
-      ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, 'student', studentId]
-      : ASTROLOGY_QUERY_KEYS.NATAL_CHART,
+        ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, 'student', studentId]
+        : ASTROLOGY_QUERY_KEYS.NATAL_CHART,
     queryFn: async () => {
       const url = buildAstroUrl(API_ROUTES.ASTROLOGY.NATAL_CHART, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
@@ -80,8 +81,8 @@ export function useTransits(enabled: boolean = true, studentId?: string, guestPr
     queryKey: guestProfileId
       ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'guest', guestProfileId]
       : studentId
-      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'student', studentId]
-      : ASTROLOGY_QUERY_KEYS.TRANSITS,
+        ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'student', studentId]
+        : ASTROLOGY_QUERY_KEYS.TRANSITS,
     queryFn: async () => {
       const url = buildAstroUrl(API_ROUTES.ASTROLOGY.TRANSITS, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
@@ -100,8 +101,8 @@ export function useNakshatraPredictions(
     queryKey: guestProfileId
       ? ['astrology', 'nakshatra-predictions', 'guest', guestProfileId]
       : studentId
-      ? ['astrology', 'nakshatra-predictions', 'student', studentId]
-      : ['astrology', 'nakshatra-predictions'],
+        ? ['astrology', 'nakshatra-predictions', 'student', studentId]
+        : ['astrology', 'nakshatra-predictions'],
     queryFn: async () => {
       const url = buildAstroUrl(API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
@@ -159,8 +160,8 @@ export function useAstrologicalInsight(
     queryKey: guestProfileId
       ? ['astrology', 'insights', slug, 'guest', guestProfileId]
       : studentId
-      ? ['astrology', 'insights', slug, 'student', studentId]
-      : ['astrology', 'insights', slug],
+        ? ['astrology', 'insights', slug, 'student', studentId]
+        : ['astrology', 'insights', slug],
     queryFn: async () => {
       const baseUrl = `${API_ROUTES.ASTROLOGY.INSIGHTS}/${slug}/`;
       const url = buildAstroUrl(baseUrl, studentId, guestProfileId);
@@ -182,19 +183,30 @@ export function useGuestProfiles() {
   });
 }
 
+export type CreateGuestProfilePayload = SaveBirthProfilePayload & {
+  guest_name: string;
+};
+
 export function useCreateGuestProfile() {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: BirthProfile & { guest_name: string }) => {
-      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILES, 'POST', payload as any);
+    mutationFn: async (payload: CreateGuestProfilePayload) => {
+      const response = await apiCaller(
+        API_ROUTES.ASTROLOGY.GUEST_PROFILES,
+        'POST',
+        payload as unknown as RequestData
+      );
       return response.data as BirthProfile;
     },
-    onSuccess: (data) => {
+    onSuccess: () => {
       toast.success('Guest profile created successfully');
       queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES });
     },
-    onError: (error: any) => {
-      toast.error(error?.response?.data?.detail || 'Failed to create guest profile');
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ detail?: string }>;
+      toast.error(
+        err?.response?.data?.detail || 'Failed to create guest profile'
+      );
     },
   });
 }
@@ -202,8 +214,12 @@ export function useCreateGuestProfile() {
 export function useUpdateGuestProfile(id: number) {
   const queryClient = useQueryClient();
   return useMutation({
-    mutationFn: async (payload: Partial<BirthProfile>) => {
-      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILE_DETAIL(id), 'PUT', payload as any);
+    mutationFn: async (payload: Partial<CreateGuestProfilePayload>) => {
+      const response = await apiCaller(
+        API_ROUTES.ASTROLOGY.GUEST_PROFILE_DETAIL(id),
+        'PUT',
+        payload as unknown as RequestData
+      );
       return response.data as BirthProfile;
     },
     onSuccess: () => {
@@ -268,10 +284,9 @@ export function useGrantAstrologyAccess() {
         queryKey: ASTROLOGY_QUERY_KEYS.ACCESS_LIST,
       });
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.detail || 'Failed to grant access'
-      );
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ detail?: string }>;
+      toast.error(err?.response?.data?.detail || 'Failed to grant access');
     },
   });
 }
@@ -293,10 +308,9 @@ export function useRevokeAstrologyAccess() {
         queryKey: ASTROLOGY_QUERY_KEYS.ACCESS_LIST,
       });
     },
-    onError: (error: any) => {
-      toast.error(
-        error?.response?.data?.detail || 'Failed to revoke access'
-      );
+    onError: (error: unknown) => {
+      const err = error as AxiosError<{ detail?: string }>;
+      toast.error(err?.response?.data?.detail || 'Failed to revoke access');
     },
   });
 }

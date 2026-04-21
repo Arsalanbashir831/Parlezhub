@@ -1,14 +1,13 @@
 'use client';
 
-import { Filter, Search } from 'lucide-react';
+import { Search } from 'lucide-react';
 
 import {
     ServiceFilters as IServiceFilters,
     ServiceStatus,
     ServiceType,
 } from '@/types/service';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import {
     Select,
@@ -27,7 +26,6 @@ interface ServicesFiltersProps {
 export function ServicesFilters({
     filters,
     setFilters,
-    clearFilters,
 }: ServicesFiltersProps) {
     return (
         <Card className="rounded-2xl border-white/5 bg-white/[0.03] shadow-xl backdrop-blur-md">

@@ -27,7 +27,7 @@ import { Textarea } from '@/components/ui/textarea';
 export default function CreateBlogPage() {
   const router = useRouter();
   const { create, isProcessing } = useBlogs();
-  const { isGenerating: isGeneratingContent, generateContent, error: aiError } =
+  const { isGenerating: isGeneratingContent, generateContent } =
     useAIGeneration();
   const [title, setTitle] = useState('');
   const [content, setContent] = useState('');

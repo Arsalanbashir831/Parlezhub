@@ -7,7 +7,6 @@ import {
   serviceUtils,
   type PublicService,
 } from '@/services/service';
-import { toast } from 'sonner';
 
 import { getErrorMessage } from '@/lib/error-utils';
 

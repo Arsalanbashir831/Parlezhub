@@ -139,10 +139,11 @@ IMPORTANT:
         content: generatedContent.trim(),
         success: true,
       });
-    } catch (apiError: any) {
-      console.error('Gemini API Error:', apiError);
+    } catch (apiError: unknown) {
+      const err = apiError as { status?: number; message?: string };
+      console.error('Gemini API Error:', err);
 
-      if (apiError.status === 429 || apiError.message?.includes('429')) {
+      if (err.status === 429 || err.message?.includes('429')) {
         return NextResponse.json(
           {
             error:
@@ -152,8 +153,8 @@ IMPORTANT:
           { status: 429 }
         );
       }
-
-      if (apiError.status === 401 || apiError.message?.includes('401')) {
+ 
+      if (err.status === 401 || err.message?.includes('401')) {
         return NextResponse.json(
           {
             error:
@@ -163,8 +164,8 @@ IMPORTANT:
           { status: 401 }
         );
       }
-
-      throw apiError;
+ 
+      throw err;
     }
   } catch (error: unknown) {
     console.error('[POST /api/openai/generate-content] error:', error);

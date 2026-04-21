@@ -49,7 +49,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   >('idle');
   const [isConnecting, setIsConnecting] = useState(false);
   const [vapi, setVapi] = useState<Vapi | null>(null);
-  const [assistantId, setAssistantId] = useState<string | null>(null);
   const [isConnected, setIsConnected] = useState(false);
   const [isAISpeaking, setIsAISpeaking] = useState(false);
   const [isUserSpeaking, setIsUserSpeaking] = useState(false);
@@ -199,7 +198,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
         topic: config.topic || prompt,
         voice: config.voice,
       });
-      setAssistantId(assistant.id);
 
       // Get Vapi web token
       const webToken = await vapiService.getWebToken();
@@ -231,19 +229,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
     } finally {
       setIsConnecting(false);
     }
-  }, [config, prompt]);
-
-  const handlePauseSession = useCallback(() => {
-    setSessionState('paused');
-    // Note: Vapi doesn't support pause/resume, show toast
-    toast.info('Pause not available with Vapi');
-  }, []);
-
-  const handleResumeSession = useCallback(() => {
-    setSessionState('active');
-    // Note: Vapi doesn't support pause/resume, show toast
-    toast.info('Resume not available with Vapi');
-  }, []);
+  }, [config, prompt, router]);
 
   const handleStopSession = useCallback(async () => {
     // Persist conversation first, then mark completed and cleanup
@@ -425,8 +411,6 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
           sessionState={sessionState}
           isMuted={false}
           onStart={handleStartSession}
-          onPause={handlePauseSession}
-          onResume={handleResumeSession}
           onStop={handleStopSession}
           onToggleMute={handleToggleMute}
           startDisabled={!config.nativeLanguage || !config.language}

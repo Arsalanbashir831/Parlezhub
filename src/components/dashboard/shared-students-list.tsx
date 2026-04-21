@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Search, Star, UserCheck, UserX } from 'lucide-react';
+import { ExternalLink, Search, Star, } from 'lucide-react';
 
 import { SharedStudentAccess } from '@/types/astrology';
 import { useConsultantSharedStudents } from '@/hooks/useAstrology';
@@ -110,8 +110,4 @@ export function SharedStudentsList() {
       </div>
     </div>
   );
-}
-
-function cn(...classes: any[]) {
-  return classes.filter(Boolean).join(' ');
 }

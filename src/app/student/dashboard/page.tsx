@@ -23,7 +23,6 @@ export default function DashboardPage() {
         {/* Stats Cards - Top Row */}
         <DashboardStatsCards
           conversations={conversations}
-          meetings={meetings}
         />
 
         {/* Recent Sessions - Middle Column */}

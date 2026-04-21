@@ -30,7 +30,6 @@ const DEFAULT_SECURITY = {
 export default function ConsultantSettingsPage() {
   const { user } = useUser();
   const { logout } = useAuth();
-  const [loadingAvailability, setLoadingAvailability] = useState(false);
   const [savingAvailability, setSavingAvailability] = useState(false);
   const [schedule, setSchedule] = useState<AvailabilitySchedule | undefined>(undefined);
   const [securityData, setSecurityData] = useState(DEFAULT_SECURITY);
@@ -71,7 +70,6 @@ export default function ConsultantSettingsPage() {
   useEffect(() => {
     const load = async () => {
       if (!user?.id) return;
-      setLoadingAvailability(true);
       try {
         const items = await availabilityService.getWeekly(user.id);
         // Map API to UI schedule
@@ -102,10 +100,8 @@ export default function ConsultantSettingsPage() {
           };
         });
         setSchedule(mapped);
-      } catch (e) {
+      } catch {
         // ignore for now, UI defaults will show
-      } finally {
-        setLoadingAvailability(false);
       }
     };
     load();

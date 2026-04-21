@@ -156,7 +156,7 @@ const apiCaller = async (
 
   if (!useAuth) {
     if (config.headers) {
-      delete (config.headers as any).Authorization;
+      delete (config.headers as Record<string, string>).Authorization;
     }
   }
 
@@ -174,8 +174,8 @@ const apiCaller = async (
       }
       config.data = formData;
       // When using FormData, let Axios set the Content-Type automatically with boundary
-      if (config.headers && (config.headers as any)['Content-Type']) {
-        delete (config.headers as any)['Content-Type'];
+      if (config.headers && (config.headers as Record<string, string>)['Content-Type']) {
+        delete (config.headers as Record<string, string>)['Content-Type'];
       }
     } else {
       config.data = data;

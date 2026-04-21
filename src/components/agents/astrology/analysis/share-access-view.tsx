@@ -28,18 +28,11 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
   const isIsMobile = useIsMobile();
   const {
     services,
-    availableLanguages,
     searchQuery,
-    selectedLanguage,
-    priceRange,
-    showFilters,
     selectedService,
     isDetailsPanelOpen,
     isLoading: isLoadingGigs,
     handleSearchChange,
-    handleLanguageChange,
-    handlePriceRangeChange,
-    handleToggleFilters,
     handleClearFilters,
     handleSelectService,
     handleCloseDetailsPanel,

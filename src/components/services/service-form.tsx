@@ -82,7 +82,7 @@ export default function ServiceForm({
 }: ServiceFormProps) {
   const [newTag, setNewTag] = useState('');
   const [newService, setNewService] = useState('');
-  const { isGenerating: isGeneratingDescription, generateContent, error: aiError } =
+  const { isGenerating: isGeneratingDescription, generateContent } =
     useAIGeneration();
 
   const {
@@ -451,17 +451,17 @@ export default function ServiceForm({
       {/* Form Actions */}
       <div className="flex justify-end gap-3 pt-6 border-t border-white/5">
         {onCancel && (
-          <Button 
-            type="button" 
-            variant="outline" 
+          <Button
+            type="button"
+            variant="outline"
             onClick={onCancel}
             className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white px-8 font-bold"
           >
             Cancel
           </Button>
         )}
-        <Button 
-          type="submit" 
+        <Button
+          type="submit"
           disabled={isLoading || isGeneratingDescription}
           className="h-12 rounded-xl bg-primary-500 px-10 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
         >

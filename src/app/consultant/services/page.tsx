@@ -8,7 +8,7 @@ import { Briefcase, Plus } from 'lucide-react';
 import { Service, ServiceStatus, ServiceType } from '@/types/service';
 import { useServices } from '@/hooks/useServices';
 import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Card, CardContent, } from '@/components/ui/card';
 import {
   ServiceCard,
   ServiceCardSkeleton,
@@ -30,7 +30,6 @@ import {
 export default function ServicesPage() {
   const router = useRouter();
   const {
-    services,
     filteredServices,
     stats,
     filters,
@@ -133,7 +132,7 @@ export default function ServicesPage() {
 
         <div className="flex gap-3">
           {availableServiceTypes.length > 0 && (
-            <Button 
+            <Button
               onClick={handleCreateService}
               className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
             >
@@ -193,7 +192,7 @@ export default function ServicesPage() {
                 : 'Create your first service to start offering your expertise to your students.'}
             </p>
             {availableServiceTypes.length > 0 && (
-              <Button 
+              <Button
                 onClick={handleCreateService}
                 className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
               >

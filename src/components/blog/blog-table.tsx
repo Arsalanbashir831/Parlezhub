@@ -34,7 +34,7 @@ interface BlogTableProps {
   blogs: BlogPost[];
   isLoading: boolean;
   onDelete: (id: number, title: string) => void;
-  onToggleVisibility: (id: number) => Promise<any>;
+  onToggleVisibility: (id: number) => Promise<BlogPost | null>;
   formatDate: (dateString: string) => string;
 }
 

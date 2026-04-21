@@ -57,7 +57,7 @@ const AccountStatus = memo(
           month: 'long',
           day: 'numeric',
         });
-      } catch (error) {
+      } catch {
         return 'N/A';
       }
     };
