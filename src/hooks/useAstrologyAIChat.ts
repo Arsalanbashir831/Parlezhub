@@ -17,7 +17,7 @@ interface BackendChatMessage {
   created_at: string;
 }
 
-export function useAstrologyAIChat(category: string, studentId?: string) {
+export function useAstrologyAIChat(category: string, studentId?: string, guestProfileId?: string) {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [isLoadingHistory, setIsLoadingHistory] = useState(false);
@@ -28,9 +28,11 @@ export function useAstrologyAIChat(category: string, studentId?: string) {
     setError(null);
     try {
       let url = API_ROUTES.ASTROLOGY.CHAT(category);
-      if (studentId) {
-        url += `?student_id=${studentId}`;
-      }
+      const params = new URLSearchParams();
+      if (studentId) params.append('student_id', studentId);
+      if (guestProfileId) params.append('guest_profile_id', guestProfileId);
+      const query = params.toString();
+      if (query) url += `?${query}`;
 
       const response = await apiCaller(url, 'GET');
 
@@ -57,7 +59,7 @@ export function useAstrologyAIChat(category: string, studentId?: string) {
     } finally {
       setIsLoadingHistory(false);
     }
-  }, [category, studentId]);
+  }, [category, studentId, guestProfileId]);
 
   useEffect(() => {
     fetchHistory();
@@ -77,9 +79,11 @@ export function useAstrologyAIChat(category: string, studentId?: string) {
 
     try {
       let url = API_ROUTES.ASTROLOGY.CHAT(category);
-      if (studentId) {
-        url += `?student_id=${studentId}`;
-      }
+      const params = new URLSearchParams();
+      if (studentId) params.append('student_id', studentId);
+      if (guestProfileId) params.append('guest_profile_id', guestProfileId);
+      const query = params.toString();
+      if (query) url += `?${query}`;
 
       const response = await apiCaller(url, 'POST', { message: content });
 

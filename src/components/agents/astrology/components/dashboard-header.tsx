@@ -12,9 +12,13 @@ import { UserMiniCard } from '@/components/layout/user-mini-card';
 
 interface DashboardHeaderProps {
   className?: string;
+  children?: React.ReactNode;
 }
 
-export function DashboardHeader({ className }: DashboardHeaderProps) {
+export function DashboardHeader({
+  className,
+  children,
+}: DashboardHeaderProps) {
   const router = useRouter();
   const { logout } = useAuth();
 
@@ -27,6 +31,7 @@ export function DashboardHeader({ className }: DashboardHeaderProps) {
     >
       <div className="flex items-center gap-2 md:gap-4">
         <Logo href={ROUTES.HOME} />
+        {children}
       </div>
 
       <div className="flex items-center gap-2 md:gap-6">

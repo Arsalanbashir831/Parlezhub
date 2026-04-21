@@ -5,7 +5,7 @@ import { Loader2 } from 'lucide-react';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { useBirthProfile, useSaveBirthProfile } from '@/hooks/useAstrology';
+import { useBirthProfile, useCreateGuestProfile, useSaveBirthProfile, useUpdateGuestProfile } from '@/hooks/useAstrology';
 import { Button } from '@/components/ui/button';
 import {
   Form,
@@ -18,6 +18,7 @@ import {
 import { Input } from '@/components/ui/input';
 
 const formSchema = z.object({
+  guest_name: z.string().optional(),
   birth_year: z.coerce
     .number()
     .min(1900, 'Year must be after 1900')
@@ -47,17 +48,42 @@ type FormValues = z.infer<typeof formSchema>;
 export default function BirthProfileForm({
   readOnly = false,
   studentId,
+  guestProfileId,
+  type = 'me',
+  onSuccess,
 }: {
   readOnly?: boolean;
   studentId?: string;
+  guestProfileId?: string;
+  type?: 'me' | 'student' | 'guest';
+  onSuccess?: () => void;
 }) {
-  const { data: profile } = useBirthProfile(studentId);
-  const isUpdate = !!profile;
-  const { mutate: saveProfile, isPending } = useSaveBirthProfile(isUpdate);
+  // Only fetch existing profile if updating or viewing student
+  const shouldFetchProfile = type !== 'guest' || !!guestProfileId;
+  const { data: profile } = useBirthProfile(
+    type === 'student' ? studentId : undefined, 
+    type === 'guest' ? guestProfileId : undefined,
+    shouldFetchProfile
+  );
+
+  // If we are in 'me' mode and no IDs provided, useBirthProfile() without args fetches 'me'.
+  // If we are in 'guest' mode and no guestProfileId, we want a fresh form.
+  
+  // Ensure isUpdate is false for new guest creation even if 'me' profile is in cache
+  const isUpdate = !!profile && (type !== 'guest' || !!guestProfileId);
+  const isGuestFlow = type === 'guest';
+
+  // Hooks for different scenarios
+  const { mutate: savePersonalProfile, isPending: isPersonalPending } = useSaveBirthProfile(isUpdate);
+  const { mutate: createGuest, isPending: isCreateGuestPending } = useCreateGuestProfile();
+  const { mutate: updateGuest, isPending: isUpdateGuestPending } = useUpdateGuestProfile(Number(guestProfileId));
+
+  const isPending = isPersonalPending || isCreateGuestPending || isUpdateGuestPending;
 
   const form = useForm<FormValues>({
     resolver: zodResolver(formSchema),
     values: {
+      guest_name: profile?.guest_name || '',
       birth_year: profile?.birth_year || 1990,
       birth_month: profile?.birth_month || 1,
       birth_day: profile?.birth_day || 1,
@@ -69,7 +95,7 @@ export default function BirthProfileForm({
   });
 
   const onSubmit = (data: FormValues) => {
-    saveProfile({
+    const payload = {
       birth_year: data.birth_year,
       birth_month: data.birth_month,
       birth_day: data.birth_day,
@@ -77,7 +103,17 @@ export default function BirthProfileForm({
       birth_minute: data.birth_minute,
       city: data.city,
       country_code: data.country_code,
-    });
+    };
+
+    if (type === 'guest') {
+      if (guestProfileId) {
+        updateGuest({ ...payload, guest_name: data.guest_name }, { onSuccess });
+      } else {
+        createGuest({ ...payload, guest_name: data.guest_name || 'Guest' } as any, { onSuccess });
+      }
+    } else {
+      savePersonalProfile(payload as any, { onSuccess });
+    }
   };
 
   return (
@@ -85,16 +121,32 @@ export default function BirthProfileForm({
       <div className="bg-white/1 w-full max-w-md rounded-2xl border border-primary-500/20 p-8 shadow-2xl backdrop-blur-md">
         <div className="mb-6 text-center">
           <h2 className="font-serif text-2xl font-bold tracking-wide text-primary-500">
-            Birth Profile
+            {isGuestFlow ? (guestProfileId ? 'Edit Guest Profile' : 'New Guest Profile') : 'Birth Profile'}
           </h2>
           <p className="mt-2 text-sm text-primary-100/60">
-            Please enter your birth details to generate your astrological
-            charts.
+            {isGuestFlow 
+              ? 'Enter guest details to generate an astrological chart.'
+              : 'Please enter your birth details to generate your astrological charts.'}
           </p>
         </div>
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+            {isGuestFlow && (
+              <FormField
+                control={form.control}
+                name="guest_name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Guest Name</FormLabel>
+                    <FormControl>
+                      <Input placeholder="e.g. John Doe" {...field} disabled={readOnly} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+            )}
             <div className="grid grid-cols-3 gap-4">
               <FormField
                 control={form.control}
@@ -114,7 +166,7 @@ export default function BirthProfileForm({
                 name="birth_month"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Month (1-12)</FormLabel>
+                    <FormLabel>Month</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
@@ -127,7 +179,7 @@ export default function BirthProfileForm({
                 name="birth_day"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Day (1-31)</FormLabel>
+                    <FormLabel>Day</FormLabel>
                     <FormControl>
                       <Input type="number" {...field} disabled={readOnly} />
                     </FormControl>
@@ -215,9 +267,9 @@ export default function BirthProfileForm({
                     {isUpdate ? 'Updating...' : 'Generating...'}
                   </>
                 ) : isUpdate ? (
-                  'Update Chart'
+                  type === 'guest' ? 'Update Guest' : 'Update Chart'
                 ) : (
-                  'Generate Chart'
+                  type === 'guest' ? 'Create Guest Profile' : 'Generate Chart'
                 )}
               </Button>
             )}

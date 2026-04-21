@@ -15,6 +15,7 @@ import {
 
 interface NavataraEducationViewProps {
   studentId?: string;
+  guestProfileId?: string;
   onClose?: () => void;
 }
 
@@ -104,9 +105,10 @@ const TARA_CATEGORIES = [
 
 export function NavataraEducationView({
   studentId,
+  guestProfileId,
   onClose,
 }: NavataraEducationViewProps) {
-  const { data, isLoading, error } = useNakshatraPredictions(true, studentId);
+  const { data, isLoading, error } = useNakshatraPredictions(true, studentId, guestProfileId);
 
   return (
     <div className="mx-auto max-w-5xl space-y-8 pb-12 text-foreground">

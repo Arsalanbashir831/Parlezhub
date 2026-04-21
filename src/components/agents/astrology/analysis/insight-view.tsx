@@ -14,17 +14,20 @@ interface InsightViewProps {
   slug: string;
   onBack: () => void;
   studentId?: string;
+  guestProfileId?: string;
 }
 
 const InsightView: React.FC<InsightViewProps> = ({
   slug,
   onBack,
   studentId,
+  guestProfileId,
 }) => {
   const { data, isLoading, isError } = useAstrologicalInsight(
     slug,
     true,
-    studentId
+    studentId,
+    guestProfileId
   );
 
   const chatSectionRef = React.useRef<HTMLDivElement>(null);

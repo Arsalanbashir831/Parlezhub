@@ -44,6 +44,8 @@ export interface BirthProfile {
   city: string;
   country_code: string;
   timezone_str: string;
+  guest_name?: string;
+  created_by?: string;
   created_at: string;
   updated_at: string;
 }

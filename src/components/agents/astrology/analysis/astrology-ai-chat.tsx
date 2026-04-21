@@ -10,14 +10,16 @@ import { useAstrologyAIChat } from '@/hooks/useAstrologyAIChat';
 interface AstrologyAIChatProps {
   category: string;
   studentId?: string;
+  guestProfileId?: string;
 }
 
 export const AstrologyAIChat: React.FC<AstrologyAIChatProps> = ({
   category,
   studentId,
+  guestProfileId,
 }) => {
   const { messages, isSending, isLoadingHistory, error, sendMessage } =
-    useAstrologyAIChat(category, studentId);
+    useAstrologyAIChat(category, studentId, guestProfileId);
 
   const [inputValue, setInputValue] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);

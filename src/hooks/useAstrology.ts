@@ -21,18 +21,30 @@ export const ASTROLOGY_QUERY_KEYS = {
   ACCESS_LIST: ['astrology', 'access-list'],
   SEARCH_TEACHERS: ['astrology', 'search-consultants'],
   SHARED_STUDENTS: ['astrology', 'consultant', 'shared-students'],
+  GUEST_PROFILES: ['astrology', 'guest-profiles'],
 };
 
-export function useBirthProfile(studentId?: string) {
+/**
+ * Helper to build URLs with optional student_id or guest_profile_id
+ */
+function buildAstroUrl(baseUrl: string, studentId?: string, guestProfileId?: string) {
+  const params = new URLSearchParams();
+  if (studentId) params.append('student_id', studentId);
+  if (guestProfileId) params.append('guest_profile_id', guestProfileId);
+  const query = params.toString();
+  return query ? `${baseUrl}?${query}` : baseUrl;
+}
+
+export function useBirthProfile(studentId?: string, guestProfileId?: string, enabled: boolean = true) {
   return useQuery({
-    queryKey: studentId
-      ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, studentId]
+    queryKey: guestProfileId
+      ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'guest', guestProfileId]
+      : studentId
+      ? [...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'student', studentId]
       : ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE,
     queryFn: async () => {
       try {
-        const url = studentId
-          ? `${API_ROUTES.ASTROLOGY.BIRTH_PROFILE}?student_id=${studentId}`
-          : API_ROUTES.ASTROLOGY.BIRTH_PROFILE;
+        const url = buildAstroUrl(API_ROUTES.ASTROLOGY.BIRTH_PROFILE, studentId, guestProfileId);
         const response = await apiCaller(url, 'GET');
         return response.data as BirthProfile;
       } catch (error: unknown) {
@@ -43,18 +55,19 @@ export function useBirthProfile(studentId?: string) {
         throw error;
       }
     },
+    enabled,
   });
 }
 
-export function useNatalChart(enabled: boolean = true, studentId?: string) {
+export function useNatalChart(enabled: boolean = true, studentId?: string, guestProfileId?: string) {
   return useQuery({
-    queryKey: studentId
-      ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, studentId]
+    queryKey: guestProfileId
+      ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, 'guest', guestProfileId]
+      : studentId
+      ? [...ASTROLOGY_QUERY_KEYS.NATAL_CHART, 'student', studentId]
       : ASTROLOGY_QUERY_KEYS.NATAL_CHART,
     queryFn: async () => {
-      const url = studentId
-        ? `${API_ROUTES.ASTROLOGY.NATAL_CHART}?student_id=${studentId}`
-        : API_ROUTES.ASTROLOGY.NATAL_CHART;
+      const url = buildAstroUrl(API_ROUTES.ASTROLOGY.NATAL_CHART, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
       return response.data as NatalChartResponse;
     },
@@ -62,15 +75,15 @@ export function useNatalChart(enabled: boolean = true, studentId?: string) {
   });
 }
 
-export function useTransits(enabled: boolean = true, studentId?: string) {
+export function useTransits(enabled: boolean = true, studentId?: string, guestProfileId?: string) {
   return useQuery({
-    queryKey: studentId
-      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, studentId]
+    queryKey: guestProfileId
+      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'guest', guestProfileId]
+      : studentId
+      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'student', studentId]
       : ASTROLOGY_QUERY_KEYS.TRANSITS,
     queryFn: async () => {
-      const url = studentId
-        ? `${API_ROUTES.ASTROLOGY.TRANSITS}?student_id=${studentId}`
-        : API_ROUTES.ASTROLOGY.TRANSITS;
+      const url = buildAstroUrl(API_ROUTES.ASTROLOGY.TRANSITS, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
       return response.data as TransitResponse;
     },
@@ -80,16 +93,17 @@ export function useTransits(enabled: boolean = true, studentId?: string) {
 
 export function useNakshatraPredictions(
   enabled: boolean = true,
-  studentId?: string
+  studentId?: string,
+  guestProfileId?: string
 ) {
   return useQuery({
-    queryKey: studentId
-      ? ['astrology', 'nakshatra-predictions', studentId]
+    queryKey: guestProfileId
+      ? ['astrology', 'nakshatra-predictions', 'guest', guestProfileId]
+      : studentId
+      ? ['astrology', 'nakshatra-predictions', 'student', studentId]
       : ['astrology', 'nakshatra-predictions'],
     queryFn: async () => {
-      const url = studentId
-        ? `${API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS}?student_id=${studentId}`
-        : API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS;
+      const url = buildAstroUrl(API_ROUTES.ASTROLOGY.NAKSHATRA_PREDICTIONS, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
       return response.data as NakshatraPredictionResponse;
     },
@@ -138,20 +152,79 @@ export function useSaveBirthProfile(isUpdate: boolean = false) {
 export function useAstrologicalInsight(
   slug: string,
   enabled: boolean = true,
-  studentId?: string
+  studentId?: string,
+  guestProfileId?: string
 ) {
   return useQuery({
-    queryKey: studentId
-      ? ['astrology', 'insights', slug, studentId]
+    queryKey: guestProfileId
+      ? ['astrology', 'insights', slug, 'guest', guestProfileId]
+      : studentId
+      ? ['astrology', 'insights', slug, 'student', studentId]
       : ['astrology', 'insights', slug],
     queryFn: async () => {
       const baseUrl = `${API_ROUTES.ASTROLOGY.INSIGHTS}/${slug}/`;
-      const url = studentId ? `${baseUrl}?student_id=${studentId}` : baseUrl;
+      const url = buildAstroUrl(baseUrl, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
       return response.data as AstrologicalInsight;
     },
     enabled,
     staleTime: 1000 * 60 * 60,
+  });
+}
+
+export function useGuestProfiles() {
+  return useQuery({
+    queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES,
+    queryFn: async () => {
+      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILES, 'GET');
+      return response.data as BirthProfile[];
+    },
+  });
+}
+
+export function useCreateGuestProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: BirthProfile & { guest_name: string }) => {
+      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILES, 'POST', payload as any);
+      return response.data as BirthProfile;
+    },
+    onSuccess: (data) => {
+      toast.success('Guest profile created successfully');
+      queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES });
+    },
+    onError: (error: any) => {
+      toast.error(error?.response?.data?.detail || 'Failed to create guest profile');
+    },
+  });
+}
+
+export function useUpdateGuestProfile(id: number) {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: Partial<BirthProfile>) => {
+      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILE_DETAIL(id), 'PUT', payload as any);
+      return response.data as BirthProfile;
+    },
+    onSuccess: () => {
+      toast.success('Guest profile updated successfully');
+      queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES });
+      queryClient.invalidateQueries({ queryKey: ['astrology', 'birth-profile', 'guest', String(id)] });
+      queryClient.invalidateQueries({ queryKey: ['astrology', 'natal-chart', 'guest', String(id)] });
+    },
+  });
+}
+
+export function useDeleteGuestProfile() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (id: number) => {
+      await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILE_DETAIL(id), 'DELETE');
+    },
+    onSuccess: () => {
+      toast.success('Guest profile deleted');
+      queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES });
+    },
   });
 }
 

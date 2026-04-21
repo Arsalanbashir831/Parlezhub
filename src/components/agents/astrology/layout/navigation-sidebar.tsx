@@ -18,6 +18,7 @@ interface NavigationSidebarProps {
   className?: string;
   transits?: TransitPlanet[];
   readOnly?: boolean;
+  isPersonal?: boolean;
 }
 
 const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
@@ -27,10 +28,11 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   className,
   transits,
   readOnly,
+  isPersonal = true,
 }) => {
-  const menuItems = readOnly
-    ? RIGHT_MENU_ITEMS.filter((item) => item.id !== 'share-access')
-    : RIGHT_MENU_ITEMS;
+  const menuItems = isPersonal
+    ? RIGHT_MENU_ITEMS
+    : RIGHT_MENU_ITEMS.filter((item) => item.id !== 'share-access');
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-ml-4 flex-1 pl-4">
