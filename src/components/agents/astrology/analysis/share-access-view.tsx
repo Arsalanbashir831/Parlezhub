@@ -44,7 +44,7 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
   const isAlreadyGranted = (teacherId: string) => {
     if (!accessList) return false;
     return accessList.some(
-      (access: AstrologyAccess) => access.consultant.id === teacherId
+      (access: AstrologyAccess) => access.teacher.id === teacherId
     );
   };
 
@@ -197,21 +197,21 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
               <div className="flex flex-col divide-y divide-primary-500/10">
                 {accessList.map((access: AstrologyAccess) => (
                   <div
-                    key={access.consultant.id}
+                    key={access.teacher.id}
                     className="flex items-center justify-between gap-4 p-4 px-6 transition-colors hover:bg-white/5"
                   >
                     <div className="flex min-w-0 items-center gap-4">
                       <Avatar className="h-10 w-10 border-2 border-primary-500/20">
                         <AvatarImage
-                          src={access.consultant.profile_picture || ''}
+                          src={access.teacher.profile_picture || ''}
                         />
                         <AvatarFallback className="bg-primary-500/10 font-medium text-primary-300">
-                          {(access.consultant.full_name || 'A')[0].toUpperCase()}
+                          {(access.teacher.full_name || 'A')[0].toUpperCase()}
                         </AvatarFallback>
                       </Avatar>
                       <div className="flex min-w-0 flex-col">
                         <p className="truncate font-medium text-primary-100">
-                          {access.consultant.full_name || 'Astrologer'}
+                          {access.teacher.full_name || 'Astrologer'}
                         </p>
                         <p className="truncate text-xs text-primary-500/60">
                           Granted on{' '}
@@ -222,7 +222,7 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
                     <Button
                       variant="ghost"
                       size="sm"
-                      onClick={() => handleRevoke(access.consultant.id)}
+                      onClick={() => handleRevoke(access.teacher.id)}
                       disabled={isRevoking}
                       className="shrink-0 font-medium text-red-400 hover:bg-red-500/10 hover:text-red-300"
                     >

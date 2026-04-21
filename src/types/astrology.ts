@@ -182,7 +182,7 @@ export interface AstrologyConsultant {
 
 export interface AstrologyAccess {
   id: number;
-  consultant: {
+  teacher: {
     id: string;
     email: string;
     full_name: string;
