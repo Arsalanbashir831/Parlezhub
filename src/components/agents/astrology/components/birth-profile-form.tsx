@@ -16,6 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { cn } from '@/lib/utils';
 
 const formSchema = z.object({
   guest_name: z.string().optional(),
@@ -51,24 +52,26 @@ export default function BirthProfileForm({
   guestProfileId,
   type = 'me',
   onSuccess,
+  className
 }: {
   readOnly?: boolean;
   studentId?: string;
   guestProfileId?: string;
   type?: 'me' | 'student' | 'guest';
   onSuccess?: () => void;
+  className?: string;
 }) {
   // Only fetch existing profile if updating or viewing student
   const shouldFetchProfile = type !== 'guest' || !!guestProfileId;
   const { data: profile } = useBirthProfile(
-    type === 'student' ? studentId : undefined, 
+    type === 'student' ? studentId : undefined,
     type === 'guest' ? guestProfileId : undefined,
     shouldFetchProfile
   );
 
   // If we are in 'me' mode and no IDs provided, useBirthProfile() without args fetches 'me'.
   // If we are in 'guest' mode and no guestProfileId, we want a fresh form.
-  
+
   // Ensure isUpdate is false for new guest creation even if 'me' profile is in cache
   const isUpdate = !!profile && (type !== 'guest' || !!guestProfileId);
   const isGuestFlow = type === 'guest';
@@ -118,13 +121,13 @@ export default function BirthProfileForm({
 
   return (
     <div className="flex h-full w-full flex-col items-center justify-center p-4">
-      <div className="bg-white/1 w-full max-w-md rounded-2xl border border-primary-500/20 p-8 shadow-2xl backdrop-blur-md">
+      <div className={cn("bg-white/1 w-full max-w-md rounded-2xl border border-primary-500/20 p-8 shadow-2xl backdrop-blur-md", className)}>
         <div className="mb-6 text-center">
           <h2 className="font-serif text-2xl font-bold tracking-wide text-primary-500">
             {isGuestFlow ? (guestProfileId ? 'Edit Guest Profile' : 'New Guest Profile') : 'Birth Profile'}
           </h2>
           <p className="mt-2 text-sm text-primary-100/60">
-            {isGuestFlow 
+            {isGuestFlow
               ? 'Enter guest details to generate an astrological chart.'
               : 'Please enter your birth details to generate your astrological charts.'}
           </p>

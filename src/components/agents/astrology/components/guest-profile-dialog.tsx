@@ -22,7 +22,13 @@ export function GuestProfileDialog({
 }: GuestProfileDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl border-primary-500/20 bg-background/95 p-0 backdrop-blur-xl">
+      <DialogContent className="max-w-xl border-primary-500/20 bg-background/95 p-0 backdrop-blur-xl">
+        <DialogHeader className="sr-only">
+          <DialogTitle>Guest Profile</DialogTitle>
+          <DialogDescription>
+            Manage and create astrologer guest profiles.
+          </DialogDescription>
+        </DialogHeader>
         <div className="max-h-[90vh] overflow-y-auto">
           <BirthProfileForm
             type="guest"
@@ -30,6 +36,7 @@ export function GuestProfileDialog({
               onSuccess?.();
               onClose();
             }}
+            className='border-none shadow-none'
           />
         </div>
       </DialogContent>

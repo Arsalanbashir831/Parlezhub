@@ -50,7 +50,7 @@ export function ProfileSelector({
       <DropdownMenuTrigger asChild>
         <Button
           variant="outline"
-          className="flex h-auto items-center gap-3 border-primary-500/30 bg-primary-500/5 px-4 py-2 hover:bg-primary-500/10"
+          className="flex h-auto items-center gap-3 px-4 py-2 hover:bg-primary-500/10 rounded-2xl border border-white/5 bg-white/[0.03] shadow-lg"
         >
           <div className="flex flex-col items-start gap-0.5">
             <span className="text-[10px] font-bold uppercase tracking-widest text-primary-500/60">
@@ -144,7 +144,7 @@ export function ProfileSelector({
             >
               <Users className="h-4 w-4 text-primary-500/70" />
               <span className="max-w-[120px] truncate">{guest.guest_name}</span>
-              
+
               <div className="ml-auto flex items-center gap-1 opacity-0 transition-opacity group-hover:opacity-100">
                 <Button
                   variant="ghost"

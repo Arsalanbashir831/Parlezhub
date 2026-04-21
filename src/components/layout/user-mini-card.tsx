@@ -29,7 +29,7 @@ export const UserMiniCard: React.FC<UserMiniCardProps> = ({
   }
 
   return (
-    <div className="mb-4 flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-white/[0.03] shadow-lg">
+    <div className="flex items-center gap-3 p-3 rounded-2xl border border-white/5 bg-white/[0.03] shadow-lg">
       <Avatar className="h-10 w-10 border border-primary-500/20">
         <AvatarImage src={user?.profile_picture || ''} />
         <AvatarFallback className="bg-primary-500/10 font-serif font-bold text-primary-500">
