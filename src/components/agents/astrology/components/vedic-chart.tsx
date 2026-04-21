@@ -67,11 +67,16 @@ const getSignIndex = (sign: string) => {
   return fullSigns.indexOf(sign);
 };
 
-const getAngleRad = (sign: string, degree: number = 15) => {
+const getAngleRad = (
+  sign: string,
+  degree: number = 15,
+  rotationOffset: number = 0
+) => {
   const index = getSignIndex(sign);
   if (index === -1) return 0;
-  // Start Aries at -90 (top) and move anticlockwise
-  const angleDeg = -90 - (index * 30 + degree);
+  // -90 is 12 o'clock. Subtracting moves anticlockwise.
+  // We subtract (current position - ascendant position) to rotate
+  const angleDeg = -90 - (index * 30 + degree - rotationOffset);
   return (angleDeg * Math.PI) / 180;
 };
 
@@ -82,6 +87,12 @@ const VedicChart: React.FC<ChartProps> = ({
   title = 'D1 CHART',
 }) => {
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
+
+  // Calculate rotation to place Ascendant at top
+  const ascendant = natalPlanets.find((p) => p.planet === 'Ascendant');
+  const ascIndex = ascendant ? getSignIndex(ascendant.sign) : 0;
+  const ascDegree = ascendant?.degree || 0;
+  const rotationOffset = ascIndex * 30 + ascDegree;
 
   const size = 600;
   const center = size / 2;
@@ -109,7 +120,7 @@ const VedicChart: React.FC<ChartProps> = ({
 
     // Slight offset to prevent overlap if degrees are very close
     const offset = (idx % 3) * 5 - 5;
-    const rad = getAngleRad(p.sign, degree + offset);
+    const rad = getAngleRad(p.sign, degree + offset, rotationOffset);
 
     const radiusDist = p.isTransit ? 220 : 140;
     const cx = center + radiusDist * Math.cos(rad);
@@ -227,7 +238,7 @@ const VedicChart: React.FC<ChartProps> = ({
 
         {/* Zodiac Divisions */}
         {ZODIAC_SIGNS.map((sign, i) => {
-          const angle = -90 - i * 30; // Divider at start of sign
+          const angle = -90 - (i * 30 - rotationOffset); // Divider at start of sign
           const rad = (angle * Math.PI) / 180;
           const textAngle = angle - 15; // Label in center of sign
           const textRad = (textAngle * Math.PI) / 180;
