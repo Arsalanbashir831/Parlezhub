@@ -147,6 +147,22 @@ export default function SignupPage() {
               Sign in
             </Link>
           </p>
+          <p className="mt-4 text-[10px] text-primary-200/50">
+            By creating an account, you agree to our{' '}
+            <Link
+              href={ROUTES.TERMS}
+              className="text-primary-400 hover:text-primary-300 underline underline-offset-4 decoration-primary-500/30"
+            >
+              Terms
+            </Link>{' '}
+            and{' '}
+            <Link
+              href={ROUTES.PRIVACY}
+              className="text-primary-400 hover:text-primary-300 underline underline-offset-4 decoration-primary-500/30"
+            >
+              Privacy Policy
+            </Link>
+          </p>
         </div>
       </form>
     </AuthLayout>
