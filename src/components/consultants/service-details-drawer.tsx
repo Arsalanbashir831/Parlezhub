@@ -32,12 +32,14 @@ interface ServiceDetailsDrawerProps {
   serviceCard: ServiceCardData | null;
   isOpen: boolean;
   onClose: () => void;
+  footerAction?: React.ReactNode;
 }
 
 export function ServiceDetailsDrawer({
   serviceCard,
   isOpen,
   onClose,
+  footerAction,
 }: ServiceDetailsDrawerProps) {
   const router = useRouter();
   const { user } = useUser();
@@ -255,12 +257,16 @@ export function ServiceDetailsDrawer({
             >
               Close
             </Button>
-            <Button
-              onClick={handleStartChat}
-              className="bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
-            >
-              Chat with {consultantName}
-            </Button>
+            {footerAction ? (
+              footerAction
+            ) : (
+              <Button
+                onClick={handleStartChat}
+                className="bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
+              >
+                Chat with {consultantName}
+              </Button>
+            )}
           </div>
         </div>
       </SheetContent>

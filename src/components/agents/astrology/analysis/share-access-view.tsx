@@ -1,32 +1,52 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useMemo } from 'react';
 import { ChevronLeft, Loader2, Search, Trash2, UserPlus } from 'lucide-react';
 
-import { AstrologyAccess, AstrologyConsultant } from '@/types/astrology';
-import { useDebounce } from '@/hooks/use-debounce';
+import { AstrologyAccess } from '@/types/astrology';
 import {
   useAstrologyAccessList,
   useGrantAstrologyAccess,
   useRevokeAstrologyAccess,
-  useSearchAstrologers,
 } from '@/hooks/useAstrology';
+import { useConsultants } from '@/hooks/useConsultants';
+import { useIsMobile } from '@/hooks/use-mobile';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import {
+  ServiceDetailsDrawer,
+  ServiceDetailsModal,
+  ServicesGrid,
+} from '@/components/consultants';
 
 interface ShareAccessViewProps {
   onBack: () => void;
 }
 
 const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
-  const [searchQuery, setSearchQuery] = useState('');
-  const [debouncedQuery] = useDebounce(searchQuery, 500);
+  const isIsMobile = useIsMobile();
+  const {
+    services,
+    availableLanguages,
+    searchQuery,
+    selectedLanguage,
+    priceRange,
+    showFilters,
+    selectedService,
+    isDetailsPanelOpen,
+    isLoading: isLoadingGigs,
+    handleSearchChange,
+    handleLanguageChange,
+    handlePriceRangeChange,
+    handleToggleFilters,
+    handleClearFilters,
+    handleSelectService,
+    handleCloseDetailsPanel,
+  } = useConsultants();
 
   const { data: accessList, isLoading: isLoadingAccess } =
     useAstrologyAccessList();
-  const { data: searchResults, isLoading: isSearching } =
-    useSearchAstrologers(debouncedQuery);
 
   const { mutate: grantAccess, isPending: isGranting } =
     useGrantAstrologyAccess();
@@ -47,6 +67,10 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
       (access: AstrologyAccess) => access.teacher.id === teacherId
     );
   };
+
+  const astrologyGigs = useMemo(() => {
+    return services.filter((s) => s.service.type === 'astrology');
+  }, [services]);
 
   return (
     <div className="flex w-full flex-col duration-1000 animate-in fade-in zoom-in-95">
@@ -70,102 +94,59 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
         </Button>
       </div>
 
-      <div className="mx-auto flex w-full max-w-4xl flex-col gap-12 p-6 md:p-12">
+      <div className="mx-auto flex w-full max-w-5xl flex-col gap-12 p-6 md:p-12">
         {/* Find an Astrologer Section */}
-        <section className="flex flex-col gap-6">
-          <div className="flex flex-col gap-2">
-            <h2 className="font-serif text-2xl font-bold text-primary-400">
+        <section className="flex flex-col gap-8">
+          <div className="flex flex-col gap-3">
+            <h2 className="font-serif text-3xl font-bold tracking-tight text-primary-400">
               Find an Astrologer
             </h2>
-            <p className="text-sm text-primary-100/60">
-              Search the network to grant access to a trusted reader to analyze
-              your chart.
+            <p className="max-w-2xl text-base leading-relaxed text-primary-100/60">
+              Browse professional astrology services and grant access to trusted
+              readers to analyze your natal chart and transits.
             </p>
           </div>
 
-          <div className="relative w-full max-w-md">
-            <Search className="absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-primary-500/50" />
+          <div className="relative w-full max-w-xl">
+            <Search className="absolute left-4 top-1/2 h-5 w-5 -translate-y-1/2 text-primary-500/50" />
             <Input
               type="text"
-              placeholder="Search by name..."
+              placeholder="Search astrologers by name or specialty..."
               value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="h-12 border-primary-500/20 bg-white/5 pl-10 text-foreground shadow-sm placeholder:text-primary-100/30 focus-visible:ring-primary-500"
+              onChange={(e) => handleSearchChange(e.target.value)}
+              className="h-14 rounded-2xl border-primary-500/20 bg-white/5 pl-12 text-lg text-foreground shadow-lg placeholder:text-primary-100/30 focus-visible:ring-primary-500/50"
             />
-
-            {debouncedQuery.length > 0 && (
-              <div className="absolute left-0 top-full z-50 mt-2 w-full overflow-hidden rounded-xl border border-primary-500/20 bg-card shadow-xl backdrop-blur-xl animate-in fade-in slide-in-from-top-2">
-                {isSearching ? (
-                  <div className="flex items-center justify-center p-8">
-                    <Loader2 className="h-6 w-6 animate-spin text-primary-500" />
-                  </div>
-                ) : !searchResults || searchResults.length === 0 ? (
-                  <div className="flex flex-col items-center justify-center p-8 text-center text-primary-100/40">
-                    <p>
-                      No astrologers found matching &ldquo;{debouncedQuery}
-                      &rdquo;
-                    </p>
-                  </div>
-                ) : (
-                  <div className="flex max-h-[400px] flex-col divide-y divide-primary-500/10 overflow-y-auto">
-                    {searchResults.map((consultant: AstrologyConsultant) => {
-                      const granted = isAlreadyGranted(consultant.id);
-                      return (
-                        <div
-                          key={consultant.id}
-                          className="flex items-center justify-between gap-4 p-4 px-6 transition-colors hover:bg-primary-500/5"
-                        >
-                          <div className="flex min-w-0 items-center gap-4">
-                            <Avatar className="h-10 w-10 border-2 border-primary-500/20">
-                              <AvatarImage
-                                src={consultant.profile_picture || ''}
-                              />
-                              <AvatarFallback className="bg-primary-500/10 font-medium text-primary-300">
-                                {(consultant.first_name || 'A')[0].toUpperCase()}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex min-w-0 flex-col">
-                              <p className="truncate font-medium text-primary-100">
-                                {consultant.first_name || 'Astrologer'}{' '}
-                                {consultant.last_name || ''}
-                              </p>
-                              {consultant.experience_years > 0 && (
-                                <p className="truncate text-xs text-primary-500/60">
-                                  {consultant.experience_years} years experience
-                                </p>
-                              )}
-                            </div>
-                          </div>
-                          <Button
-                            variant={granted ? 'secondary' : 'default'}
-                            size="sm"
-                            onClick={() => handleGrant(consultant.id)}
-                            disabled={isGranting || granted}
-                            className={
-                              granted
-                                ? 'bg-primary-500/10 text-primary-300 opacity-80'
-                                : 'bg-primary-500 font-bold text-primary-950 hover:bg-primary-600'
-                            }
-                          >
-                            {granted ? (
-                              'Access Granted'
-                            ) : isGranting ? (
-                              <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                            ) : (
-                              <>
-                                <UserPlus className="mr-2 h-4 w-4" />
-                                Grant Access
-                              </>
-                            )}
-                          </Button>
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-              </div>
+            {astrologyGigs.length > 0 && (
+              <p className="mt-3 px-1 text-xs font-bold uppercase tracking-widest text-primary-500/60">
+                {astrologyGigs.length} Astrologers Available
+              </p>
             )}
           </div>
+
+          {isLoadingGigs ? (
+            <div className="flex min-h-[300px] items-center justify-center rounded-3xl border border-primary-500/10 bg-white/5 backdrop-blur-sm">
+              <Loader2 className="h-10 w-10 animate-spin text-primary-500/50" />
+            </div>
+          ) : astrologyGigs.length > 0 ? (
+            <ServicesGrid
+              services={astrologyGigs}
+              onSelectService={handleSelectService}
+              className='lg:grid-cols-2'
+            />
+          ) : (
+            <div className="flex min-h-[200px] flex-col items-center justify-center rounded-3xl border border-primary-500/10 bg-white/5 py-12 text-center backdrop-blur-sm">
+              <p className="text-lg font-medium text-primary-100/40">
+                No astrologers found matching your search.
+              </p>
+              <Button
+                variant="link"
+                onClick={handleClearFilters}
+                className="mt-2 text-primary-500"
+              >
+                Clear search
+              </Button>
+            </div>
+          )}
         </section>
 
         <hr className="border-t border-primary-500/10" />
@@ -240,6 +221,74 @@ const ShareAccessView: React.FC<ShareAccessViewProps> = ({ onBack }) => {
           </div>
         </section>
       </div>
+
+      {isIsMobile ? (
+        <ServiceDetailsModal
+          serviceCard={selectedService}
+          isOpen={isDetailsPanelOpen}
+          onClose={handleCloseDetailsPanel}
+          footerAction={
+            selectedService && (
+              <Button
+                onClick={() => handleGrant(selectedService.service.teacherId)}
+                disabled={
+                  isGranting ||
+                  isAlreadyGranted(selectedService.service.teacherId)
+                }
+                className={
+                  isAlreadyGranted(selectedService.service.teacherId)
+                    ? 'w-full bg-primary-500/10 text-primary-300 opacity-80'
+                    : 'w-full bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 hover:bg-primary-600'
+                }
+              >
+                {isAlreadyGranted(selectedService.service.teacherId) ? (
+                  'Access Already Granted'
+                ) : isGranting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Grant Access
+                  </>
+                )}
+              </Button>
+            )
+          }
+        />
+      ) : (
+        <ServiceDetailsDrawer
+          serviceCard={selectedService}
+          isOpen={isDetailsPanelOpen}
+          onClose={handleCloseDetailsPanel}
+          footerAction={
+            selectedService && (
+              <Button
+                onClick={() => handleGrant(selectedService.service.teacherId)}
+                disabled={
+                  isGranting ||
+                  isAlreadyGranted(selectedService.service.teacherId)
+                }
+                className={
+                  isAlreadyGranted(selectedService.service.teacherId)
+                    ? 'bg-primary-500/10 text-primary-300 opacity-80'
+                    : 'bg-primary-500 font-bold text-primary-950 shadow-lg shadow-primary-500/20 px-8 hover:bg-primary-600'
+                }
+              >
+                {isAlreadyGranted(selectedService.service.teacherId) ? (
+                  'Access Already Granted'
+                ) : isGranting ? (
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <UserPlus className="mr-2 h-4 w-4" />
+                    Grant Access
+                  </>
+                )}
+              </Button>
+            )
+          }
+        />
+      )}
     </div>
   );
 };

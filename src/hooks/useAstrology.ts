@@ -268,8 +268,10 @@ export function useGrantAstrologyAccess() {
         queryKey: ASTROLOGY_QUERY_KEYS.ACCESS_LIST,
       });
     },
-    onError: () => {
-      toast.error('Failed to grant access');
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.detail || 'Failed to grant access'
+      );
     },
   });
 }
@@ -291,8 +293,10 @@ export function useRevokeAstrologyAccess() {
         queryKey: ASTROLOGY_QUERY_KEYS.ACCESS_LIST,
       });
     },
-    onError: () => {
-      toast.error('Failed to revoke access');
+    onError: (error: any) => {
+      toast.error(
+        error?.response?.data?.detail || 'Failed to revoke access'
+      );
     },
   });
 }

@@ -29,12 +29,14 @@ interface ServiceDetailsModalProps {
   serviceCard: ServiceCardData | null;
   isOpen: boolean;
   onClose: () => void;
+  footerAction?: React.ReactNode;
 }
 
 export function ServiceDetailsModal({
   serviceCard,
   isOpen,
   onClose,
+  footerAction,
 }: ServiceDetailsModalProps) {
   if (!serviceCard) return null;
 
@@ -227,14 +229,18 @@ export function ServiceDetailsModal({
             >
               Close
             </Button>
-            <Link
-              href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}
-              className="w-full sm:w-auto"
-            >
-              <Button className="w-full rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
-                Chat
-              </Button>
-            </Link>
+            {footerAction ? (
+              footerAction
+            ) : (
+              <Link
+                href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}
+                className="w-full sm:w-auto"
+              >
+                <Button className="w-full rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
+                  Chat
+                </Button>
+              </Link>
+            )}
           </div>
         </div>
       </DialogContent>
