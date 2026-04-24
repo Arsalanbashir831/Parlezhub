@@ -121,8 +121,17 @@ const VedicChart: React.FC<ChartProps> = ({
     const rad = getAngleRad(p.sign, degree, rotationOffset);
 
     // Use pre-calculated radial offset for collision avoidance
-    const baseRadius = p.isTransit ? outerRadius - 40 : innerRadius + 40;
-    const radiusDist = baseRadius + (p.radialOffset || 0);
+    const baseRadius = p.isTransit ? outerRadius - 45 : innerRadius + 45;
+    let radiusDist = baseRadius + (p.radialOffset || 0);
+
+    // Clamp within ring boundaries to prevent overlap between sections
+    if (p.isTransit) {
+      // Transit must stay between Mid and Outer
+      radiusDist = Math.max(midRadius + 25, Math.min(radiusDist, outerRadius - 25));
+    } else {
+      // Natal must stay between Inner and Mid
+      radiusDist = Math.max(innerRadius + 25, Math.min(radiusDist, midRadius - 25));
+    }
 
     const cx = center + radiusDist * Math.cos(rad);
     const cy = center + radiusDist * Math.sin(rad);
@@ -149,19 +158,17 @@ const VedicChart: React.FC<ChartProps> = ({
           cx={cx}
           cy={cy}
           r={isHovered ? '19' : '16'}
-          fill={info.color}
-          stroke={p.isTransit ? 'currentColor' : ''}
-          strokeWidth={isHovered ? '4' : '3'}
+          fill="transparent"
+          stroke="none"
           className={cn(
             'transition-all duration-200',
-            p.isTransit ? 'text-primary-500' : '',
-            isHovered ? 'drop-shadow-[0_0_4px_rgba(0,0,0,0.3)] filter' : ''
+            isHovered ? 'drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : ''
           )}
         />
         <text
           x={cx}
           y={cy + 1}
-          fill={info.textColor}
+          fill={p.isTransit ? '#EAB308' : info.textColor}
           fontSize={isHovered ? '12' : '11'}
           fontWeight="bold"
           textAnchor="middle"
@@ -201,12 +208,22 @@ const VedicChart: React.FC<ChartProps> = ({
         list.sort((a, b) => (a.degree || 0) - (b.degree || 0));
         return list.map((p, i) => {
           let radialOffset = 0;
+          let overlapCount = 0;
+          
           for (let j = 0; j < i; j++) {
             const prev = list[j];
             if (Math.abs((p.degree || 0) - (prev.degree || 0)) < 8) {
-              radialOffset += 28;
+              overlapCount++;
             }
           }
+
+          if (overlapCount > 0) {
+            // Alternating pattern: 0, 25, -25, 50, -50...
+            const magnitude = Math.ceil(overlapCount / 2) * 25;
+            const direction = overlapCount % 2 === 1 ? 1 : -1;
+            radialOffset = magnitude * direction;
+          }
+
           return { ...p, radialOffset };
         });
       };
@@ -359,15 +376,15 @@ const VedicChart: React.FC<ChartProps> = ({
       </svg>
 
       {/* Legend */}
-      <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/60 p-2 text-[8px] font-bold text-primary-600 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
+      <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 p-2 text-[8px] font-bold text-primary-400 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
         <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
-          <div className="h-2 w-2 rounded-full bg-primary-500 shadow-sm shadow-primary-500/50 md:h-2.5 md:w-2.5"></div>
+          <div className="h-2 w-2 rounded-full bg-white shadow-sm md:h-2.5 md:w-2.5"></div>
           <span className="uppercase tracking-widest opacity-80">Natal</span>
         </div>
         {transitPlanets.length > 0 && (
           <div className="flex items-center gap-2 md:gap-3">
-            <div className="h-2 w-2 rounded-full border-2 border-primary-500 bg-transparent shadow-sm md:h-2.5 md:w-2.5"></div>
-            <span className="uppercase tracking-widest opacity-80">
+            <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-sm md:h-2.5 md:w-2.5"></div>
+            <span className="uppercase tracking-widest text-[#EAB308] opacity-90">
               Transit
             </span>
           </div>
