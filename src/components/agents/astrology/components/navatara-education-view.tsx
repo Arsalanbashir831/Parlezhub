@@ -111,23 +111,23 @@ export function NavataraEducationView({
   const { data, isLoading, error } = useNakshatraPredictions(true, studentId, guestProfileId);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 pb-12 text-foreground">
+    <div className="mx-auto max-w-5xl space-y-8 px-4 pb-12 text-foreground sm:px-6">
       {/* Header Section */}
-      <div className="space-y-2 border-b border-primary-500/20 pb-6">
-        <div className="flex items-center justify-between">
+      <div className="space-y-4 border-b border-primary-500/20 pb-6">
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2 font-serif text-3xl text-primary-500">
-              <Sparkles className="transition-pulse h-7 w-7 text-primary-500" />
+            <h1 className="flex items-center gap-2 font-serif text-2xl text-primary-500 sm:text-3xl">
+              <Sparkles className="h-6 w-6 text-primary-500 sm:h-7 sm:w-7" />
               Navatara: The Cycle of Nine Stars
             </h1>
-            <p className="mt-2 text-primary-100/70">
+            <p className="mt-2 text-sm text-primary-100/70 sm:text-base">
               Your Personal Energy Map across the 27 Nakshatras
             </p>
           </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="text-sm font-medium text-primary-500/70 transition-colors hover:text-primary-500"
+              className="self-start text-sm font-medium text-primary-500/70 transition-colors hover:text-primary-500 sm:self-auto"
             >
               Back to Overview
             </button>
@@ -173,8 +173,13 @@ export function NavataraEducationView({
           <div className="grid gap-6 md:grid-cols-2">
             <Card className="bg-white/1 border-primary-500/20 shadow-sm backdrop-blur-sm">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-primary-500">
-                  Today&apos;s Tara Bala
+                <CardTitle className="flex items-center justify-between text-lg text-primary-500">
+                  <span>Today&apos;s Tara Bala</span>
+                  {data.ai_guidance && (
+                    <Badge variant="outline" className="border-primary-500/30 bg-primary-500/10 text-xs text-primary-400">
+                      {data.ai_guidance.status.nature}
+                    </Badge>
+                  )}
                 </CardTitle>
                 <CardDescription className="text-primary-100/60">
                   Based on the Moon transiting {data.current_moon.nakshatra}
@@ -190,24 +195,33 @@ export function NavataraEducationView({
                       (Tara #{data.tarabala.count})
                     </span>
                   </div>
-                  <div className="rounded-lg border border-primary-500/20 bg-primary-500/10 p-4">
-                    <p className="font-medium text-primary-100">
-                      {data.tarabala.effect}
-                    </p>
-                  </div>
 
-                  <div className="flex flex-wrap gap-2 pt-2">
+                  {data.ai_guidance ? (
+                    <div className="rounded-lg border border-primary-500/20 bg-primary-500/10 p-4">
+                      <p className="font-medium italic leading-relaxed text-primary-100">
+                        &quot;{data.ai_guidance.guidance.summary}&quot;
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-lg border border-primary-500/20 bg-primary-500/10 p-4">
+                      <p className="font-medium text-primary-100">
+                        {data.tarabala.effect}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
                     <span className="text-sm text-primary-500/70">
-                      Overall Lunar Score:
+                      Favorability Score:
                     </span>
                     <Badge
                       className={
-                        data.overall_score > 60
+                        (data.overall_score || parseInt(data.ai_guidance?.status.favorability_score || '0')) > 60
                           ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
                           : 'bg-primary-500/10 text-primary-300'
                       }
                     >
-                      {data.overall_score}% Favorable
+                      {data.ai_guidance?.status.favorability_score || `${data.overall_score}%`}
                     </Badge>
                   </div>
                 </div>
@@ -220,16 +234,17 @@ export function NavataraEducationView({
                   Daily Guidance
                 </CardTitle>
                 <CardDescription className="text-primary-100/60">
-                  Recommendations for {data.current_moon.nakshatra} nakshatra
+                  AI-Powered Recommendations
                 </CardDescription>
               </CardHeader>
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-6">
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-emerald-400">
-                    Favorable Activities
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-400">
+                    <Sparkles className="h-4 w-4" />
+                    Recommended Actions
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {data.guidance.favorable_activities.map((activity, i) => (
+                    {(data.ai_guidance?.guidance.dos || data.guidance.favorable_activities).map((activity, i) => (
                       <Badge
                         key={i}
                         variant="outline"
@@ -241,11 +256,12 @@ export function NavataraEducationView({
                   </div>
                 </div>
                 <div>
-                  <h4 className="mb-2 text-sm font-semibold text-red-400">
-                    Avoid Activities
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-400">
+                    <AlertCircle className="h-4 w-4" />
+                    Areas of Caution
                   </h4>
                   <div className="flex flex-wrap gap-2">
-                    {data.guidance.avoid_activities.map((activity, i) => (
+                    {(data.ai_guidance?.guidance.donts || data.guidance.avoid_activities).map((activity, i) => (
                       <Badge
                         key={i}
                         variant="outline"
@@ -258,6 +274,35 @@ export function NavataraEducationView({
                 </div>
               </CardContent>
             </Card>
+
+            {data.ai_guidance && (
+              <Card className="md:col-span-2 bg-gradient-to-br from-primary-950/40 to-transparent border-primary-500/20 shadow-lg backdrop-blur-md">
+                <CardContent className="pt-6">
+                  <div className="grid gap-8 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-primary-500/70">
+                        <Info className="h-4 w-4" />
+                        Planning Tip
+                      </h4>
+                      <p className="text-lg font-medium text-primary-100 leading-relaxed">
+                        {data.ai_guidance.planning_tip}
+                      </p>
+                    </div>
+                    <div className="relative space-y-4 rounded-xl bg-primary-500/5 p-6 border border-primary-500/10">
+                      <Sparkles className="absolute -top-3 -right-3 h-8 w-8 text-primary-500/20" />
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-primary-500/70">
+                        Cosmic Affirmation
+                      </h4>
+                      <p className="font-serif text-xl italic text-primary-200 leading-loose">
+                        {data.ai_guidance.motivational_message.split('\n').map((line, i) => (
+                          <span key={i} className="block">{line}</span>
+                        ))}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
           </div>
         ) : null}
       </section>
@@ -314,10 +359,10 @@ export function NavataraEducationView({
           Bala rating.
         </p>
 
-        <div className="overflow-hidden rounded-xl border border-primary-500/20 shadow-sm backdrop-blur-sm">
-          <div className="overflow-x-auto">
-            <table className="w-full text-left text-sm text-primary-100/80">
-              <thead className="border-b border-primary-500/20 bg-primary-950/15 p-4 text-xs uppercase text-primary-300">
+        <div className="rounded-xl border border-primary-500/20 bg-primary-900/10 shadow-sm backdrop-blur-sm">
+          <div className="w-full max-w-sm md:max-w-full overflow-x-auto overflow-y-hidden [webkit-overflow-scrolling:touch]">
+            <table className="w-full min-w-[800px] text-left text-sm text-primary-100/80">
+              <thead className="border-b border-primary-500/20 bg-primary-950/30 text-xs uppercase text-primary-300">
                 <tr>
                   <th
                     scope="col"

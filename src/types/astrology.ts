@@ -204,6 +204,21 @@ export interface SharedStudentAccess {
   granted_at: string;
 }
 
+export interface AIGuidance {
+  status: {
+    tara_type: string;
+    nature: string;
+    favorability_score: string;
+  };
+  guidance: {
+    summary: string;
+    dos: string[];
+    donts: string[];
+  };
+  planning_tip: string;
+  motivational_message: string;
+}
+
 export interface TaraBalaData {
   name: string;
   count: number;
@@ -243,6 +258,7 @@ export interface NakshatraPredictionResponse {
   };
   tarabala: TaraBalaData;
   overall_score: number;
+  ai_guidance?: AIGuidance;
   timing: {
     hours_until_nakshatra_change: number;
     nakshatra_duration_remaining: string;

@@ -32,7 +32,7 @@ import {
   useNatalChart,
   useTransits,
 } from '@/hooks/useAstrology';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 
 import InsightView from './analysis/insight-view';
 import ShareAccessView from './analysis/share-access-view';
@@ -235,7 +235,7 @@ export default function AstrologyDashboard({
 
         {/* Center Canvas */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="h-full flex-1 bg-white/5 backdrop-blur-sm">
+          <ScrollArea className="h-full w-full flex-1 bg-white/5 backdrop-blur-sm">
             {!profile ? (
               <BirthProfileForm
                 type={selectedProfile.type}
@@ -338,6 +338,7 @@ export default function AstrologyDashboard({
                   guestProfileId={currentGuestId}
                 />
               )}
+            <ScrollBar orientation="horizontal" />
           </ScrollArea>
         </main>
 
