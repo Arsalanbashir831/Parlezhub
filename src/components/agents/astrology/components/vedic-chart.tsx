@@ -17,16 +17,16 @@ const PLANET_INFO: Record<
   string,
   { symbol: string; color: string; textColor?: string }
 > = {
-  Sun: { symbol: 'Sun', color: '#fbbf24', textColor: '#000' },
-  Moon: { symbol: 'Moon', color: '#f8fafc', textColor: '#000' },
-  Mars: { symbol: 'Mars', color: '#ef4444', textColor: '#fff' },
-  Mercury: { symbol: 'Mer', color: '#22c55e', textColor: '#fff' },
-  Jupiter: { symbol: 'Jup', color: '#eab308', textColor: '#fff' },
-  Venus: { symbol: 'Ven', color: '#ec4899', textColor: '#fff' },
-  Saturn: { symbol: 'Sat', color: '#475569', textColor: '#fff' },
-  Rahu: { symbol: 'Rahu', color: '#1f2937', textColor: '#fff' },
-  Ketu: { symbol: 'Ketu', color: '#6b7280', textColor: '#fff' },
-  Ascendant: { symbol: 'Asc', color: '#3b82f6', textColor: '#fff' },
+  Sun: { symbol: 'Sun', color: 'transparent', textColor: '#fff' },
+  Moon: { symbol: 'Moon', color: 'transparent', textColor: '#fff' },
+  Mars: { symbol: 'Mars', color: 'transparent', textColor: '#fff' },
+  Mercury: { symbol: 'Mer', color: 'transparent', textColor: '#fff' },
+  Jupiter: { symbol: 'Jup', color: 'transparent', textColor: '#fff' },
+  Venus: { symbol: 'Ven', color: 'transparent', textColor: '#fff' },
+  Saturn: { symbol: 'Sat', color: 'transparent', textColor: '#fff' },
+  Rahu: { symbol: 'Rahu', color: 'transparent', textColor: '#fff' },
+  Ketu: { symbol: 'Ketu', color: 'transparent', textColor: '#fff' },
+  Ascendant: { symbol: 'Asc', color: 'transparent', textColor: '#fff' },
 };
 
 const getSignIndex = (sign: string) => {
@@ -94,11 +94,11 @@ const VedicChart: React.FC<ChartProps> = ({
   const ascDegree = ascendant?.degree || 0;
   const rotationOffset = ascIndex * 30 + ascDegree;
 
-  const size = 600;
+  const size = 700;
   const center = size / 2;
-  const outerRadius = 260;
-  const midRadius = 180;
-  const innerRadius = 100;
+  const outerRadius = 300;
+  const midRadius = 210;
+  const innerRadius = 120;
 
   // Render a planet
   const renderPlanet = (
@@ -108,8 +108,9 @@ const VedicChart: React.FC<ChartProps> = ({
       degree?: number;
       isTransit?: boolean;
       hide?: boolean;
-    },
-    idx: number
+      id: string;
+      radialOffset?: number;
+    }
   ) => {
     const info = PLANET_INFO[p.planet] || {
       symbol: p.planet[0],
@@ -117,16 +118,16 @@ const VedicChart: React.FC<ChartProps> = ({
       textColor: '#000',
     };
     const degree = p.degree ?? 15;
+    const rad = getAngleRad(p.sign, degree, rotationOffset);
 
-    // Slight offset to prevent overlap if degrees are very close
-    const offset = (idx % 3) * 5 - 5;
-    const rad = getAngleRad(p.sign, degree + offset, rotationOffset);
+    // Use pre-calculated radial offset for collision avoidance
+    const baseRadius = p.isTransit ? outerRadius - 40 : innerRadius + 40;
+    const radiusDist = baseRadius + (p.radialOffset || 0);
 
-    const radiusDist = p.isTransit ? 220 : 140;
     const cx = center + radiusDist * Math.cos(rad);
     const cy = center + radiusDist * Math.sin(rad);
 
-    const id = `${p.planet}-${p.isTransit ? 't' : 'n'}`;
+    const id = p.id;
     const isHovered = hoveredId === id;
 
     return (
@@ -173,22 +174,51 @@ const VedicChart: React.FC<ChartProps> = ({
     );
   };
 
-  const natalWithIdx = natalPlanets.map((p, idx) => ({
-    ...p,
-    isTransit: false,
-    idx,
-  }));
-  const transitWithIdx = transitPlanets.map((p, idx) => ({
-    planet: p.planet,
-    sign: p.sign,
-    degree: p.longitude % 30,
-    isTransit: true,
-    idx,
-  }));
+  // Process planets with collision detection
+  const processedPlanets = React.useMemo(() => {
+    const combined = [
+      ...natalPlanets.map((p) => ({ ...p, isTransit: false, id: `${p.planet}-n` })),
+      ...transitPlanets.map((p) => ({
+        planet: p.planet,
+        sign: p.sign,
+        degree: p.longitude % 30,
+        isTransit: true,
+        id: `${p.planet}-t`,
+      })),
+    ];
 
-  const hoveredPlanetData = [...natalWithIdx, ...transitWithIdx].find(
-    (p) => `${p.planet}-${p.isTransit ? 't' : 'n'}` === hoveredId
-  );
+    const bySign: Record<string, any[]> = {};
+    combined.forEach((p) => {
+      if (!bySign[p.sign]) bySign[p.sign] = [];
+      bySign[p.sign].push(p);
+    });
+
+    return Object.values(bySign).flatMap((signPlanets) => {
+      const natals = signPlanets.filter((p) => !p.isTransit);
+      const transits = signPlanets.filter((p) => p.isTransit);
+
+      const processCategory = (list: any[]) => {
+        list.sort((a, b) => (a.degree || 0) - (b.degree || 0));
+        return list.map((p, i) => {
+          let radialOffset = 0;
+          for (let j = 0; j < i; j++) {
+            const prev = list[j];
+            if (Math.abs((p.degree || 0) - (prev.degree || 0)) < 8) {
+              radialOffset += 28;
+            }
+          }
+          return { ...p, radialOffset };
+        });
+      };
+
+      return [...processCategory(natals), ...processCategory(transits)];
+    });
+  }, [natalPlanets, transitPlanets]);
+
+  const natalWithIdx = processedPlanets.filter((p) => !p.isTransit);
+  const transitWithIdx = processedPlanets.filter((p) => p.isTransit);
+
+  const hoveredPlanetData = processedPlanets.find((p) => p.id === hoveredId);
 
   return (
     <div
@@ -199,7 +229,7 @@ const VedicChart: React.FC<ChartProps> = ({
     >
       <svg
         viewBox={`0 0 ${size} ${size}`}
-        className="h-auto w-full max-w-[500px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[600px]"
+        className="h-auto w-full max-w-[600px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[800px]"
       >
         <defs>
           <radialGradient
@@ -317,15 +347,15 @@ const VedicChart: React.FC<ChartProps> = ({
 
         {/* Base Planet Layer (Stable Order) */}
         {natalWithIdx.map((p) =>
-          renderPlanet({ ...p, hide: hoveredId === `${p.planet}-n` }, p.idx)
+          renderPlanet({ ...p, hide: hoveredId === p.id })
         )}
         {transitWithIdx.map((p) =>
-          renderPlanet({ ...p, hide: hoveredId === `${p.planet}-t` }, p.idx)
+          renderPlanet({ ...p, hide: hoveredId === p.id })
         )}
 
         {/* Hover Overlay Layer (Ensures immediate "on top" rendering) */}
         {hoveredPlanetData &&
-          renderPlanet(hoveredPlanetData, hoveredPlanetData.idx)}
+          renderPlanet(hoveredPlanetData)}
       </svg>
 
       {/* Legend */}
