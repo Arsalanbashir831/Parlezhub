@@ -1,4 +1,5 @@
 export const ROUTES = {
+  LANDING_PAGE: process.env.NEXT_PUBLIC_LANDING_PAGE_URL || 'https://parlezhub.com',
   HOME: '/',
   TERMS: '/terms',
   PRIVACY: '/privacy',
