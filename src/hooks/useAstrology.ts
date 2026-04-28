@@ -174,12 +174,22 @@ export function useAstrologicalInsight(
   });
 }
 
-export function useGuestProfiles() {
+export function useGuestProfiles(params: { search?: string; page?: number; page_size?: number } = {}) {
   return useQuery({
-    queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES,
+    queryKey: [...ASTROLOGY_QUERY_KEYS.GUEST_PROFILES, params],
     queryFn: async () => {
-      const response = await apiCaller(API_ROUTES.ASTROLOGY.GUEST_PROFILES, 'GET');
-      return response.data as BirthProfile[];
+      const queryParams = new URLSearchParams();
+      if (params.search) queryParams.append('search', params.search);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size) queryParams.append('page_size', params.page_size.toString());
+
+      const queryString = queryParams.toString();
+      const url = queryString 
+        ? `${API_ROUTES.ASTROLOGY.GUEST_PROFILES}?${queryString}`
+        : API_ROUTES.ASTROLOGY.GUEST_PROFILES;
+
+      const response = await apiCaller(url, 'GET');
+      return response.data as PaginatedResponse<BirthProfile>;
     },
   });
 }
