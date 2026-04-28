@@ -255,6 +255,23 @@ export default function MeetingTabs() {
             )}
           </div>
 
+          {meeting.paymentDetails && (
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+              <div className="flex flex-col gap-1 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">Session Cost</span>
+                <span className="font-medium text-primary-100/80">${meeting.paymentDetails.sessionCost?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex flex-col gap-1 rounded-xl border border-white/[0.05] bg-white/[0.02] p-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">Platform Fee</span>
+                <span className="font-medium text-primary-100/80">${meeting.paymentDetails.platformFee?.toFixed(2) || '0.00'}</span>
+              </div>
+              <div className="flex flex-col gap-1 rounded-xl border border-primary-500/10 bg-primary-500/5 p-3">
+                <span className="text-[10px] font-bold uppercase tracking-widest text-primary-500/60">Total Amount</span>
+                <span className="font-bold text-primary-400">${meeting.paymentDetails.totalAmount?.toFixed(2) || '0.00'}</span>
+              </div>
+            </div>
+          )}
+
           {overrideLabel !== 'completed' &&
             ((meeting.status === 'PENDING' && isFuture(meeting)) ||
               meeting.status === 'CONFIRMED') && (

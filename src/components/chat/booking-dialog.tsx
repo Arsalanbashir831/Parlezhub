@@ -30,7 +30,6 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { Textarea } from '@/components/ui/textarea';
 
 interface BookingDialogProps {
   isOpen: boolean;
@@ -77,7 +76,6 @@ const BookingDialog = memo(
     const [startTime, setStartTime] = useState<string>('');
     const [endTime, setEndTime] = useState<string>('');
     const [selectedServiceId, setSelectedServiceId] = useState<string>('');
-    const [notes, setNotes] = useState<string>('');
     // Future-only dates
     const todayStr = useMemo(() => {
       const d = new Date();
@@ -106,23 +104,35 @@ const BookingDialog = memo(
       return endMinutes - startMinutes;
     };
 
-    // Calculate total price based on duration and service rate
-    const calculateTotalPrice = (): number => {
-      if (!selectedServiceId || !startTime || !endTime) return 0;
+    // Calculate pricing based on duration and service rate
+    const calculatePricing = () => {
+      if (!selectedServiceId || !startTime || !endTime) return null;
       const duration = calculateDuration(startTime, endTime);
-      if (duration <= 0) return 0;
+      if (duration <= 0) return null;
 
       const selectedService = consultantServices.find(
         (s) => s.id === selectedServiceId
       );
-      if (!selectedService) return 0;
+      if (!selectedService) return null;
 
       // Calculate price based on duration (service price is per hour)
       const hours = duration / 60;
-      const totalPrice = selectedService.price * hours;
+      const sessionCost = selectedService.price * hours;
+
+      let platformFee = 0;
+      if (selectedService.pricingMetadata) {
+        const calculatedFee = sessionCost * selectedService.pricingMetadata.platformFeePercentage;
+        platformFee = Math.max(calculatedFee, selectedService.pricingMetadata.minimumPlatformFeeDollars);
+      }
+
+      const totalAmount = sessionCost + platformFee;
 
       // Round to 2 decimal places
-      return Math.round(totalPrice * 100) / 100;
+      return {
+        sessionCost: Math.round(sessionCost * 100) / 100,
+        platformFee: Math.round(platformFee * 100) / 100,
+        totalAmount: Math.round(totalAmount * 100) / 100,
+      };
     };
 
     // Reset form when dialog closes
@@ -132,7 +142,6 @@ const BookingDialog = memo(
         setStartTime('');
         setEndTime('');
         setSelectedServiceId('');
-        setNotes('');
       }
     }, [isOpen]);
     const [submitting, setSubmitting] = useState(false);
@@ -206,7 +215,6 @@ const BookingDialog = memo(
           start_time: startIso,
           end_time: endIso,
           duration_hours: Math.round(durationHours * 100) / 100, // Round to 2 decimal places
-          notes: notes.trim(),
         });
 
         toast.success('Booking scheduled');
@@ -233,7 +241,8 @@ const BookingDialog = memo(
             minute: '2-digit',
           });
 
-        const totalPrice = calculateTotalPrice();
+        const pricing = calculatePricing();
+        const totalPrice = pricing?.totalAmount || 0;
         const summaryDurationHours = duration / 60;
 
         // Check if booking spans across midnight
@@ -261,8 +270,13 @@ const BookingDialog = memo(
         }
 
         onClose();
-      } catch {
-        toast.error('Failed to schedule booking');
+      } catch (err: any) {
+        const errorMsg =
+          err.response?.data?.error ||
+          err.response?.data?.detail ||
+          err.message ||
+          'Failed to schedule booking';
+        toast.error(errorMsg);
       } finally {
         setSubmitting(false);
       }
@@ -345,7 +359,7 @@ const BookingDialog = memo(
                     const val = e.target.value;
                     setDate(val && val < todayStr ? todayStr : val);
                   }}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
 
@@ -411,7 +425,7 @@ const BookingDialog = memo(
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
               <div className="grid gap-2">
@@ -427,7 +441,7 @@ const BookingDialog = memo(
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   min={startTime || undefined}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
                 {startTime &&
                   endTime &&
@@ -477,38 +491,47 @@ const BookingDialog = memo(
                       End time must be after start time
                     </div>
                   )}
-                  <Separator className="bg-primary-500/10" />
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500">
-                      Total Amount
-                    </span>
-                    <span className="font-serif text-2xl font-bold text-primary-500 drop-shadow-[0_0_10px_rgba(212,175,55,0.2)]">
-                      ${calculateTotalPrice().toFixed(2)}
-                    </span>
-                  </div>
+                  {(() => {
+                    const pricing = calculatePricing();
+                    if (!pricing) return null;
+                    return (
+                      <>
+                        <Separator className="bg-primary-500/10" />
+                        <div className="flex flex-col gap-2">
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-300">
+                              Session Cost
+                            </span>
+                            <span className="text-sm font-bold text-primary-100">
+                              ${pricing.sessionCost.toFixed(2)}
+                            </span>
+                          </div>
+                          <div className="flex items-center justify-between">
+                            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-300">
+                              Platform Fee
+                            </span>
+                            <span className="text-sm font-bold text-primary-100">
+                              ${pricing.platformFee.toFixed(2)}
+                            </span>
+                          </div>
+                          <Separator className="bg-primary-500/10 my-1" />
+                          <div className="flex items-center justify-between">
+                            <span className="text-xs font-bold uppercase tracking-[0.2em] text-primary-500">
+                              Total Amount
+                            </span>
+                            <span className="font-serif text-2xl font-bold text-primary-500 drop-shadow-[0_0_10px_rgba(212,175,55,0.2)]">
+                              ${pricing.totalAmount.toFixed(2)}
+                            </span>
+                          </div>
+                        </div>
+                      </>
+                    );
+                  })()}
                 </div>
               </div>
             )}
 
-            {/* Notes */}
-            <div className="grid gap-2">
-              <Label
-                htmlFor="booking-notes"
-                className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
-              >
-                Notes (optional)
-              </Label>
-              <Textarea
-                id="booking-notes"
-                placeholder="Share your constellation details or specific focuses..."
-                value={notes}
-                onChange={(e) => setNotes(e.target.value)}
-                rows={3}
-                className="resize-none rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
-              />
-            </div>
-
-            <Separator className="bg-primary-500/10" />
+            <Separator className="bg-primary-500/10 mt-2" />
             <div className="flex justify-end gap-3">
               <Button
                 variant="outline"

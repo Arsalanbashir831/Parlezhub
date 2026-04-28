@@ -41,6 +41,7 @@ export interface PaymentResponse {
   amount_paid: number;
   session_cost: number;
   platform_fee: number;
+  total_amount: number;
   duration_hours: number;
   hourly_rate: number;
   status: string;

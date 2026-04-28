@@ -40,6 +40,12 @@ export interface Meeting {
   // Payment information for refunds
   paymentId?: number;
   amountPaid?: number;
+  paymentDetails?: {
+    platformFee?: number;
+    sessionCost?: number;
+    totalAmount?: number;
+    currency?: string;
+  };
 }
 
 // API response shape for bookings
@@ -77,6 +83,7 @@ interface ApiBooking {
     stripe_payment_intent_id: string;
     platform_fee: number;
     session_cost: number;
+    total_amount: number;
     payment_date: string;
     currency: string;
   };
@@ -136,6 +143,12 @@ export function useMeetings() {
           notes: b.notes,
           paymentId: b.payment_id || b.payment_details?.payment_id,
           amountPaid: b.payment_details?.amount_paid,
+          paymentDetails: b.payment_details ? {
+            platformFee: b.payment_details.platform_fee,
+            sessionCost: b.payment_details.session_cost,
+            totalAmount: b.payment_details.total_amount,
+            currency: b.payment_details.currency,
+          } : undefined,
         };
       });
     },

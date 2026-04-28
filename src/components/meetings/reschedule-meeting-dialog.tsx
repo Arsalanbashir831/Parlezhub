@@ -123,7 +123,7 @@ export default function RescheduleDialog({
                 min={today}
                 required
                 disabled={isSubmitting}
-                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
               />
             </div>
 
@@ -142,7 +142,7 @@ export default function RescheduleDialog({
                   onChange={(e) => handleStartTimeChange(e.target.value)}
                   required
                   disabled={isSubmitting}
-                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
               <div className="space-y-2">
@@ -150,14 +150,16 @@ export default function RescheduleDialog({
                   htmlFor="endTime"
                   className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
                 >
-                  End Time (1 hour)
+                  End Time
                 </Label>
                 <Input
                   id="endTime"
                   type="time"
                   value={endTime}
-                  disabled={true}
-                  className="h-12 cursor-not-allowed rounded-xl border-white/5 bg-white/[0.02] text-primary-100/30"
+                  onChange={(e) => setEndTime(e.target.value)}
+                  required
+                  disabled={isSubmitting}
+                  className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
             </div>

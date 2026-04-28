@@ -79,6 +79,11 @@ export interface PublicServiceResponse {
   status: string;
   created_at: string;
   updated_at: string;
+  pricing_metadata?: {
+    platform_fee_percentage: number;
+    minimum_platform_fee_dollars: number;
+    currency: string;
+  };
 }
 
 export interface PublicServicesListResponse {
@@ -118,6 +123,11 @@ export interface PublicService {
   status: ServiceStatus;
   createdAt: string;
   updatedAt: string;
+  pricingMetadata?: {
+    platformFeePercentage: number;
+    minimumPlatformFeeDollars: number;
+    currency: string;
+  };
 }
 
 // Service API functions
@@ -451,6 +461,11 @@ export const serviceUtils = {
       status: apiResponse.status as ServiceStatus,
       createdAt: apiResponse.created_at,
       updatedAt: apiResponse.updated_at,
+      pricingMetadata: apiResponse.pricing_metadata ? {
+        platformFeePercentage: apiResponse.pricing_metadata.platform_fee_percentage,
+        minimumPlatformFeeDollars: apiResponse.pricing_metadata.minimum_platform_fee_dollars,
+        currency: apiResponse.pricing_metadata.currency,
+      } : undefined,
     };
   },
 };

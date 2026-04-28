@@ -4,7 +4,7 @@ import { memo } from 'react';
 
 import { ChatMessage } from '@/types/chat';
 import { cn } from '@/lib/utils';
-import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+// import { Avatar, AvatarFallback } from '@/components/ui/avatar';
 
 import MessageBody from './message-body';
 
@@ -16,11 +16,11 @@ interface RealMessageProps {
 const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
   return (
     <div className={cn('flex gap-3 px-2', isOwnMessage && 'flex-row-reverse')}>
-      <Avatar className="h-8 w-8 shrink-0 border border-primary-500/20">
+      {/* <Avatar className="h-8 w-8 shrink-0 border border-primary-500/20">
         <AvatarFallback className="bg-primary-500/10 text-[10px] font-bold text-primary-400">
-          {isOwnMessage ? 'ME' : 'YOU'}
+          {isOwnMessage ? '' : 'S'}
         </AvatarFallback>
-      </Avatar>
+      </Avatar> */}
       <div
         className={cn(
           'max-w-[75%] rounded-2xl px-4 py-2.5 shadow-lg transition-all sm:max-w-md',
