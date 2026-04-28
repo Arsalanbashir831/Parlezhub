@@ -95,7 +95,8 @@ export const useRealChat = ({
   const loadChats = useCallback(async (): Promise<ChatRoom[]> => {
     try {
       setIsLoading(true);
-      const fetched = await chatService.getChats();
+      const role = currentUserRole === 'consultant' ? 'teacher' : 'student';
+      const fetched = await chatService.getChats(role);
       // Support both old (ChatRoom[]) and new (BackendChat[]) shapes
       const normalized: ChatRoom[] = Array.isArray(fetched)
         ? (fetched as unknown[]).map((item) => {

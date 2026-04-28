@@ -112,9 +112,9 @@ class ChatService {
     return response.data;
   }
 
-  async getChats(): Promise<ChatRoom[]> {
+  async getChats(role?: 'student' | 'teacher'): Promise<ChatRoom[]> {
     const response = await apiCaller(
-      API_ROUTES.CHAT.GET_CHATS,
+      role ? `${API_ROUTES.CHAT.GET_CHATS}?role=${role}` : API_ROUTES.CHAT.GET_CHATS,
       'GET',
       {},
       {},

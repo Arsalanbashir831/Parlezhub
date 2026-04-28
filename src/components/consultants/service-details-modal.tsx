@@ -1,7 +1,9 @@
 'use client';
 
-import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { useUser } from '@/contexts/user-context';
+import { chatService } from '@/services/chat';
 import {
   CheckCircle,
   Clock,
@@ -10,6 +12,7 @@ import {
   Tag,
   User,
 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { getServiceTypeLabel } from '@/lib/service-utils';
 import { ServiceCardData } from '@/hooks/useConsultants';
@@ -38,6 +41,9 @@ export function ServiceDetailsModal({
   onClose,
   footerAction,
 }: ServiceDetailsModalProps) {
+  const router = useRouter();
+  const { user } = useUser();
+
   if (!serviceCard) return null;
 
   const {
@@ -49,6 +55,31 @@ export function ServiceDetailsModal({
     consultantBio,
     consultantLocation,
   } = serviceCard;
+
+  const handleStartChat = async () => {
+    if (!user) {
+      toast.error('Please log in to start a chat');
+      return;
+    }
+
+    try {
+      // Create a new chat with the consultant
+      const newChat = await chatService.createChat({
+        student_id: user.id,
+        teacher_id: service.teacherId,
+      });
+
+      if (newChat) {
+        toast.success(`Chat started with ${consultantName}`);
+        // Navigate to the chat page with chatId param
+        router.push(`${ROUTES.STUDENT.CHAT}?chatId=${newChat.id}`);
+        onClose();
+      }
+    } catch (error) {
+      console.error('Error starting chat:', error);
+      toast.error('Failed to start chat. Please try again.');
+    }
+  };
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -232,14 +263,12 @@ export function ServiceDetailsModal({
             {footerAction ? (
               footerAction
             ) : (
-              <Link
-                href={ROUTES.STUDENT.TEACHER_CHAT(service.teacherId)}
-                className="w-full sm:w-auto"
+              <Button
+                onClick={handleStartChat}
+                className="w-full rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95 sm:w-auto"
               >
-                <Button className="w-full rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
-                  Chat
-                </Button>
-              </Link>
+                Chat with {consultantName}
+              </Button>
             )}
           </div>
         </div>
