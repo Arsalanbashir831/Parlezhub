@@ -26,7 +26,7 @@ const PLANET_INFO: Record<
   Saturn: { symbol: 'Sat', color: 'transparent', textColor: '#fff' },
   Rahu: { symbol: 'Rahu', color: 'transparent', textColor: '#fff' },
   Ketu: { symbol: 'Ketu', color: 'transparent', textColor: '#fff' },
-  Ascendant: { symbol: 'Asc', color: 'transparent', textColor: '#fff' },
+  Ascendant: { symbol: 'Asc', color: 'transparent', textColor: '#EAB308' },
 };
 
 const getSignIndex = (sign: string) => {
@@ -106,6 +106,7 @@ const VedicChart: React.FC<ChartProps> = ({
       planet: string;
       sign: string;
       degree?: number;
+      displayDegree?: number;
       isTransit?: boolean;
       hide?: boolean;
       id: string;
@@ -117,7 +118,7 @@ const VedicChart: React.FC<ChartProps> = ({
       color: '#ccc',
       textColor: '#000',
     };
-    const degree = p.degree ?? 15;
+    const degree = p.displayDegree ?? p.degree ?? 15;
     const rad = getAngleRad(p.sign, degree, rotationOffset);
 
     // Use pre-calculated radial offset for collision avoidance
@@ -205,26 +206,41 @@ const VedicChart: React.FC<ChartProps> = ({
       const transits = signPlanets.filter((p) => p.isTransit);
 
       const processCategory = (list: any[]) => {
+        if (list.length === 0) return [];
         list.sort((a, b) => (a.degree || 0) - (b.degree || 0));
-        return list.map((p, i) => {
-          let radialOffset = 0;
-          let overlapCount = 0;
-          
-          for (let j = 0; j < i; j++) {
-            const prev = list[j];
-            if (Math.abs((p.degree || 0) - (prev.degree || 0)) < 8) {
-              overlapCount++;
+
+        const PADDING = 4; // Keep 4 degrees away from boundaries
+        const availableSpace = 30 - PADDING * 2;
+        // Dynamically calculate gap to ensure they always fit
+        const MIN_GAP = Math.min(6, availableSpace / Math.max(1, list.length - 1));
+
+        const adjustedDegrees = list.map(p =>
+          Math.max(PADDING, Math.min(30 - PADDING, p.degree || 15))
+        );
+
+        if (list.length > 1) {
+          // Forward pass: push planets apart if they are too close
+          for (let i = 1; i < adjustedDegrees.length; i++) {
+            if (adjustedDegrees[i] - adjustedDegrees[i - 1] < MIN_GAP) {
+              adjustedDegrees[i] = adjustedDegrees[i - 1] + MIN_GAP;
             }
           }
 
-          if (overlapCount > 0) {
-            // Alternating pattern: 0, 25, -25, 50, -50...
-            const magnitude = Math.ceil(overlapCount / 2) * 25;
-            const direction = overlapCount % 2 === 1 ? 1 : -1;
-            radialOffset = magnitude * direction;
+          // Backward pass: if pushed past the boundary padding, squeeze them back
+          if (adjustedDegrees[adjustedDegrees.length - 1] > 30 - PADDING) {
+            adjustedDegrees[adjustedDegrees.length - 1] = 30 - PADDING;
+            for (let i = adjustedDegrees.length - 2; i >= 0; i--) {
+              if (adjustedDegrees[i + 1] - adjustedDegrees[i] < MIN_GAP) {
+                adjustedDegrees[i] = adjustedDegrees[i + 1] - MIN_GAP;
+              }
+            }
           }
+        }
 
-          return { ...p, radialOffset };
+        return list.map((p, i) => {
+          // Subtle radial staggering for visual depth if crowded
+          const radialOffset = list.length > 2 ? ((i % 2 === 0) ? 8 : -8) : 0;
+          return { ...p, displayDegree: adjustedDegrees[i], radialOffset };
         });
       };
 
@@ -246,7 +262,7 @@ const VedicChart: React.FC<ChartProps> = ({
     >
       <svg
         viewBox={`0 0 ${size} ${size}`}
-        className="h-auto w-full max-w-[600px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[800px]"
+        className="h-auto w-full max-w-[750px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[1000px]"
       >
         <defs>
           <radialGradient
