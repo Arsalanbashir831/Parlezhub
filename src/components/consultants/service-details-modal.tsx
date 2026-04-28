@@ -83,7 +83,10 @@ export function ServiceDetailsModal({
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-h-[90vh] w-[95vw] overflow-y-auto overflow-x-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl sm:max-w-lg md:max-w-3xl">
+      <DialogContent 
+        aria-describedby={undefined}
+        className="max-h-[90vh] w-[95vw] overflow-y-auto overflow-x-hidden rounded-3xl border border-primary-500/10 bg-background p-0 shadow-2xl sm:max-w-lg md:max-w-3xl"
+      >
         <DialogHeader className="p-6 pb-2">
           <div className="flex items-start justify-between text-left">
             <div className="space-y-4">
