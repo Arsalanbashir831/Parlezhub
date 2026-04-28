@@ -8,8 +8,6 @@ import ReactMarkdown from 'react-markdown';
 import { useAstrologicalInsight } from '@/hooks/useAstrology';
 import { ScrollArea } from '@/components/ui/scroll-area';
 
-import { AstrologyAIChat } from './astrology-ai-chat';
-
 interface InsightViewProps {
   slug: string;
   onBack: () => void;
@@ -29,12 +27,6 @@ const InsightView: React.FC<InsightViewProps> = ({
     studentId,
     guestProfileId
   );
-
-  const chatSectionRef = React.useRef<HTMLDivElement>(null);
-
-  const scrollToChat = () => {
-    chatSectionRef.current?.scrollIntoView({ behavior: 'smooth' });
-  };
 
   // Find the matching menu item for title and subtitle context
   const menuItem = LEFT_MENU_ITEMS.find((item) => item.id === slug) || {
@@ -56,17 +48,7 @@ const InsightView: React.FC<InsightViewProps> = ({
           </p>
         </div>
         <div className="flex items-center gap-3">
-          {!studentId && (
-            <button
-              onClick={scrollToChat}
-              disabled={isLoading || isError || !data}
-              className="flex items-center gap-2 rounded-xl bg-primary-500 px-4 py-2 text-xs font-bold uppercase tracking-widest text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 hover:shadow-xl active:scale-95 disabled:opacity-50 disabled:shadow-none"
-            >
-              <MessageSquare className="h-4 w-4" />
-              <span className="hidden sm:inline">Talk with AI</span>
-              <span className="sm:hidden">Chat</span>
-            </button>
-          )}
+          {/* Removed Talk with AI button here, it is now global floating chat */}
           <button
             onClick={onBack}
             className="flex items-center gap-2 rounded-xl border border-primary-500/30 bg-primary-500/10 px-4 py-2 text-xs font-bold uppercase tracking-widest text-primary-400 transition-all hover:bg-primary-500/20 hover:text-primary-300 hover:shadow-sm active:scale-95"
@@ -166,24 +148,7 @@ const InsightView: React.FC<InsightViewProps> = ({
             )}
           </div>
 
-          {/* AI Chat Section - Only visible for the user, not for consultants viewing a student */}
-          {!isLoading && !isError && data && !studentId && (
-            <div ref={chatSectionRef} className="scroll-mt-10">
-              <div className="mx-auto max-w-4xl px-2">
-                <div className="relative mb-8 flex items-center justify-center">
-                  <div className="absolute h-px w-full bg-primary-500/10" />
-                  <div className="relative flex items-center gap-4 bg-background px-6 backdrop-blur-md">
-                    <Sparkles className="h-5 w-5 text-primary-500/50" />
-                    <span className="font-serif text-lg font-bold text-primary-500/70">
-                      Deepen Your Understanding
-                    </span>
-                    <Sparkles className="h-5 w-5 text-primary-500/50" />
-                  </div>
-                </div>
-              </div>
-              <AstrologyAIChat category={slug} />
-            </div>
-          )}
+          {/* Removed inline AI Chat Section here, using global floating chat */}
         </div>
       </ScrollArea>
     </div>

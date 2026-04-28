@@ -46,6 +46,7 @@ import { GuestProfileDialog } from './components/guest-profile-dialog';
 import { NavataraEducationView } from './components/navatara-education-view';
 import { ProfileSelector, SelectedProfile } from './components/profile-selector';
 import VedicChart from './components/vedic-chart';
+import { FloatingAIAstrologer } from './components/floating-ai-astrologer';
 import AnalysisSidebar from './layout/analysis-sidebar';
 import NavigationSidebar from './layout/navigation-sidebar';
 
@@ -386,6 +387,15 @@ export default function AstrologyDashboard({
         confirmText="Delete Profile"
         variant="destructive"
       />
+
+      {/* Floating AI Astrologer */}
+      {profile && !currentStudentId && (
+        <FloatingAIAstrologer
+          category={activeAnalysis || 'd1-chart'}
+          studentId={currentStudentId}
+          guestProfileId={currentGuestId}
+        />
+      )}
     </div>
   );
 }

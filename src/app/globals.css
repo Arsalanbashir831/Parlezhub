@@ -161,8 +161,8 @@
 .ai-chat-markdown h2,
 .ai-chat-markdown h3 {
   font-weight: 700;
-  color: #1e293b;
-  margin-top: 0.75rem;
-  margin-bottom: 0.35rem;
-  font-family: Georgia, serif;
+  color: #d7af2c;
+  margin-top: 1rem;
+  margin-bottom: 0.5rem;
+  font-family: 'Outfit', sans-serif;
 }
