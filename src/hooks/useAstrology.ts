@@ -12,6 +12,7 @@ import {
   NatalChartResponse,
   SharedStudentAccess,
   TransitResponse,
+  PaginatedResponse,
 } from '@/types/astrology';
 import apiCaller, { RequestData } from '@/lib/api-caller';
 
@@ -315,15 +316,22 @@ export function useRevokeAstrologyAccess() {
   });
 }
 
-export function useConsultantSharedStudents() {
+export function useConsultantSharedStudents(params: { search?: string; page?: number; page_size?: number } = {}) {
   return useQuery({
-    queryKey: ASTROLOGY_QUERY_KEYS.SHARED_STUDENTS,
+    queryKey: [...ASTROLOGY_QUERY_KEYS.SHARED_STUDENTS, params],
     queryFn: async () => {
-      const response = await apiCaller(
-        API_ROUTES.ASTROLOGY.TEACHER_STUDENTS,
-        'GET'
-      );
-      return response.data as SharedStudentAccess[];
+      const queryParams = new URLSearchParams();
+      if (params.search) queryParams.append('search', params.search);
+      if (params.page) queryParams.append('page', params.page.toString());
+      if (params.page_size) queryParams.append('page_size', params.page_size.toString());
+
+      const queryString = queryParams.toString();
+      const url = queryString 
+        ? `${API_ROUTES.ASTROLOGY.TEACHER_STUDENTS}?${queryString}`
+        : API_ROUTES.ASTROLOGY.TEACHER_STUDENTS;
+
+      const response = await apiCaller(url, 'GET');
+      return response.data as PaginatedResponse<SharedStudentAccess>;
     },
   });
 }

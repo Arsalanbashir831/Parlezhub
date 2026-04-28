@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import Link from 'next/link';
-import { ExternalLink, Search, Star, } from 'lucide-react';
+import { ChevronLeft, ChevronRight, ExternalLink, Search, Star } from 'lucide-react';
 
 import { SharedStudentAccess } from '@/types/astrology';
 import { useConsultantSharedStudents } from '@/hooks/useAstrology';
@@ -10,25 +10,46 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
+import { useDebounce } from '@/hooks/use-debounce';
+
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 
 export function SharedStudentsList() {
-  const { data: students, isLoading } = useConsultantSharedStudents();
   const [searchQuery, setSearchQuery] = useState('');
+  const [debouncedSearch] = useDebounce(searchQuery, 500);
+  const [page, setPage] = useState(1);
+  const [pageSize, setPageSize] = useState(10);
 
-  if (isLoading) {
-    return (
-      <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
-        <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500"></div>
-        <p className="font-serif text-lg font-bold text-primary-100/60">Loading students...</p>
-      </div>
-    );
-  }
+  const { data, isLoading } = useConsultantSharedStudents({
+    search: debouncedSearch,
+    page: page,
+    page_size: pageSize,
+  });
 
-  const filteredStudents = students?.filter((record) =>
-    record.student.full_name.toLowerCase().includes(searchQuery.toLowerCase())
-  ) || [];
+  const students = data?.results || [];
+  const totalCount = data?.count || 0;
+  const hasNext = !!data?.next;
+  const hasPrevious = !!data?.previous;
+  const totalPages = Math.ceil(totalCount / pageSize);
 
-  if (!students || students.length === 0) {
+  const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setSearchQuery(e.target.value);
+    setPage(1); // Reset to first page on search
+  };
+
+  const handlePageSizeChange = (value: string) => {
+    setPageSize(Number(value));
+    setPage(1); // Reset to first page when changing page size
+  };
+
+  // If no data and not loading, show empty state
+  if (!isLoading && (!data || (totalCount === 0 && !debouncedSearch))) {
     return (
       <div className="flex min-h-[400px] flex-col items-center justify-center rounded-3xl border border-dashed border-white/10 bg-white/[0.02] p-12 text-center">
         <div className="rounded-full bg-primary-500/10 p-6">
@@ -51,20 +72,29 @@ export function SharedStudentsList() {
           <Input
             placeholder="Search students by name..."
             value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
+            onChange={handleSearchChange}
             className="h-12 rounded-xl border-white/5 bg-white/5 pl-11 text-white placeholder:text-primary-100/20 focus:ring-primary-500/30"
           />
         </div>
         <div className="flex items-center gap-3">
-          <Badge variant="outline" className="h-10 rounded-xl border-primary-500/20 bg-primary-500/5 px-4 font-serif text-sm font-bold text-primary-500">
-            {filteredStudents.length} Students Found
-          </Badge>
+          {!isLoading && (
+            <Badge variant="outline" className="h-10 rounded-xl border-primary-500/20 bg-primary-500/5 px-4 font-serif text-sm font-bold text-primary-500">
+              {totalCount} Students Found
+            </Badge>
+          )}
         </div>
       </div>
 
-      {/* Grid */}
-      <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredStudents.map((record: SharedStudentAccess) => (
+      {isLoading ? (
+        <div className="flex min-h-[400px] flex-col items-center justify-center gap-4">
+          <div className="h-12 w-12 animate-spin rounded-full border-b-2 border-primary-500"></div>
+          <p className="font-serif text-lg font-bold text-primary-100/60">Loading students...</p>
+        </div>
+      ) : (
+        <>
+          {/* Grid */}
+          <div className="grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {students.map((record: SharedStudentAccess) => (
           <div
             key={record.id}
             className="group relative flex flex-col items-start p-6 rounded-3xl border border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.06] hover:shadow-primary-500/10 hover:-translate-y-1"
@@ -102,12 +132,59 @@ export function SharedStudentsList() {
           </div>
         ))}
 
-        {filteredStudents.length === 0 && searchQuery && (
+        {students.length === 0 && debouncedSearch && (
           <div className="col-span-full flex flex-col items-center justify-center p-12 text-center">
             <p className="font-serif text-xl font-bold text-primary-100/40">No students match your search.</p>
           </div>
         )}
       </div>
+
+      {/* Pagination Controls */}
+      {totalCount > 0 && (
+        <div className="flex flex-col items-center justify-center gap-6 pt-8 sm:flex-row">
+          <div className="flex items-center gap-4">
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => Math.max(1, p - 1))}
+              disabled={!hasPrevious}
+              className="rounded-xl border-white/5 bg-white/5 text-white hover:bg-white/10 disabled:opacity-30"
+            >
+              <ChevronLeft className="mr-2 h-4 w-4" />
+              Previous
+            </Button>
+            <span className="font-serif text-sm font-bold text-primary-100/60">
+              Page {page} {totalPages > 0 && `of ${totalPages}`}
+            </span>
+            <Button
+              variant="outline"
+              onClick={() => setPage((p) => p + 1)}
+              disabled={!hasNext}
+              className="rounded-xl border-white/5 bg-white/5 text-white hover:bg-white/10 disabled:opacity-30"
+            >
+              Next
+              <ChevronRight className="ml-2 h-4 w-4" />
+            </Button>
+          </div>
+
+          <div className="flex items-center gap-3">
+            <span className="text-xs font-bold uppercase tracking-widest text-primary-100/40">Show:</span>
+            <Select value={pageSize.toString()} onValueChange={handlePageSizeChange}>
+              <SelectTrigger className="h-10 w-20 rounded-xl border-white/5 bg-white/5 text-white focus:ring-primary-500/30">
+                <SelectValue placeholder="10" />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border-white/10 bg-[#0A0A0A] text-white">
+                {[10, 20, 50, 100].map((size) => (
+                  <SelectItem key={size} value={size.toString()} className="focus:bg-primary-500 focus:text-primary-950">
+                    {size}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+        </div>
+      )}
+        </>
+      )}
     </div>
   );
 }
