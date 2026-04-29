@@ -2,9 +2,16 @@
 
 import { useEffect, useState } from 'react';
 import { PaymentResponse, paymentService } from '@/services/payment';
-import { useMutation, useQuery } from '@tanstack/react-query';
-import { CreditCard, Plus } from 'lucide-react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
+import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
+import { loadStripe } from '@stripe/stripe-js';
+import {
+  Elements,
+  CardElement,
+  useStripe,
+  useElements,
+} from '@stripe/react-stripe-js';
 
 import { cn } from '@/lib/utils';
 import { Button } from '@/components/ui/button';
@@ -16,9 +23,12 @@ import {
   DialogHeader,
   DialogTitle,
 } from '@/components/ui/dialog';
-import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
+
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
+);
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -27,23 +37,22 @@ interface PaymentModalProps {
   onPaymentSuccess?: (paymentData?: PaymentResponse) => void;
 }
 
-export default function PaymentModal({
+function PaymentModalContent({
   isOpen,
   onClose,
   bookingId,
   onPaymentSuccess,
 }: PaymentModalProps) {
+  const stripe = useStripe();
+  const elements = useElements();
+  const queryClient = useQueryClient();
+
   const [paymentMode, setPaymentMode] = useState<'saved' | 'new'>('saved');
   const [selectedPaymentMethod, setSelectedPaymentMethod] =
     useState<string>('');
 
-  // New card form state
-  const [cardNumber, setCardNumber] = useState('');
-  const [expMonth, setExpMonth] = useState('');
-  const [expYear, setExpYear] = useState('');
-  const [cvc, setCvc] = useState('');
-  const [cardholderName, setCardholderName] = useState('');
   const [saveCard, setSaveCard] = useState(false);
+  const [isStripeProcessing, setIsStripeProcessing] = useState(false);
 
   // Fetch saved payment methods
   const {
@@ -93,27 +102,50 @@ export default function PaymentModal({
     },
   });
 
+  const deleteCardMutation = useMutation({
+    mutationFn: paymentService.deletePaymentMethod,
+    onSuccess: () => {
+      toast.success('Card Deleted', {
+        description: 'The payment method has been removed successfully.',
+      });
+      queryClient.invalidateQueries({ queryKey: ['paymentMethods'] });
+      // Clear selection if the deleted card was selected
+      if (paymentMethods.length <= 1) {
+        setPaymentMode('new');
+        setSelectedPaymentMethod('');
+      }
+    },
+    onError: (error: Error) => {
+      toast.error('Failed to delete card', {
+        description: error?.message || 'An error occurred while deleting the card.',
+      });
+    },
+  });
+
   // Set default payment mode based on available methods
   useEffect(() => {
     if (paymentMethods.length > 0) {
       setPaymentMode('saved');
-      setSelectedPaymentMethod(paymentMethods[0].stripe_payment_method_id);
+      if (paymentMethods.length > 0) {
+        setSelectedPaymentMethod(paymentMethods[0].stripe_payment_method_id);
+      }
     } else {
       setPaymentMode('new');
     }
   }, [paymentMethods]);
 
   const resetForm = () => {
-    setCardNumber('');
-    setExpMonth('');
-    setExpYear('');
-    setCvc('');
-    setCardholderName('');
     setSaveCard(false);
     setSelectedPaymentMethod('');
+    if (elements) {
+      const cardElement = elements.getElement(CardElement);
+      if (cardElement) {
+        cardElement.clear();
+      }
+    }
   };
 
-  const handlePayment = () => {
+  const handlePayment = async () => {
     if (paymentMode === 'saved') {
       if (!selectedPaymentMethod) {
         toast.error('Please select a payment method');
@@ -125,49 +157,61 @@ export default function PaymentModal({
         saved_payment_method_id: selectedPaymentMethod,
       });
     } else {
-      // Validate new card form
-      if (!cardNumber || !expMonth || !expYear || !cvc || !cardholderName) {
-        toast.error('Please fill in all card details');
+      if (!stripe || !elements) {
+        toast.error('Stripe has not loaded correctly.');
         return;
       }
 
-      newCardMutation.mutate({
-        booking_id: parseInt(bookingId),
-        card_number: cardNumber.replace(/\s/g, ''),
-        exp_month: parseInt(expMonth),
-        exp_year: parseInt(expYear),
-        cvc,
-        cardholder_name: cardholderName,
-        save_payment_method: saveCard,
+      const cardElement = elements.getElement(CardElement);
+      if (!cardElement) return;
+
+      setIsStripeProcessing(true);
+
+      const { error, paymentMethod } = await stripe.createPaymentMethod({
+        type: 'card',
+        card: cardElement,
       });
+
+      setIsStripeProcessing(false);
+
+      if (error) {
+        toast.error('Card Error', {
+          description: error.message || 'Invalid card details.',
+        });
+        return;
+      }
+
+      if (paymentMethod) {
+        newCardMutation.mutate({
+          booking_id: parseInt(bookingId),
+          payment_method_id: paymentMethod.id,
+          save_payment_method: saveCard,
+        });
+      }
     }
   };
 
-  const formatCardNumber = (value: string) => {
-    const v = value.replace(/\s+/g, '').replace(/[^0-9]/gi, '');
-    const matches = v.match(/\d{4,16}/g);
-    const match = (matches && matches[0]) || '';
-    const parts = [];
+  const isProcessing =
+    savedCardMutation.isPending || newCardMutation.isPending || isStripeProcessing;
 
-    for (let i = 0, len = match.length; i < len; i += 4) {
-      parts.push(match.substring(i, i + 4));
-    }
-
-    if (parts.length) {
-      return parts.join(' ');
-    } else {
-      return v;
-    }
+  const cardElementOptions = {
+    hidePostalCode: true,
+    style: {
+      base: {
+        color: '#ffffff',
+        fontFamily: '"Inter", sans-serif',
+        fontSmoothing: 'antialiased',
+        fontSize: '16px',
+        '::placeholder': {
+          color: 'rgba(255, 255, 255, 0.4)',
+        },
+      },
+      invalid: {
+        color: '#ff4d4f',
+        iconColor: '#ff4d4f',
+      },
+    },
   };
-
-  const handleCardNumberChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const formatted = formatCardNumber(e.target.value);
-    if (formatted.replace(/\s/g, '').length <= 16) {
-      setCardNumber(formatted);
-    }
-  };
-
-  const isProcessing = savedCardMutation.isPending || newCardMutation.isPending;
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -292,19 +336,37 @@ export default function PaymentModal({
                           </div>
                         </div>
                       </div>
-                      <div
-                        className={cn(
-                          'flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
-                          selectedPaymentMethod ===
-                            method.stripe_payment_method_id
-                            ? 'border-primary-500 bg-primary-500'
-                            : 'border-primary-500/20'
-                        )}
-                      >
-                        {selectedPaymentMethod ===
-                          method.stripe_payment_method_id && (
-                          <div className="h-2 w-2 rounded-full bg-primary-950" />
-                        )}
+                      
+                      <div className="flex items-center gap-3">
+                        {/* Delete Button */}
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          onClick={(e) => {
+                            e.stopPropagation();
+                            deleteCardMutation.mutate(method.stripe_payment_method_id);
+                          }}
+                          disabled={deleteCardMutation.isPending}
+                          className="h-8 w-8 text-primary-100/40 hover:bg-destructive/20 hover:text-destructive"
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                        
+                        {/* Selection Indicator */}
+                        <div
+                          className={cn(
+                            'flex h-5 w-5 items-center justify-center rounded-full border-2 transition-all',
+                            selectedPaymentMethod ===
+                              method.stripe_payment_method_id
+                              ? 'border-primary-500 bg-primary-500'
+                              : 'border-primary-500/20'
+                          )}
+                        >
+                          {selectedPaymentMethod ===
+                            method.stripe_payment_method_id && (
+                            <div className="h-2 w-2 rounded-full bg-primary-950" />
+                          )}
+                        </div>
                       </div>
                     </div>
                   </div>
@@ -321,113 +383,14 @@ export default function PaymentModal({
               <div className="space-y-4">
                 <div className="space-y-2">
                   <Label
-                    htmlFor="cardNumber"
+                    htmlFor="cardElement"
                     className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
                   >
-                    Card Number
+                    Card Details
                   </Label>
-                  <div className="relative">
-                    <CreditCard className="absolute left-4 top-1/2 h-4 w-4 -translate-y-1/2 text-primary-500/40" />
-                    <Input
-                      id="cardNumber"
-                      placeholder="1234 5678 9012 3456"
-                      value={cardNumber}
-                      onChange={handleCardNumberChange}
-                      disabled={isProcessing}
-                      maxLength={19}
-                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 pl-11 text-white focus-visible:ring-primary-500/30"
-                    />
+                  <div className="rounded-xl border border-primary-500/10 bg-white/5 p-4">
+                    <CardElement options={cardElementOptions} id="cardElement" />
                   </div>
-                </div>
-
-                <div className="grid grid-cols-3 gap-3">
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="expMonth"
-                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
-                    >
-                      Month
-                    </Label>
-                    <Input
-                      id="expMonth"
-                      placeholder="MM"
-                      value={expMonth}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (
-                          value.length <= 2 &&
-                          (value === '' ||
-                            (parseInt(value) >= 1 && parseInt(value) <= 12))
-                        ) {
-                          setExpMonth(value);
-                        }
-                      }}
-                      disabled={isProcessing}
-                      maxLength={2}
-                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="expYear"
-                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
-                    >
-                      Year
-                    </Label>
-                    <Input
-                      id="expYear"
-                      placeholder="YYYY"
-                      value={expYear}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 4) {
-                          setExpYear(value);
-                        }
-                      }}
-                      disabled={isProcessing}
-                      maxLength={4}
-                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
-                    />
-                  </div>
-                  <div className="space-y-2">
-                    <Label
-                      htmlFor="cvc"
-                      className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
-                    >
-                      CVC
-                    </Label>
-                    <Input
-                      id="cvc"
-                      placeholder="123"
-                      value={cvc}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        if (value.length <= 4) {
-                          setCvc(value);
-                        }
-                      }}
-                      disabled={isProcessing}
-                      maxLength={4}
-                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-center text-white focus-visible:ring-primary-500/30"
-                    />
-                  </div>
-                </div>
-
-                <div className="space-y-2">
-                  <Label
-                    htmlFor="cardholderName"
-                    className="ml-1 text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
-                  >
-                    Cardholder Name
-                  </Label>
-                  <Input
-                    id="cardholderName"
-                    placeholder="E.g. John Doe"
-                    value={cardholderName}
-                    onChange={(e) => setCardholderName(e.target.value)}
-                    disabled={isProcessing}
-                    className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30"
-                  />
                 </div>
 
                 <div className="flex items-center space-x-3 p-1">
@@ -472,5 +435,13 @@ export default function PaymentModal({
         </div>
       </DialogContent>
     </Dialog>
+  );
+}
+
+export default function PaymentModal(props: PaymentModalProps) {
+  return (
+    <Elements stripe={stripePromise}>
+      <PaymentModalContent {...props} />
+    </Elements>
   );
 }

@@ -18,11 +18,7 @@ export interface PaymentMethod {
 // Payment Requests
 export interface NewCardPaymentRequest {
   booking_id: number;
-  card_number: string;
-  exp_month: number;
-  exp_year: number;
-  cvc: string;
-  cardholder_name: string;
+  payment_method_id: string;
   save_payment_method: boolean;
 }
 
@@ -91,6 +87,18 @@ export const paymentService = {
       API_ROUTES.PAYMENTS.PROCESS_BOOKING_PAYMENT,
       'POST',
       data as unknown as Record<string, string>,
+      {},
+      true
+    );
+    return response.data;
+  },
+
+  // Delete a saved payment method
+  deletePaymentMethod: async (paymentMethodId: string): Promise<{ success: boolean; message: string }> => {
+    const response = await apiCaller(
+      API_ROUTES.PAYMENTS.DELETE_PAYMENT_METHOD(paymentMethodId),
+      'DELETE',
+      undefined,
       {},
       true
     );
