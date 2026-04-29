@@ -6,6 +6,7 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
 import { loadStripe } from '@stripe/stripe-js';
+import getStripe from '@/lib/stripe';
 import {
   Elements,
   CardElement,
@@ -26,9 +27,7 @@ import {
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 
-const stripePromise = loadStripe(
-  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY || ''
-);
+const stripePromise = getStripe();
 
 interface PaymentModalProps {
   isOpen: boolean;
@@ -76,10 +75,10 @@ function PaymentModalContent({
       onClose();
       resetForm();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.error || error.message || 'Unable to process payment. Please try again.';
       toast.error('Payment Failed', {
-        description:
-          error?.message || 'Unable to process payment. Please try again.',
+        description: errorMessage,
       });
     },
   });
@@ -94,10 +93,10 @@ function PaymentModalContent({
       onClose();
       resetForm();
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.error || error.message || 'Unable to process payment. Please try again.';
       toast.error('Payment Failed', {
-        description:
-          error?.message || 'Unable to process payment. Please try again.',
+        description: errorMessage,
       });
     },
   });
@@ -115,9 +114,10 @@ function PaymentModalContent({
         setSelectedPaymentMethod('');
       }
     },
-    onError: (error: Error) => {
+    onError: (error: any) => {
+      const errorMessage = error.response?.data?.error || error.message || 'An error occurred while deleting the card.';
       toast.error('Failed to delete card', {
-        description: error?.message || 'An error occurred while deleting the card.',
+        description: errorMessage,
       });
     },
   });
@@ -439,6 +439,9 @@ function PaymentModalContent({
 }
 
 export default function PaymentModal(props: PaymentModalProps) {
+  if (!stripePromise) {
+    return null;
+  }
   return (
     <Elements stripe={stripePromise}>
       <PaymentModalContent {...props} />
