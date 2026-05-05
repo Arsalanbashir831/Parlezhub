@@ -20,6 +20,19 @@ export const extractErrorMessage = (
   error: unknown,
   fallbackMessage: string = 'An error occurred'
 ): string => {
+  // Handle Supabase Auth errors
+  if (error && typeof error === 'object') {
+    const errObj = error as Record<string, unknown>;
+    
+    // Check for Supabase rate limit code or specific message
+    if (
+      errObj.code === 'over_email_send_rate_limit' || 
+      (typeof errObj.message === 'string' && errObj.message.includes('rate limit'))
+    ) {
+      return 'You have requested too many emails recently. Please wait a few minutes before trying again.';
+    }
+  }
+
   // Handle Axios errors (API responses)
   if (error instanceof AxiosError && error.response?.data) {
     const responseData = error.response.data as ApiErrorResponse;

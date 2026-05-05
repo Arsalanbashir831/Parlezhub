@@ -10,12 +10,14 @@ import { QueryProvider } from '@/providers/query-provider';
 
 import { Toaster } from '@/components/ui/sonner';
 import AuthFlowHandler from '@/components/auth/auth-flow-handler';
+import { GoogleOneTap } from '@/components/auth/google-one-tap';
 
 function ProvidersContent({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
       {/* <ThemeProvider> */}
       <AuthProvider>
+        <GoogleOneTap />
         <UserProvider>
           <AuthFlowHandler />
           <SessionProvider>

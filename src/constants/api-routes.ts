@@ -1,17 +1,13 @@
 export const API_ROUTES = {
   AUTH: {
-    SIGNUP: '/accounts/register/',
-    LOGIN: '/login/',
+    SYNC: '/auth/sync/',
+    SET_ROLE: '/auth/set-role/',
     RESEND_VERIFICATION_EMAIL: '/resend-verification/',
     FORGOT_PASSWORD: '/password-reset/',
     RESET_PASSWORD: '/password-reset/confirm/',
-    REFRESH_TOKEN: '/token/refresh/',
-    GOOGLE_INITIATE: '/auth/google/initiate/',
-    GOOGLE_CALLBACK: '/auth/google/callback/',
     ME: '/accounts/profiles/me/roles/',
     BECOME_TEACHER: '/accounts/become-teacher/',
     BECOME_STUDENT: '/accounts/become-student/',
-    CHANGE_PASSWORD: '/change-password/',
   },
   STUDENT: {
     UPDATE_PROFILE: '/accounts/profiles/me/',

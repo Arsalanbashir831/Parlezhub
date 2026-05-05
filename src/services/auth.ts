@@ -1,54 +1,17 @@
 import { API_ROUTES } from '@/constants/api-routes';
-
 import apiCaller from '@/lib/api-caller';
+
+// ── Request / Response types ─────────────────────────────────────────────────
 
 export interface SignupRequest {
   email: string;
   password: string;
   full_name: string;
   role: 'TEACHER' | 'STUDENT';
-  redirect_to?: string;
-}
-
-export interface SignupResponse {
-  message: string;
-  user: {
-    id: string;
-    email: string;
-    full_name: string;
-    role: 'TEACHER' | 'STUDENT';
-    is_verified: boolean;
-    created_at: string;
-    updated_at: string;
-  };
-}
-
-export interface LoginRequest {
-  email: string;
-  password: string;
-}
-
-export interface LoginResponse {
-  message: string;
-  access_token: string;
-  refresh_token: string;
-  user: {
-    id: string;
-    email: string;
-    full_name: string;
-    role: 'TEACHER' | 'STUDENT';
-    is_verified: boolean;
-    created_at: string;
-    updated_at: string;
-  };
 }
 
 export interface ForgotPasswordRequest {
   email: string;
-}
-
-export interface ForgotPasswordResponse {
-  message: string;
 }
 
 export interface ResetPasswordRequest {
@@ -56,16 +19,8 @@ export interface ResetPasswordRequest {
   new_password: string;
 }
 
-export interface ResetPasswordResponse {
-  message: string;
-}
-
 export interface ResendVerificationEmailRequest {
   email: string;
-}
-
-export interface ResendVerificationEmailResponse {
-  message: string;
 }
 
 export interface StudentProfile {
@@ -96,7 +51,7 @@ export interface ConsultantProfile {
   phone_number: string | null;
   gender: string | null;
   date_of_birth: string | null;
-  role: 'STUDENT'; // Note: role might still be STUDENT even with consultant profile
+  role: 'TEACHER';
   has_teacher: boolean;
   has_student: boolean;
   profile_picture: string | null;
@@ -121,19 +76,7 @@ export interface UnifiedProfileResponse {
   student_profile: StudentProfile | null;
 }
 
-export interface GoogleInitiateResponse {
-  success: boolean;
-  oauth_url: string;
-  message: string;
-}
-
-export interface GoogleCallbackRequest {
-  access_token: string;
-  refresh_token: string;
-  role?: 'TEACHER' | 'STUDENT'; // Required for signup, optional for login
-}
-
-export interface GoogleCallbackResponse {
+export interface SyncUserResponse {
   success: boolean;
   message: string;
   user?: {
@@ -141,22 +84,21 @@ export interface GoogleCallbackResponse {
     email: string;
     first_name: string | null;
     last_name: string | null;
-    full_name: string;
-    role?: 'TEACHER' | 'STUDENT'; // Made optional for role selection cases
+    role: 'TEACHER' | 'STUDENT' | null;
     auth_provider: string;
     email_verified: boolean;
-    is_oauth_user: boolean;
-    created_at: string;
   };
-  access_token?: string;
-  refresh_token?: string;
-  created?: boolean;
-  is_existing_user_login?: boolean;
-  requires_profile_completion?: boolean;
-  flow_type?: 'login' | 'signup';
-  // Error case fields
-  error?: string;
   requires_role_selection?: boolean;
+}
+
+export interface SetRoleResponse {
+  success: boolean;
+  message: string;
+  user?: {
+    id: string;
+    email: string;
+    role: 'TEACHER' | 'STUDENT';
+  };
 }
 
 export interface BecomeRoleResponse {
@@ -165,88 +107,77 @@ export interface BecomeRoleResponse {
   profile: StudentProfile | ConsultantProfile;
 }
 
+// ── API methods ───────────────────────────────────────────────────────────────
+
 export const authApi = {
-  signup: async (data: SignupRequest): Promise<SignupResponse> => {
+  /**
+   * Sync the authenticated Supabase user to Django.
+   * Called after every successful auth (email login, Google OAuth, One-Tap).
+   * Django creates/updates the local User and UserProfile records.
+   */
+  syncUser: async (accessToken: string, role?: 'TEACHER' | 'STUDENT'): Promise<SyncUserResponse> => {
     const response = await apiCaller(
-      API_ROUTES.AUTH.SIGNUP,
+      API_ROUTES.AUTH.SYNC,
       'POST',
-      data as unknown as Record<string, string>,
-      {},
-      false // Don't use auth token for signup
+      { access_token: accessToken, ...(role ? { role } : {}) } as Record<string, string>,
+      {
+        // Explicitly set the Authorization header so the interceptor doesn't
+        // need to fetch a session (which may not be in cookies yet for brand-new
+        // One-Tap / OAuth users). The sync endpoint itself validates the token
+        // via the Supabase admin client on the backend.
+        headers: { Authorization: `Bearer ${accessToken}` },
+      },
+      false // permission_classes=[AllowAny] on the backend — no DRF auth needed
     );
     return response.data;
   },
 
-  login: async (data: LoginRequest): Promise<LoginResponse> => {
+  /**
+   * Finalize role for new Google/One-Tap users.
+   * Called from /onboarding/choose-role page after the user selects their role.
+   */
+  setRole: async (role: 'TEACHER' | 'STUDENT'): Promise<SetRoleResponse> => {
     const response = await apiCaller(
-      API_ROUTES.AUTH.LOGIN,
+      API_ROUTES.AUTH.SET_ROLE,
       'POST',
-      data as unknown as Record<string, string>,
+      { role } as Record<string, string>,
       {},
-      false // Don't use auth token for login
+      true // Requires Authorization header (user is already authenticated)
     );
     return response.data;
   },
 
-  forgotPassword: async (
-    data: ForgotPasswordRequest
-  ): Promise<ForgotPasswordResponse> => {
+  forgotPassword: async (data: ForgotPasswordRequest): Promise<{ message: string }> => {
     const response = await apiCaller(
       API_ROUTES.AUTH.FORGOT_PASSWORD,
       'POST',
       data as unknown as Record<string, string>,
       {},
-      false // Don't use auth token for forgot password
+      false
     );
     return response.data;
   },
 
-  resetPassword: async (
-    data: ResetPasswordRequest
-  ): Promise<ResetPasswordResponse> => {
+  resetPassword: async (data: ResetPasswordRequest): Promise<{ message: string }> => {
     const response = await apiCaller(
       API_ROUTES.AUTH.RESET_PASSWORD,
       'POST',
       data as unknown as Record<string, string>,
       {},
-      false // Don't use auth token for reset password
+      false
     );
     return response.data;
   },
 
   resendVerificationEmail: async (
     data: ResendVerificationEmailRequest
-  ): Promise<ResendVerificationEmailResponse> => {
+  ): Promise<{ message: string }> => {
     const response = await apiCaller(
       API_ROUTES.AUTH.RESEND_VERIFICATION_EMAIL,
       'POST',
       data as unknown as Record<string, string>,
       {},
-      false // Don't use auth token for resend verification email
-    );
-    return response.data;
-  },
-
-  googleInitiate: async (): Promise<GoogleInitiateResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.GOOGLE_INITIATE,
-      'POST',
-      {},
-      {},
-      false // Don't use auth token for Google initiate
-    );
-    return response.data;
-  },
-
-  googleCallback: async (
-    data: GoogleCallbackRequest
-  ): Promise<GoogleCallbackResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.GOOGLE_CALLBACK,
-      'POST',
-      data as unknown as Record<string, string>,
-      {},
-      false // Don't use auth token for Google callback
+      false
     );
     return response.data;
   },
@@ -257,7 +188,7 @@ export const authApi = {
       'GET',
       undefined,
       {},
-      true // Use auth token for profile access
+      true
     );
     return response.data;
   },
@@ -268,7 +199,7 @@ export const authApi = {
       'POST',
       {},
       {},
-      true // Use auth token
+      true
     );
     return response.data;
   },
@@ -279,7 +210,7 @@ export const authApi = {
       'POST',
       {},
       {},
-      true // Use auth token
+      true
     );
     return response.data;
   },

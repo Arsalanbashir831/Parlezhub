@@ -10,33 +10,22 @@ const axiosInstance: AxiosInstance = axios.create({
   baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
 });
 
-interface FailedRequest {
-  resolve: (token: string | null) => void;
-  reject: (error: unknown) => void;
-}
-
-// Flag to prevent multiple refresh attempts
-let isRefreshing = false;
-let failedQueue: FailedRequest[] = [];
-
-const processQueue = (error: unknown, token: string | null = null) => {
-  failedQueue.forEach((prom) => {
-    if (error) {
-      prom.reject(error);
-    } else {
-      prom.resolve(token);
-    }
-  });
-
-  failedQueue = [];
-};
-
 // Request interceptor
 axiosInstance.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    const token = getCookie('access_token');
-    if (token && !config.headers.Authorization) {
-      config.headers.Authorization = `Bearer ${token}`;
+  async (config: InternalAxiosRequestConfig) => {
+    if (!config.headers.Authorization) {
+      try {
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        // getSession() automatically refreshes the token if it's expired
+        const { data: { session } } = await supabase.auth.getSession();
+        
+        if (session?.access_token) {
+          config.headers.Authorization = `Bearer ${session.access_token}`;
+        }
+      } catch (err) {
+        console.warn('Failed to get Supabase session for API request:', err);
+      }
     }
     return config;
   },
@@ -47,77 +36,44 @@ axiosInstance.interceptors.request.use(
 axiosInstance.interceptors.response.use(
   (response) => response,
   async (error: AxiosError) => {
-    const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-    // Handle 401 Unauthorized or 403 Forbidden
-    if (
-      error.response &&
-      (error.response.status === 401 || error.response.status === 403) &&
-      !originalRequest._retry
-    ) {
-      if (isRefreshing) {
-        return new Promise<string | null>((resolve, reject) => {
-          failedQueue.push({ resolve, reject });
-        })
-          .then((token) => {
-            if (token) {
-              originalRequest.headers.Authorization = `Bearer ${token}`;
-              return axiosInstance(originalRequest);
-            }
-            return Promise.reject(error);
-          })
-          .catch((err) => {
-            return Promise.reject(err);
-          });
-      }
-
-      originalRequest._retry = true;
-      isRefreshing = true;
-
-      const refreshTokenValue = getCookie('refresh_token');
-
-      if (!refreshTokenValue) {
-        isRefreshing = false;
+    // Handle 401 Unauthorized
+    if (error.response && error.response.status === 401) {
+      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
+      
+      // If we already retried and it still failed, the session is truly dead
+      if (originalRequest._retry) {
         clearAuthCookies();
-        if (typeof window !== 'undefined') {
-          if (!window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
-            window.location.href = ROUTES.AUTH.LOGIN;
-          }
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
+          toast.error('Session Expired', { description: 'Please sign in again.' });
+          window.location.href = ROUTES.AUTH.LOGIN;
         }
         return Promise.reject(error);
       }
 
+      originalRequest._retry = true;
+
       try {
-        const response = await axios.post(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.REFRESH_TOKEN}`,
-          { refresh_token: refreshTokenValue }
-        );
+        // Force a session refresh
+        const { createClient } = await import('@/utils/supabase/client');
+        const supabase = createClient();
+        const { data, error: refreshError } = await supabase.auth.refreshSession();
+        
+        if (refreshError || !data.session) {
+          throw refreshError || new Error('No session returned');
+        }
 
-        const { access_token, refresh_token } = response.data;
-
-        if (access_token) setCookie('access_token', access_token);
-        if (refresh_token) setCookie('refresh_token', refresh_token);
-
-        const tokenToUse = access_token;
+        const tokenToUse = data.session.access_token;
         axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${tokenToUse}`;
         originalRequest.headers.Authorization = `Bearer ${tokenToUse}`;
 
-        processQueue(null, tokenToUse);
         return axiosInstance(originalRequest);
       } catch (refreshError) {
-        processQueue(refreshError, null);
         clearAuthCookies();
-        if (typeof window !== 'undefined') {
-          if (!window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
-            toast.error('Session Expired', {
-              description: 'Please sign in again.',
-            });
-            window.location.href = ROUTES.AUTH.LOGIN;
-          }
+        if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
+          toast.error('Session Expired', { description: 'Please sign in again.' });
+          window.location.href = ROUTES.AUTH.LOGIN;
         }
         return Promise.reject(refreshError);
-      } finally {
-        isRefreshing = false;
       }
     }
 

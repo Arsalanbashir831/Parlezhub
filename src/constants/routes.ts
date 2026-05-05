@@ -10,10 +10,14 @@ export const ROUTES = {
     RESET_PASSWORD: '/auth/reset-password',
     VERIFY_EMAIL: '/auth/verify-email',
     CALLBACK: '/auth/callback',
+    AUTH_CODE_ERROR: '/auth/auth-code-error',
   },
   AGENT: {
     LANGUAGE: '/language',
     ASTROLOGY: '/astrology',
+  },
+  ONBOARDING: {
+    CHOOSE_ROLE: '/onboarding/choose-role',
   },
   STUDENT: {
     DASHBOARD: '/student/dashboard',

@@ -1,9 +1,12 @@
-import { NextResponse } from 'next/server';
-import type { NextRequest } from 'next/server';
+import { createServerClient } from '@supabase/ssr';
+import { type NextRequest, NextResponse } from 'next/server';
 
 import { ROUTES } from './constants/routes';
 
-// Define protected routes for each role
+/**
+ * Route classification — mirrors the old middleware but now validated
+ * against the Supabase JWT session instead of a manual access_token cookie.
+ */
 const STUDENT_ROUTES = [
   ROUTES.STUDENT.DASHBOARD,
   ROUTES.STUDENT.TEACHERS,
@@ -23,7 +26,7 @@ const TEACHER_ROUTES = [
   ROUTES.TEACHER.SERVICES,
   ROUTES.TEACHER.SETTINGS,
   ROUTES.TEACHER.BLOGS,
-  ROUTES.TEACHER.ASTROLOGY_STUDENTS
+  ROUTES.TEACHER.ASTROLOGY_STUDENTS,
 ];
 
 const PUBLIC_ROUTES = [
@@ -33,6 +36,8 @@ const PUBLIC_ROUTES = [
   ROUTES.AUTH.RESET_PASSWORD,
   ROUTES.AUTH.VERIFY_EMAIL,
   ROUTES.AUTH.CALLBACK,
+  ROUTES.AUTH.AUTH_CODE_ERROR,
+  ROUTES.ONBOARDING.CHOOSE_ROLE,
   ROUTES.AI_SESSION.ROOT,
   ROUTES.AGENT.LANGUAGE,
   ROUTES.TERMS,
@@ -40,52 +45,64 @@ const PUBLIC_ROUTES = [
   '/placeholders',
 ];
 
-export function middleware(request: NextRequest) {
+/**
+ * Next.js Middleware — runs on every matched request on the Edge.
+ *
+ * Responsibilities:
+ * 1. Refresh the Supabase session (keeps HTTP-only cookies fresh).
+ * 2. Protect routes: redirect unauthenticated users to sign-in.
+ * 3. Redirect authenticated users away from auth pages to their dashboard.
+ * 4. Enforce role-based route access.
+ *
+ * Token refresh is handled HERE automatically by @supabase/ssr —
+ * no Django endpoint needed.
+ */
+export async function middleware(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
-  // Check if the path is a public route
-  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
-    pathname.startsWith(route)
+  // Create a response object we can mutate (needed for cookie writes)
+  let supabaseResponse = NextResponse.next({ request });
+
+  // Instantiate a server-side Supabase client that reads/writes cookies
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          // Write cookies to both the request (for this middleware pass)
+          // and the response (so the browser receives them)
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          supabaseResponse = NextResponse.next({ request });
+          cookiesToSet.forEach(({ name, value, options }) =>
+            supabaseResponse.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
   );
 
-  if (isPublicRoute) {
-    // Only restrict auth pages (sign-in, signup) for authenticated users
-    const isAuthPage =
-      pathname.startsWith(ROUTES.AUTH.LOGIN) ||
-      pathname.startsWith(ROUTES.AUTH.SIGNUP);
-    if (isAuthPage) {
-      const accessToken = request.cookies.get('access_token')?.value;
-      const activeRole =
-        request.cookies.get('active_role')?.value ||
-        request.cookies.get('user_role')?.value;
-      const redirectParam = request.nextUrl.searchParams.get('redirect');
-      if (accessToken && activeRole) {
-        // If a redirect param is present, honor it instead of forcing dashboard
-        if (redirectParam) {
-          return NextResponse.redirect(new URL(redirectParam, request.url));
-        }
-        if (activeRole === 'STUDENT') {
-          return NextResponse.redirect(
-            new URL(ROUTES.STUDENT.DASHBOARD, request.url)
-          );
-        }
-        if (activeRole === 'TEACHER') {
-          return NextResponse.redirect(
-            new URL(ROUTES.TEACHER.DASHBOARD, request.url)
-          );
-        }
-      }
-    }
-    return NextResponse.next();
-  }
+  /**
+   * IMPORTANT: Do not add any logic between createServerClient and
+   * supabase.auth.getClaims(). The getClaims() call is what triggers
+   * the token refresh and cookie update.
+   */
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
 
-  // Get tokens and role information from cookies
-  const accessToken = request.cookies.get('access_token')?.value;
+  // Read role from custom cookies set by the auth-context (client-side)
+  // This lets the middleware enforce role-based access without a DB call.
+  const activeRole =
+    request.cookies.get('active_role')?.value ||
+    request.cookies.get('user_role')?.value;
+
   const userRolesStr = request.cookies.get('user_roles')?.value;
-  const activeRole = request.cookies.get('active_role')?.value;
-  const fallbackRole = request.cookies.get('user_role')?.value; // Backward compatibility
-
-  // Parse user roles
   let userRoles: ('STUDENT' | 'TEACHER')[] = [];
   if (userRolesStr) {
     try {
@@ -94,16 +111,38 @@ export function middleware(request: NextRequest) {
       userRoles = [];
     }
   }
-
-  // If no user_roles but has fallback user_role, use that
-  if (userRoles.length === 0 && fallbackRole) {
-    userRoles = [fallbackRole as 'STUDENT' | 'TEACHER'];
+  if (userRoles.length === 0 && activeRole) {
+    userRoles = [activeRole as 'STUDENT' | 'TEACHER'];
   }
 
-  const currentRole = activeRole || fallbackRole;
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
 
-  if (!accessToken) {
-    // Redirect to login if no token
+  // ── Public routes ────────────────────────────────────────────────────────
+  if (isPublicRoute) {
+    const isAuthPage =
+      pathname.startsWith(ROUTES.AUTH.LOGIN) ||
+      pathname.startsWith(ROUTES.AUTH.SIGNUP);
+
+    // Redirect authenticated users away from sign-in/sign-up pages
+    if (isAuthPage && user) {
+      const redirectParam = request.nextUrl.searchParams.get('redirect');
+      if (redirectParam) {
+        return NextResponse.redirect(new URL(redirectParam, request.url));
+      }
+      const roleToUse = activeRole || userRoles[0];
+      if (roleToUse === 'TEACHER') {
+        return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
+      }
+      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
+    }
+
+    return supabaseResponse;
+  }
+
+  // ── Not authenticated → sign-in ─────────────────────────────────────────
+  if (!user) {
     const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
     if (pathname !== '/') {
       loginUrl.searchParams.set('redirect', pathname);
@@ -111,111 +150,56 @@ export function middleware(request: NextRequest) {
     return NextResponse.redirect(loginUrl);
   }
 
-  // Handle case where user has token but no roles yet.
-  // This happens right after email-verification or OAuth when the callback
-  // page has stored the access_token cookie but the auth context hasn't
-  // had a chance to fetch the profile and persist the role cookies.
-  //
-  // ⚠️  Do NOT redirect to sign-in here when pathname is '/':
-  //   sign-in sees isAuthenticated=true → does window.location.replace('/')
-  //   → middleware redirects back to sign-in → infinite loop.
-  //
-  // Instead, let '/' through.  The client-side AuthContext will fetch the
-  // profile, set role cookies, and page.tsx will route to the dashboard.
-  if (userRoles.length === 0) {
-    if (pathname === '/') {
-      return NextResponse.next();
+  // ── Authenticated but no role yet → onboarding ──────────────────────────
+  // This covers new Google/One-Tap users who haven't picked a role
+  if (userRoles.length === 0 && pathname !== '/') {
+    if (!pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)) {
+      return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
     }
-    // For any other protected path redirect to sign-in with the redirect param
-    const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-    loginUrl.searchParams.set('redirect', pathname);
-    return NextResponse.redirect(loginUrl);
+    return supabaseResponse;
   }
 
-  // Handle root path - redirect based on active role or first available role
-  if (pathname === '/') {
-    // Prioritize TEACHER if available in roles, unless we have a specific active role
-    const hasTeacher = userRoles.includes('TEACHER');
-    const roleToUse = currentRole || (hasTeacher ? 'TEACHER' : userRoles[0]);
-
+  // ── Root path: redirect to dashboard ────────────────────────────────────
+  if (pathname === ROUTES.HOME) {
+    const roleToUse = activeRole || userRoles[0];
     if (roleToUse === 'TEACHER') {
-      return NextResponse.redirect(
-        new URL(ROUTES.TEACHER.DASHBOARD, request.url)
-      );
-    } else if (roleToUse === 'STUDENT') {
-      return NextResponse.redirect(
-        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
-      );
+      return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
     }
+    return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
   }
 
-  // Check role-based access for protected routes with multi-role support
-  const isStudentRoute = STUDENT_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-  const isConsultantRoute = TEACHER_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
+  // ── Role-based route enforcement ─────────────────────────────────────────
+  const isStudentRoute = STUDENT_ROUTES.some((route) => pathname.startsWith(route));
+  const isTeacherRoute = TEACHER_ROUTES.some((route) => pathname.startsWith(route));
 
-  if (isStudentRoute) {
-    // Allow access if user has student role
-    if (!userRoles.includes('STUDENT')) {
-      // User doesn't have student role, redirect to their default dashboard
-      const roleToUse = currentRole || userRoles[0];
-      if (roleToUse === 'TEACHER') {
-        return NextResponse.redirect(
-          new URL(ROUTES.TEACHER.DASHBOARD, request.url)
-        );
-      } else {
-        // No valid role, redirect to login
-        const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-        return NextResponse.redirect(loginUrl);
-      }
+  if (isStudentRoute && !userRoles.includes('STUDENT')) {
+    const roleToUse = activeRole || userRoles[0];
+    if (roleToUse === 'TEACHER') {
+      return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
     }
-  } else if (isConsultantRoute) {
-    // Allow access if user has consultant role
-    if (!userRoles.includes('TEACHER')) {
-      // User doesn't have consultant role, redirect to their default dashboard
-      const roleToUse = currentRole || userRoles[0];
-      if (roleToUse === 'STUDENT') {
-        return NextResponse.redirect(
-          new URL(ROUTES.STUDENT.DASHBOARD, request.url)
-        );
-      } else {
-        // No valid role, redirect to login
-        const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-        return NextResponse.redirect(loginUrl);
-      }
-    }
-  } else {
-    // Route not recognized, redirect to default dashboard
-    const roleToUse = currentRole || userRoles[0];
+    return NextResponse.redirect(new URL(ROUTES.AUTH.LOGIN, request.url));
+  }
+
+  if (isTeacherRoute && !userRoles.includes('TEACHER')) {
+    const roleToUse = activeRole || userRoles[0];
     if (roleToUse === 'STUDENT') {
-      return NextResponse.redirect(
-        new URL(ROUTES.STUDENT.DASHBOARD, request.url)
-      );
-    } else if (roleToUse === 'TEACHER') {
-      return NextResponse.redirect(
-        new URL(ROUTES.TEACHER.DASHBOARD, request.url)
-      );
-    } else {
-      // No valid role, redirect to login
-      const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-      return NextResponse.redirect(loginUrl);
+      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
     }
+    return NextResponse.redirect(new URL(ROUTES.AUTH.LOGIN, request.url));
   }
 
-  return NextResponse.next();
+  // Allow the request through; supabaseResponse carries updated cookies
+  return supabaseResponse;
 }
 
 export const config = {
   matcher: [
     /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
+     * Match all request paths EXCEPT:
      * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (favicon file)
+     * - _next/image (image optimization)
+     * - favicon.ico
+     * - api routes (Next.js API routes — not Django)
      */
     '/((?!api|_next/static|_next/image|favicon.ico).*)',
   ],

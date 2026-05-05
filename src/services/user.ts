@@ -205,13 +205,40 @@ export const userApi = {
     currentPassword: string,
     newPassword: string
   ): Promise<{ message: string }> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.CHANGE_PASSWORD,
-      'POST',
-      { current_password: currentPassword, new_password: newPassword },
-      {},
-      true
-    );
-    return response.data;
+    // Dynamic import to avoid SSR issues if this file is imported in server contexts
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+    
+    // 1. Get current user's email
+    const { data: { user }, error: userError } = await supabase.auth.getUser();
+    if (userError || !user?.email) {
+      throw new Error('Could not find authenticated user.');
+    }
+
+    // 2. Verify current password by attempting to sign in
+    const { error: signInError } = await supabase.auth.signInWithPassword({
+      email: user.email,
+      password: currentPassword,
+    });
+    
+    if (signInError) {
+      // Throw an error that looks like our standard API error for compatibility
+      const err = new Error('Current password is incorrect.');
+      (err as any).response = { data: { error: 'Current password is incorrect.' } };
+      throw err;
+    }
+
+    // 3. Update password
+    const { error: updateError } = await supabase.auth.updateUser({
+      password: newPassword,
+    });
+
+    if (updateError) {
+      const err = new Error(updateError.message);
+      (err as any).response = { data: { error: updateError.message } };
+      throw err;
+    }
+
+    return { message: 'Password updated successfully.' };
   },
 };

@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { authApi } from '@/services/auth';
+import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 
 import { Button } from '@/components/ui/button';
@@ -20,6 +20,7 @@ export function GoogleOAuthButton({
   className,
 }: GoogleOAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
+  const { signInWithGoogle } = useAuth();
 
   const handleGoogleAuth = async () => {
     if (mode === 'signup' && !role) {
@@ -29,34 +30,20 @@ export function GoogleOAuthButton({
 
     setIsLoading(true);
     try {
-      // Step 1: Initiate Google OAuth
-      const initiateResponse = await authApi.googleInitiate();
-
-      if (!initiateResponse.success) {
-        throw new Error(
-          initiateResponse.message || 'Failed to initiate Google OAuth'
-        );
-      }
-
-      // Store the mode and role in sessionStorage for the callback
-      sessionStorage.setItem('oauth_mode', mode);
       if (role) {
-        sessionStorage.setItem('oauth_role', role);
+        // Set a cookie so the server-side callback can read it during sync
+        document.cookie = `intended_role=${role}; path=/; max-age=3600; SameSite=Lax`;
       }
 
-      // Step 2: Redirect to Google OAuth URL with our callback URL
-      const callbackUrl = `${window.location.origin}/auth/callback/google`;
-      const oauthUrl = new URL(initiateResponse.oauth_url);
-      oauthUrl.searchParams.set('redirect_to', callbackUrl);
-
-      window.location.href = oauthUrl.toString();
+      await signInWithGoogle();
+      
+      // We don't set isLoading(false) here because the page will redirect to Google
     } catch (error) {
       console.error('Google OAuth initiation failed:', error);
       toast.error('Failed to start Google authentication', {
         description:
           error instanceof Error ? error.message : 'Please try again later',
       });
-    } finally {
       setIsLoading(false);
     }
   };

@@ -13,53 +13,53 @@ import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
 import {
-  clearAuthCookies,
   getActiveRole,
-  getCookie,
   getUserRoles,
   setActiveRole,
   setCookie,
   setUserRoles,
+  clearAuthCookies,
 } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
+import { createClient } from '@/utils/supabase/client';
 
 import type { User } from '../lib/types';
 import {
   authApi,
-  ResendVerificationEmailRequest,
+  BecomeRoleResponse,
   type ForgotPasswordRequest,
-  type LoginRequest,
+  type ResendVerificationEmailRequest,
   type ResetPasswordRequest,
-  type SignupRequest,
   type UnifiedProfileResponse,
 } from '../services/auth';
 
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
-  logout: () => void;
-  signup: (userData: Partial<User>, password: string) => Promise<void>;
-  forgotPassword: (email: string) => Promise<void>;
-  resetPassword: (token: string, password: string) => Promise<void>;
-  resendVerificationEmail: (email: string) => Promise<void>;
-  googleOAuthInitiate: (
-    mode: 'login' | 'signup',
-    role?: 'TEACHER' | 'STUDENT'
+  logout: () => Promise<void>;
+  signup: (
+    userData: Partial<User>,
+    password: string,
+    role: 'TEACHER' | 'STUDENT'
   ) => Promise<void>;
+  forgotPassword: (email: string) => Promise<{ message: string }>;
+  resetPassword: (token: string, password: string) => Promise<{ message: string }>;
+  resendVerificationEmail: (email: string) => Promise<{ message: string }>;
+  signInWithGoogle: () => Promise<void>;
   switchRole: (role: 'TEACHER' | 'STUDENT') => Promise<void>;
   refreshUserProfile: () => Promise<void>;
-  becomeConsultant: () => Promise<void>;
-  becomeStudent: () => Promise<void>;
+  becomeConsultant: () => Promise<BecomeRoleResponse>;
+  becomeStudent: () => Promise<BecomeRoleResponse>;
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
   userRoles: ('TEACHER' | 'STUDENT')[];
   activeRole: 'TEACHER' | 'STUDENT' | null;
-  userRole: 'TEACHER' | 'STUDENT' | null; // Keep for backward compatibility
+  userRole: 'TEACHER' | 'STUDENT' | null;
   hasTeacherRole: boolean;
   hasStudentRole: boolean;
   canAccessRole: (role: 'TEACHER' | 'STUDENT') => boolean;
   setIsAuthenticated: (value: boolean) => void;
-  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void; // Keep for backward compatibility
+  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -68,51 +68,40 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT')[]>(
-    []
-  );
-  const [activeRole, setActiveRoleState] = useState<
-    'TEACHER' | 'STUDENT' | null
-  >(null);
+  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT')[]>([]);
+  const [activeRole, setActiveRoleState] = useState<'TEACHER' | 'STUDENT' | null>(null);
+
   const router = useRouter();
   const searchParams = useSearchParams();
+  const supabase = createClient();
 
-  // Computed values for backward compatibility and convenience
-  const userRole = activeRole; // For backward compatibility
+  // Computed values
+  const userRole = activeRole;
   const hasTeacherRole = userRoles.includes('TEACHER');
   const hasStudentRole = userRoles.includes('STUDENT');
-  const canAccessRole = (role: 'TEACHER' | 'STUDENT') =>
-    userRoles.includes(role);
+  const canAccessRole = (role: 'TEACHER' | 'STUDENT') => userRoles.includes(role);
 
-  // Function to update roles from unified profile response
+  // ── Role helpers ───────────────────────────────────────────────────────────
   const updateRolesFromProfile = useCallback(
     (profileData: UnifiedProfileResponse) => {
       const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
-
-      if (profileData.has_teacher) {
-        availableRoles.push('TEACHER');
-      }
-      if (profileData.has_student) {
-        availableRoles.push('STUDENT');
-      }
+      if (profileData.has_teacher) availableRoles.push('TEACHER');
+      if (profileData.has_student) availableRoles.push('STUDENT');
 
       setUserRolesState(availableRoles);
       setUserRoles(availableRoles);
 
-      // Set active role - prefer current active role if valid, otherwise use first available
       const currentActiveRole = getActiveRole();
       let newActiveRole: 'TEACHER' | 'STUDENT' | null = null;
 
       if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
         newActiveRole = currentActiveRole;
-        setActiveRoleState(currentActiveRole);
       } else if (availableRoles.length > 0) {
         newActiveRole = availableRoles[0];
-        setActiveRoleState(newActiveRole);
         setActiveRole(newActiveRole);
       }
 
-      // Keep backward compatibility cookie with the correct role
+      setActiveRoleState(newActiveRole);
       if (newActiveRole) {
         setCookie('user_role', newActiveRole);
       }
@@ -120,388 +109,332 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     []
   );
 
-  // Function to refresh user profile
   const refreshUserProfile = useCallback(async () => {
     try {
       const profileData = await authApi.getUnifiedProfile();
       updateRolesFromProfile(profileData);
-    } catch (error) {
-      console.error('Failed to refresh user profile:', error);
-      throw error;
+    } catch (err) {
+      console.error('Failed to refresh user profile:', err);
+      throw err;
     }
   }, [updateRolesFromProfile]);
 
-  // Function to switch active role
-  const switchRole = async (role: 'TEACHER' | 'STUDENT') => {
-    if (!canAccessRole(role)) {
-      throw new Error(`You don't have access to ${role} role`);
-    }
-
-    setActiveRoleState(role);
-    setActiveRole(role);
-    setCookie('user_role', role); // For backward compatibility
-
-    // Redirect to appropriate dashboard
-    if (role === 'STUDENT') {
-      router.push(ROUTES.STUDENT.DASHBOARD);
-    } else {
-      router.push(ROUTES.TEACHER.DASHBOARD);
-    }
-
-    toast.success(`Switched to ${role.toLowerCase()} mode`);
-  };
-
-  // TanStack Query mutations
-  const loginMutation = useMutation({
-    mutationFn: (data: LoginRequest) => authApi.login(data),
-    onSuccess: async (data) => {
-      // Store tokens in cookies
-      setCookie('access_token', data.access_token);
-      setCookie('refresh_token', data.refresh_token);
-
-      setError(null);
-
-      try {
-        // Get unified profile to determine available roles before setting authenticated
-        await refreshUserProfile();
-
-        // Only set authenticated after profile is loaded
-        setIsAuthenticated(true);
-
-        // Show success toast
-        toast.success(`Welcome back!`);
-
-        // Redirect based on active role
-        const redirectTo = searchParams.get('redirect');
-        if (redirectTo) {
-          router.push(redirectTo);
-        } else {
-          const currentActiveRole = getActiveRole();
-          if (currentActiveRole === 'TEACHER') {
-            router.push(ROUTES.TEACHER.DASHBOARD);
-          } else if (currentActiveRole === 'STUDENT') {
-            router.push(ROUTES.STUDENT.DASHBOARD);
-          } else {
-            // Default to student dashboard if no active role set
-            router.push(ROUTES.STUDENT.DASHBOARD);
-          }
-        }
-      } catch (profileError) {
-        console.error('Failed to load profile after login:', profileError);
-        // Fallback to old behavior
-        setCookie('user_role', data.user.role);
-        setUserRolesState([data.user.role]);
-        setActiveRoleState(data.user.role);
-        setIsAuthenticated(true);
-      }
-    },
-    onError: (error: unknown) => {
-      console.error('Login failed:', error);
-      const errorMessage = getErrorMessage(error, 'login');
-      setError(errorMessage);
-      toast.error('Login Failed', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const signupMutation = useMutation({
-    mutationFn: (data: SignupRequest) => authApi.signup(data),
-    onSuccess: (data, variables) => {
-      setError(null);
-
-      // Show success toast
-      toast.success('Account Created Successfully!', {
-        description:
-          'Please check your email to verify your account before signing in.',
-      });
-
-      // Redirect to login after successful signup
-      const emailParam = variables?.email
-        ? `?email=${encodeURIComponent(variables.email)}`
-        : '';
-      router.push(ROUTES.AUTH.VERIFY_EMAIL + emailParam);
-    },
-    onError: (error: unknown) => {
-      console.error('Signup failed:', error);
-      const errorMessage = getErrorMessage(error, 'signup');
-      setError(errorMessage);
-      toast.error('Signup Failed', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const forgotPasswordMutation = useMutation({
-    mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
-    onSuccess: () => {
-      setError(null);
-
-      // Show success toast
-      toast.success('Reset Email Sent!', {
-        description: 'Please check your email for password reset instructions.',
-      });
-    },
-    onError: (error: unknown) => {
-      console.error('Forgot password failed:', error);
-      const errorMessage = getErrorMessage(error, 'forgot-password');
-      setError(errorMessage);
-      toast.error('Failed to Send Reset Email', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const resetPasswordMutation = useMutation({
-    mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
-    onSuccess: () => {
-      setError(null);
-
-      // Show success toast
-      toast.success('Password Reset Successful!', {
-        description: 'You can now sign in with your new password.',
-      });
-
-      // Redirect to login after successful password reset
-      router.push(ROUTES.AUTH.LOGIN);
-    },
-    onError: (error: unknown) => {
-      console.error('Password reset failed:', error);
-      const errorMessage = getErrorMessage(error, 'reset-password');
-      setError(errorMessage);
-      toast.error('Password Reset Failed', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const resendVerificationEmailMutation = useMutation({
-    mutationFn: (data: ResendVerificationEmailRequest) =>
-      authApi.resendVerificationEmail(data),
-    mutationKey: ['resend-verification-email'],
-    onSuccess: () => {
-      setError(null);
-
-      // Show success toast
-      toast.success('Verification Email Sent!', {
-        description: 'Please check your email for verification instructions.',
-      });
-    },
-    onError: (error: unknown) => {
-      console.error('Resend verification email failed:', error);
-      const errorMessage = getErrorMessage(error, 'resend-verification-email');
-      setError(errorMessage);
-      toast.error('Failed to Resend Verification Email', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const googleOAuthInitiateMutation = useMutation({
-    mutationFn: () => authApi.googleInitiate(),
-    onSuccess: () => {
-      setError(null);
-      // The GoogleOAuthButton component will handle the redirect
-    },
-    onError: (error: unknown) => {
-      console.error('Google OAuth initiate failed:', error);
-      const errorMessage = getErrorMessage(error, 'google-oauth');
-      setError(errorMessage);
-      toast.error('Google Authentication Failed', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const becomeConsultantMutation = useMutation({
-    mutationFn: () => authApi.becomeConsultant(),
-    onSuccess: async (data) => {
-      setError(null);
-
-      // Refresh profile to get updated roles
-      await refreshUserProfile();
-
-      // Set consultant as active role and redirect (no validation needed since API succeeded)
-      setActiveRoleState('TEACHER');
-      setActiveRole('TEACHER');
-      setCookie('user_role', 'TEACHER');
-
-      // Redirect to consultant dashboard
-      router.push(ROUTES.TEACHER.DASHBOARD);
-
-      const message = data.created
-        ? 'Consultant profile created successfully!'
-        : 'Welcome back to consultant mode!';
-      toast.success(message);
-    },
-    onError: (error: unknown) => {
-      console.error('Become consultant failed:', error);
-      const errorMessage = getErrorMessage(error, 'become-consultant');
-      setError(errorMessage);
-      toast.error('Failed to Become Consultant', {
-        description: errorMessage,
-      });
-    },
-  });
-
-  const becomeStudentMutation = useMutation({
-    mutationFn: () => authApi.becomeStudent(),
-    onSuccess: async (data) => {
-      setError(null);
-
-      // Refresh profile to get updated roles
-      await refreshUserProfile();
-
-      // Set student as active role and redirect (no validation needed since API succeeded)
-      setActiveRoleState('STUDENT');
-      setActiveRole('STUDENT');
-      setCookie('user_role', 'STUDENT');
-
-      // Redirect to student dashboard
-      router.push(ROUTES.STUDENT.DASHBOARD);
-
-      const message = data.created
-        ? 'Student profile created successfully!'
-        : 'Welcome back to student mode!';
-      toast.success(message);
-    },
-    onError: (error: unknown) => {
-      console.error('Become student failed:', error);
-      const errorMessage = getErrorMessage(error, 'become-student');
-      setError(errorMessage);
-      toast.error('Failed to Become Student', {
-        description: errorMessage,
-      });
-    },
-  });
-
+  // ── Supabase session listener ──────────────────────────────────────────────
   useEffect(() => {
-    // Check for existing session
-    const checkAuth = async () => {
-      try {
-        const token = getCookie('access_token');
-        const storedRoles = getUserRoles();
-        const storedActiveRole = getActiveRole();
+    let isMounted = true;
 
-        if (token) {
+    const initializeAuth = async () => {
+      try {
+        const { data: { session } } = await supabase.auth.getSession();
+
+        if (!isMounted) return;
+
+        if (session?.user) {
           setIsAuthenticated(true);
 
+          // Load roles from cookies first (instant), then refresh from API
+          const storedRoles = getUserRoles();
+          const storedActiveRole = getActiveRole();
           if (storedRoles.length > 0) {
             setUserRolesState(storedRoles);
-            if (storedActiveRole && storedRoles.includes(storedActiveRole)) {
-              setActiveRoleState(storedActiveRole);
-            } else {
-              setActiveRoleState(storedRoles[0]);
-            }
+            setActiveRoleState(storedActiveRole && storedRoles.includes(storedActiveRole)
+              ? storedActiveRole
+              : storedRoles[0]
+            );
+          }
 
-            // Try to refresh profile to get latest data
-            try {
-              await refreshUserProfile();
-            } catch {
-              console.log(
-                'Could not refresh profile on init, using stored data'
-              );
-            }
-          } else {
-            // No stored roles, try to fetch profile
-            try {
-              await refreshUserProfile();
-            } catch {
-              // If we can't get profile, fall back to clearing auth
-              console.error('Failed to get profile, clearing auth');
-              clearAuthCookies();
-              setIsAuthenticated(false);
-              setUserRolesState([]);
-              setActiveRoleState(null);
-            }
+          try {
+            await refreshUserProfile();
+          } catch {
+            // Non-fatal: use stored data if profile fetch fails
           }
         } else {
           setIsAuthenticated(false);
           setUserRolesState([]);
           setActiveRoleState(null);
         }
-      } catch (error) {
-        console.error('Auth check failed:', error);
+      } catch (err) {
+        console.error('Auth init failed:', err);
         setIsAuthenticated(false);
-        setUserRolesState([]);
-        setActiveRoleState(null);
       } finally {
-        setIsLoading(false);
+        if (isMounted) setIsLoading(false);
       }
     };
 
-    checkAuth();
-  }, [refreshUserProfile, router, searchParams]);
+    initializeAuth();
 
-  const login = async (email: string, password: string) => {
-    await loginMutation.mutateAsync({ email, password });
+    // Listen for auth state changes (login, logout, token refresh)
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      async (event, session) => {
+        if (!isMounted) return;
+
+        if (event === 'SIGNED_IN' && session) {
+          setIsAuthenticated(true);
+          try {
+            // Attempt to load profile from Django.
+            // This may fail with "User not found" if the user just signed up via
+            // One-Tap/Google and the sync hasn't completed yet.
+            // That's fine — the One-Tap component calls syncUser first, THEN
+            // manually fetches the profile and redirects. So we just silently skip.
+            await refreshUserProfile();
+          } catch {
+            // Non-fatal — the One-Tap/OAuth flow handles sync+redirect itself
+          }
+        }
+
+        if (event === 'SIGNED_OUT') {
+          setIsAuthenticated(false);
+          setUserRolesState([]);
+          setActiveRoleState(null);
+          clearAuthCookies();
+        }
+
+        if (event === 'TOKEN_REFRESHED') {
+          // Token was refreshed automatically — nothing to do in the client
+          // The middleware already stored the new cookies
+        }
+      }
+    );
+
+    return () => {
+      isMounted = false;
+      subscription.unsubscribe();
+    };
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ── Role switcher ─────────────────────────────────────────────────────────
+  const switchRole = async (role: 'TEACHER' | 'STUDENT') => {
+    if (!canAccessRole(role)) {
+      throw new Error(`You don't have access to ${role} role`);
+    }
+    setActiveRoleState(role);
+    setActiveRole(role);
+    setCookie('user_role', role);
+    router.push(role === 'STUDENT' ? ROUTES.STUDENT.DASHBOARD : ROUTES.TEACHER.DASHBOARD);
+    toast.success(`Switched to ${role.toLowerCase()} mode`);
   };
 
-  const logout = () => {
-    // Clear all auth cookies
-    clearAuthCookies();
+  // ── Auth actions ───────────────────────────────────────────────────────────
 
+  /**
+   * Email/Password Login
+   * Calls Supabase SDK directly — no Django login endpoint needed.
+   * After a successful sign-in, the middleware auto-syncs the session cookies.
+   * We then call Django /api/auth/sync/ to ensure the user record exists.
+   */
+  const login = async (email: string, password: string) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const { data, error: signInError } = await supabase.auth.signInWithPassword({
+        email,
+        password,
+      });
+
+      if (signInError) throw signInError;
+      if (!data.session) throw new Error('No session returned');
+
+      // Sync user record in Django (idempotent)
+      await authApi.syncUser(data.session.access_token);
+
+      await refreshUserProfile();
+      setIsAuthenticated(true);
+      toast.success('Welcome back!');
+
+      const redirectTo = searchParams.get('redirect');
+      if (redirectTo) {
+        router.push(redirectTo);
+      } else {
+        const currentActiveRole = getActiveRole();
+        router.push(
+          currentActiveRole === 'TEACHER'
+            ? ROUTES.TEACHER.DASHBOARD
+            : ROUTES.STUDENT.DASHBOARD
+        );
+      }
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'login');
+      setError(msg);
+      toast.error('Login Failed', { description: msg });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Email/Password Signup
+   * Calls Supabase SDK directly — no Django register endpoint needed.
+   * After sign-up, Supabase sends a verification email.
+   * The /auth/callback route handler does the Django sync after verification.
+   */
+  const signup = async (
+    userData: Partial<User>,
+    password: string,
+    role: 'TEACHER' | 'STUDENT'
+  ) => {
+    setError(null);
+    setIsLoading(true);
+    try {
+      const { error: signUpError } = await supabase.auth.signUp({
+        email: userData.email!,
+        password,
+        options: {
+          data: {
+            full_name: userData.username || '',
+            first_name: userData.username?.split(' ')[0] || '',
+            last_name: userData.username?.split(' ').slice(1).join(' ') || '',
+            role, // stored in user_metadata, read by /api/auth/sync/
+          },
+          emailRedirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
+        },
+      });
+
+      if (signUpError) throw signUpError;
+
+      setError(null);
+      toast.success('Account Created Successfully!', {
+        description: 'Please check your email to verify your account before signing in.',
+      });
+
+      const emailParam = userData.email
+        ? `?email=${encodeURIComponent(userData.email)}`
+        : '';
+      router.push(ROUTES.AUTH.VERIFY_EMAIL + emailParam);
+    } catch (err: unknown) {
+      const msg = getErrorMessage(err, 'signup');
+      setError(msg);
+      toast.error('Signup Failed', { description: msg });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  /**
+   * Google OAuth Sign-In (PKCE flow)
+   * Supabase redirects to /auth/callback which handles the rest.
+   */
+  const signInWithGoogle = async () => {
+    const { error: oauthError } = await supabase.auth.signInWithOAuth({
+      provider: 'google',
+      options: {
+        redirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
+        queryParams: {
+          access_type: 'offline',
+          prompt: 'consent',
+        },
+      },
+    });
+
+    if (oauthError) {
+      toast.error('Google Sign-In Failed', { description: oauthError.message });
+    }
+    // Supabase redirects the browser — no further action needed here
+  };
+
+  /**
+   * Logout
+   * Calls Supabase SDK — clears the managed session cookies automatically.
+   */
+  const logout = async () => {
+    await supabase.auth.signOut();
+    clearAuthCookies();
     setIsAuthenticated(false);
     setUserRolesState([]);
     setActiveRoleState(null);
     setError(null);
-
-    // Show logout toast
-    toast.success('Logged Out Successfully', {
-      description: 'You have been logged out of your account.',
-    });
-
-    // Redirect to login
+    toast.success('Logged Out Successfully');
     router.push(ROUTES.AUTH.LOGIN);
   };
 
-  const signup = async (userData: Partial<User>, password: string) => {
-    const signupData: SignupRequest = {
-      email: userData.email || '',
-      password,
-      full_name: userData.username || '',
-      role:
-        (userData.role?.toUpperCase() as 'TEACHER' | 'STUDENT') || 'STUDENT',
-      redirect_to:
-        typeof window !== 'undefined'
-          ? `${window.location.origin}${ROUTES.AUTH.CALLBACK}`
-          : undefined,
-    };
+  // ── Password flows (still call Django which proxies to Supabase) ──────────
+  const forgotPasswordMutation = useMutation({
+    mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
+    onSuccess: () => {
+      toast.success('Reset Email Sent!', {
+        description: 'Please check your email for password reset instructions.',
+      });
+    },
+    onError: (err: unknown) => {
+      const msg = getErrorMessage(err, 'forgot-password');
+      setError(msg);
+      toast.error('Failed to Send Reset Email', { description: msg });
+    },
+  });
 
-    await signupMutation.mutateAsync(signupData);
-  };
+  const resetPasswordMutation = useMutation({
+    mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
+    onSuccess: () => {
+      toast.success('Password Reset Successful!', {
+        description: 'You can now sign in with your new password.',
+      });
+      router.push(ROUTES.AUTH.LOGIN);
+    },
+    onError: (err: unknown) => {
+      const msg = getErrorMessage(err, 'reset-password');
+      setError(msg);
+      toast.error('Password Reset Failed', { description: msg });
+    },
+  });
 
-  const forgotPassword = async (email: string) => {
-    await forgotPasswordMutation.mutateAsync({ email });
-  };
+  const resendVerificationEmailMutation = useMutation({
+    mutationFn: (data: ResendVerificationEmailRequest) =>
+      authApi.resendVerificationEmail(data),
+    onSuccess: () => {
+      toast.success('Verification Email Sent!');
+    },
+    onError: (err: unknown) => {
+      const msg = getErrorMessage(err, 'resend-verification-email');
+      setError(msg);
+      toast.error('Failed to Resend', { description: msg });
+    },
+  });
 
-  const resetPassword = async (token: string, password: string) => {
-    await resetPasswordMutation.mutateAsync({ token, new_password: password });
-  };
+  const becomeConsultantMutation = useMutation({
+    mutationFn: () => authApi.becomeConsultant(),
+    onSuccess: async () => {
+      await refreshUserProfile();
+      setActiveRoleState('TEACHER');
+      setActiveRole('TEACHER');
+      setCookie('user_role', 'TEACHER');
+      router.push(ROUTES.TEACHER.DASHBOARD);
+      toast.success('Consultant profile created!');
+    },
+    onError: (err: unknown) => {
+      toast.error('Failed to Become Consultant', {
+        description: getErrorMessage(err, 'become-consultant'),
+      });
+    },
+  });
 
-  const resendVerificationEmail = async (email: string) => {
-    await resendVerificationEmailMutation.mutateAsync({ email });
-  };
+  const becomeStudentMutation = useMutation({
+    mutationFn: () => authApi.becomeStudent(),
+    onSuccess: async () => {
+      await refreshUserProfile();
+      setActiveRoleState('STUDENT');
+      setActiveRole('STUDENT');
+      setCookie('user_role', 'STUDENT');
+      router.push(ROUTES.STUDENT.DASHBOARD);
+      toast.success('Student profile created!');
+    },
+    onError: (err: unknown) => {
+      toast.error('Failed to Become Student', {
+        description: getErrorMessage(err, 'become-student'),
+      });
+    },
+  });
 
-  const googleOAuthInitiate = async (
-    mode: 'login' | 'signup',
-    role?: 'TEACHER' | 'STUDENT'
-  ) => {
-    if (mode === 'signup' && !role) {
-      toast.error('Please select a role before continuing with Google signup');
-      return;
-    }
+  const forgotPassword = async (email: string) =>
+    forgotPasswordMutation.mutateAsync({ email });
 
-    // Store the mode and role in sessionStorage for the callback
-    sessionStorage.setItem('oauth_mode', mode);
-    if (role) {
-      sessionStorage.setItem('oauth_role', role);
-    }
+  const resetPassword = async (token: string, password: string) =>
+    resetPasswordMutation.mutateAsync({ token, new_password: password });
 
-    await googleOAuthInitiateMutation.mutateAsync();
-  };
+  const resendVerificationEmail = async (email: string) =>
+    resendVerificationEmailMutation.mutateAsync({ email });
 
-  // Backward compatibility function
+  const becomeConsultant = async () => becomeConsultantMutation.mutateAsync();
+  const becomeStudent = async () => becomeStudentMutation.mutateAsync();
+
   const setUserRole = (role: 'TEACHER' | 'STUDENT' | null) => {
     if (role) {
       setActiveRoleState(role);
@@ -512,13 +445,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  const becomeConsultant = async () => {
-    await becomeConsultantMutation.mutateAsync();
-  };
-
-  const becomeStudent = async () => {
-    await becomeStudentMutation.mutateAsync();
-  };
+  const isMutationLoading =
+    forgotPasswordMutation.isPending ||
+    resetPasswordMutation.isPending ||
+    resendVerificationEmailMutation.isPending ||
+    becomeConsultantMutation.isPending ||
+    becomeStudentMutation.isPending;
 
   return (
     <AuthContext.Provider
@@ -529,31 +461,22 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         forgotPassword,
         resetPassword,
         resendVerificationEmail,
-        googleOAuthInitiate,
+        signInWithGoogle,
         switchRole,
         refreshUserProfile,
         becomeConsultant,
         becomeStudent,
-        isLoading:
-          isLoading ||
-          loginMutation.isPending ||
-          signupMutation.isPending ||
-          forgotPasswordMutation.isPending ||
-          resetPasswordMutation.isPending ||
-          resendVerificationEmailMutation.isPending ||
-          googleOAuthInitiateMutation.isPending ||
-          becomeConsultantMutation.isPending ||
-          becomeStudentMutation.isPending,
+        isLoading: isLoading || isMutationLoading,
         error,
         isAuthenticated,
         userRoles,
         activeRole,
-        userRole, // For backward compatibility
+        userRole,
         hasTeacherRole,
         hasStudentRole,
         canAccessRole,
         setIsAuthenticated,
-        setUserRole, // For backward compatibility
+        setUserRole,
       }}
     >
       {children}
