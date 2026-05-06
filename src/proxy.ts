@@ -57,7 +57,7 @@ const PUBLIC_ROUTES = [
  * Token refresh is handled HERE automatically by @supabase/ssr —
  * no Django endpoint needed.
  */
-export async function middleware(request: NextRequest) {
+export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
   // Create a response object we can mutate (needed for cookie writes)
