@@ -53,8 +53,6 @@ export const hasRole = (role: 'STUDENT' | 'TEACHER'): boolean => {
 
 // Helper function to remove all auth-related cookies
 export const clearAuthCookies = () => {
-  removeCookie('access_token');
-  removeCookie('refresh_token');
   removeCookie('user_role'); // Keep for backward compatibility
   removeCookie('user_roles');
   removeCookie('active_role');

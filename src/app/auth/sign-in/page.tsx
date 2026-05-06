@@ -58,11 +58,8 @@ export default function LoginPage() {
 
       try {
         setProcessingLink(true);
-        // Persist tokens
-        setCookie('access_token', accessToken);
-        setCookie('refresh_token', refreshToken);
-
-        // Optionally clear hash from URL to avoid exposing tokens in history
+        // The auth context will handle profile fetching and role determination automatically
+        // No need to manually fetch profiles here
         try {
           window.history.replaceState(null, '', window.location.pathname);
         } catch {}

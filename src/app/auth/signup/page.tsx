@@ -63,9 +63,9 @@ export default function SignupPage() {
       {
         username: data.full_name,
         email: data.email,
-        role: data.role.toLowerCase() as 'student' | 'consultant',
       },
-      data.password
+      data.password,
+      data.role
     );
   };
 

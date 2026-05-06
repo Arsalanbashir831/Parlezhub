@@ -1,9 +1,8 @@
-import { API_ROUTES } from '@/constants/api-routes';
 import { ROUTES } from '@/constants/routes';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 import { toast } from 'sonner';
 
-import { clearAuthCookies, getCookie, setCookie } from '@/lib/cookie-utils';
+import { clearAuthCookies } from '@/lib/cookie-utils';
 
 // Singleton instance
 const axiosInstance: AxiosInstance = axios.create({
@@ -19,7 +18,7 @@ axiosInstance.interceptors.request.use(
         const supabase = createClient();
         // getSession() automatically refreshes the token if it's expired
         const { data: { session } } = await supabase.auth.getSession();
-        
+
         if (session?.access_token) {
           config.headers.Authorization = `Bearer ${session.access_token}`;
         }
@@ -39,7 +38,7 @@ axiosInstance.interceptors.response.use(
     // Handle 401 Unauthorized
     if (error.response && error.response.status === 401) {
       const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-      
+
       // If we already retried and it still failed, the session is truly dead
       if (originalRequest._retry) {
         clearAuthCookies();
@@ -57,13 +56,12 @@ axiosInstance.interceptors.response.use(
         const { createClient } = await import('@/utils/supabase/client');
         const supabase = createClient();
         const { data, error: refreshError } = await supabase.auth.refreshSession();
-        
+
         if (refreshError || !data.session) {
           throw refreshError || new Error('No session returned');
         }
 
         const tokenToUse = data.session.access_token;
-        axiosInstance.defaults.headers.common['Authorization'] = `Bearer ${tokenToUse}`;
         originalRequest.headers.Authorization = `Bearer ${tokenToUse}`;
 
         return axiosInstance(originalRequest);

@@ -106,11 +106,9 @@ export function GoogleOAuthCallback() {
 
         try {
           // Call the backend callback endpoint
-          const response = await authApi.googleCallback(callbackData);
+          const response = await authApi.syncUser(accessToken, oauthRole || undefined);
 
-          // Only set cookies if we have a successful response with user role
-          setCookie('access_token', response.access_token!);
-          setCookie('refresh_token', response.refresh_token!);
+          // Only set user role cookie; Supabase handles the session natively
           setCookie('user_role', response.user!.role!);
 
           // Update auth context
@@ -122,7 +120,7 @@ export function GoogleOAuthCallback() {
           sessionStorage.removeItem('oauth_role');
 
           // Show success message
-          const isNewUser = response.flow_type === 'signup' || response.created;
+          const isNewUser = false; // SyncUser doesn't explicitly return created status
           toast.success(
             isNewUser ? 'Account created successfully!' : 'Welcome back!',
             {
@@ -207,18 +205,10 @@ export function GoogleOAuthCallback() {
 
     try {
       // Call the SAME callback API again, but now WITH the role
-      const callbackData = {
-        access_token: storedTokens.accessToken,
-        refresh_token: storedTokens.refreshToken,
-        role: selectedRole, // This time we include the role
-      };
-
-      const response = await authApi.googleCallback(callbackData);
+      const response = await authApi.syncUser(storedTokens.accessToken, selectedRole);
 
       if (response.success) {
-        // NOW we can store tokens and user info after successful role completion
-        setCookie('access_token', response.access_token!);
-        setCookie('refresh_token', response.refresh_token!);
+        // NOW we can store user info after successful role completion
         setCookie('user_role', response.user!.role!);
 
         // Update auth context
@@ -230,7 +220,7 @@ export function GoogleOAuthCallback() {
         sessionStorage.removeItem('oauth_role');
 
         // Show success message
-        const isNewUser = response.flow_type === 'signup' || response.created;
+        const isNewUser = false;
         toast.success(
           isNewUser ? 'Account created successfully!' : 'Welcome back!',
           {
@@ -253,7 +243,7 @@ export function GoogleOAuthCallback() {
         }
       } else {
         throw new Error(
-          response.error || response.message || 'OAuth callback failed'
+          response.message || 'OAuth callback failed'
         );
       }
     } catch (error) {

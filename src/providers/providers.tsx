@@ -12,21 +12,23 @@ import { Toaster } from '@/components/ui/sonner';
 import AuthFlowHandler from '@/components/auth/auth-flow-handler';
 import { GoogleOneTap } from '@/components/auth/google-one-tap';
 
+import { ThemeProvider } from 'next-themes';
+
 function ProvidersContent({ children }: { children: React.ReactNode }) {
   return (
     <QueryProvider>
-      {/* <ThemeProvider> */}
-      <AuthProvider>
-        <GoogleOneTap />
-        <UserProvider>
-          <AuthFlowHandler />
-          <SessionProvider>
-            <TranscriptProvider>{children}</TranscriptProvider>
-          </SessionProvider>
-        </UserProvider>
-      </AuthProvider>
-      <Toaster richColors />
-      {/* </ThemeProvider> */}
+      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+        <AuthProvider>
+          <GoogleOneTap />
+          <UserProvider>
+            <AuthFlowHandler />
+            <SessionProvider>
+              <TranscriptProvider>{children}</TranscriptProvider>
+            </SessionProvider>
+          </UserProvider>
+        </AuthProvider>
+        <Toaster richColors />
+      </ThemeProvider>
     </QueryProvider>
   );
 }
