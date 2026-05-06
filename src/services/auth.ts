@@ -2,14 +2,6 @@ import { API_ROUTES } from '@/constants/api-routes';
 import apiCaller from '@/lib/api-caller';
 
 // ── Request / Response types ─────────────────────────────────────────────────
-
-export interface SignupRequest {
-  email: string;
-  password: string;
-  full_name: string;
-  role: 'TEACHER' | 'STUDENT';
-}
-
 export interface ForgotPasswordRequest {
   email: string;
 }

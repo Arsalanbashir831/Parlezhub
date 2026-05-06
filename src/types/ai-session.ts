@@ -17,14 +17,6 @@ export interface SessionConfig {
   context?: string;
 }
 
-export interface SessionState {
-  isActive: boolean;
-  isPaused: boolean;
-  isRecording: boolean;
-  audioLevel: number;
-  timer: SessionTimer;
-}
-
 export interface Language {
   value: string;
   label: string;
@@ -52,9 +44,3 @@ export type SessionStatus =
   | 'paused'
   | 'ending'
   | 'completed';
-
-export interface SessionTimer {
-  minutes: number;
-  seconds: number;
-  totalSeconds: number;
-}

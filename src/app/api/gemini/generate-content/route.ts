@@ -153,7 +153,7 @@ IMPORTANT:
           { status: 429 }
         );
       }
- 
+
       if (err.status === 401 || err.message?.includes('401')) {
         return NextResponse.json(
           {
@@ -164,11 +164,11 @@ IMPORTANT:
           { status: 401 }
         );
       }
- 
+
       throw err;
     }
   } catch (error: unknown) {
-    console.error('[POST /api/openai/generate-content] error:', error);
+    console.error('[POST /api/gemini/generate-content] error:', error);
     const errorMessage =
       error instanceof Error ? error.message : 'Unknown error';
     return NextResponse.json(

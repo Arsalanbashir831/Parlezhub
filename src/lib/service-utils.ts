@@ -1,6 +1,4 @@
 import {
-  Service,
-  ServiceFormData,
   ServiceStatus,
   ServiceType,
 } from '@/types/service';

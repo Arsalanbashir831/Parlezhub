@@ -45,12 +45,6 @@ export const getActiveRole = (): 'STUDENT' | 'TEACHER' | null => {
   return getCookie('active_role') as 'STUDENT' | 'TEACHER' | null;
 };
 
-// Helper function to check if user has a specific role
-export const hasRole = (role: 'STUDENT' | 'TEACHER'): boolean => {
-  const roles = getUserRoles();
-  return roles.includes(role);
-};
-
 // Helper function to remove all auth-related cookies
 export const clearAuthCookies = () => {
   removeCookie('user_role'); // Keep for backward compatibility

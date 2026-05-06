@@ -85,58 +85,6 @@ export const ACCENTS: Record<string, string[]> = {
   mandarin: ['Neutral', 'Beijing', 'Taiwanese', 'Singaporean'],
 };
 
-export const TOPICS = [
-  'Daily Conversation',
-  'Business Communication',
-  'Travel & Tourism',
-  'Food & Culture',
-  'Academic Discussion',
-  'Job Interview Prep',
-  'Shopping & Services',
-  'Health & Wellness',
-];
-
-export const LEVELS: Level[] = [
-  { value: 'beginner', label: 'Beginner', description: 'Just starting out' },
-  {
-    value: 'intermediate',
-    label: 'Intermediate',
-    description: 'Some experience',
-  },
-  { value: 'advanced', label: 'Advanced', description: 'Fluent conversation' },
-];
-
-export const SETUP_STEPS: SetupStep[] = [
-  {
-    id: 'native-language',
-    title: 'Your Native Language',
-    description: 'Select your first language',
-    icon: User,
-    completed: false,
-  },
-  {
-    id: 'target-language',
-    title: 'Language to Learn',
-    description: 'Choose the language you want to practice',
-    icon: Languages,
-    completed: false,
-  },
-  {
-    id: 'session-details',
-    title: 'Session Details',
-    description: 'Set your conversation topic',
-    icon: MessageCircle,
-    completed: false,
-  },
-  {
-    id: 'ready-to-start',
-    title: 'Ready to Start',
-    description: 'Review your settings and begin',
-    icon: Play,
-    completed: false,
-  },
-];
-
 export const DEFAULT_SESSION_CONFIG = {
   sessionType: 'tutor' as const,
   nativeLanguage: 'en',

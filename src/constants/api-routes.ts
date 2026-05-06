@@ -77,4 +77,7 @@ export const API_ROUTES = {
     GUEST_PROFILE_DETAIL: (id: number) => `/astrology/guest-profiles/${id}/`,
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
   },
+  GEMINI: {
+    GENERATE_CONTENT: "/api/gemini/generate-content/",
+  }
 };

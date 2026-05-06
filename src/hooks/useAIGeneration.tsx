@@ -1,3 +1,4 @@
+import { API_ROUTES } from '@/constants/api-routes';
 import { useState } from 'react';
 
 export interface AIGenerationConfig {
@@ -46,7 +47,7 @@ export function useAIGeneration(): UseAIGenerationReturn {
     setError(null);
 
     try {
-      const response = await fetch('/api/openai/generate-content', {
+      const response = await fetch(API_ROUTES.GEMINI.GENERATE_CONTENT, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

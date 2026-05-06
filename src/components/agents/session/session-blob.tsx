@@ -2,7 +2,6 @@
 
 import { useEffect, useRef } from 'react';
 
-import { AIChirologistSettings } from '@/types/ai-chirologist';
 import { SessionStatus } from '@/types/ai-session';
 import { AITutorSettings } from '@/types/ai-tutor';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -13,7 +12,7 @@ interface SessionBlobProps {
   isAISpeaking: boolean;
   audioLevel: number;
   statusText: string;
-  aiSettings: AITutorSettings | AIChirologistSettings;
+  aiSettings: AITutorSettings;
 }
 
 export default function SessionBlob({
@@ -44,9 +43,8 @@ export default function SessionBlob({
             ? 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0.2) 30%, rgba(212,175,55,0.1) 60%, transparent 100%)'
             : 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 100%)',
           boxShadow: isActive
-            ? `0 0 ${40 + audioLevel}px rgba(212,175,55,0.3), 0 0 ${
-                80 + audioLevel * 2
-              }px rgba(212,175,55,0.1), inset 0 0 60px rgba(255,255,255,0.05)`
+            ? `0 0 ${40 + audioLevel}px rgba(212,175,55,0.3), 0 0 ${80 + audioLevel * 2
+            }px rgba(212,175,55,0.1), inset 0 0 60px rgba(255,255,255,0.05)`
             : '0 0 40px rgba(255,255,255,0.02)',
         }}
       >
