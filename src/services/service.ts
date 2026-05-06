@@ -1,7 +1,5 @@
 import { API_ROUTES } from '@/constants/api-routes';
 
-// Frontend-only Blog API (localStorage-backed for now)
-import type { BlogFormData, BlogPost } from '@/types/blog';
 import { ServiceFormData, ServiceStatus, ServiceType } from '@/types/service';
 import apiCaller from '@/lib/api-caller';
 

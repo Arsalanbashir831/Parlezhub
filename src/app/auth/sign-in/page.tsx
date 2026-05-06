@@ -10,7 +10,6 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { setCookie } from '@/lib/cookie-utils';
 import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
@@ -62,7 +61,7 @@ export default function LoginPage() {
         // No need to manually fetch profiles here
         try {
           window.history.replaceState(null, '', window.location.pathname);
-        } catch {}
+        } catch { }
 
         // The auth context will handle profile fetching and role determination automatically
         // No need to manually fetch profiles here

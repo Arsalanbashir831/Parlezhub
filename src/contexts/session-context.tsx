@@ -5,7 +5,6 @@ import {
   ReactNode,
   useCallback,
   useContext,
-  useEffect,
   useState,
 } from 'react';
 import { DEFAULT_SESSION_CONFIG } from '@/constants/ai-session';

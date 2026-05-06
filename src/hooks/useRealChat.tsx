@@ -116,7 +116,7 @@ export const useRealChat = ({
     } finally {
       setIsLoading(false);
     }
-  }, [mapBackendChatToChatRoom]);
+  }, [currentUserRole, mapBackendChatToChatRoom]);
 
   // Load messages for a specific chat
   const loadMessages = useCallback(async (chatId: string) => {

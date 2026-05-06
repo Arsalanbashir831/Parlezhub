@@ -3,6 +3,8 @@
   "version": "0.1.0",
   "private": true,
   "scripts": {
+    "typegen": "next typegen && tsc --noEmit",
+    "info": "next info",
     "build": "next build",
     "dev": "next dev",
     "start": "next start",

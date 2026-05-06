@@ -2,7 +2,7 @@
 
 import React from 'react';
 import { LEFT_MENU_ITEMS } from '@/constants/astrology';
-import { ChevronLeft, Loader2, MessageSquare, Sparkles } from 'lucide-react';
+import { ChevronLeft, Loader2, Sparkles } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 
 import { useAstrologicalInsight } from '@/hooks/useAstrology';

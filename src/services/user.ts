@@ -224,8 +224,8 @@ export const userApi = {
     if (signInError) {
       // Throw an error that looks like our standard API error for compatibility
       const err = new Error('Current password is incorrect.');
-      (err as any).response = { data: { error: 'Current password is incorrect.' } };
-      throw err;
+      (err as unknown as Record<string, unknown>).response = { data: { error: 'Current password is incorrect.' } };
+ throw err;
     }
 
     // 3. Update password
@@ -235,7 +235,7 @@ export const userApi = {
 
     if (updateError) {
       const err = new Error(updateError.message);
-      (err as any).response = { data: { error: updateError.message } };
+      (err as unknown as Record<string, unknown>).response = { data: { error: updateError.message } };
       throw err;
     }
 

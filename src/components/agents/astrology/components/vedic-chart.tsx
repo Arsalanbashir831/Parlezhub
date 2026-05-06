@@ -195,18 +195,29 @@ const VedicChart: React.FC<ChartProps> = ({
       })),
     ];
 
-    const bySign: Record<string, any[]> = {};
+    interface ProcessedPlanet {
+      planet: string;
+      sign: string;
+      degree: number;
+      isTransit: boolean;
+      id: string;
+      lord?: string;
+      displayDegree?: number;
+      radialOffset?: number;
+    }
+
+    const bySign: Record<string, ProcessedPlanet[]> = {};
     combined.forEach((p) => {
       if (!bySign[p.sign]) bySign[p.sign] = [];
-      bySign[p.sign].push(p);
+      bySign[p.sign].push(p as ProcessedPlanet);
     });
 
     return Object.values(bySign).flatMap((signPlanets) => {
       const natals = signPlanets.filter((p) => !p.isTransit);
       const transits = signPlanets.filter((p) => p.isTransit);
 
-      const processCategory = (list: any[]) => {
-        if (list.length === 0) return [];
+      const processCategory = (list: ProcessedPlanet[]) => {
+             if (list.length === 0) return [];
         list.sort((a, b) => (a.degree || 0) - (b.degree || 0));
 
         const PADDING = 4; // Keep 4 degrees away from boundaries

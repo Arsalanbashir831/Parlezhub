@@ -1,6 +1,4 @@
-import { Languages, MessageCircle, Play, User } from 'lucide-react';
-
-import { Language, Level, SetupStep } from '@/types/ai-session';
+import { Language } from '@/types/ai-session';
 
 // ElevenLabs supported languages mapped to proper names and flags
 export const LANGUAGES: Language[] = [

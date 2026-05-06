@@ -1,11 +1,11 @@
 'use client';
 
 import { useEffect, useState } from 'react';
+import { extractErrorMessage } from '@/lib/error-utils';
 import { PaymentResponse, paymentService } from '@/services/payment';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
 import { toast } from 'sonner';
-import { loadStripe } from '@stripe/stripe-js';
 import getStripe from '@/lib/stripe';
 import {
   Elements,
@@ -75,8 +75,8 @@ function PaymentModalContent({
       onClose();
       resetForm();
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.error || error.message || 'Unable to process payment. Please try again.';
+    onError: (error) => {
+      const errorMessage = extractErrorMessage(error, 'Unable to process payment. Please try again.');
       toast.error('Payment Failed', {
         description: errorMessage,
       });
@@ -93,8 +93,8 @@ function PaymentModalContent({
       onClose();
       resetForm();
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.error || error.message || 'Unable to process payment. Please try again.';
+    onError: (error) => {
+      const errorMessage = extractErrorMessage(error, 'Unable to process payment. Please try again.');
       toast.error('Payment Failed', {
         description: errorMessage,
       });
@@ -114,8 +114,8 @@ function PaymentModalContent({
         setSelectedPaymentMethod('');
       }
     },
-    onError: (error: any) => {
-      const errorMessage = error.response?.data?.error || error.message || 'An error occurred while deleting the card.';
+    onError: (error) => {
+      const errorMessage = extractErrorMessage(error, 'An error occurred while deleting the card.');
       toast.error('Failed to delete card', {
         description: errorMessage,
       });
@@ -336,7 +336,7 @@ function PaymentModalContent({
                           </div>
                         </div>
                       </div>
-                      
+
                       <div className="flex items-center gap-3">
                         {/* Delete Button */}
                         <Button
@@ -351,7 +351,7 @@ function PaymentModalContent({
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
-                        
+
                         {/* Selection Indicator */}
                         <div
                           className={cn(
@@ -364,8 +364,8 @@ function PaymentModalContent({
                         >
                           {selectedPaymentMethod ===
                             method.stripe_payment_method_id && (
-                            <div className="h-2 w-2 rounded-full bg-primary-950" />
-                          )}
+                              <div className="h-2 w-2 rounded-full bg-primary-950" />
+                            )}
                         </div>
                       </div>
                     </div>

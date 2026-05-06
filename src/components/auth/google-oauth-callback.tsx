@@ -97,13 +97,6 @@ export function GoogleOAuthCallback() {
           return;
         }
 
-        // Prepare callback request
-        const callbackData = {
-          access_token: accessToken,
-          refresh_token: refreshToken,
-          ...(oauthMode === 'signup' && oauthRole ? { role: oauthRole } : {}),
-        };
-
         try {
           // Call the backend callback endpoint
           const response = await authApi.syncUser(accessToken, oauthRole || undefined);
