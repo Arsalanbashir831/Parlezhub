@@ -8,6 +8,9 @@ import { TransitPlanet } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 import { Card, CardContent } from '@/components/ui/card';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import Link from 'next/link';
+import { useSearchParams } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
 import TransitCard from '../components/transit-card';
 
@@ -30,9 +33,26 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   readOnly,
   isPersonal = true,
 }) => {
+  const searchParams = useSearchParams();
   const menuItems = isPersonal
     ? RIGHT_MENU_ITEMS
     : RIGHT_MENU_ITEMS.filter((item) => item.id !== 'share-access');
+
+  const getHref = (id: string) => {
+    const params = new URLSearchParams(searchParams.toString());
+    const query = params.toString();
+    const suffix = query ? `?${query}` : '';
+
+    const routeMap: Record<string, string> = {
+      'd1-chart': ROUTES.AGENT.ASTROLOGY.D1,
+      'd9-chart': ROUTES.AGENT.ASTROLOGY.D9,
+      'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
+      'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
+      'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
+    };
+
+    return `${routeMap[id] || ROUTES.AGENT.ASTROLOGY.ROOT}${suffix}`;
+  };
   return (
     <aside className={cn('flex h-full flex-col gap-6 p-6', className)}>
       <ScrollArea className="-ml-4 flex-1 pl-4">
@@ -46,46 +66,51 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
               const Icon = iconMap[item.icon] || Info;
               const isActive = activeAnalysis === item.id;
               return (
-                <Card
+                <Link
                   key={item.id}
+                  href={getHref(item.id)}
                   onClick={() => onSelect(item.id)}
-                  className={cn(
-                    'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-all duration-500 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
-                    isActive && 'border-primary-500 bg-primary-50/10 shadow-sm'
-                  )}
+                  className="block"
                 >
-                  <CardContent className="flex items-center gap-4 p-4">
-                    <div
-                      className={cn(
-                        'rounded-xl p-2.5 transition-all duration-500',
-                        isActive
-                          ? 'scale-110 bg-primary-500 shadow-inner'
-                          : 'bg-primary-500/70 group-hover:bg-primary-500'
-                      )}
-                    >
-                      <Icon
+                  <Card
+                    className={cn(
+                      'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-all duration-500 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
+                      isActive && 'border-primary-500 bg-primary-50/10 shadow-sm'
+                    )}
+                  >
+                    <CardContent className="flex items-center gap-4 p-4">
+                      <div
                         className={cn(
-                          'h-5 w-5',
+                          'rounded-xl p-2.5 transition-all duration-500',
                           isActive
-                            ? 'text-primary-50'
-                            : 'text-slate-100 group-hover:text-primary-50'
+                            ? 'scale-110 bg-primary-500 shadow-inner'
+                            : 'bg-primary-500/70 group-hover:bg-primary-500'
                         )}
-                      />
-                    </div>
-                    <span
-                      className={cn(
-                        'text-sm font-medium transition-colors',
-                        isActive
-                          ? 'text-primary-500'
-                          : 'text-primary-500/70 group-hover:text-primary-500'
-                      )}
-                    >
-                      {readOnly && item.id === 'birth-profile'
-                        ? 'Birth Profile'
-                        : item.label}
-                    </span>
-                  </CardContent>
-                </Card>
+                      >
+                        <Icon
+                          className={cn(
+                            'h-5 w-5',
+                            isActive
+                              ? 'text-primary-50'
+                              : 'text-slate-100 group-hover:text-primary-50'
+                          )}
+                        />
+                      </div>
+                      <span
+                        className={cn(
+                          'text-sm font-medium transition-colors',
+                          isActive
+                            ? 'text-primary-500'
+                            : 'text-primary-500/70 group-hover:text-primary-500'
+                        )}
+                      >
+                        {readOnly && item.id === 'birth-profile'
+                          ? 'Birth Profile'
+                          : item.label}
+                      </span>
+                    </CardContent>
+                  </Card>
+                </Link>
               );
             })}
           </div>

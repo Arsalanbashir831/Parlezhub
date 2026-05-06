@@ -14,7 +14,15 @@ export const ROUTES = {
   },
   AGENT: {
     LANGUAGE: '/language',
-    ASTROLOGY: '/astrology',
+    ASTROLOGY: {
+      ROOT: '/astrology',
+      D1: '/astrology',
+      D9: '/astrology/d9',
+      NAVATARA: '/astrology/navatara',
+      PROFILE: '/astrology/profile',
+      SHARE: '/astrology/share',
+      INSIGHTS: (slug: string) => `/astrology/insights/${slug}`,
+    },
   },
   ONBOARDING: {
     CHOOSE_ROLE: '/onboarding/choose-role',
