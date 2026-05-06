@@ -95,23 +95,28 @@ const apiCaller = async (
 ): Promise<AxiosResponse> => {
   const headers = { ...(options.headers || {}) } as Record<string, string>;
 
-  // Set default Content-Type to JSON if not specified and not uploading a file
-  if (dataType === 'json' && !headers['Content-Type']) {
+// Set default Content-Type to JSON only for data-carrying requests
+  if (dataType === 'json' && !headers['Content-Type'] && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
     headers['Content-Type'] = 'application/json';
   }
 
+  // Prevent browser caching for GET requests via query parameter
+  let finalUrl = url;
+  if (method.toUpperCase() === 'GET') {
+    const separator = finalUrl.includes('?') ? '&' : '?';
+    finalUrl = `${finalUrl}${separator}_t=${Date.now()}`;
+  }
+
   const config: AxiosRequestConfig = {
-    url,
-    method,
+    url: finalUrl,
+    method: method.toUpperCase(),
     ...options,
     signal,
     headers,
   };
 
-  if (!useAuth) {
-    if (config.headers) {
-      delete (config.headers as Record<string, string>).Authorization;
-    }
+  if (useAuth === false && config.headers) {
+    delete (config.headers as Record<string, string>).Authorization;
   }
 
   if (data) {
@@ -127,10 +132,6 @@ const apiCaller = async (
         });
       }
       config.data = formData;
-      // When using FormData, let Axios set the Content-Type automatically with boundary
-      if (config.headers && (config.headers as Record<string, string>)['Content-Type']) {
-        delete (config.headers as Record<string, string>)['Content-Type'];
-      }
     } else {
       config.data = data;
     }

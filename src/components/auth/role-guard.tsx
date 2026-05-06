@@ -70,8 +70,8 @@ export default function RoleGuard({
   // Show loading while checking authentication and role
   if (isLoading) {
     return (
-      <div className="flex min-h-screen items-center justify-center">
-        <div className="h-32 w-32 animate-spin rounded-full border-b-2 border-gray-900"></div>
+      <div className="flex min-h-screen items-center justify-center bg-background">
+        <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
       </div>
     );
   }

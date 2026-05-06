@@ -17,7 +17,7 @@ const STUDENT_ROUTES = [
   ROUTES.STUDENT.HISTORY,
   ROUTES.STUDENT.SESSION_REPORT,
   ROUTES.STUDENT.SETTINGS,
-  ROUTES.AGENT.ASTROLOGY,
+  ROUTES.AGENT.ASTROLOGY.ROOT,
 ];
 
 const TEACHER_ROUTES = [
@@ -96,12 +96,11 @@ export async function proxy(request: NextRequest) {
     data: { user },
   } = await supabase.auth.getUser();
 
-  // Read role from custom cookies set by the auth-context (client-side)
-  // This lets the middleware enforce role-based access without a DB call.
+  // Read roles from cookies
   const activeRole = request.cookies.get('active_role')?.value;
-
   const userRolesStr = request.cookies.get('user_roles')?.value;
-  let userRoles: ('STUDENT' | 'TEACHER')[] = [];
+  
+  let userRoles: string[] = [];
   if (userRolesStr) {
     try {
       userRoles = JSON.parse(userRolesStr);
@@ -110,140 +109,65 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // If plural roles are missing, derive them from singular activeRole
+  // Derived user roles from activeRole if userRoles is missing
   if (userRoles.length === 0 && activeRole) {
-    if (activeRole === 'BOTH') {
-      userRoles = ['STUDENT', 'TEACHER'];
-    } else {
-      userRoles = [activeRole as 'STUDENT' | 'TEACHER'];
-    }
+    userRoles = activeRole === 'BOTH' ? ['STUDENT', 'TEACHER'] : [activeRole];
   }
 
-  // ── SERVER-SIDE ROLE RESTORATION ────────────────────────────────────────
-  // If we have a session but NO roles in cookies, fetch them from the backend.
-  // This ensures server-side redirection works even if client cookies are missing.
-  if (user && userRoles.length === 0) {
-    try {
-      // Get the session to retrieve the access token
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.access_token) {
-        const rolesRes = await fetch(
-          `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
-          {
-            headers: {
-              Authorization: `Bearer ${session.access_token}`,
-            },
-          }
-        );
+  const roleToUse = activeRole || userRoles[0] || 'STUDENT';
 
-        if (rolesRes.ok) {
-          const rolesData = await rolesRes.json();
-          if (rolesData.has_teacher) userRoles.push('TEACHER');
-          if (rolesData.has_student) userRoles.push('STUDENT');
+  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
-          if (userRoles.length > 0) {
-            // Update the response with the new cookies so the browser gets them
-            const defaultRole = userRoles.includes('STUDENT') ? 'STUDENT' : 'TEACHER';
-
-            supabaseResponse.cookies.set('user_roles', JSON.stringify(userRoles), {
-              path: '/',
-              maxAge: 60 * 60 * 24 * 7
-            });
-            supabaseResponse.cookies.set('active_role', defaultRole, {
-              path: '/',
-              maxAge: 60 * 60 * 24 * 7
-            });
-
-            // Re-sync local variables for the rest of this middleware pass
-            // Note: activeRole remains the old value but userRoles is now updated.
-          }
-        }
-      }
-    } catch (err) {
-      console.error('[proxy] Failed to restore roles from backend:', err);
-    }
-  }
-
-  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
-    pathname.startsWith(route)
-  );
-
-  // ── Public routes ────────────────────────────────────────────────────────
-  if (isPublicRoute) {
-    const isAuthPage =
-      pathname.startsWith(ROUTES.AUTH.LOGIN) ||
-      pathname.startsWith(ROUTES.AUTH.SIGNUP);
-
-    // Redirect authenticated users away from sign-in/sign-up pages
-    if (isAuthPage && user) {
-      const redirectParam = request.nextUrl.searchParams.get('redirect');
-      if (redirectParam) {
-        return NextResponse.redirect(new URL(redirectParam, request.url));
-      }
-      const roleToUse = activeRole || userRoles[0];
-      if (roleToUse === 'TEACHER') {
-        return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
-      }
-      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
-    }
-
-    return supabaseResponse;
-  }
-
-  // ── Not authenticated → sign-in ─────────────────────────────────────────
+  // ── Unauthenticated Users ───────────────────────────────────────────────
   if (!user) {
+    if (isPublicRoute) return supabaseResponse;
     const loginUrl = new URL(ROUTES.AUTH.LOGIN, request.url);
-    if (pathname !== '/') {
-      loginUrl.searchParams.set('redirect', pathname);
-    }
+    if (pathname !== '/') loginUrl.searchParams.set('redirect', pathname);
     return NextResponse.redirect(loginUrl);
   }
 
-  // ── Authenticated but no role yet → onboarding ──────────────────────────
-  // This covers new Google/One-Tap users who haven't picked a role
-  if (userRoles.length === 0 && pathname !== '/') {
-    if (!pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)) {
-      return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
-    }
-    return supabaseResponse;
+  // ── Authenticated Users ──────────────────────────────────────────────────
+  
+  // 1. Prevent access to auth pages (login/signup) if already logged in
+  if (isPublicRoute && (pathname.startsWith(ROUTES.AUTH.LOGIN) || pathname.startsWith(ROUTES.AUTH.SIGNUP))) {
+    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
+    return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  // ── Prevent access to onboarding if already has roles ───────────────────
-  if (pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && userRoles.length > 0) {
-    // If BOTH or STUDENT, prefer STUDENT dashboard as requested
-    if (userRoles.includes('STUDENT')) {
-      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
-    }
-    return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
+  // 2. If user has NO roles and isn't on onboarding, send them to onboarding
+  if (userRoles.length === 0 && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
+    return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
   }
 
-  // ── Root path: redirect to dashboard ────────────────────────────────────
+  // 3. Root redirect
   if (pathname === ROUTES.HOME) {
-    const roleToUse = activeRole || userRoles[0];
-    if (roleToUse === 'TEACHER') {
-      return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
-    }
-    return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
+    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
+    return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  // ── Role-based route enforcement ─────────────────────────────────────────
+  // 4. Role-based route protection (Strict Enforcement)
   const isStudentRoute = STUDENT_ROUTES.some((route) => pathname.startsWith(route));
   const isTeacherRoute = TEACHER_ROUTES.some((route) => pathname.startsWith(route));
 
+  // If on a student route but active role is TEACHER (and they have both roles)
+  if (isStudentRoute && activeRole === 'TEACHER' && userRoles.includes('TEACHER')) {
+    return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
+  }
+
+  // If on a teacher route but active role is STUDENT (and they have both roles)
+  if (isTeacherRoute && activeRole === 'STUDENT' && userRoles.includes('STUDENT')) {
+    return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
+  }
+
+  // Basic access check (if they don't even have the required role)
   if (isStudentRoute && !userRoles.includes('STUDENT')) {
-    const roleToUse = activeRole || userRoles[0];
-    if (roleToUse === 'TEACHER') {
-      return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
-    }
-    return NextResponse.redirect(new URL(ROUTES.AUTH.LOGIN, request.url));
+    const target = userRoles.includes('TEACHER') ? ROUTES.TEACHER.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   if (isTeacherRoute && !userRoles.includes('TEACHER')) {
-    const roleToUse = activeRole || userRoles[0];
-    if (roleToUse === 'STUDENT') {
-      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
-    }
-    return NextResponse.redirect(new URL(ROUTES.AUTH.LOGIN, request.url));
+    const target = userRoles.includes('STUDENT') ? ROUTES.STUDENT.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
+    return NextResponse.redirect(new URL(target, request.url));
   }
 
   // Allow the request through; supabaseResponse carries updated cookies

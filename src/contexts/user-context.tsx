@@ -43,7 +43,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => {
     setUserRole(activeRole);
   }, [activeRole]);
-  const [userState, setUserState] = useState<UserProfile | null>(null);
   const queryClient = useQueryClient();
 
   // Query for user profile based on role
@@ -85,19 +84,13 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     refetchOnReconnect: true, // Only refetch when network reconnects
   });
 
-  // Keep userState in sync with query data
-  useEffect(() => {
-    if (user) setUserState(user);
-  }, [user]);
-
   // Update student profile mutation
   const updateStudentMutation = useMutation({
     mutationFn: (data: UpdateStudentProfileRequest) =>
       userApi.updateStudentProfile(data),
     onSuccess: (updatedProfile) => {
-      // Update the user profile in the cache and local state
+      // Update the user profile in the cache
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
-      setUserState(updatedProfile);
 
       // Show success toast
       toast.success('Profile Updated Successfully!', {
@@ -118,9 +111,8 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     mutationFn: (data: UpdateConsultantProfileRequest) =>
       userApi.updateConsultantProfile(data),
     onSuccess: (updatedProfile) => {
-      // Update the user profile in the cache and local state
+      // Update the user profile in the cache
       queryClient.setQueryData(['user-profile', userRole], updatedProfile);
-      setUserState(updatedProfile);
 
       // Show success toast
       toast.success('Profile Updated Successfully!', {
@@ -183,7 +175,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     // Clear cookies only
     removeCookie('active_role');
     setUserRole(null);
-    setUserState(null);
     // Invalidate user profile query
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
@@ -213,10 +204,11 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       const result = await userApi.uploadProfilePicture(file);
       // Get the profile picture URL after upload
       const urlResult = await userApi.getProfilePictureUrl();
-      // Update the user state with the new profile picture URL
-      if (userState) {
-        setUserState({
-          ...userState,
+      // Update the user profile in the cache with the new profile picture URL
+      const currentUser = queryClient.getQueryData<UserProfile>(['user-profile', userRole]);
+      if (currentUser) {
+        queryClient.setQueryData(['user-profile', userRole], {
+          ...currentUser,
           profile_picture: urlResult.profile_picture_url,
         });
       }
@@ -240,7 +232,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   return (
     <UserContext.Provider
       value={{
-        user: userState,
+        user: user || null,
         isLoading,
         error: error?.message || null,
         refetchUser,

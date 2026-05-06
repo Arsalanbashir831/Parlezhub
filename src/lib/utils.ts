@@ -1,53 +1,31 @@
 import { clsx, type ClassValue } from 'clsx';
 import { twMerge } from 'tailwind-merge';
+import { format, formatDistanceToNow, isToday, isTomorrow } from 'date-fns';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
 }
 
-
 export const formatMessageTime = (timestamp: string) => {
   const date = new Date(timestamp);
-  const now = new Date();
-  const diffInHours = Math.floor(
-    (now.getTime() - date.getTime()) / (1000 * 60 * 60)
-  );
-
-  if (diffInHours < 1) {
-    return 'Just now';
-  } else if (diffInHours < 24) {
-    return `${diffInHours}h ago`;
-  } else {
-    return date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-  }
+  // Use distance to now for a more "human" feel (e.g., "2 hours ago")
+  return formatDistanceToNow(date, { addSuffix: true });
 };
 
 export const formatDate = (dateString: string) => {
-  return new Date(dateString).toLocaleDateString([], {
-    month: 'short',
-    day: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-  });
+  return format(new Date(dateString), 'MMM d, h:mm a');
 };
 
 export const formatDateTime = (iso: string) => {
   const date = new Date(iso);
-  const now = new Date();
-  const isToday = date.toDateString() === now.toDateString();
-  const isTomorrow =
-    date.toDateString() ===
-    new Date(now.getTime() + 24 * 60 * 60 * 1000).toDateString();
-
-  const dateLabel = isToday
-    ? 'Today'
-    : isTomorrow
-      ? 'Tomorrow'
-      : date.toLocaleDateString([], { month: 'short', day: 'numeric' });
-
-  const timeLabel = date.toLocaleTimeString([], {
-    hour: '2-digit',
-    minute: '2-digit',
-  });
-  return `${dateLabel} at ${timeLabel}`;
+  
+  if (isToday(date)) {
+    return `Today at ${format(date, 'h:mm a')}`;
+  }
+  
+  if (isTomorrow(date)) {
+    return `Tomorrow at ${format(date, 'h:mm a')}`;
+  }
+  
+  return format(date, 'MMM d, yyyy');
 };

@@ -105,6 +105,7 @@ export async function GET(request: NextRequest) {
         headers: {
           Authorization: `Bearer ${accessToken}`,
         },
+        cache: 'no-store',
       }
     );
 
