@@ -15,6 +15,7 @@ import { toast } from 'sonner';
 import { removeCookie, setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuth } from '@/contexts/auth-context';
+import { UserRole } from '@/types/user';
 
 interface UserContextType {
   user: UserProfile | null;
@@ -22,7 +23,7 @@ interface UserContextType {
   error: string | null;
   refetchUser: () => void;
   clearUser: () => void;
-  setUserRole: (role: 'TEACHER' | 'STUDENT') => void;
+  setUserRole: (role: UserRole | null) => void;
   updateStudentProfile: (
     data: UpdateStudentProfileRequest
   ) => Promise<UserProfile>;
@@ -37,7 +38,7 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const { activeRole } = useAuth();
-  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | 'BOTH' | null>(activeRole);
+  const [userRole, setUserRole] = useState<UserRole | null>(activeRole);
 
   // Keep local userRole in sync with AuthContext's activeRole
   useEffect(() => {
@@ -179,10 +180,14 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };
 
-  const handleSetUserRole = (role: 'TEACHER' | 'STUDENT') => {
+  const handleSetUserRole = (role: UserRole | null) => {
     setUserRole(role);
     // Store role in cookies only
-    setCookie('active_role', role);
+    if (role) {
+      setCookie('active_role', role);
+    } else {
+      removeCookie('active_role');
+    }
     // Invalidate existing queries to trigger refetch
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };

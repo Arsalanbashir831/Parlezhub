@@ -1,5 +1,7 @@
 'use client';
 
+import { UserRole } from '@/types/user';
+
 import { useAuth } from '@/contexts/auth-context';
 import { GraduationCap, Users } from 'lucide-react';
 
@@ -22,7 +24,15 @@ export function RoleIndicator({
     return null;
   }
 
-  const getRoleIcon = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleIcon = (role: UserRole) => {
+    if (role === 'BOTH') {
+      return (
+        <div className="flex -space-x-1">
+          <Users className="h-3 w-3" />
+          <GraduationCap className="h-3 w-3" />
+        </div>
+      );
+    }
     return role === 'TEACHER' ? (
       <Users className="h-4 w-4" />
     ) : (
@@ -30,11 +40,15 @@ export function RoleIndicator({
     );
   };
 
-  const getRoleLabel = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleLabel = (role: UserRole) => {
+    if (role === 'BOTH') return 'Dual Role';
     return role === 'TEACHER' ? 'Consultant' : 'Student';
   };
 
-  const getRoleColor = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleColor = (role: UserRole) => {
+    if (role === 'BOTH') {
+      return 'text-indigo-600 bg-indigo-50 border-indigo-200 dark:text-indigo-400 dark:bg-indigo-900/20 dark:border-indigo-800';
+    }
     return role === 'TEACHER'
       ? 'text-blue-600 bg-blue-50 border-blue-200 dark:text-blue-400 dark:bg-blue-900/20 dark:border-blue-800'
       : 'text-green-600 bg-green-50 border-green-200 dark:text-green-400 dark:bg-green-900/20 dark:border-green-800';

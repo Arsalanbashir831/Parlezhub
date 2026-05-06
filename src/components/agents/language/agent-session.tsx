@@ -18,7 +18,6 @@ import voiceService from '@/services/voice';
 import Vapi from '@vapi-ai/web';
 import { toast } from 'sonner';
 
-import { getCookie } from '@/lib/cookie-utils';
 import { useHandleSessionHistory } from '@/hooks/useHandleSessionHistory';
 import { useSessionTimer } from '@/hooks/useSessionTimer';
 import {
@@ -231,15 +230,24 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       setSessionState('active');
       sessionStartedAtRef.current = Date.now();
       hasEverStartedRef.current = true;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Failed to start Vapi conversation:', error);
-      const errorMessage = error?.response?.data?.error || error?.message || 'Unknown error occurred';
+      interface ErrorResponse {
+        response?: {
+          data?: {
+            error?: string;
+          };
+        };
+        message?: string;
+      }
+      const err = error as ErrorResponse;
+      const errorMessage = err?.response?.data?.error || err?.message || 'Unknown error occurred';
       toast.error(`Session Initialization Failed: ${errorMessage}`);
       setSessionState('idle');
     } finally {
       setIsConnecting(false);
     }
-  }, [config, prompt, router]);
+  }, [config, prompt, router, isAuthenticated, activeRole]);
 
   const handleStopSession = useCallback(async () => {
     // Persist conversation first, then mark completed and cleanup

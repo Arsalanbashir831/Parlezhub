@@ -17,14 +17,13 @@ import {
   getActiveRole,
   getUserRoles,
   setActiveRole,
-  setCookie,
   setUserRoles,
   clearAuthCookies,
 } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
 import { createClient } from '@/lib/supabase/client';
 
-import type { User } from '@/types/user';
+import type { User, UserRole } from '@/types/user';
 import {
   authApi,
   BecomeRoleResponse,
@@ -53,14 +52,14 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  userRoles: ('TEACHER' | 'STUDENT' | 'BOTH')[];
-  activeRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
-  userRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
+  userRoles: UserRole[];
+  activeRole: UserRole | null;
+  userRole: UserRole | null;
   hasTeacherRole: boolean;
   hasStudentRole: boolean;
-  canAccessRole: (role: 'TEACHER' | 'STUDENT' | 'BOTH') => boolean;
+  canAccessRole: (role: UserRole) => boolean;
   setIsAuthenticated: (value: boolean) => void;
-  setUserRole: (role: 'TEACHER' | 'STUDENT' | 'BOTH' | null) => void;
+  setUserRole: (role: UserRole | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -70,8 +69,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const isRefreshingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT' | 'BOTH')[]>([]);
-  const [activeRole, setActiveRoleState] = useState<'TEACHER' | 'STUDENT' | 'BOTH' | null>(null);
+  const [userRoles, setUserRolesState] = useState<(UserRole)[]>([]);
+  const [activeRole, setActiveRoleState] = useState<UserRole | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -81,12 +80,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const userRole = activeRole;
   const hasTeacherRole = userRoles.includes('TEACHER');
   const hasStudentRole = userRoles.includes('STUDENT');
-  const canAccessRole = (role: 'TEACHER' | 'STUDENT' | 'BOTH') => userRoles.includes(role);
+  const canAccessRole = (role: UserRole) => userRoles.includes(role);
 
   // ── Role helpers ───────────────────────────────────────────────────────────
   const updateRolesFromProfile = useCallback(
     (profileData: UnifiedProfileResponse) => {
-      const availableRoles: ('TEACHER' | 'STUDENT' | 'BOTH')[] = [];
+      const availableRoles: (UserRole)[] = [];
       if (profileData.has_teacher) availableRoles.push('TEACHER');
       if (profileData.has_student) availableRoles.push('STUDENT');
 
@@ -99,21 +98,21 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       setUserRoles(availableRoles);
 
       const currentActiveRole = getActiveRole();
-      let newActiveRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null = null;
+      let newActiveRole: UserRole | null = null;
 
       // If current role is still valid, keep it. 
       // Note: If teacher profile was deleted, availableRoles won't have TEACHER, 
       // so this will fall through to the else block.
-      if (currentActiveRole && availableRoles.includes(currentActiveRole as any)) {
-        newActiveRole = currentActiveRole as any;
+      if (currentActiveRole && availableRoles.includes(currentActiveRole as UserRole)) {
+        newActiveRole = currentActiveRole as UserRole;
       } else if (availableRoles.length > 0) {
         // Default to STUDENT if available, otherwise first available
-        newActiveRole = availableRoles.includes('STUDENT') ? 'STUDENT' : availableRoles[0];
+        newActiveRole = availableRoles.includes('STUDENT') ? 'STUDENT' : (availableRoles[0] as UserRole);
       }
 
       setActiveRoleState(newActiveRole);
       if (newActiveRole) {
-        setActiveRole(newActiveRole as any);
+        setActiveRole(newActiveRole);
       }
     },
     []
@@ -132,7 +131,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     } finally {
       isRefreshingRef.current = false;
     }
-  }, [updateRolesFromProfile, router]);
+  }, [updateRolesFromProfile]);
 
   // ── Supabase session listener ──────────────────────────────────────────────
   useEffect(() => {
@@ -450,7 +449,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const becomeConsultant = async () => becomeConsultantMutation.mutateAsync();
   const becomeStudent = async () => becomeStudentMutation.mutateAsync();
 
-  const setUserRole = (role: 'TEACHER' | 'STUDENT' | 'BOTH' | null) => {
+  const setUserRole = (role: UserRole | null) => {
     if (role) {
       setActiveRoleState(role);
       setActiveRole(role);

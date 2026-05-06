@@ -1,7 +1,7 @@
 'use client';
 
 import { memo, useEffect, useMemo, useState } from 'react';
-import { extractErrorMessage } from '@/lib/error-utils';
+import { getErrorMessage } from '@/lib/error-utils';
 import { useUser } from '@/contexts/user-context';
 import {
   availabilityService,
@@ -272,7 +272,7 @@ const BookingDialog = memo(
 
         onClose();
       } catch (err) {
-        const errorMsg = extractErrorMessage(err, 'Failed to schedule booking');
+        const errorMsg = getErrorMessage(err, 'Failed to schedule booking');
         toast.error(errorMsg);
       } finally {
         setSubmitting(false);

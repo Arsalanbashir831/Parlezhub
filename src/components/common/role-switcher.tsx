@@ -1,5 +1,7 @@
 'use client';
 
+import { UserRole } from '@/types/user';
+
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
 import { Check, ChevronDown, GraduationCap, Users } from 'lucide-react';
@@ -54,7 +56,15 @@ export function RoleSwitcher({
     }
   };
 
-  const getRoleIcon = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleIcon = (role: UserRole) => {
+    if (role === 'BOTH') {
+      return (
+        <div className="flex -space-x-1">
+          <Users className="h-3 w-3" />
+          <GraduationCap className="h-3 w-3" />
+        </div>
+      );
+    }
     return role === 'TEACHER' ? (
       <Users className="h-4 w-4" />
     ) : (
@@ -62,14 +72,18 @@ export function RoleSwitcher({
     );
   };
 
-  const getRoleLabel = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleLabel = (role: UserRole) => {
+    if (role === 'BOTH') return 'Dual Role';
     return role === 'TEACHER' ? 'Consultant' : 'Student';
   };
 
-  const getRoleColor = (role: 'TEACHER' | 'STUDENT') => {
+  const getRoleColor = (role: UserRole) => {
+    if (role === 'BOTH') {
+      return 'bg-indigo-100 text-indigo-800 dark:bg-indigo-900 dark:text-indigo-200';
+    }
     return role === 'TEACHER'
-      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-200'
-      : 'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-200';
+      ? 'bg-blue-100 text-blue-800 dark:bg-blue-900 text-blue-200'
+      : 'bg-green-100 text-green-800 dark:bg-green-900 text-green-200';
   };
 
   return (

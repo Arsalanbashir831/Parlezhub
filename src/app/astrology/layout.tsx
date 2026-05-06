@@ -30,7 +30,6 @@ import { useAuth } from '@/contexts/auth-context';
 import {
   useBirthProfile,
   useDeleteGuestProfile,
-  useNatalChart,
   useTransits,
 } from '@/hooks/useAstrology';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
@@ -97,7 +96,7 @@ export default function AstrologyLayout({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [guestToDelete, setGuestToDelete] = useState<{ id: string; name: string } | null>(null);
 
-  const { data: profile, isLoading: isProfileLoading } = useBirthProfile(studentId, guestId);
+  const { data: profile } = useBirthProfile(studentId, guestId);
   const { data: transits } = useTransits(true, studentId, guestId);
   const { mutate: deleteGuest } = useDeleteGuestProfile();
 

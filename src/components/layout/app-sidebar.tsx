@@ -302,7 +302,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   {renderMenuItem({
                     id: 'astrology',
                     label: 'Astrology Dashboard',
-                    href: ROUTES.AGENT.ASTROLOGY,
+                    href: ROUTES.AGENT.ASTROLOGY.ROOT,
                     icon: Home,
                   })}
                 </SidebarMenu>

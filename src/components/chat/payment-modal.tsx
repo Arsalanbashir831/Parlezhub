@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { extractErrorMessage } from '@/lib/error-utils';
+import { getErrorMessage } from '@/lib/error-utils';
 import { PaymentResponse, paymentService } from '@/services/payment';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { CreditCard, Plus, Trash2 } from 'lucide-react';
@@ -76,7 +76,7 @@ function PaymentModalContent({
       resetForm();
     },
     onError: (error) => {
-      const errorMessage = extractErrorMessage(error, 'Unable to process payment. Please try again.');
+      const errorMessage = getErrorMessage(error, 'Unable to process payment. Please try again.');
       toast.error('Payment Failed', {
         description: errorMessage,
       });
@@ -94,7 +94,7 @@ function PaymentModalContent({
       resetForm();
     },
     onError: (error) => {
-      const errorMessage = extractErrorMessage(error, 'Unable to process payment. Please try again.');
+      const errorMessage = getErrorMessage(error, 'Unable to process payment. Please try again.');
       toast.error('Payment Failed', {
         description: errorMessage,
       });
@@ -115,7 +115,7 @@ function PaymentModalContent({
       }
     },
     onError: (error) => {
-      const errorMessage = extractErrorMessage(error, 'An error occurred while deleting the card.');
+      const errorMessage = getErrorMessage(error, 'An error occurred while deleting the card.');
       toast.error('Failed to delete card', {
         description: errorMessage,
       });

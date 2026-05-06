@@ -1,6 +1,15 @@
 import { API_ROUTES } from '@/constants/api-routes';
 import { ROUTES } from '@/constants/routes';
 import apiCaller from '@/lib/api-caller';
+import { UserRole } from '@/types/user';
+
+interface MockAxiosError extends Error {
+  response?: {
+    data?: {
+      error?: string;
+    };
+  };
+}
 
 // ── Request / Response types ─────────────────────────────────────────────────
 export interface ForgotPasswordRequest {
@@ -77,7 +86,7 @@ export interface SyncUserResponse {
     email: string;
     first_name: string | null;
     last_name: string | null;
-    role: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
+    role: UserRole | null;
     auth_provider: string;
     email_verified: boolean;
   };
@@ -149,8 +158,8 @@ export const authApi = {
     });
 
     if (error) {
-      const err = new Error(error.message);
-      (err as any).response = { data: { error: error.message } };
+      const err = new Error(error.message) as MockAxiosError;
+      err.response = { data: { error: error.message } };
       throw err;
     }
 
@@ -166,8 +175,8 @@ export const authApi = {
     });
 
     if (error) {
-      const err = new Error(error.message);
-      (err as any).response = { data: { error: error.message } };
+      const err = new Error(error.message) as MockAxiosError;
+      err.response = { data: { error: error.message } };
       throw err;
     }
 
@@ -189,8 +198,8 @@ export const authApi = {
     });
 
     if (error) {
-      const err = new Error(error.message);
-      (err as any).response = { data: { error: error.message } };
+      const err = new Error(error.message) as MockAxiosError;
+      err.response = { data: { error: error.message } };
       throw err;
     }
 

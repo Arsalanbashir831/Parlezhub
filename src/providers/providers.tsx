@@ -9,7 +9,6 @@ import { UserProvider } from '@/contexts/user-context';
 import { QueryProvider } from '@/providers/query-provider';
 
 import { Toaster } from '@/components/ui/sonner';
-import AuthFlowHandler from '@/components/auth/auth-flow-handler';
 import { GoogleOneTap } from '@/components/auth/google-one-tap';
 
 import { ThemeProvider } from 'next-themes';
@@ -21,7 +20,6 @@ function ProvidersContent({ children }: { children: React.ReactNode }) {
         <AuthProvider>
           <GoogleOneTap />
           <UserProvider>
-            <AuthFlowHandler />
             <SessionProvider>
               <TranscriptProvider>{children}</TranscriptProvider>
             </SessionProvider>
