@@ -101,12 +101,25 @@ export function GoogleOAuthCallback() {
           // Call the backend callback endpoint
           const response = await authApi.syncUser(accessToken, oauthRole || undefined);
 
-          // Only set user role cookie; Supabase handles the session natively
-          setCookie('user_role', response.user!.role!);
+          // Set user roles based on the response
+          const roles: ('STUDENT' | 'TEACHER')[] = [];
+          if (response.user!.role === 'BOTH') {
+            roles.push('STUDENT', 'TEACHER');
+          } else if (response.user!.role) {
+            roles.push(response.user!.role as 'STUDENT' | 'TEACHER');
+          }
 
-          // Update auth context
-          setIsAuthenticated(true);
-          setUserRole(response.user!.role!);
+          if (roles.length > 0) {
+            setCookie('user_roles', JSON.stringify(roles));
+            setCookie('active_role', roles[0]);
+            
+            // Update auth context
+            setIsAuthenticated(true);
+            setUserRole(roles[0]);
+          } else {
+            // No role assigned yet — this will trigger onboarding
+            setIsAuthenticated(true);
+          }
 
           // Clean up sessionStorage
           sessionStorage.removeItem('oauth_mode');
@@ -201,12 +214,14 @@ export function GoogleOAuthCallback() {
       const response = await authApi.syncUser(storedTokens.accessToken, selectedRole);
 
       if (response.success) {
-        // NOW we can store user info after successful role completion
-        setCookie('user_role', response.user!.role!);
-
+        // Set all required cookies after successful role completion
+        const assignedRole = response.user!.role as 'STUDENT' | 'TEACHER';
+        setCookie('user_roles', JSON.stringify([assignedRole]));
+        setCookie('active_role', assignedRole);
+ 
         // Update auth context
         setIsAuthenticated(true);
-        setUserRole(response.user!.role!);
+        setUserRole(assignedRole);
 
         // Clean up sessionStorage
         sessionStorage.removeItem('oauth_mode');

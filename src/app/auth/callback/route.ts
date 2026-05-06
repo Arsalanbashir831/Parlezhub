@@ -77,24 +77,62 @@ export async function GET(request: NextRequest) {
     // Don't block login on sync errors — the user is authenticated
   }
 
-  // Create the final response based on logic
+  // Create the final response
   let finalResponse: NextResponse;
+  const targetUrl = requiresRoleSelection 
+    ? `${origin}${ROUTES.ONBOARDING.CHOOSE_ROLE}`
+    : `${origin}${next}`;
 
-  // New user without a role → choose their role before accessing the app
-  if (requiresRoleSelection) {
-    finalResponse = NextResponse.redirect(`${origin}${ROUTES.ONBOARDING.CHOOSE_ROLE}`);
+  // Handle load balancers (production)
+  const forwardedHost = request.headers.get('x-forwarded-host');
+  const isLocalEnv = process.env.NODE_ENV === 'development';
+
+  if (isLocalEnv) {
+    finalResponse = NextResponse.redirect(targetUrl);
+  } else if (forwardedHost) {
+    finalResponse = NextResponse.redirect(`https://${forwardedHost}${new URL(targetUrl).pathname}${new URL(targetUrl).search}`);
   } else {
-    // Handle load balancers (production)
-    const forwardedHost = request.headers.get('x-forwarded-host');
-    const isLocalEnv = process.env.NODE_ENV === 'development';
+    finalResponse = NextResponse.redirect(targetUrl);
+  }
 
-    if (isLocalEnv) {
-      finalResponse = NextResponse.redirect(`${origin}${next}`);
-    } else if (forwardedHost) {
-      finalResponse = NextResponse.redirect(`https://${forwardedHost}${next}`);
-    } else {
-      finalResponse = NextResponse.redirect(`${origin}${next}`);
+  // ── SET ROLE COOKIES ──────────────────────────────────────────────────────
+  // We MUST set these cookies on the server side so the first request 
+  // to the dashboard (which goes through middleware) has them.
+  try {
+    const rolesRes = await fetch(
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
+      {
+        headers: {
+          Authorization: `Bearer ${accessToken}`,
+        },
+      }
+    );
+
+    if (rolesRes.ok) {
+      const rolesData = await rolesRes.json();
+      const availableRoles: string[] = [];
+      if (rolesData.has_teacher) availableRoles.push('TEACHER');
+      if (rolesData.has_student) availableRoles.push('STUDENT');
+
+      if (availableRoles.length > 0) {
+        // Set user_roles (plural) as JSON array
+        finalResponse.cookies.set('user_roles', JSON.stringify(availableRoles), { 
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7, // 7 days
+          sameSite: 'lax'
+        });
+
+        // Set active_role (default to first role)
+        const defaultRole = availableRoles[0];
+        finalResponse.cookies.set('active_role', defaultRole, { 
+          path: '/',
+          maxAge: 60 * 60 * 24 * 7,
+          sameSite: 'lax'
+        });
+      }
     }
+  } catch (rolesErr) {
+    console.error('[auth/callback] Failed to fetch roles for cookie setup:', rolesErr);
   }
 
   // Clean up the intended_role cookie

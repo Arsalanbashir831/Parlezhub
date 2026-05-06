@@ -2,9 +2,6 @@ export const API_ROUTES = {
   AUTH: {
     SYNC: '/auth/sync/',
     SET_ROLE: '/auth/set-role/',
-    RESEND_VERIFICATION_EMAIL: '/resend-verification/',
-    FORGOT_PASSWORD: '/password-reset/',
-    RESET_PASSWORD: '/password-reset/confirm/',
     ME: '/accounts/profiles/me/roles/',
     BECOME_TEACHER: '/accounts/become-teacher/',
     BECOME_STUDENT: '/accounts/become-student/',

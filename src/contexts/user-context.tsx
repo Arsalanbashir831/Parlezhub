@@ -12,8 +12,9 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 
-import { getCookie, removeCookie, setCookie } from '@/lib/cookie-utils';
+import { removeCookie, setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
+import { useAuth } from '@/contexts/auth-context';
 
 interface UserContextType {
   user: UserProfile | null;
@@ -35,14 +36,13 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | null>(() => {
-    try {
-      const role = getCookie('user_role');
-      return role === 'TEACHER' || role === 'STUDENT' ? role : null;
-    } catch {
-      return null;
-    }
-  });
+  const { activeRole } = useAuth();
+  const [userRole, setUserRole] = useState<'TEACHER' | 'STUDENT' | 'BOTH' | null>(activeRole);
+
+  // Keep local userRole in sync with AuthContext's activeRole
+  useEffect(() => {
+    setUserRole(activeRole);
+  }, [activeRole]);
   const [userState, setUserState] = useState<UserProfile | null>(null);
   const queryClient = useQueryClient();
 
@@ -181,7 +181,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   const clearUser = () => {
     // Clear cookies only
-    removeCookie('user_role');
+    removeCookie('active_role');
     setUserRole(null);
     setUserState(null);
     // Invalidate user profile query
@@ -191,7 +191,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const handleSetUserRole = (role: 'TEACHER' | 'STUDENT') => {
     setUserRole(role);
     // Store role in cookies only
-    setCookie('user_role', role);
+    setCookie('active_role', role);
     // Invalidate existing queries to trigger refetch
     queryClient.invalidateQueries({ queryKey: ['user-profile'] });
   };

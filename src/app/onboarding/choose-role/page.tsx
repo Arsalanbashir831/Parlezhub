@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 
 import { authApi } from '@/services/auth';
 import { createClient } from '@/utils/supabase/client';
-import { setCookie, setActiveRole, setUserRoles } from '@/lib/cookie-utils';
+import { setActiveRole, setUserRoles } from '@/lib/cookie-utils';
 import { ROUTES } from '@/constants/routes';
 
 /**
@@ -41,7 +41,6 @@ export default function ChooseRolePage() {
       const roles: ('STUDENT' | 'TEACHER')[] = [role];
       setUserRoles(roles);
       setActiveRole(role);
-      setCookie('user_role', role);
 
       toast.success(`Welcome! You're set up as a ${role.toLowerCase()}.`);
 

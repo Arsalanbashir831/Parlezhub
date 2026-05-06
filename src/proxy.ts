@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { ROUTES } from './constants/routes';
+import { API_ROUTES } from './constants/api-routes';
 
 /**
  * Route classification — mirrors the old middleware but now validated
@@ -37,7 +38,6 @@ const PUBLIC_ROUTES = [
   ROUTES.AUTH.VERIFY_EMAIL,
   ROUTES.AUTH.CALLBACK,
   ROUTES.AUTH.AUTH_CODE_ERROR,
-  ROUTES.ONBOARDING.CHOOSE_ROLE,
   ROUTES.AI_SESSION.ROOT,
   ROUTES.AGENT.LANGUAGE,
   ROUTES.TERMS,
@@ -98,9 +98,7 @@ export async function proxy(request: NextRequest) {
 
   // Read role from custom cookies set by the auth-context (client-side)
   // This lets the middleware enforce role-based access without a DB call.
-  const activeRole =
-    request.cookies.get('active_role')?.value ||
-    request.cookies.get('user_role')?.value;
+  const activeRole = request.cookies.get('active_role')?.value;
 
   const userRolesStr = request.cookies.get('user_roles')?.value;
   let userRoles: ('STUDENT' | 'TEACHER')[] = [];
@@ -111,8 +109,59 @@ export async function proxy(request: NextRequest) {
       userRoles = [];
     }
   }
+
+  // If plural roles are missing, derive them from singular activeRole
   if (userRoles.length === 0 && activeRole) {
-    userRoles = [activeRole as 'STUDENT' | 'TEACHER'];
+    if (activeRole === 'BOTH') {
+      userRoles = ['STUDENT', 'TEACHER'];
+    } else {
+      userRoles = [activeRole as 'STUDENT' | 'TEACHER'];
+    }
+  }
+
+  // ── SERVER-SIDE ROLE RESTORATION ────────────────────────────────────────
+  // If we have a session but NO roles in cookies, fetch them from the backend.
+  // This ensures server-side redirection works even if client cookies are missing.
+  if (user && userRoles.length === 0) {
+    try {
+      // Get the session to retrieve the access token
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.access_token) {
+        const rolesRes = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
+          {
+            headers: {
+              Authorization: `Bearer ${session.access_token}`,
+            },
+          }
+        );
+
+        if (rolesRes.ok) {
+          const rolesData = await rolesRes.json();
+          if (rolesData.has_teacher) userRoles.push('TEACHER');
+          if (rolesData.has_student) userRoles.push('STUDENT');
+
+          if (userRoles.length > 0) {
+            // Update the response with the new cookies so the browser gets them
+            const defaultRole = userRoles.includes('STUDENT') ? 'STUDENT' : 'TEACHER';
+
+            supabaseResponse.cookies.set('user_roles', JSON.stringify(userRoles), {
+              path: '/',
+              maxAge: 60 * 60 * 24 * 7
+            });
+            supabaseResponse.cookies.set('active_role', defaultRole, {
+              path: '/',
+              maxAge: 60 * 60 * 24 * 7
+            });
+
+            // Re-sync local variables for the rest of this middleware pass
+            // Note: activeRole remains the old value but userRoles is now updated.
+          }
+        }
+      }
+    } catch (err) {
+      console.error('[proxy] Failed to restore roles from backend:', err);
+    }
   }
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) =>
@@ -157,6 +206,15 @@ export async function proxy(request: NextRequest) {
       return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
     }
     return supabaseResponse;
+  }
+
+  // ── Prevent access to onboarding if already has roles ───────────────────
+  if (pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && userRoles.length > 0) {
+    // If BOTH or STUDENT, prefer STUDENT dashboard as requested
+    if (userRoles.includes('STUDENT')) {
+      return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
+    }
+    return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
   }
 
   // ── Root path: redirect to dashboard ────────────────────────────────────

@@ -20,12 +20,12 @@ export const removeCookie = (name: string) => {
 };
 
 // Helper function to set user roles (array of roles)
-export const setUserRoles = (roles: ('STUDENT' | 'TEACHER')[]) => {
+export const setUserRoles = (roles: ('STUDENT' | 'TEACHER' | 'BOTH')[]) => {
   setCookie('user_roles', JSON.stringify(roles));
 };
 
 // Helper function to get user roles
-export const getUserRoles = (): ('STUDENT' | 'TEACHER')[] => {
+export const getUserRoles = (): ('STUDENT' | 'TEACHER' | 'BOTH')[] => {
   const rolesStr = getCookie('user_roles');
   if (!rolesStr) return [];
   try {
@@ -36,18 +36,16 @@ export const getUserRoles = (): ('STUDENT' | 'TEACHER')[] => {
 };
 
 // Helper function to set active role
-export const setActiveRole = (role: 'STUDENT' | 'TEACHER') => {
+export const setActiveRole = (role: 'STUDENT' | 'TEACHER' | 'BOTH') => {
   setCookie('active_role', role);
 };
 
 // Helper function to get active role
-export const getActiveRole = (): 'STUDENT' | 'TEACHER' | null => {
-  return getCookie('active_role') as 'STUDENT' | 'TEACHER' | null;
+export const getActiveRole = (): 'STUDENT' | 'TEACHER' | 'BOTH' | null => {
+  return getCookie('active_role') as 'STUDENT' | 'TEACHER' | 'BOTH' | null;
 };
 
-// Helper function to remove all auth-related cookies
 export const clearAuthCookies = () => {
-  removeCookie('user_role'); // Keep for backward compatibility
   removeCookie('user_roles');
   removeCookie('active_role');
 };

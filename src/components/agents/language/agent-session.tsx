@@ -175,7 +175,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
 
       // Check auth; if not logged in, redirect to login with return params
       const token = getCookie('access_token');
-      const role = getCookie('user_role');
+      const role = getCookie('active_role');
       if (!token || !role) {
         const returnUrl = `${ROUTES.AGENT.LANGUAGE}?${new URLSearchParams({
           prompt: String(config.topic || prompt || ''),

@@ -119,7 +119,6 @@ export function GoogleOneTap() {
               setUserRoles(roles);
               const role = roles[0] ?? 'STUDENT';
               setActiveRole(role);
-              setCookie('user_role', role);
               router.push(
                 role === 'TEACHER'
                   ? ROUTES.TEACHER.DASHBOARD

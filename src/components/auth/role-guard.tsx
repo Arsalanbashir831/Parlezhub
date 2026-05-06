@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 
 interface RoleGuardProps {
   children: React.ReactNode;
-  allowedRoles: ('STUDENT' | 'TEACHER')[];
+  allowedRoles: ('STUDENT' | 'TEACHER' | 'BOTH')[];
   fallbackPath?: string;
 }
 
@@ -93,7 +93,7 @@ export function StudentGuard({
   fallbackPath,
 }: Omit<RoleGuardProps, 'allowedRoles'>) {
   return (
-    <RoleGuard allowedRoles={['STUDENT']} fallbackPath={fallbackPath}>
+    <RoleGuard allowedRoles={['STUDENT', "BOTH"]} fallbackPath={fallbackPath}>
       {children}
     </RoleGuard>
   );
@@ -104,7 +104,7 @@ export function ConsultantGuard({
   fallbackPath,
 }: Omit<RoleGuardProps, 'allowedRoles'>) {
   return (
-    <RoleGuard allowedRoles={['TEACHER']} fallbackPath={fallbackPath}>
+    <RoleGuard allowedRoles={['TEACHER', "BOTH"]} fallbackPath={fallbackPath}>
       {children}
     </RoleGuard>
   );

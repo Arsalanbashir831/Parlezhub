@@ -1,4 +1,5 @@
 import { API_ROUTES } from '@/constants/api-routes';
+import { ROUTES } from '@/constants/routes';
 import apiCaller from '@/lib/api-caller';
 
 // ── Request / Response types ─────────────────────────────────────────────────
@@ -76,7 +77,7 @@ export interface SyncUserResponse {
     email: string;
     first_name: string | null;
     last_name: string | null;
-    role: 'TEACHER' | 'STUDENT' | null;
+    role: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
     auth_provider: string;
     email_verified: boolean;
   };
@@ -140,38 +141,60 @@ export const authApi = {
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<{ message: string }> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.FORGOT_PASSWORD,
-      'POST',
-      data as unknown as Record<string, string>,
-      {},
-      false
-    );
-    return response.data;
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
+      redirectTo: `${window.location.origin}${ROUTES.AUTH.RESET_PASSWORD}`,
+    });
+
+    if (error) {
+      const err = new Error(error.message);
+      (err as any).response = { data: { error: error.message } };
+      throw err;
+    }
+
+    return { message: 'Password reset link sent to your email.' };
   },
 
   resetPassword: async (data: ResetPasswordRequest): Promise<{ message: string }> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.RESET_PASSWORD,
-      'POST',
-      data as unknown as Record<string, string>,
-      {},
-      false
-    );
-    return response.data;
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.updateUser({
+      password: data.new_password,
+    });
+
+    if (error) {
+      const err = new Error(error.message);
+      (err as any).response = { data: { error: error.message } };
+      throw err;
+    }
+
+    return { message: 'Password has been reset successfully.' };
   },
 
   resendVerificationEmail: async (
     data: ResendVerificationEmailRequest
   ): Promise<{ message: string }> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.RESEND_VERIFICATION_EMAIL,
-      'POST',
-      data as unknown as Record<string, string>,
-      {},
-      false
-    );
-    return response.data;
+    const { createClient } = await import('@/utils/supabase/client');
+    const supabase = createClient();
+
+    const { error } = await supabase.auth.resend({
+      type: 'signup',
+      email: data.email,
+      options: {
+        emailRedirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
+      },
+    });
+
+    if (error) {
+      const err = new Error(error.message);
+      (err as any).response = { data: { error: error.message } };
+      throw err;
+    }
+
+    return { message: 'Verification email has been resent.' };
   },
 
   getUnifiedProfile: async (): Promise<UnifiedProfileResponse> => {

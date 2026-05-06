@@ -2,7 +2,7 @@
 
 import { Suspense, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,19 +33,55 @@ const resetPasswordSchema = z
 type ResetPasswordFormData = z.infer<typeof resetPasswordSchema>;
 
 function ResetPasswordContent() {
-  const { resetPassword, isLoading, error } = useAuth();
+  const { resetPassword, isLoading, error, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
+  const searchParams = useSearchParams();
   const [token, setToken] = useState<string | null>(null);
+  const [isVerifying, setIsVerifying] = useState(true);
 
-  // Extract token from hash fragment
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hash = window.location.hash.substring(1); // Remove the # symbol
+    const initializeToken = async () => {
+      if (typeof window === 'undefined') return;
+
+      // 1. Check for token/code in query params (standard for our callback or direct redirect)
+      const qToken = searchParams.get('token');
+      const qCode = searchParams.get('code');
+
+      if (qToken) {
+        setToken(qToken);
+        setIsVerifying(false);
+        return;
+      }
+
+      if (qCode) {
+        try {
+          const { createClient } = await import('@/utils/supabase/client');
+          const supabase = createClient();
+          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(qCode);
+          if (!exchangeError) {
+            setToken('session-active'); // Mark that we have a session
+          }
+        } catch (err) {
+          console.error('Failed to exchange reset code:', err);
+        }
+        setIsVerifying(false);
+        return;
+      }
+
+      // 2. Check for access_token in hash fragment (Supabase legacy/implicit flow)
+      const hash = window.location.hash.substring(1);
       const params = new URLSearchParams(hash);
       const accessToken = params.get('access_token');
-      setToken(accessToken);
-    }
-  }, []);
+
+      if (accessToken) {
+        setToken(accessToken);
+      }
+
+      setIsVerifying(false);
+    };
+
+    initializeToken();
+  }, [searchParams]);
 
   const {
     register,
@@ -56,12 +92,24 @@ function ResetPasswordContent() {
   });
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    if (!token) return;
-
-    await resetPassword(token, data.password);
+    // We don't strictly need the token if we have an active session,
+    // but we pass it for backward compatibility if it exists.
+    await resetPassword(token || 'session', data.password);
   };
 
-  if (!token) {
+  // Show loading while verifying the link or waiting for auth
+  if (isVerifying || authLoading) {
+    return (
+      <AuthLayout title="Reset Password" subtitle="Verifying link...">
+        <div className="flex justify-center py-8">
+          <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-primary-600"></div>
+        </div>
+      </AuthLayout>
+    );
+  }
+
+  // If no token found AND not authenticated, it's an invalid link
+  if (!token && !isAuthenticated) {
     return (
       <AuthLayout
         title="Invalid Reset Link"

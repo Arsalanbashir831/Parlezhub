@@ -5,6 +5,7 @@ import React, {
   useCallback,
   useContext,
   useEffect,
+  useRef,
   useState,
 } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -52,24 +53,25 @@ interface AuthContextType {
   isLoading: boolean;
   error: string | null;
   isAuthenticated: boolean;
-  userRoles: ('TEACHER' | 'STUDENT')[];
-  activeRole: 'TEACHER' | 'STUDENT' | null;
-  userRole: 'TEACHER' | 'STUDENT' | null;
+  userRoles: ('TEACHER' | 'STUDENT' | 'BOTH')[];
+  activeRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
+  userRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null;
   hasTeacherRole: boolean;
   hasStudentRole: boolean;
-  canAccessRole: (role: 'TEACHER' | 'STUDENT') => boolean;
+  canAccessRole: (role: 'TEACHER' | 'STUDENT' | 'BOTH') => boolean;
   setIsAuthenticated: (value: boolean) => void;
-  setUserRole: (role: 'TEACHER' | 'STUDENT' | null) => void;
+  setUserRole: (role: 'TEACHER' | 'STUDENT' | 'BOTH' | null) => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(true);
+  const isRefreshingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT')[]>([]);
-  const [activeRole, setActiveRoleState] = useState<'TEACHER' | 'STUDENT' | null>(null);
+  const [userRoles, setUserRolesState] = useState<('TEACHER' | 'STUDENT' | 'BOTH')[]>([]);
+  const [activeRole, setActiveRoleState] = useState<'TEACHER' | 'STUDENT' | 'BOTH' | null>(null);
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -79,45 +81,58 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const userRole = activeRole;
   const hasTeacherRole = userRoles.includes('TEACHER');
   const hasStudentRole = userRoles.includes('STUDENT');
-  const canAccessRole = (role: 'TEACHER' | 'STUDENT') => userRoles.includes(role);
+  const canAccessRole = (role: 'TEACHER' | 'STUDENT' | 'BOTH') => userRoles.includes(role);
 
   // ── Role helpers ───────────────────────────────────────────────────────────
   const updateRolesFromProfile = useCallback(
     (profileData: UnifiedProfileResponse) => {
-      const availableRoles: ('TEACHER' | 'STUDENT')[] = [];
+      const availableRoles: ('TEACHER' | 'STUDENT' | 'BOTH')[] = [];
       if (profileData.has_teacher) availableRoles.push('TEACHER');
       if (profileData.has_student) availableRoles.push('STUDENT');
+
+      // If both are present, also add BOTH to match user's new types
+      if (profileData.has_teacher && profileData.has_student) {
+        availableRoles.push('BOTH');
+      }
 
       setUserRolesState(availableRoles);
       setUserRoles(availableRoles);
 
       const currentActiveRole = getActiveRole();
-      let newActiveRole: 'TEACHER' | 'STUDENT' | null = null;
+      let newActiveRole: 'TEACHER' | 'STUDENT' | 'BOTH' | null = null;
 
-      if (currentActiveRole && availableRoles.includes(currentActiveRole)) {
-        newActiveRole = currentActiveRole;
+      // If current role is still valid, keep it. 
+      // Note: If teacher profile was deleted, availableRoles won't have TEACHER, 
+      // so this will fall through to the else block.
+      if (currentActiveRole && availableRoles.includes(currentActiveRole as any)) {
+        newActiveRole = currentActiveRole as any;
       } else if (availableRoles.length > 0) {
-        newActiveRole = availableRoles[0];
-        setActiveRole(newActiveRole);
+        // Default to STUDENT if available, otherwise first available
+        newActiveRole = availableRoles.includes('STUDENT') ? 'STUDENT' : availableRoles[0];
       }
 
       setActiveRoleState(newActiveRole);
       if (newActiveRole) {
-        setCookie('user_role', newActiveRole);
+        setActiveRole(newActiveRole as any);
       }
     },
     []
   );
 
-  const refreshUserProfile = useCallback(async () => {
+  const refreshUserProfile = useCallback(async (force = false) => {
+    if (isRefreshingRef.current && !force) return;
+    isRefreshingRef.current = true;
+
     try {
       const profileData = await authApi.getUnifiedProfile();
       updateRolesFromProfile(profileData);
     } catch (err) {
       console.error('Failed to refresh user profile:', err);
       throw err;
+    } finally {
+      isRefreshingRef.current = false;
     }
-  }, [updateRolesFromProfile]);
+  }, [updateRolesFromProfile, router]);
 
   // ── Supabase session listener ──────────────────────────────────────────────
   useEffect(() => {
@@ -132,21 +147,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setIsAuthenticated(true);
 
-          // Load roles from cookies first (instant), then refresh from API
+          // Load roles from cookies first (instant)
           const storedRoles = getUserRoles();
           const storedActiveRole = getActiveRole();
           if (storedRoles.length > 0) {
             setUserRolesState(storedRoles);
-            setActiveRoleState(storedActiveRole && storedRoles.includes(storedActiveRole)
-              ? storedActiveRole
-              : storedRoles[0]
+            setActiveRoleState(
+              storedActiveRole && storedRoles.includes(storedActiveRole)
+                ? storedActiveRole
+                : storedRoles[0]
             );
-          }
-
-          try {
-            await refreshUserProfile();
-          } catch {
-            // Non-fatal: use stored data if profile fetch fails
+          } else {
+            // If we have a session but no roles in cookies, we MUST fetch them!
+            // Otherwise the user gets stuck in an infinite redirect loop.
+            try {
+              await refreshUserProfile(true);
+            } catch (err) {
+              console.error('Failed to fetch roles during init:', err);
+            }
           }
         } else {
           setIsAuthenticated(false);
@@ -209,7 +227,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
     setActiveRoleState(role);
     setActiveRole(role);
-    setCookie('user_role', role);
     router.push(role === 'STUDENT' ? ROUTES.STUDENT.DASHBOARD : ROUTES.TEACHER.DASHBOARD);
     toast.success(`Switched to ${role.toLowerCase()} mode`);
   };
@@ -237,7 +254,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       // Sync user record in Django (idempotent)
       await authApi.syncUser(data.session.access_token);
 
-      await refreshUserProfile();
+      await refreshUserProfile(true);
       setIsAuthenticated(true);
       toast.success('Welcome back!');
 
@@ -395,7 +412,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await refreshUserProfile();
       setActiveRoleState('TEACHER');
       setActiveRole('TEACHER');
-      setCookie('user_role', 'TEACHER');
       router.push(ROUTES.TEACHER.DASHBOARD);
       toast.success('Consultant profile created!');
     },
@@ -412,7 +428,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await refreshUserProfile();
       setActiveRoleState('STUDENT');
       setActiveRole('STUDENT');
-      setCookie('user_role', 'STUDENT');
       router.push(ROUTES.STUDENT.DASHBOARD);
       toast.success('Student profile created!');
     },
@@ -435,11 +450,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const becomeConsultant = async () => becomeConsultantMutation.mutateAsync();
   const becomeStudent = async () => becomeStudentMutation.mutateAsync();
 
-  const setUserRole = (role: 'TEACHER' | 'STUDENT' | null) => {
+  const setUserRole = (role: 'TEACHER' | 'STUDENT' | 'BOTH' | null) => {
     if (role) {
       setActiveRoleState(role);
       setActiveRole(role);
-      setCookie('user_role', role);
     } else {
       setActiveRoleState(null);
     }
