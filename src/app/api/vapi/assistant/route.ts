@@ -215,9 +215,12 @@ START SPEAKING IMMEDIATELY when the session begins. Do not wait for the student 
       },
       voice: voiceConfig,
       transcriber: {
-        model: 'gemini-2.0-flash',
-        language: 'Multilingual',
-        provider: 'google',
+        //  model: 'gemini-2.0-flash',
+        // language: 'Multilingual',
+        // provider: 'google',
+        model: 'nova-2',
+        language: language === 'en' ? 'en-US' : language,
+        provider: 'deepgram',
       },
       maxDurationSeconds: 300, // 5 minutes
       firstMessage: getFirstMessage(nativeLanguage, topic),

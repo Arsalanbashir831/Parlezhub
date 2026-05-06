@@ -12,6 +12,7 @@ interface SessionControlsProps {
   onStop: () => void;
   onToggleMute: () => void;
   startDisabled?: boolean;
+  isConnecting?: boolean;
 }
 
 export default function SessionControls({
@@ -21,6 +22,7 @@ export default function SessionControls({
   onStop,
   onToggleMute,
   startDisabled = false,
+  isConnecting = false,
 }: SessionControlsProps) {
   const renderMainControls = () => {
     switch (sessionState) {
@@ -28,13 +30,17 @@ export default function SessionControls({
         return (
           <Button
             onClick={onStart}
-            disabled={startDisabled}
+            disabled={startDisabled || isConnecting}
             size="lg"
             className="group relative h-16 rounded-full border border-primary-500/20 bg-primary-500 px-10 py-5 text-[11px] font-black uppercase tracking-[0.2em] text-primary-950 shadow-[0_0_30px_rgba(212,175,55,0.3)] transition-all duration-300 hover:scale-105 hover:bg-primary-300 active:scale-95 disabled:opacity-40"
           >
             <div className="absolute -inset-1 rounded-full bg-primary-500/20 opacity-0 blur-md transition-opacity group-hover:opacity-100" />
-            <Play className="mr-3 h-5 w-5 fill-current" />
-            Start Conversation
+            {isConnecting ? (
+              <div className="mr-3 h-5 w-5 animate-spin rounded-full border-2 border-primary-950 border-t-transparent" />
+            ) : (
+              <Play className="mr-3 h-5 w-5 fill-current" />
+            )}
+            {isConnecting ? 'Initializing...' : 'Start Conversation'}
           </Button>
         );
 
@@ -93,8 +99,8 @@ export default function SessionControls({
           variant="ghost"
           size="lg"
           className={`group flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-500 ${isMuted
-              ? 'border-primary-500/50 bg-primary-500/20 text-primary-500 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
-              : 'border-white/5 bg-white/5 text-primary-100/40 hover:border-primary-500/30 hover:bg-primary-500/10 hover:text-primary-500'
+            ? 'border-primary-500/50 bg-primary-500/20 text-primary-500 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
+            : 'border-white/5 bg-white/5 text-primary-100/40 hover:border-primary-500/30 hover:bg-primary-500/10 hover:text-primary-500'
             }`}
         >
           {isMuted ? (

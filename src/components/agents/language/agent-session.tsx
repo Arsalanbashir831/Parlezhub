@@ -12,6 +12,7 @@ import { ROUTES } from '@/constants/routes';
 import { OPENAI_VOICES } from '@/constants/vapi-voices';
 import { useSession } from '@/contexts/session-context';
 import { useTranscript } from '@/contexts/transcript-context';
+import { useAuth } from '@/contexts/auth-context';
 import vapiService from '@/services/vapi';
 import voiceService from '@/services/voice';
 import Vapi from '@vapi-ai/web';
@@ -43,6 +44,7 @@ interface AgentSessionProps {
 function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
   const router = useRouter();
   const { config, updateConfig } = useSession();
+  const { isAuthenticated, activeRole } = useAuth();
   const { transcriptItems } = useTranscript();
   const [sessionState, setSessionState] = useState<
     'idle' | 'active' | 'paused' | 'completed'
@@ -174,9 +176,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       }
 
       // Check auth; if not logged in, redirect to login with return params
-      const token = getCookie('access_token');
-      const role = getCookie('active_role');
-      if (!token || !role) {
+      if (!isAuthenticated || !activeRole) {
         const returnUrl = `${ROUTES.AGENT.LANGUAGE}?${new URLSearchParams({
           prompt: String(config.topic || prompt || ''),
           native: config.nativeLanguage,
@@ -189,7 +189,15 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       }
 
       // Request microphone permission
-      await navigator.mediaDevices.getUserMedia({ audio: true });
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+        // Stop all tracks to release the microphone for Vapi SDK
+        stream.getTracks().forEach(track => track.stop());
+      } catch (micErr) {
+        console.error('Microphone permission denied:', micErr);
+        toast.error('Microphone access is required to start the session');
+        return;
+      }
 
       // Create Vapi assistant via backend API
       const assistant = await vapiService.createAssistant({
@@ -214,7 +222,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
         console.log('Vapi call started successfully');
       } catch (error) {
         console.error('Error starting Vapi call:', error);
-        toast.error('Failed to start voice session');
+        toast.error('Failed to start voice session. Please try again.');
         setSessionState('idle');
         return;
       }
@@ -223,8 +231,10 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
       setSessionState('active');
       sessionStartedAtRef.current = Date.now();
       hasEverStartedRef.current = true;
-    } catch (error) {
+    } catch (error: any) {
       console.error('Failed to start Vapi conversation:', error);
+      const errorMessage = error?.response?.data?.error || error?.message || 'Unknown error occurred';
+      toast.error(`Session Initialization Failed: ${errorMessage}`);
       setSessionState('idle');
     } finally {
       setIsConnecting(false);
@@ -414,6 +424,7 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
           onStop={handleStopSession}
           onToggleMute={handleToggleMute}
           startDisabled={!config.nativeLanguage || !config.language}
+          isConnecting={isConnecting}
         />
 
         {sessionState === 'idle' && (
