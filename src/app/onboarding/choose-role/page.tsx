@@ -5,7 +5,7 @@ import { useRouter } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { authApi } from '@/services/auth';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { setActiveRole, setUserRoles } from '@/lib/cookie-utils';
 import { ROUTES } from '@/constants/routes';
 

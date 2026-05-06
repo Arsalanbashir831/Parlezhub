@@ -1,6 +1,6 @@
 import { type NextRequest, NextResponse } from 'next/server';
 
-import { createClient } from '@/utils/supabase/server';
+import { createClient } from '@/lib/supabase/server';
 import { ROUTES } from '@/constants/routes';
 import { API_ROUTES } from '@/constants/api-routes';
 
@@ -59,7 +59,7 @@ export async function GET(request: NextRequest) {
           'Content-Type': 'application/json',
           Authorization: `Bearer ${accessToken}`,
         },
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           access_token: accessToken,
           ...(intendedRoleCookie ? { role: intendedRoleCookie } : {})
         }),
@@ -79,7 +79,7 @@ export async function GET(request: NextRequest) {
 
   // Create the final response
   let finalResponse: NextResponse;
-  const targetUrl = requiresRoleSelection 
+  const targetUrl = requiresRoleSelection
     ? `${origin}${ROUTES.ONBOARDING.CHOOSE_ROLE}`
     : `${origin}${next}`;
 
@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 
       if (availableRoles.length > 0) {
         // Set user_roles (plural) as JSON array
-        finalResponse.cookies.set('user_roles', JSON.stringify(availableRoles), { 
+        finalResponse.cookies.set('user_roles', JSON.stringify(availableRoles), {
           path: '/',
           maxAge: 60 * 60 * 24 * 7, // 7 days
           sameSite: 'lax'
@@ -125,7 +125,7 @@ export async function GET(request: NextRequest) {
 
         // Set active_role (default to first role)
         const defaultRole = availableRoles[0];
-        finalResponse.cookies.set('active_role', defaultRole, { 
+        finalResponse.cookies.set('active_role', defaultRole, {
           path: '/',
           maxAge: 60 * 60 * 24 * 7,
           sameSite: 'lax'

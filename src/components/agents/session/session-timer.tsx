@@ -3,7 +3,7 @@
 import { SESSION_DURATION } from '@/constants/ai-session';
 import { Timer } from 'lucide-react';
 
-import { formatTime, getProgressPercentage } from '@/lib/ai-session-utils';
+import { formatTimer, getPercentage } from '@/lib/utils';
 
 interface SessionTimerProps {
   timeRemaining: number;
@@ -19,7 +19,7 @@ export default function SessionTimer({ timeRemaining }: SessionTimerProps) {
           <div className="absolute -inset-1 rounded-full bg-primary-500/20 opacity-0 blur-[2px] transition-opacity group-hover:opacity-100" />
         </div>
         <span className="font-serif text-lg font-bold tracking-widest text-primary-100">
-          {formatTime(timeRemaining)}
+          {formatTimer(timeRemaining)}
         </span>
       </div>
 
@@ -34,7 +34,7 @@ export default function SessionTimer({ timeRemaining }: SessionTimerProps) {
           <div
             className="h-full bg-gradient-to-r from-primary-500/50 to-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.4)] transition-all duration-1000"
             style={{
-              width: `${getProgressPercentage(timeRemaining, SESSION_DURATION)}%`,
+              width: `${getPercentage(SESSION_DURATION - timeRemaining, SESSION_DURATION)}%`,
             }}
           />
         </div>

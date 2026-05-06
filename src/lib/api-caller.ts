@@ -14,7 +14,7 @@ axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     if (!config.headers.Authorization) {
       try {
-        const { createClient } = await import('@/utils/supabase/client');
+        const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
         // getSession() automatically refreshes the token if it's expired
         const { data: { session } } = await supabase.auth.getSession();
@@ -53,7 +53,7 @@ axiosInstance.interceptors.response.use(
 
       try {
         // Force a session refresh
-        const { createClient } = await import('@/utils/supabase/client');
+        const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
         const { data, error: refreshError } = await supabase.auth.refreshSession();
 
@@ -95,7 +95,7 @@ const apiCaller = async (
 ): Promise<AxiosResponse> => {
   const headers = { ...(options.headers || {}) } as Record<string, string>;
 
-// Set default Content-Type to JSON only for data-carrying requests
+  // Set default Content-Type to JSON only for data-carrying requests
   if (dataType === 'json' && !headers['Content-Type'] && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
     headers['Content-Type'] = 'application/json';
   }

@@ -22,9 +22,9 @@ import {
   clearAuthCookies,
 } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 
-import type { User } from '../lib/types';
+import type { User } from '@/types/user';
 import {
   authApi,
   BecomeRoleResponse,

@@ -2,7 +2,6 @@ import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { ROUTES } from './constants/routes';
-import { API_ROUTES } from './constants/api-routes';
 
 /**
  * Route classification — mirrors the old middleware but now validated
@@ -99,7 +98,7 @@ export async function proxy(request: NextRequest) {
   // Read roles from cookies
   const activeRole = request.cookies.get('active_role')?.value;
   const userRolesStr = request.cookies.get('user_roles')?.value;
-  
+
   let userRoles: string[] = [];
   if (userRolesStr) {
     try {
@@ -127,7 +126,7 @@ export async function proxy(request: NextRequest) {
   }
 
   // ── Authenticated Users ──────────────────────────────────────────────────
-  
+
   // 1. Prevent access to auth pages (login/signup) if already logged in
   if (isPublicRoute && (pathname.startsWith(ROUTES.AUTH.LOGIN) || pathname.startsWith(ROUTES.AUTH.SIGNUP))) {
     const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;

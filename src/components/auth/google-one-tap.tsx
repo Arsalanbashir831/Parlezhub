@@ -3,7 +3,7 @@
 import Script from 'next/script';
 import { useRouter } from 'next/navigation';
 
-import { createClient } from '@/utils/supabase/client';
+import { createClient } from '@/lib/supabase/client';
 import { authApi } from '@/services/auth';
 import { ROUTES } from '@/constants/routes';
 import { setCookie, setActiveRole, setUserRoles } from '@/lib/cookie-utils';

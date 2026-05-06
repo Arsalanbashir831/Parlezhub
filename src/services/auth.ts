@@ -141,7 +141,7 @@ export const authApi = {
   },
 
   forgotPassword: async (data: ForgotPasswordRequest): Promise<{ message: string }> => {
-    const { createClient } = await import('@/utils/supabase/client');
+    const { createClient } = await import('@/lib/supabase/client');
     const supabase = createClient();
 
     const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
@@ -158,7 +158,7 @@ export const authApi = {
   },
 
   resetPassword: async (data: ResetPasswordRequest): Promise<{ message: string }> => {
-    const { createClient } = await import('@/utils/supabase/client');
+    const { createClient } = await import('@/lib/supabase/client');
     const supabase = createClient();
 
     const { error } = await supabase.auth.updateUser({
@@ -177,7 +177,7 @@ export const authApi = {
   resendVerificationEmail: async (
     data: ResendVerificationEmailRequest
   ): Promise<{ message: string }> => {
-    const { createClient } = await import('@/utils/supabase/client');
+    const { createClient } = await import('@/lib/supabase/client');
     const supabase = createClient();
 
     const { error } = await supabase.auth.resend({

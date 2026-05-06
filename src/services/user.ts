@@ -206,9 +206,9 @@ export const userApi = {
     newPassword: string
   ): Promise<{ message: string }> => {
     // Dynamic import to avoid SSR issues if this file is imported in server contexts
-    const { createClient } = await import('@/utils/supabase/client');
+    const { createClient } = await import('@/lib/supabase/client');
     const supabase = createClient();
-    
+
     // 1. Get current user's email
     const { data: { user }, error: userError } = await supabase.auth.getUser();
     if (userError || !user?.email) {
@@ -220,12 +220,12 @@ export const userApi = {
       email: user.email,
       password: currentPassword,
     });
-    
+
     if (signInError) {
       // Throw an error that looks like our standard API error for compatibility
       const err = new Error('Current password is incorrect.');
       (err as unknown as Record<string, unknown>).response = { data: { error: 'Current password is incorrect.' } };
- throw err;
+      throw err;
     }
 
     // 3. Update password
