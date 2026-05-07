@@ -11,7 +11,7 @@ import { z } from 'zod';
 import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
-import { GoogleSignupWithRole } from '@/components/auth/google-signup-with-role';
+import { GoogleOAuthButton } from '@/components/auth/google-oauth-button';
 import {
   ConfirmPasswordField,
   EmailField,
@@ -26,7 +26,6 @@ const signupSchema = z
     email: z.string().email('Please enter a valid email address'),
     password: z.string().min(6, 'Password must be at least 6 characters'),
     confirmPassword: z.string(),
-    role: z.enum(['TEACHER', 'STUDENT']),
   })
   .refine((data) => data.password === data.confirmPassword, {
     message: "Passwords don't match",
@@ -46,7 +45,10 @@ export default function SignupPage() {
   } = useForm<SignupFormData>({
     resolver: zodResolver(signupSchema),
     defaultValues: {
-      role: 'STUDENT',
+      full_name: '',
+      email: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
@@ -64,8 +66,7 @@ export default function SignupPage() {
         username: data.full_name,
         email: data.email,
       },
-      data.password,
-      data.role
+      data.password
     );
   };
 
@@ -89,33 +90,6 @@ export default function SignupPage() {
           error={errors.confirmPassword}
         />
 
-        {/* Role Selection */}
-        <div className="space-y-2">
-          <label className="text-sm font-medium text-primary-50">I am a:</label>
-          <div className="flex space-x-4">
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                value="STUDENT"
-                {...register('role')}
-                className="text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm">Student</span>
-            </label>
-            <label className="flex items-center space-x-2">
-              <input
-                type="radio"
-                value="TEACHER"
-                {...register('role')}
-                className="text-primary-600 focus:ring-primary-500"
-              />
-              <span className="text-sm">Consultant</span>
-            </label>
-          </div>
-          {errors.role && (
-            <p className="text-sm text-red-600">{errors.role.message}</p>
-          )}
-        </div>
 
         {error && <ErrorMessage message={error} />}
 
@@ -135,7 +109,7 @@ export default function SignupPage() {
           />
         </div>
 
-        <GoogleSignupWithRole disabled={isLoading} className="w-full" />
+        <GoogleOAuthButton disabled={isLoading} className="w-full" />
 
         <div className="text-center">
           <p className="text-sm text-primary-100">

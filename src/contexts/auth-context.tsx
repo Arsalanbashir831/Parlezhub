@@ -38,8 +38,7 @@ interface AuthContextType {
   logout: () => Promise<void>;
   signup: (
     userData: Partial<User>,
-    password: string,
-    role: 'TEACHER' | 'STUDENT'
+    password: string
   ) => Promise<void>;
   forgotPassword: (email: string) => Promise<{ message: string }>;
   resetPassword: (token: string, password: string) => Promise<{ message: string }>;
@@ -285,8 +284,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    */
   const signup = async (
     userData: Partial<User>,
-    password: string,
-    role: 'TEACHER' | 'STUDENT'
+    password: string
   ) => {
     setError(null);
     setIsLoading(true);
@@ -299,7 +297,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             full_name: userData.username || '',
             first_name: userData.username?.split(' ')[0] || '',
             last_name: userData.username?.split(' ').slice(1).join(' ') || '',
-            role, // stored in user_metadata, read by /api/auth/sync/
           },
           emailRedirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
         },

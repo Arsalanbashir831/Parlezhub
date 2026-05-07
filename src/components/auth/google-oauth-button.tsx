@@ -7,15 +7,11 @@ import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 
 interface GoogleOAuthButtonProps {
-  mode: 'login' | 'signup';
-  role?: 'TEACHER' | 'STUDENT'; // Required for signup
   disabled?: boolean;
   className?: string;
 }
 
 export function GoogleOAuthButton({
-  mode,
-  role,
   disabled = false,
   className,
 }: GoogleOAuthButtonProps) {
@@ -23,20 +19,10 @@ export function GoogleOAuthButton({
   const { signInWithGoogle } = useAuth();
 
   const handleGoogleAuth = async () => {
-    if (mode === 'signup' && !role) {
-      toast.error('Please select a role before continuing with Google signup');
-      return;
-    }
-
     setIsLoading(true);
     try {
-      if (role) {
-        // Set a cookie so the server-side callback can read it during sync
-        document.cookie = `intended_role=${role}; path=/; max-age=3600; SameSite=Lax`;
-      }
-
       await signInWithGoogle();
-      
+
       // We don't set isLoading(false) here because the page will redirect to Google
     } catch (error) {
       console.error('Google OAuth initiation failed:', error);

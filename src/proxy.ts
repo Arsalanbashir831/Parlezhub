@@ -138,6 +138,12 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
   }
 
+  // 3. If user ALREADY has roles but is trying to access onboarding, send them to dashboard
+  if (userRoles.length > 0 && pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)) {
+    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
+    return NextResponse.redirect(new URL(dashboard, request.url));
+  }
+
   // 3. Root redirect
   if (pathname === ROUTES.HOME) {
     const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
