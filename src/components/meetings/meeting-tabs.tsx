@@ -114,7 +114,7 @@ export default function MeetingTabs() {
   // Keep a ticking "now" so time-based UI updates without user interaction
   const [nowMs, setNowMs] = useState<number>(Date.now());
   useEffect(() => {
-    const id = setInterval(() => setNowMs(Date.now()), 5_000);
+    const id = setInterval(() => setNowMs(Date.now()), 30_000);
     return () => clearInterval(id);
   }, []);
 

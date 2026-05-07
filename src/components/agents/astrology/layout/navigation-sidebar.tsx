@@ -130,4 +130,4 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
   );
 };
 
-export default NavigationSidebar;
+export default React.memo(NavigationSidebar);

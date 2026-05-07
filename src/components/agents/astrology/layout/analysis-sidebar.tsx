@@ -3,7 +3,6 @@
 import React from 'react';
 import { LEFT_MENU_ITEMS } from '@/constants/astrology';
 import { useAuth } from '@/contexts/auth-context';
-import { motion } from 'framer-motion';
 import { Info } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -113,10 +112,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
                           {item.label}
                         </span>
                         {isActive && (
-                          <motion.div
-                            layoutId="active-pill-left"
-                            className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]"
-                          />
+                          <div className="ml-auto h-1.5 w-1.5 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                         )}
                       </CardContent>
                     </Card>
@@ -131,4 +127,4 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   );
 };
 
-export default AnalysisSidebar;
+export default React.memo(AnalysisSidebar);

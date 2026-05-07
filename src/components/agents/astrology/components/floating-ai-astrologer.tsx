@@ -22,17 +22,21 @@ export const FloatingAIAstrologer: React.FC<FloatingAIAstrologerProps> = ({
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);
+  const scrollTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const { messages, isSending, isLoadingHistory, error, sendMessage } =
     useAstrologyAIChat(category, studentId, guestProfileId);
 
   useEffect(() => {
     if (isOpen && messages.length > 0) {
-      setTimeout(() => {
+      scrollTimerRef.current = setTimeout(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
       }, 100);
     }
-  }, [messages, isSending, isOpen]);
+    return () => {
+      if (scrollTimerRef.current) clearTimeout(scrollTimerRef.current);
+    };
+  }, [messages, isOpen]);
 
   const handleSend = () => {
     if (!inputValue.trim() || isSending) return;
