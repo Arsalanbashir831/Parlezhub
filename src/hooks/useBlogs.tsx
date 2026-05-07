@@ -21,9 +21,10 @@ export function useBlogs(params: UseBlogsParams = {}) {
   const { enabled = true, ...queryParams } = params;
 
   // Memoize queryParams to prevent unnecessary re-fetches
+  const { page, page_size, status, search } = queryParams;
   const memoizedQueryParams = useMemo(
-    () => queryParams,
-    [JSON.stringify(queryParams)]
+    () => ({ page, page_size, status, search }),
+    [page, page_size, status, search]
   );
 
   const {
@@ -103,18 +104,18 @@ export function useBlogs(params: UseBlogsParams = {}) {
     async (formData: BlogFormData) => {
       return createMutation.mutateAsync(formData);
     },
-    [createMutation.mutateAsync]
+    [createMutation]
   );
 
   const update = useCallback(
     (id: string | number, data: Partial<BlogFormData>) =>
       updateMutation.mutateAsync({ id, data }),
-    [updateMutation.mutateAsync]
+    [updateMutation]
   );
 
   const remove = useCallback(
     (id: string | number) => removeMutation.mutateAsync(id),
-    [removeMutation.mutateAsync]
+    [removeMutation]
   );
 
   const toggleVisibility = useCallback(
@@ -123,7 +124,7 @@ export function useBlogs(params: UseBlogsParams = {}) {
       const next = current === 'published' ? 'draft' : 'published';
       return statusMutation.mutateAsync({ id, status: next });
     },
-    [statusMutation.mutateAsync]
+    [statusMutation]
   );
 
   const loadOne = useCallback((id: string | number) => blogService.get(id), []);

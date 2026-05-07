@@ -3,7 +3,6 @@ import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 
 import apiCaller from '@/lib/api-caller';
-import { getCookie } from '@/lib/cookie-utils';
 import { createClient } from '@/lib/supabase/client';
 
 export interface ChatMessage {
@@ -143,7 +142,7 @@ class ChatService {
   connect(chatId: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
       let token: string | undefined;
-      
+
       try {
         const supabase = createClient();
         const { data: { session } } = await supabase.auth.getSession();

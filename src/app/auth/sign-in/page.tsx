@@ -139,7 +139,6 @@ export default function LoginPage() {
         </div>
 
         <GoogleOAuthButton
-          mode="login"
           disabled={isLoading}
           className="w-full"
         />

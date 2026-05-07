@@ -9,29 +9,10 @@ import { toast } from 'sonner';
 
 import { setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
-import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Label } from '@/components/ui/label';
-import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-
-interface AxiosError {
-  response?: {
-    status?: number;
-    data?: {
-      requires_role_selection?: boolean;
-      error?: string;
-      message?: string;
-    };
-  };
-}
 
 export function GoogleOAuthCallback() {
   const [error, setError] = useState<string | null>(null);
-  const [isCompletingProfile, setIsCompletingProfile] = useState(false);
-  const [storedTokens, setStoredTokens] = useState<{
-    accessToken: string;
-    refreshToken: string;
-  } | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
   const { setIsAuthenticated, setUserRole } = useAuth();
@@ -108,7 +89,7 @@ export function GoogleOAuthCallback() {
           if (roles.length > 0) {
             setCookie('user_roles', JSON.stringify(roles));
             setCookie('active_role', roles[0]);
-            
+
             // Update auth context
             setIsAuthenticated(true);
             setUserRole(roles[0]);

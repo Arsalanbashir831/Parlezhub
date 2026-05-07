@@ -20,13 +20,13 @@ export const getErrorMessage = (error: unknown, context?: string): string => {
         .map(([field, errors]) => {
           // Skip non-error fields if any (usually all are errors in 400 responses)
           if (field === 'status' || field === 'code') return null;
-          
+
           const firstError = Array.isArray(errors) ? errors[0] : errors;
           if (typeof firstError !== 'string') return null;
-          
+
           // Format as "Field: Message" or just "Message" for non_field_errors
-          return field === 'non_field_errors' || field === 'detail' 
-            ? firstError 
+          return field === 'non_field_errors' || field === 'detail'
+            ? firstError
             : `${field.charAt(0).toUpperCase() + field.slice(1)}: ${firstError}`;
         })
         .filter(Boolean);
@@ -54,11 +54,11 @@ export const extractFieldErrors = (error: unknown): Record<string, string> => {
     const data = error.response.data;
     // DRF often puts field errors at the root, but some APIs wrap them in 'errors'
     const errorsSource = data.errors || data;
-    
+
     if (typeof errorsSource === 'object' && !Array.isArray(errorsSource)) {
       return Object.fromEntries(
         Object.entries(errorsSource)
-          .filter(([_, v]) => typeof v === 'string' || Array.isArray(v))
+          .filter(([, v]) => typeof v === 'string' || Array.isArray(v))
           .map(([k, v]) => [k, Array.isArray(v) ? v[0] : String(v)])
       );
     }
