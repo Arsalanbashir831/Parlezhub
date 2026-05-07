@@ -3,6 +3,7 @@ import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, In
 import { toast } from 'sonner';
 
 import { clearAuthCookies } from '@/lib/cookie-utils';
+import { tokenStore } from '@/lib/token-store';
 
 // Singleton instance
 const axiosInstance: AxiosInstance = axios.create({
@@ -13,17 +14,27 @@ const axiosInstance: AxiosInstance = axios.create({
 axiosInstance.interceptors.request.use(
   async (config: InternalAxiosRequestConfig) => {
     if (!config.headers.Authorization) {
-      try {
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
-        // getSession() automatically refreshes the token if it's expired
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (session?.access_token) {
-          config.headers.Authorization = `Bearer ${session.access_token}`;
+      // Use the in-memory token cache first.
+      // Calling supabase.auth.getSession() on every request blocks on the Web Locks API
+      // whenever Supabase's background token-refresh timer is running (~every 30s), which
+      // causes all concurrent API calls to freeze for up to 5 seconds. The cache is kept
+      // fresh by onAuthStateChange in auth-context.tsx so this is always the current token.
+      const cached = tokenStore.get();
+      if (cached) {
+        config.headers.Authorization = `Bearer ${cached}`;
+      } else {
+        // Cache miss: fall back to getSession (first page load or just after token expiry)
+        try {
+          const { createClient } = await import('@/lib/supabase/client');
+          const supabase = createClient();
+          const { data: { session } } = await supabase.auth.getSession();
+          if (session?.access_token) {
+            config.headers.Authorization = `Bearer ${session.access_token}`;
+            tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
+          }
+        } catch (err) {
+          console.warn('Failed to get Supabase session for API request:', err);
         }
-      } catch (err) {
-        console.warn('Failed to get Supabase session for API request:', err);
       }
     }
     return config;
@@ -41,6 +52,7 @@ axiosInstance.interceptors.response.use(
 
       // If we already retried and it still failed, the session is truly dead
       if (originalRequest._retry) {
+        tokenStore.clear();
         clearAuthCookies();
         if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });
@@ -52,7 +64,8 @@ axiosInstance.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        // Force a session refresh
+        // Force a session refresh — clear the stale cached token first
+        tokenStore.clear();
         const { createClient } = await import('@/lib/supabase/client');
         const supabase = createClient();
         const { data, error: refreshError } = await supabase.auth.refreshSession();
@@ -62,10 +75,12 @@ axiosInstance.interceptors.response.use(
         }
 
         const tokenToUse = data.session.access_token;
+        tokenStore.set(tokenToUse, data.session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
         originalRequest.headers.Authorization = `Bearer ${tokenToUse}`;
 
         return axiosInstance(originalRequest);
       } catch (refreshError) {
+        tokenStore.clear();
         clearAuthCookies();
         if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });

@@ -26,6 +26,7 @@ const TEACHER_ROUTES = [
   ROUTES.TEACHER.SERVICES,
   ROUTES.TEACHER.SETTINGS,
   ROUTES.TEACHER.BLOGS,
+  ROUTES.AGENT.ASTROLOGY.ROOT,
   ROUTES.TEACHER.ASTROLOGY_STUDENTS,
 ];
 
@@ -154,23 +155,23 @@ export async function proxy(request: NextRequest) {
   const isStudentRoute = STUDENT_ROUTES.some((route) => pathname.startsWith(route));
   const isTeacherRoute = TEACHER_ROUTES.some((route) => pathname.startsWith(route));
 
-  // If on a student route but active role is TEACHER (and they have both roles)
-  if (isStudentRoute && activeRole === 'TEACHER' && userRoles.includes('TEACHER')) {
+  // If on a student route but active role is TEACHER (and it's NOT also a teacher route)
+  if (isStudentRoute && !isTeacherRoute && activeRole === 'TEACHER' && userRoles.includes('TEACHER')) {
     return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
   }
 
-  // If on a teacher route but active role is STUDENT (and they have both roles)
-  if (isTeacherRoute && activeRole === 'STUDENT' && userRoles.includes('STUDENT')) {
+  // If on a teacher route but active role is STUDENT (and it's NOT also a student route)
+  if (isTeacherRoute && !isStudentRoute && activeRole === 'STUDENT' && userRoles.includes('STUDENT')) {
     return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
   }
 
   // Basic access check (if they don't even have the required role)
-  if (isStudentRoute && !userRoles.includes('STUDENT')) {
+  if (isStudentRoute && !isTeacherRoute && !userRoles.includes('STUDENT')) {
     const target = userRoles.includes('TEACHER') ? ROUTES.TEACHER.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
     return NextResponse.redirect(new URL(target, request.url));
   }
 
-  if (isTeacherRoute && !userRoles.includes('TEACHER')) {
+  if (isTeacherRoute && !isStudentRoute && !userRoles.includes('TEACHER')) {
     const target = userRoles.includes('STUDENT') ? ROUTES.STUDENT.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
     return NextResponse.redirect(new URL(target, request.url));
   }

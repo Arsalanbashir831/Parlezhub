@@ -22,6 +22,7 @@ import {
 } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
 import { createClient } from '@/lib/supabase/client';
+import { tokenStore } from '@/lib/token-store';
 
 import type { User, UserRole } from '@/types/user';
 import {
@@ -158,6 +159,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (session?.user) {
           setIsAuthenticated(true);
+          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
 
           // Roles may already be pre-populated from cookies (synchronous useState init).
           // Only fetch from the API when cookies are genuinely absent.
@@ -171,6 +173,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         } else {
           // Session invalid or expired — clear everything
+          tokenStore.clear();
           setIsAuthenticated(false);
           setUserRolesState([]);
           setActiveRoleState(null);
@@ -192,6 +195,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
         if (event === 'SIGNED_IN' && session) {
           setIsAuthenticated(true);
+          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
           try {
             // Attempt to load profile from Django.
             // This may fail with "User not found" if the user just signed up via
@@ -204,16 +208,18 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           }
         }
 
+        if (event === 'TOKEN_REFRESHED' && session) {
+          // Keep the in-memory token cache up to date so the Axios interceptor
+          // always has the fresh token without needing to call getSession().
+          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
+        }
+
         if (event === 'SIGNED_OUT') {
+          tokenStore.clear();
           setIsAuthenticated(false);
           setUserRolesState([]);
           setActiveRoleState(null);
           clearAuthCookies();
-        }
-
-        if (event === 'TOKEN_REFRESHED') {
-          // Token was refreshed automatically — nothing to do in the client
-          // The middleware already stored the new cookies
         }
       }
     );

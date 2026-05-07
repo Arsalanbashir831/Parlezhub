@@ -124,7 +124,7 @@ export function SharedStudentsList() {
                     asChild
                     className="flex-1 rounded-xl bg-primary-500 font-bold text-primary-950 transition-all hover:bg-primary-400"
                   >
-                    <Link href={`${ROUTES.AGENT.ASTROLOGY}?student_id=${record.student.id}`}>
+                    <Link href={`${ROUTES.AGENT.ASTROLOGY.ROOT}?student_id=${record.student.id}`}>
                       View Chart
                       <ExternalLink className="ml-2 h-4 w-4" />
                     </Link>

@@ -4,6 +4,7 @@ import { toast } from 'sonner';
 
 import apiCaller from '@/lib/api-caller';
 import { getCookie } from '@/lib/cookie-utils';
+import { createClient } from '@/lib/supabase/client';
 
 export interface ChatMessage {
   id: string;
@@ -58,9 +59,15 @@ const chatApiCaller = async (
   };
 
   // Add authorization header
-  const token = getCookie('access_token');
-  if (token) {
-    config.headers!.Authorization = `Bearer ${token}`;
+  try {
+    const supabase = createClient();
+    const { data: { session } } = await supabase.auth.getSession();
+    const token = session?.access_token;
+    if (token) {
+      config.headers!.Authorization = `Bearer ${token}`;
+    }
+  } catch (err) {
+    console.warn('Failed to get Supabase session for Chat API:', err);
   }
 
   if (data && method !== 'GET') {
@@ -134,8 +141,17 @@ class ChatService {
 
   // WebSocket Methods
   connect(chatId: string): Promise<void> {
-    return new Promise((resolve, reject) => {
-      const token = getCookie('access_token');
+    return new Promise(async (resolve, reject) => {
+      let token: string | undefined;
+      
+      try {
+        const supabase = createClient();
+        const { data: { session } } = await supabase.auth.getSession();
+        token = session?.access_token;
+      } catch (err) {
+        console.error('Failed to get Supabase session for Chat WebSocket:', err);
+      }
+
       if (!token) {
         reject(new Error('No access token available'));
         return;

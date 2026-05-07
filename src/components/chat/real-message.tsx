@@ -40,7 +40,7 @@ const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
         <p
           className={cn(
             'mt-1.5 text-[9px] font-bold uppercase tracking-wider',
-            isOwnMessage ? 'text-primary-950/40' : 'text-primary-100/30'
+            isOwnMessage ? 'text-primary-300/40' : 'text-primary-100/30'
           )}
         >
           {new Date(
