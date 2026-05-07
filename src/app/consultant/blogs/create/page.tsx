@@ -7,6 +7,7 @@ import { toast } from 'sonner';
 
 import { useAIGeneration } from '@/hooks/useAIGeneration';
 import { useBlogs } from '@/hooks/useBlogs';
+import { extractFieldErrors } from '@/lib/error-utils';
 import AIGenerateButton from '@/components/ui/ai-generate-button';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -35,15 +36,19 @@ export default function CreateBlogPage() {
   const [tags, setTags] = useState<string[]>([]);
   const [thumbnail, setThumbnail] = useState<File | null>(null);
   const [status, setStatus] = useState<'draft' | 'published'>('draft');
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+
+    if (isProcessing) return;
 
     if (!title.trim() || !content.trim()) {
       toast.error('Please fill in the title and content');
       return;
     }
 
+    setErrors({});
 
     try {
       await create({
@@ -54,12 +59,11 @@ export default function CreateBlogPage() {
         tags,
         status,
       });
-      toast.success(
-        `Blog ${status === 'published' ? 'published' : 'saved as draft'} successfully!`
-      );
+      // useBlogs handles success toast and redirection
       router.push(ROUTES.TEACHER.BLOGS);
     } catch (error) {
       console.error('Failed to create blog:', error);
+      setErrors(extractFieldErrors(error));
     }
   };
 
@@ -125,8 +129,13 @@ export default function CreateBlogPage() {
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="Enter blog title"
                 required
-                className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
+                className={`h-12 rounded-xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30 ${
+                  errors.title ? 'border-red-500/50' : ''
+                }`}
               />
+              {errors.title && (
+                <p className="ml-1 text-xs font-medium text-red-400">{errors.title}</p>
+              )}
             </div>
 
             {/* Meta Description */}
@@ -177,12 +186,17 @@ export default function CreateBlogPage() {
                   isGenerating={isGeneratingContent}
                 />
               </div>
-              <MarkdownEditor
-                value={content}
-                onChange={setContent}
-                placeholder="Write your blog content in markdown..."
-                height={500}
-              />
+              <div className={`rounded-xl ${errors.content ? 'ring-1 ring-red-500/50' : ''}`}>
+                <MarkdownEditor
+                  value={content}
+                  onChange={setContent}
+                  placeholder="Write your blog content in markdown..."
+                  height={500}
+                />
+              </div>
+              {errors.content && (
+                <p className="ml-1 text-xs font-medium text-red-400">{errors.content}</p>
+              )}
             </div>
 
             {/* Status */}

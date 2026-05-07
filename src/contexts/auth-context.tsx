@@ -64,12 +64,26 @@ interface AuthContextType {
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [isLoading, setIsLoading] = useState(true);
+  // Pre-populate from cookies synchronously so the page renders without a loader on refresh.
+  // Session validity is confirmed asynchronously in the background.
+  const [isLoading, setIsLoading] = useState(() => {
+    if (typeof document === 'undefined') return true;
+    return getUserRoles().length === 0;
+  });
   const isRefreshingRef = useRef(false);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
-  const [userRoles, setUserRolesState] = useState<(UserRole)[]>([]);
-  const [activeRole, setActiveRoleState] = useState<UserRole | null>(null);
+  const [isAuthenticated, setIsAuthenticated] = useState(() => {
+    if (typeof document === 'undefined') return false;
+    return getUserRoles().length > 0;
+  });
+  const [userRoles, setUserRolesState] = useState<(UserRole)[]>(() => {
+    if (typeof document === 'undefined') return [];
+    return getUserRoles();
+  });
+  const [activeRole, setActiveRoleState] = useState<UserRole | null>(() => {
+    if (typeof document === 'undefined') return null;
+    return getActiveRole();
+  });
 
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -145,19 +159,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         if (session?.user) {
           setIsAuthenticated(true);
 
-          // Load roles from cookies first (instant)
+          // Roles may already be pre-populated from cookies (synchronous useState init).
+          // Only fetch from the API when cookies are genuinely absent.
           const storedRoles = getUserRoles();
-          const storedActiveRole = getActiveRole();
-          if (storedRoles.length > 0) {
-            setUserRolesState(storedRoles);
-            setActiveRoleState(
-              storedActiveRole && storedRoles.includes(storedActiveRole)
-                ? storedActiveRole
-                : storedRoles[0]
-            );
-          } else {
-            // If we have a session but no roles in cookies, we MUST fetch them!
-            // Otherwise the user gets stuck in an infinite redirect loop.
+          if (storedRoles.length === 0) {
             try {
               await refreshUserProfile(true);
             } catch (err) {
@@ -165,6 +170,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             }
           }
         } else {
+          // Session invalid or expired — clear everything
           setIsAuthenticated(false);
           setUserRolesState([]);
           setActiveRoleState(null);

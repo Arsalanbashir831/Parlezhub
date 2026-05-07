@@ -67,8 +67,11 @@ export default function RoleGuard({
     canAccessRole,
   ]);
 
-  // Show loading while checking authentication and role
-  if (isLoading) {
+  const hasAllowedRole = allowedRoles.some((role) => canAccessRole(role));
+
+  // Keep spinner visible while: explicitly loading, or authenticated but roles haven't
+  // resolved yet (e.g. background profile fetch still in-flight after cookie miss).
+  if (isLoading || (isAuthenticated && !hasAllowedRole && userRoles.length === 0)) {
     return (
       <div className="flex min-h-screen items-center justify-center bg-background">
         <div className="h-16 w-16 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"></div>
@@ -76,10 +79,6 @@ export default function RoleGuard({
     );
   }
 
-  // Check if user has any allowed role for rendering
-  const hasAllowedRole = allowedRoles.some((role) => canAccessRole(role));
-
-  // Don't render children if not authenticated or doesn't have allowed roles
   if (!isAuthenticated || !hasAllowedRole) {
     return null;
   }

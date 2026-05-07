@@ -62,7 +62,6 @@ export default function ImageUpload({
 
       onChange(file);
       updatePreview(file);
-      toast.success('Image uploaded successfully');
     },
     [maxSize, onChange, updatePreview]
   );

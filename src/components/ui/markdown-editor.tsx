@@ -62,7 +62,6 @@ export default function MarkdownEditor({
         }}
         preview="edit"
         hideToolbar={false}
-        toolbarHeight={40}
       />
     </div>
   );

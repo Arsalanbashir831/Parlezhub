@@ -1,5 +1,4 @@
 import { API_ROUTES } from '@/constants/api-routes';
-import { toast } from 'sonner';
 
 import type { BlogFormData, BlogListResponse, BlogPost } from '@/types/blog';
 import apiCaller from '@/lib/api-caller';
@@ -69,19 +68,14 @@ export const blogService = {
 
   // Get a specific blog by ID
   get: async (id: string | number): Promise<BlogPost | null> => {
-    try {
-      const response = await apiCaller(
-        API_ROUTES.TEACHER.BLOG_DETAIL(id),
-        'GET',
-        undefined,
-        {},
-        true // Use auth token
-      );
-      return response.data;
-    } catch {
-      toast.error('Failed to get blog');
-      return null;
-    }
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.BLOG_DETAIL(id),
+      'GET',
+      undefined,
+      {},
+      true // Use auth token
+    );
+    return response.data;
   },
 
   // Update a blog
@@ -89,22 +83,17 @@ export const blogService = {
     id: string | number,
     data: Partial<BlogFormData>
   ): Promise<BlogPost | null> => {
-    try {
-      const formData = createFormData(data as BlogFormData);
+    const formData = createFormData(data as BlogFormData);
 
-      const response = await apiCaller(
-        API_ROUTES.TEACHER.UPDATE_BLOG(id),
-        'PUT',
-        formData,
-        {},
-        true, // Use auth token
-        'formdata' // Data type
-      );
-      return response.data;
-    } catch {
-      toast.error('Failed to update blog');
-      return null;
-    }
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.UPDATE_BLOG(id),
+      'PATCH',
+      formData,
+      {},
+      true, // Use auth token
+      'formdata' // Data type
+    );
+    return response.data;
   },
 
   // Delete a blog
@@ -123,29 +112,18 @@ export const blogService = {
     id: string | number,
     status: BlogPost['status']
   ): Promise<BlogPost | null> => {
-    try {
-      const formData = new FormData();
-      formData.append('status', status);
+    const formData = new FormData();
+    formData.append('status', status);
 
-      const response = await apiCaller(
-        API_ROUTES.TEACHER.UPDATE_BLOG(id),
-        'PATCH',
-        formData,
-        {},
-        true, // Use auth token
-        'formdata' // Data type
-      );
-      return response.data;
-    } catch {
-      toast.error('Failed to set blog status');
-      return null;
-    }
-  },
-
-  // Legacy method for backward compatibility - remove after migration
-  seedIfEmpty: async () => {
-    // No longer needed with API
-    return;
+    const response = await apiCaller(
+      API_ROUTES.TEACHER.UPDATE_BLOG(id),
+      'PATCH',
+      formData,
+      {},
+      true, // Use auth token
+      'formdata' // Data type
+    );
+    return response.data;
   },
 };
 

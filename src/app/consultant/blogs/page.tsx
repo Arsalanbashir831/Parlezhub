@@ -6,6 +6,7 @@ import { ROUTES } from '@/constants/routes';
 import { toast } from 'sonner';
 
 import { useBlogs } from '@/hooks/useBlogs';
+import { useDebounce } from '@/hooks/use-debounce';
 import { BlogFilters, BlogPagination, BlogTable } from '@/components/blog';
 import { Button } from '@/components/ui/button';
 
@@ -15,15 +16,17 @@ export default function BlogsPage() {
   const [pageSize, setPageSize] = useState(10);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const [debouncedSearchQuery] = useDebounce(searchQuery, 500);
+
   const queryParams = useMemo(() => {
     const params: Record<string, string | number> = {
       page: currentPage,
       page_size: pageSize,
     };
     if (statusFilter !== 'all') params.status = statusFilter;
-    if (searchQuery.trim()) params.search = searchQuery.trim();
+    if (debouncedSearchQuery.trim()) params.search = debouncedSearchQuery.trim();
     return params;
-  }, [currentPage, pageSize, statusFilter, searchQuery]);
+  }, [currentPage, pageSize, statusFilter, debouncedSearchQuery]);
 
   const {
     blogs,

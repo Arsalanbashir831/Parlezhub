@@ -15,8 +15,8 @@ import { ThemeProvider } from 'next-themes';
 
 function ProvidersContent({ children }: { children: React.ReactNode }) {
   return (
-    <QueryProvider>
-      <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+    <ThemeProvider attribute="class" defaultTheme="light" enableSystem={false}>
+      <QueryProvider>
         <AuthProvider>
           <GoogleOneTap />
           <UserProvider>
@@ -26,8 +26,8 @@ function ProvidersContent({ children }: { children: React.ReactNode }) {
           </UserProvider>
         </AuthProvider>
         <Toaster richColors />
-      </ThemeProvider>
-    </QueryProvider>
+      </QueryProvider>
+    </ThemeProvider>
   );
 }
 
