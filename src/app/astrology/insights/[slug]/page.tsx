@@ -17,7 +17,7 @@ export default function InsightDetailPage() {
     <div className="flex h-full w-full flex-col">
       <InsightView
         slug={slug}
-        onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.D1}?${searchParams.toString()}`)}
+        onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)}
         studentId={studentId}
         guestProfileId={guestId}
       />

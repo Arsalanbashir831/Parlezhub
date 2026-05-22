@@ -15,7 +15,7 @@ export default function NavataraPage() {
       <NavataraEducationView
         studentId={studentId}
         guestProfileId={guestId}
-        onClose={() => router.push(`${ROUTES.AGENT.ASTROLOGY.D1}?${searchParams.toString()}`)}
+        onClose={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)}
       />
     </div>
   );

@@ -121,11 +121,13 @@ export default function AstrologyLayout({
     setRightOpen(false);
 
     const params = new URLSearchParams(searchParams.toString());
+    if (id !== 'dashboard') {
+      params.delete('chart_type');
+    }
 
     // Mapping internal IDs to routes
     const routeMap: Record<string, string> = {
-      'd1-chart': ROUTES.AGENT.ASTROLOGY.D1,
-      'd9-chart': ROUTES.AGENT.ASTROLOGY.D9,
+      'dashboard': ROUTES.AGENT.ASTROLOGY.ROOT,
       'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
@@ -153,16 +155,15 @@ export default function AstrologyLayout({
   };
 
   const activeAnalysis = useMemo(() => {
-    if (pathname === ROUTES.AGENT.ASTROLOGY.D1) return 'd1-chart';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.D9) return 'd9-chart';
+    if (pathname === ROUTES.AGENT.ASTROLOGY.ROOT) return 'dashboard';
     if (pathname === ROUTES.AGENT.ASTROLOGY.NAVATARA) return 'navatara';
     if (pathname === ROUTES.AGENT.ASTROLOGY.PROFILE) return 'birth-profile';
     if (pathname === ROUTES.AGENT.ASTROLOGY.SHARE) return 'share-access';
     if (pathname.includes(ROUTES.AGENT.ASTROLOGY.INSIGHTS(''))) {
       const slug = pathname.split('/').pop();
-      return slug || 'd1-chart';
+      return slug || null;
     }
-    return 'd1-chart';
+    return null;
   }, [pathname]);
 
   const isReadOnly = useMemo(() => {
@@ -282,7 +283,7 @@ export default function AstrologyLayout({
 
       {profile && !studentId && (
         <FloatingAIAstrologer
-          category={activeAnalysis}
+          category={activeAnalysis === 'dashboard' ? 'd1-chart' : (activeAnalysis || 'd1-chart')}
           studentId={studentId}
           guestProfileId={guestId}
         />

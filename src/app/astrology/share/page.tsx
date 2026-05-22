@@ -23,7 +23,7 @@ export default function ShareAccessPage() {
 
   return (
     <div className="flex h-full w-full items-center justify-center p-4">
-      <ShareAccessView onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.D1}?${searchParams.toString()}`)} />
+      <ShareAccessView onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)} />
     </div>
   );
 }

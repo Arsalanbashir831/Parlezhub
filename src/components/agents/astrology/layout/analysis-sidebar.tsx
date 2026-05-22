@@ -38,12 +38,14 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
 
   const getHref = (id: string) => {
     const params = new URLSearchParams(searchParams.toString());
+    if (id !== 'dashboard') {
+      params.delete('chart_type');
+    }
     const query = params.toString();
     const suffix = query ? `?${query}` : '';
 
     const routeMap: Record<string, string> = {
-      'd1-chart': ROUTES.AGENT.ASTROLOGY.D1,
-      'd9-chart': ROUTES.AGENT.ASTROLOGY.D9,
+      'dashboard': ROUTES.AGENT.ASTROLOGY.ROOT,
       'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,

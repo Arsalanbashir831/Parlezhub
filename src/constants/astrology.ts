@@ -57,9 +57,13 @@ export const ZODIAC_SIGNS = [
   { name: 'Pisces', symbol: 'Pis' },
 ];
 
+export const ASTRO_CHART_TYPES = [
+  { id: 'd1', label: 'D1 Natal Chart', title: 'D1 Natal Chart' },
+  { id: 'd9', label: 'D9 Navamsa Chart', title: 'D9 Navamsa Chart' },
+];
+
 export const RIGHT_MENU_ITEMS = [
-  { id: 'd1-chart', label: 'D1 Chart & Transit', icon: '✨' },
-  { id: 'd9-chart', label: 'D9 Navamsa Chart', icon: '👑' },
+  { id: 'dashboard', label: 'Dashboard', icon: '🪐' },
   { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
   { id: 'share-access', label: 'Share Access', icon: '🤝' },

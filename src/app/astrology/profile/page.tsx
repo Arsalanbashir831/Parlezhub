@@ -21,7 +21,7 @@ export default function BirthProfilePage() {
         guestProfileId={guestId}
         onSuccess={() => {
           // After saving, go back to D1 chart
-          router.push(`${ROUTES.AGENT.ASTROLOGY.D1}?${searchParams.toString()}`);
+          router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`);
         }}
       />
     </div>

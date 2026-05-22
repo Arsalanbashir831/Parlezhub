@@ -16,8 +16,6 @@ export const ROUTES = {
     LANGUAGE: '/language',
     ASTROLOGY: {
       ROOT: '/astrology',
-      D1: '/astrology',
-      D9: '/astrology/d9',
       NAVATARA: '/astrology/navatara',
       PROFILE: '/astrology/profile',
       SHARE: '/astrology/share',
