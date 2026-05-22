@@ -250,180 +250,212 @@ const VedicChart = React.memo(function VedicChart({
   const hoveredPlanetData = processedPlanets.find((p) => p.id === hoveredId);
 
   return (
-    <div
-      className={cn(
-        'relative flex w-full items-center justify-center overflow-visible p-4',
-        className
-      )}
-    >
-      <svg
-        viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`}
-        className="h-auto w-full max-w-[750px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[1000px]"
+    <div className="flex flex-col items-center justify-center w-full">
+      <div
+        className={cn(
+          'relative flex w-full items-center justify-center overflow-visible p-0',
+          className
+        )}
       >
-        <defs>
-          <radialGradient
-            id="houseGradient"
-            cx="50%"
-            cy="50%"
-            r="50%"
-            fx="50%"
-            fy="50%"
-          >
-            <stop offset="0%" stopColor="#f97316" stopOpacity="0.08" />
-            <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
-          </radialGradient>
-          <filter id="glow">
-            <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
-            <feMerge>
-              <feMergeNode in="coloredBlur" />
-              <feMergeNode in="SourceGraphic" />
-            </feMerge>
-          </filter>
-        </defs>
+        <svg
+          viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`}
+          className="h-auto w-full max-w-[750px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[1000px]"
+        >
+          <defs>
+            <radialGradient
+              id="houseGradient"
+              cx="50%"
+              cy="50%"
+              r="50%"
+              fx="50%"
+              fy="50%"
+            >
+              <stop offset="0%" stopColor="#f97316" stopOpacity="0.08" />
+              <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+            </radialGradient>
+            <filter id="glow">
+              <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
+              <feMerge>
+                <feMergeNode in="coloredBlur" />
+                <feMergeNode in="SourceGraphic" />
+              </feMerge>
+            </filter>
+          </defs>
 
-        {/* Outer Circle - Transits */}
-        {transitPlanets.length > 0 && (
+          {/* Outer Circle - Transits */}
+          {transitPlanets.length > 0 && (
+            <circle
+              cx={CHART_CENTER}
+              cy={CHART_CENTER}
+              r={OUTER_RADIUS}
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="1.5"
+              strokeDasharray="5,5"
+              className="text-primary-800 opacity-40"
+            />
+          )}
+
+          {/* Zodiac Divisions */}
+          {ZODIAC_SIGNS.map((sign, i) => {
+            const angle = -90 - (i * 30 - rotationOffset);
+            const rad = (angle * Math.PI) / 180;
+            const textAngle = angle - 15;
+            const textRad = (textAngle * Math.PI) / 180;
+            const outerR = transitPlanets.length > 0 ? OUTER_RADIUS : MID_RADIUS;
+            const textLabelRadius = transitPlanets.length > 0 ? OUTER_RADIUS : MID_RADIUS;
+            const textX = Number(
+              (CHART_CENTER + (textLabelRadius + 30) * Math.cos(textRad)).toFixed(2)
+            );
+            const textY = Number(
+              (CHART_CENTER + (textLabelRadius + 30) * Math.sin(textRad)).toFixed(2)
+            );
+
+            const x1 = Number((CHART_CENTER + INNER_RADIUS * Math.cos(rad)).toFixed(2));
+            const y1 = Number((CHART_CENTER + INNER_RADIUS * Math.sin(rad)).toFixed(2));
+            const x2 = Number((CHART_CENTER + outerR * Math.cos(rad)).toFixed(2));
+            const y2 = Number((CHART_CENTER + outerR * Math.sin(rad)).toFixed(2));
+
+            return (
+              <g key={sign.name} className="group">
+                <line
+                  x1={x1}
+                  y1={y1}
+                  x2={x2}
+                  y2={y2}
+                  stroke="currentColor"
+                  strokeWidth="1"
+                  className="text-primary-400 opacity-20"
+                />
+                <text
+                  x={textX}
+                  y={textY}
+                  fill="currentColor"
+                  fontSize="18"
+                  textAnchor="middle"
+                  alignmentBaseline="middle"
+                  className="cursor-default font-serif text-primary-400 opacity-70 transition-all group-hover:text-primary-500 group-hover:opacity-100"
+                >
+                  {sign.symbol}
+                </text>
+              </g>
+            );
+          })}
+
+          {/* Rings */}
           <circle
             cx={CHART_CENTER}
             cy={CHART_CENTER}
-            r={OUTER_RADIUS}
+            r={MID_RADIUS}
             fill="none"
             stroke="currentColor"
+            strokeWidth="1"
+            className="text-primary-700 opacity-30"
+          />
+          <circle
+            cx={CHART_CENTER}
+            cy={CHART_CENTER}
+            r={INNER_RADIUS}
+            fill="url(#houseGradient)"
+            stroke="currentColor"
             strokeWidth="1.5"
-            strokeDasharray="5,5"
-            className="text-primary-800 opacity-40"
+            className="text-primary-200"
           />
-        )}
 
-        {/* Zodiac Divisions */}
-        {ZODIAC_SIGNS.map((sign, i) => {
-          const angle = -90 - (i * 30 - rotationOffset);
-          const rad = (angle * Math.PI) / 180;
-          const textAngle = angle - 15;
-          const textRad = (textAngle * Math.PI) / 180;
-          const outerR = transitPlanets.length > 0 ? OUTER_RADIUS : MID_RADIUS;
-          const textLabelRadius = transitPlanets.length > 0 ? OUTER_RADIUS : MID_RADIUS;
-          const textX = Number(
-            (CHART_CENTER + (textLabelRadius + 30) * Math.cos(textRad)).toFixed(2)
-          );
-          const textY = Number(
-            (CHART_CENTER + (textLabelRadius + 30) * Math.sin(textRad)).toFixed(2)
-          );
+          {/* Celestial Accent / Compass Rose at Center */}
+          <g style={{ filter: 'url(#glow)' }} className="pointer-events-none text-primary-400/80">
+            {/* Elegant outer dashed fine ring */}
+            <circle
+              cx={CHART_CENTER}
+              cy={CHART_CENTER}
+              r="22"
+              fill="none"
+              stroke="currentColor"
+              strokeWidth="0.8"
+              strokeDasharray="3,3"
+              className="text-primary-500/40"
+            />
+            {/* Elegant 4-pointed celestial star */}
+            <path
+              d={`
+                M ${CHART_CENTER} ${CHART_CENTER - 15}
+                Q ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER + 15} ${CHART_CENTER}
+                Q ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER + 15}
+                Q ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER - 15} ${CHART_CENTER}
+                Q ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER} ${CHART_CENTER - 15}
+                Z
+              `}
+              fill="currentColor"
+            />
+            {/* Center golden pinpoint */}
+            <circle
+              cx={CHART_CENTER}
+              cy={CHART_CENTER}
+              r="2.5"
+              fill="#fff"
+            />
+          </g>
 
-          const x1 = Number((CHART_CENTER + INNER_RADIUS * Math.cos(rad)).toFixed(2));
-          const y1 = Number((CHART_CENTER + INNER_RADIUS * Math.sin(rad)).toFixed(2));
-          const x2 = Number((CHART_CENTER + outerR * Math.cos(rad)).toFixed(2));
-          const y2 = Number((CHART_CENTER + outerR * Math.sin(rad)).toFixed(2));
+          {/* Base Planet Layer (Stable Order) */}
+          {natalWithIdx.map((p) => (
+            <PlanetNode
+              key={p.id}
+              {...p}
+              hide={hoveredId === p.id}
+              isHovered={hoveredId === p.id}
+              rotationOffset={rotationOffset}
+              setHoveredId={stableSetHoveredId}
+            />
+          ))}
+          {transitWithIdx.map((p) => (
+            <PlanetNode
+              key={p.id}
+              {...p}
+              hide={hoveredId === p.id}
+              isHovered={hoveredId === p.id}
+              rotationOffset={rotationOffset}
+              setHoveredId={stableSetHoveredId}
+            />
+          ))}
 
-          return (
-            <g key={sign.name} className="group">
-              <line
-                x1={x1}
-                y1={y1}
-                x2={x2}
-                y2={y2}
-                stroke="currentColor"
-                strokeWidth="1"
-                className="text-primary-400 opacity-20"
-              />
-              <text
-                x={textX}
-                y={textY}
-                fill="currentColor"
-                fontSize="18"
-                textAnchor="middle"
-                alignmentBaseline="middle"
-                className="cursor-default font-serif text-primary-400 opacity-70 transition-all group-hover:text-primary-500 group-hover:opacity-100"
-              >
-                {sign.symbol}
-              </text>
-            </g>
-          );
-        })}
+          {/* Hover Overlay Layer (Ensures immediate "on top" rendering) */}
+          {hoveredPlanetData && (
+            <PlanetNode
+              key={`${hoveredPlanetData.id}-overlay`}
+              {...hoveredPlanetData}
+              hide={false}
+              isHovered={true}
+              rotationOffset={rotationOffset}
+              setHoveredId={stableSetHoveredId}
+            />
+          )}
+        </svg>
 
-        {/* Rings */}
-        <circle
-          cx={CHART_CENTER}
-          cy={CHART_CENTER}
-          r={MID_RADIUS}
-          fill="none"
-          stroke="currentColor"
-          strokeWidth="1"
-          className="text-primary-700 opacity-30"
-        />
-        <circle
-          cx={CHART_CENTER}
-          cy={CHART_CENTER}
-          r={INNER_RADIUS}
-          fill="url(#houseGradient)"
-          stroke="currentColor"
-          strokeWidth="1.5"
-          className="text-primary-200"
-        />
-
-        {/* Center Label */}
-        <text
-          x={CHART_CENTER}
-          y={CHART_CENTER}
-          fill="currentColor"
-          textAnchor="middle"
-          alignmentBaseline="middle"
-          className="font-serif text-xl font-bold tracking-widest text-primary-600 sm:text-2xl"
-          style={{ filter: 'url(#glow)' }}
-        >
-          {title}
-        </text>
-
-        {/* Base Planet Layer (Stable Order) */}
-        {natalWithIdx.map((p) => (
-          <PlanetNode
-            key={p.id}
-            {...p}
-            hide={hoveredId === p.id}
-            isHovered={hoveredId === p.id}
-            rotationOffset={rotationOffset}
-            setHoveredId={stableSetHoveredId}
-          />
-        ))}
-        {transitWithIdx.map((p) => (
-          <PlanetNode
-            key={p.id}
-            {...p}
-            hide={hoveredId === p.id}
-            isHovered={hoveredId === p.id}
-            rotationOffset={rotationOffset}
-            setHoveredId={stableSetHoveredId}
-          />
-        ))}
-
-        {/* Hover Overlay Layer (Ensures immediate "on top" rendering) */}
-        {hoveredPlanetData && (
-          <PlanetNode
-            key={`${hoveredPlanetData.id}-overlay`}
-            {...hoveredPlanetData}
-            hide={false}
-            isHovered={true}
-            rotationOffset={rotationOffset}
-            setHoveredId={stableSetHoveredId}
-          />
-        )}
-      </svg>
-
-      {/* Legend */}
-      <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 p-2 text-[8px] font-bold text-primary-400 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
-        <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
-          <div className="h-2 w-2 rounded-full bg-white shadow-sm md:h-2.5 md:w-2.5"></div>
-          <span className="uppercase tracking-widest opacity-80">Natal</span>
-        </div>
-        {transitPlanets.length > 0 && (
-          <div className="flex items-center gap-2 md:gap-3">
-            <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-sm md:h-2.5 md:w-2.5"></div>
-            <span className="uppercase tracking-widest text-[#EAB308] opacity-90">
-              Transit
-            </span>
+        {/* Legend */}
+        <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 p-2 text-[8px] font-bold text-primary-400 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
+          <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
+            <div className="h-2 w-2 rounded-full bg-white shadow-sm md:h-2.5 md:w-2.5"></div>
+            <span className="uppercase tracking-widest opacity-80">Natal</span>
           </div>
-        )}
+          {transitPlanets.length > 0 && (
+            <div className="flex items-center gap-2 md:gap-3">
+              <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-sm md:h-2.5 md:w-2.5"></div>
+              <span className="uppercase tracking-widest text-[#EAB308] opacity-90">
+                Transit
+              </span>
+            </div>
+          )}
+        </div>
       </div>
+
+      {/* Dynamic Title Under the Chart */}
+      {title && (
+        <div className="text-center select-none px-6 pb-2 animate-fade-in">
+          <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold tracking-widest text-primary-500 uppercase drop-shadow-[0_0_12px_rgba(249,115,22,0.3)]">
+            {title}
+          </h3>
+        </div>
+      )}
     </div>
   );
 });

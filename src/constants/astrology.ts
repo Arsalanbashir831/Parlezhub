@@ -59,7 +59,21 @@ export const ZODIAC_SIGNS = [
 
 export const ASTRO_CHART_TYPES = [
   { id: 'd1', label: 'D1 Natal Chart', title: 'D1 Natal Chart' },
+  { id: 'd2', label: 'D2 Hora Chart', title: 'D2 Hora Chart' },
+  { id: 'd3', label: 'D3 Drekkana Chart', title: 'D3 Drekkana Chart' },
+  { id: 'd4', label: 'D4 Chaturthamsa Chart', title: 'D4 Chaturthamsa Chart' },
+  { id: 'd7', label: 'D7 Saptamsha Chart', title: 'D7 Saptamsha Chart' },
   { id: 'd9', label: 'D9 Navamsa Chart', title: 'D9 Navamsa Chart' },
+  { id: 'd10', label: 'D10 Dashamsha Chart', title: 'D10 Dashamsha Chart' },
+  { id: 'd12', label: 'D12 Dwadashamsha Chart', title: 'D12 Dwadashamsha Chart' },
+  { id: 'd16', label: 'D16 Shodashamsha Chart', title: 'D16 Shodashamsha Chart' },
+  { id: 'd20', label: 'D20 Vimshamsha Chart', title: 'D20 Vimshamsha Chart' },
+  { id: 'd24', label: 'D24 Chaturvimshamsha Chart', title: 'D24 Chaturvimshamsha Chart' },
+  { id: 'd27', label: 'D27 Saptavimshamsha Chart', title: 'D27 Saptavimshamsha Chart' },
+  { id: 'd30', label: 'D30 Trimshamsha Chart', title: 'D30 Trimshamsha Chart' },
+  { id: 'd40', label: 'D40 Khavedamsha Chart', title: 'D40 Khavedamsha Chart' },
+  { id: 'd45', label: 'D45 Akshavedamsha Chart', title: 'D45 Akshavedamsha Chart' },
+  { id: 'd60', label: 'D60 Shashtiamsha Chart', title: 'D60 Shashtiamsha Chart' },
 ];
 
 export const RIGHT_MENU_ITEMS = [
