@@ -8,6 +8,7 @@ import {
   AstrologyAccess,
   AstrologyConsultant,
   BirthProfile,
+  DashaResponse,
   NakshatraPredictionResponse,
   NatalChartResponse,
   SharedStudentAccess,
@@ -24,6 +25,7 @@ export const ASTROLOGY_QUERY_KEYS = {
   SEARCH_TEACHERS: ['astrology', 'search-consultants'],
   SHARED_STUDENTS: ['astrology', 'consultant', 'shared-students'],
   GUEST_PROFILES: ['astrology', 'guest-profiles'],
+  DASHA: ['astrology', 'dasha'],
 };
 
 /**
@@ -347,5 +349,22 @@ export function useConsultantSharedStudents(params: { search?: string; page?: nu
       const response = await apiCaller(url, 'GET');
       return response.data as PaginatedResponse<SharedStudentAccess>;
     },
+  });
+}
+
+export function useDasha(enabled: boolean = true, studentId?: string, guestProfileId?: string) {
+  return useQuery({
+    queryKey: guestProfileId
+      ? [...ASTROLOGY_QUERY_KEYS.DASHA, 'guest', guestProfileId]
+      : studentId
+        ? [...ASTROLOGY_QUERY_KEYS.DASHA, 'student', studentId]
+        : ASTROLOGY_QUERY_KEYS.DASHA,
+    queryFn: async () => {
+      const url = buildAstroUrl(API_ROUTES.ASTROLOGY.DASHA, studentId, guestProfileId);
+      const response = await apiCaller(url, 'GET');
+      return response.data as DashaResponse;
+    },
+    enabled,
+    staleTime: 1000 * 60 * 30, // 30 min cache — dasha data changes infrequently
   });
 }

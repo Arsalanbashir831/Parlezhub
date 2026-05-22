@@ -78,6 +78,7 @@ export const ASTRO_CHART_TYPES = [
 
 export const RIGHT_MENU_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: '🪐' },
+  { id: 'dasha', label: 'Dasha Timeline', icon: '⏳' },
   { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
   { id: 'share-access', label: 'Share Access', icon: '🤝' },

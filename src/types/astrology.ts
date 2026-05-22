@@ -275,3 +275,32 @@ export interface NakshatraPredictionResponse {
   };
   ayanamsa: string;
 }
+
+// === DASHA TYPES ===
+export interface DashaCurrentPeriod {
+  mahadasha: string;
+  mahadasha_end: string;
+  antardasha: string;
+  antardasha_end: string;
+}
+
+export interface DashaAntardasha {
+  planet: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}
+
+export interface DashaMahadasha {
+  planet: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}
+
+export interface DashaResponse {
+  current_period: DashaCurrentPeriod;
+  current_antardashas: DashaAntardasha[];
+  mahadasha_sequence: DashaMahadasha[];
+}
+

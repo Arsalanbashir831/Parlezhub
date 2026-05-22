@@ -131,6 +131,7 @@ export default function AstrologyLayout({
       'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
+      'dasha': ROUTES.AGENT.ASTROLOGY.DASHA,
     };
 
     if (routeMap[id]) {
@@ -159,6 +160,7 @@ export default function AstrologyLayout({
     if (pathname === ROUTES.AGENT.ASTROLOGY.NAVATARA) return 'navatara';
     if (pathname === ROUTES.AGENT.ASTROLOGY.PROFILE) return 'birth-profile';
     if (pathname === ROUTES.AGENT.ASTROLOGY.SHARE) return 'share-access';
+    if (pathname === ROUTES.AGENT.ASTROLOGY.DASHA) return 'dasha';
     if (pathname.includes(ROUTES.AGENT.ASTROLOGY.INSIGHTS(''))) {
       const slug = pathname.split('/').pop();
       return slug || null;

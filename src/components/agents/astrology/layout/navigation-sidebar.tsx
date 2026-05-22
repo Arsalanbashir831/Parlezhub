@@ -48,6 +48,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
 
     const routeMap: Record<string, string> = {
       'dashboard': ROUTES.AGENT.ASTROLOGY.ROOT,
+      'dasha': ROUTES.AGENT.ASTROLOGY.DASHA,
       'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,

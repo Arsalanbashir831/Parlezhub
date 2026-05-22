@@ -19,6 +19,7 @@ export const ROUTES = {
       NAVATARA: '/astrology/navatara',
       PROFILE: '/astrology/profile',
       SHARE: '/astrology/share',
+      DASHA: '/astrology/dasha',
       INSIGHTS: (slug: string) => `/astrology/insights/${slug}`,
     },
   },
