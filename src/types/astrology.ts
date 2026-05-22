@@ -46,6 +46,9 @@ export interface BirthProfile {
   timezone_str: string;
   guest_name?: string;
   created_by?: string;
+  marriage_date?: string | null;
+  kids?: number | null;
+  comments?: string | null;
   created_at: string;
   updated_at: string;
 }
