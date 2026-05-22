@@ -6,15 +6,17 @@ import AstroHeader from '@/components/agents/astrology/components/astro-header';
 import VedicChart from '@/components/agents/astrology/components/vedic-chart';
 import AstroDetailsTable from '@/components/agents/astrology/components/astro-details-table';
 import BirthProfileForm from '@/components/agents/astrology/components/birth-profile-form';
+import TransitDateSelector from '@/components/agents/astrology/components/transit-date-selector';
 
 export default function AstrologyPage() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get('student_id') || undefined;
   const guestId = searchParams.get('guest_id') || undefined;
 
+  const transitDate = searchParams.get('transit_date') || undefined;
   const { data: profile, isLoading: isProfileLoading } = useBirthProfile(studentId, guestId);
   const { data: natalChart, isLoading: isChartLoading } = useNatalChart(true, studentId, guestId);
-  const { data: transits, isLoading: isTransitsLoading } = useTransits(true, studentId, guestId);
+  const { data: transits, isLoading: isTransitsLoading } = useTransits(true, studentId, guestId, transitDate);
 
   if (isProfileLoading) {
     return (
@@ -65,6 +67,10 @@ export default function AstrologyPage() {
       />
 
       <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
+        <div className="-mb-4">
+          <TransitDateSelector />
+        </div>
+
         <div className="flex w-full min-w-0 max-w-full justify-center px-2">
           <div className="w-full max-w-[600px]">
             <VedicChart

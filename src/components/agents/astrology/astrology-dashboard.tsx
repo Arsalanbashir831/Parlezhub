@@ -87,6 +87,7 @@ export default function AstrologyDashboard({
   const [activeAnalysis, setActiveAnalysis] = useState<string | null>(
     'd1-chart'
   );
+  const [transitDate, setTransitDate] = useState<string>('');
   const [leftOpen, setLeftOpen] = useState(false);
   const [rightOpen, setRightOpen] = useState(false);
 
@@ -118,7 +119,8 @@ export default function AstrologyDashboard({
   const { data: transits, isLoading: isTransitsLoading } = useTransits(
     true,
     currentStudentId,
-    currentGuestId
+    currentGuestId,
+    transitDate || undefined
   );
   const { mutate: deleteGuest } = useDeleteGuestProfile();
 
@@ -134,6 +136,7 @@ export default function AstrologyDashboard({
 
   const handleProfileChange = (profile: SelectedProfile) => {
     setSelectedProfile(profile);
+    setTransitDate(''); // Reset transit date when profile changes
   };
 
   const handleAddGuest = () => {
@@ -275,6 +278,21 @@ export default function AstrologyDashboard({
                   />
 
                   <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
+                    {activeAnalysis === 'd1-chart' && (
+                      <div className="flex flex-col items-center justify-center gap-2 mb-6">
+                        <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2 backdrop-blur-md">
+                          <span className="text-xs font-semibold uppercase tracking-wider text-primary-300">
+                            Transit Date:
+                          </span>
+                          <input
+                            type="date"
+                            value={transitDate || new Date().toISOString().split('T')[0]}
+                            onChange={(e) => setTransitDate(e.target.value)}
+                            className="bg-transparent text-sm font-bold text-slate-100 outline-none cursor-pointer scheme-dark [color-scheme:dark]"
+                          />
+                        </div>
+                      </div>
+                    )}
                     <div className="flex w-full min-w-0 max-w-full justify-center px-2">
                       <div className="w-full max-w-[600px]">
                         <VedicChart

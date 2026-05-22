@@ -96,8 +96,9 @@ export default function AstrologyLayout({
   const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
   const [guestToDelete, setGuestToDelete] = useState<{ id: string; name: string } | null>(null);
 
+  const transitDate = searchParams.get('transit_date') || undefined;
   const { data: profile } = useBirthProfile(studentId, guestId);
-  const { data: transits } = useTransits(true, studentId, guestId);
+  const { data: transits } = useTransits(true, studentId, guestId, transitDate);
   const { mutate: deleteGuest } = useDeleteGuestProfile();
 
   useEffect(() => {

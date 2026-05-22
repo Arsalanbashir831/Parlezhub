@@ -77,15 +77,19 @@ export function useNatalChart(enabled: boolean = true, studentId?: string, guest
   });
 }
 
-export function useTransits(enabled: boolean = true, studentId?: string, guestProfileId?: string) {
+export function useTransits(enabled: boolean = true, studentId?: string, guestProfileId?: string, transitDate?: string) {
   return useQuery({
     queryKey: guestProfileId
-      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'guest', guestProfileId]
+      ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'guest', guestProfileId, transitDate]
       : studentId
-        ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'student', studentId]
-        : ASTROLOGY_QUERY_KEYS.TRANSITS,
+        ? [...ASTROLOGY_QUERY_KEYS.TRANSITS, 'student', studentId, transitDate]
+        : [...ASTROLOGY_QUERY_KEYS.TRANSITS, transitDate],
     queryFn: async () => {
-      const url = buildAstroUrl(API_ROUTES.ASTROLOGY.TRANSITS, studentId, guestProfileId);
+      let url = buildAstroUrl(API_ROUTES.ASTROLOGY.TRANSITS, studentId, guestProfileId);
+      if (transitDate) {
+        const separator = url.includes('?') ? '&' : '?';
+        url = `${url}${separator}transit_date=${transitDate}`;
+      }
       const response = await apiCaller(url, 'GET');
       return response.data as TransitResponse;
     },
