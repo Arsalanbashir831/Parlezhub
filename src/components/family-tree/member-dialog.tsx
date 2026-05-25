@@ -166,7 +166,7 @@ export function MemberDialog({
                 value={birthDate}
                 disabled={isPending}
                 onChange={(e) => setBirthDate(e.target.value)}
-                className="border-primary-500/20 bg-white/[0.03] text-primary-100 focus-visible:ring-primary-500/30 disabled:opacity-50"
+                className="border-primary-500/20 bg-white/[0.03] text-primary-100 focus-visible:ring-primary-500/30 disabled:opacity-50 [color-scheme:dark]"
               />
             </div>
 
@@ -179,7 +179,7 @@ export function MemberDialog({
                 value={birthTime}
                 disabled={isPending}
                 onChange={(e) => setBirthTime(e.target.value)}
-                className="border-primary-500/20 bg-white/[0.03] text-primary-100 focus-visible:ring-primary-500/30 disabled:opacity-50"
+                className="border-primary-500/20 bg-white/[0.03] text-primary-100 focus-visible:ring-primary-500/30 disabled:opacity-50 [color-scheme:dark]"
               />
             </div>
           </div>

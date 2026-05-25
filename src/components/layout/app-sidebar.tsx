@@ -11,6 +11,7 @@ import {
   Home,
   LogOut,
   Users,
+  Network,
 } from 'lucide-react';
 
 import type { NavItem } from '@/types/nav';
@@ -263,6 +264,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <div className="space-y-3">
                 {/* Dashboard Links - show opposite role dashboard */}
                 <SidebarMenu>
+                  {renderMenuItem({
+                    id: 'family-tree',
+                    label: 'Family Tree',
+                    href: ROUTES.FAMILY_TREE,
+                    icon: Network,
+                  })}
                   {activeRole === 'STUDENT' &&
                     hasTeacherRole &&
                     renderRoleSwitchMenuItem(
