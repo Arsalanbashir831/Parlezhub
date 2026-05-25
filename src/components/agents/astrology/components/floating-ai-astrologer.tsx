@@ -28,6 +28,14 @@ export const FloatingAIAstrologer = memo(function FloatingAIAstrologer({
     useAstrologyAIChat(category, studentId, guestProfileId);
 
   useEffect(() => {
+    const handleOpen = () => setIsOpen(true);
+    window.addEventListener('open-ai-astrologer', handleOpen);
+    return () => {
+      window.removeEventListener('open-ai-astrologer', handleOpen);
+    };
+  }, []);
+
+  useEffect(() => {
     if (isOpen && messages.length > 0) {
       scrollTimerRef.current = setTimeout(() => {
         chatBottomRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -58,6 +66,7 @@ export const FloatingAIAstrologer = memo(function FloatingAIAstrologer({
       {!isOpen && (
         <button
           onClick={() => setIsOpen(true)}
+          aria-label="Ask AI Astrologer"
           className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary-500 text-primary-950 shadow-lg shadow-primary-500/30 transition-all hover:scale-105 hover:bg-primary-600 active:scale-95 md:bottom-10 md:right-10"
         >
           <Sparkles className="absolute h-14 w-14 animate-ping opacity-20" />

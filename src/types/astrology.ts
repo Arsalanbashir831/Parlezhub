@@ -304,3 +304,17 @@ export interface DashaResponse {
   mahadasha_sequence: DashaMahadasha[];
 }
 
+export interface SubPeriod {
+  planet: string;
+  start_date: string;
+  end_date: string;
+  is_current: boolean;
+}
+
+export interface PlanetInsight {
+  about: string;
+  favorable: string[];
+  challenges: string[];
+}
+
+

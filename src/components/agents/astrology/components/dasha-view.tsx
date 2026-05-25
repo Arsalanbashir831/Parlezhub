@@ -1,324 +1,35 @@
 'use client';
 
-import React from 'react';
+import React, { useMemo } from 'react';
 import { motion } from 'framer-motion';
+import { CheckCircle2, AlertCircle, ChevronRight } from 'lucide-react';
+
 import { cn } from '@/lib/utils';
-import { DashaAntardasha, DashaMahadasha, DashaResponse } from '@/types/astrology';
+import { DashaResponse } from '@/types/astrology';
+import { PLANET_META, PLANET_INSIGHTS, DEFAULT_PLANET_INSIGHT } from '@/constants/astrology';
+import { getVimshottariSubdivisions, formatDate } from '@/lib/astrology-utils';
 
-// ─── Planet metadata ─────────────────────────────────────────────────────────
-
-const PLANET_META: Record<string, { symbol: string; color: string; border: string; glow: string }> = {
-  Sun:     { symbol: '☉', color: '#f59e0b', border: 'border-amber-500/60',   glow: '0 0 14px rgba(245,158,11,0.4)' },
-  Moon:    { symbol: '☽', color: '#e2e8f0', border: 'border-slate-300/60',   glow: '0 0 14px rgba(226,232,240,0.3)' },
-  Mars:    { symbol: '♂',  color: '#ef4444', border: 'border-red-500/60',     glow: '0 0 14px rgba(239,68,68,0.4)' },
-  Mercury: { symbol: '☿', color: '#10b981', border: 'border-emerald-500/60', glow: '0 0 14px rgba(16,185,129,0.4)' },
-  Jupiter: { symbol: '♃', color: '#eab308', border: 'border-yellow-500/60',  glow: '0 0 14px rgba(234,179,8,0.4)' },
-  Venus:   { symbol: '♀',  color: '#ec4899', border: 'border-pink-500/60',    glow: '0 0 14px rgba(236,72,153,0.4)' },
-  Saturn:  { symbol: '♄', color: '#a78bfa', border: 'border-violet-400/60',  glow: '0 0 14px rgba(167,139,250,0.4)' },
-  Rahu:    { symbol: '☊', color: '#8b5cf6', border: 'border-purple-500/60',  glow: '0 0 14px rgba(139,92,246,0.5)' },
-  Ketu:    { symbol: '☋', color: '#f97316', border: 'border-orange-500/60',  glow: '0 0 14px rgba(249,115,22,0.4)' },
-};
-
-const DEFAULT_META = { symbol: '★', color: '#f97316', border: 'border-primary-500/60', glow: '0 0 14px rgba(249,115,22,0.4)' };
-
-function getMeta(planet: string) {
-  return PLANET_META[planet] ?? DEFAULT_META;
-}
+import { CosmicWheel } from './cosmic-wheel';
+import { MahadashaStrip } from './mahadasha-strip';
+import { PeriodsTable } from './periods-table';
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function formatDate(dateStr: string): string {
-  try {
-    return new Date(dateStr).toLocaleDateString('en-US', {
-      day: '2-digit', month: 'short', year: 'numeric',
-    });
-  } catch { return dateStr; }
+function getMeta(planet: string) {
+  return PLANET_META[planet] ?? { symbol: '★', color: '#f97316', border: 'border-primary-500/60', glow: '0 0 14px rgba(249,115,22,0.4)' };
 }
 
-function getDurationLabel(startDate: string, endDate: string): string {
-  try {
-    const start = new Date(startDate);
-    const end = new Date(endDate);
-    const totalDays = Math.round((end.getTime() - start.getTime()) / (1000 * 60 * 60 * 24));
-    const years = Math.floor(totalDays / 365);
-    const remaining = totalDays - years * 365;
-    const months = Math.floor(remaining / 30);
-    const days = remaining - months * 30;
-    const parts: string[] = [];
-    if (years > 0) parts.push(`${years} ${years === 1 ? 'Yr' : 'Yrs'}`);
-    if (months > 0) parts.push(`${months} Mo`);
-    if (days > 0 && years === 0) parts.push(`${days} Days`);
-    return parts.join(' ') || '< 1 Mo';
-  } catch { return '—'; }
-}
-
-function getDurationYears(startDate: string, endDate: string): string {
-  try {
-    const totalDays = Math.round(
-      (new Date(endDate).getTime() - new Date(startDate).getTime()) / (1000 * 60 * 60 * 24)
-    );
-    const years = Math.round(totalDays / 365);
-    return `${years} Yrs`;
-  } catch { return '—'; }
+function getInsight(planet: string) {
+  return PLANET_INSIGHTS[planet] ?? DEFAULT_PLANET_INSIGHT;
 }
 
 // ─── Section header (matches image uppercase label style) ─────────────────────
 
 function SectionLabel({ children }: { children: React.ReactNode }) {
   return (
-    <p className="mb-4 text-[11px] font-bold uppercase tracking-[0.25em] text-primary-400/80 md:text-xs">
+    <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.25em] text-primary-400/80 md:text-xs">
       {children}
     </p>
-  );
-}
-
-// ─── Mahadasha Sequence Strip ─────────────────────────────────────────────────
-
-interface MahaStripProps {
-  sequence: DashaMahadasha[];
-}
-
-function MahadashaStrip({ sequence }: MahaStripProps) {
-  return (
-    <div className="overflow-x-auto pb-2 -mx-1 px-1">
-      <div className="flex gap-1 min-w-max">
-        {sequence.map((item, i) => {
-          const meta = getMeta(item.planet);
-          const isCurrent = item.is_current;
-          const isPast = !item.is_current && new Date(item.end_date) < new Date();
-
-          return (
-            <motion.div
-              key={`${item.planet}-${i}`}
-              initial={{ opacity: 0, y: -8 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: i * 0.04 }}
-              className="relative"
-            >
-              <div
-                className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 min-w-[72px] transition-[border-color,background-color] duration-200',
-                  isCurrent
-                    ? `bg-black/60`
-                    : isPast
-                      ? 'border-white/5 bg-white/3 opacity-40'
-                      : 'border-white/8 bg-white/5 hover:bg-white/8'
-                )}
-                style={isCurrent ? {
-                  borderColor: meta.color,
-                  boxShadow: meta.glow,
-                } : {
-                  borderColor: isPast ? 'rgba(255,255,255,0.06)' : 'rgba(255,255,255,0.08)',
-                }}
-              >
-                {/* Symbol */}
-                <span
-                  className="text-2xl leading-none"
-                  style={{ color: isCurrent ? meta.color : isPast ? '#4b5563' : meta.color + 'aa' }}
-                >
-                  {meta.symbol}
-                </span>
-
-                {/* Planet name */}
-                <span
-                  className="text-[11px] font-semibold leading-none"
-                  style={{ color: isCurrent ? meta.color : isPast ? '#4b5563' : '#94a3b8' }}
-                >
-                  {item.planet}
-                </span>
-
-                {/* Duration */}
-                <span
-                  className="text-[10px] leading-none"
-                  style={{ color: isCurrent ? meta.color + 'cc' : '#374151' }}
-                >
-                  {getDurationYears(item.start_date, item.end_date)}
-                </span>
-              </div>
-
-              {/* Current indicator diamond */}
-              {isCurrent && (
-                <div
-                  className="absolute -bottom-1.5 left-1/2 h-2.5 w-2.5 -translate-x-1/2 rotate-45"
-                  style={{ background: meta.color, boxShadow: `0 0 6px ${meta.color}` }}
-                />
-              )}
-
-              {/* Separator dot between items */}
-              {i < sequence.length - 1 && (
-                <div className="pointer-events-none absolute -right-1 top-1/2 -translate-y-1/2 text-[8px] text-slate-700">
-                  ·
-                </div>
-              )}
-            </motion.div>
-          );
-        })}
-      </div>
-    </div>
-  );
-}
-
-// ─── Periods Table ────────────────────────────────────────────────────────────
-
-interface PeriodsTableProps {
-  antardashas: DashaAntardasha[];
-}
-
-function PeriodsTable({ antardashas }: PeriodsTableProps) {
-  return (
-    <div className="overflow-x-auto rounded-2xl border border-white/8 bg-white/3">
-      <table className="w-full min-w-[560px] border-collapse">
-        <thead>
-          <tr className="border-b border-white/8">
-            {['Period', 'Type', 'Start Date', 'End Date', 'Duration', 'Lord'].map((col) => (
-              <th
-                key={col}
-                className="px-4 py-3 text-left text-[10px] font-semibold uppercase tracking-[0.15em] text-slate-500 md:text-[11px]"
-              >
-                {col}
-              </th>
-            ))}
-          </tr>
-        </thead>
-        <tbody>
-          {antardashas.map((item, i) => {
-            const meta = getMeta(item.planet);
-            const isCurrent = item.is_current;
-            const isPast = !isCurrent && new Date(item.end_date) < new Date();
-
-            return (
-              <motion.tr
-                key={`${item.planet}-${item.start_date}`}
-                initial={{ opacity: 0, x: -8 }}
-                animate={{ opacity: 1, x: 0 }}
-                transition={{ delay: i * 0.04 + 0.1 }}
-                className={cn(
-                  'border-b border-white/5 transition-colors duration-200',
-                  isCurrent
-                    ? 'bg-white/5'
-                    : isPast
-                      ? 'opacity-40'
-                      : 'hover:bg-white/3'
-                )}
-                style={isCurrent ? {
-                  boxShadow: `inset 3px 0 0 ${meta.color}`,
-                } : undefined}
-              >
-                {/* Period (planet + symbol) */}
-                <td className="px-4 py-3.5">
-                  <div className="flex items-center gap-2.5">
-                    <span className="text-lg leading-none" style={{ color: meta.color }}>
-                      {meta.symbol}
-                    </span>
-                    <div className="flex items-center gap-1.5">
-                      <span
-                        className="text-sm font-semibold"
-                        style={{ color: isCurrent ? meta.color : isPast ? '#4b5563' : meta.color + 'cc' }}
-                      >
-                        {item.planet}
-                      </span>
-                      {isCurrent && (
-                        <span
-                          className="h-1.5 w-1.5 animate-pulse rounded-full"
-                          style={{ background: meta.color }}
-                        />
-                      )}
-                    </div>
-                  </div>
-                </td>
-
-                {/* Type */}
-                <td className="px-4 py-3.5">
-                  <span className="text-xs text-slate-400">Antardasha</span>
-                </td>
-
-                {/* Start Date */}
-                <td className="px-4 py-3.5">
-                  <span className="text-xs text-slate-300">{formatDate(item.start_date)}</span>
-                </td>
-
-                {/* End Date */}
-                <td className="px-4 py-3.5">
-                  <span className="text-xs text-slate-300">{formatDate(item.end_date)}</span>
-                </td>
-
-                {/* Duration */}
-                <td className="px-4 py-3.5">
-                  <span className="text-xs text-slate-400">{getDurationLabel(item.start_date, item.end_date)}</span>
-                </td>
-
-                {/* Lord (symbol) */}
-                <td className="px-4 py-3.5">
-                  <span className="text-lg leading-none" style={{ color: meta.color + 'aa' }}>
-                    {meta.symbol}
-                  </span>
-                </td>
-              </motion.tr>
-            );
-          })}
-        </tbody>
-      </table>
-    </div>
-  );
-}
-
-// ─── Current Period Callout ───────────────────────────────────────────────────
-
-interface CurrentPeriodBannerProps {
-  mahadasha: string;
-  mahaEnd: string;
-  antardasha: string;
-  antarEnd: string;
-}
-
-function CurrentPeriodBanner({ mahadasha, mahaEnd, antardasha, antarEnd }: CurrentPeriodBannerProps) {
-  const mahaMeta = getMeta(mahadasha);
-  const antarMeta = getMeta(antardasha);
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: -10 }}
-      animate={{ opacity: 1, y: 0 }}
-      className="grid gap-3 sm:grid-cols-2"
-    >
-      {/* Mahadasha */}
-      <div
-        className="flex items-center gap-4 rounded-2xl border bg-black/50 px-5 py-4"
-        style={{ borderColor: mahaMeta.color + '60', boxShadow: `inset 0 0 30px ${mahaMeta.color}0d` }}
-      >
-        <span className="text-4xl leading-none" style={{ color: mahaMeta.color, textShadow: mahaMeta.glow }}>
-          {mahaMeta.symbol}
-        </span>
-        <div>
-          <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-            Mahadasha
-          </p>
-          <p className="font-serif text-xl font-bold" style={{ color: mahaMeta.color }}>
-            {mahadasha}
-          </p>
-          <p className="text-[10px] text-slate-500">Ends {formatDate(mahaEnd)}</p>
-        </div>
-      </div>
-
-      {/* Antardasha */}
-      <div
-        className="flex items-center gap-4 rounded-2xl border bg-black/50 px-5 py-4"
-        style={{ borderColor: antarMeta.color + '60', boxShadow: `inset 0 0 30px ${antarMeta.color}0d` }}
-      >
-        <span className="text-4xl leading-none" style={{ color: antarMeta.color, textShadow: antarMeta.glow }}>
-          {antarMeta.symbol}
-        </span>
-        <div>
-          <p className="mb-0.5 text-[10px] font-bold uppercase tracking-[0.2em] text-slate-500">
-            Antardasha
-          </p>
-          <p className="font-serif text-xl font-bold" style={{ color: antarMeta.color }}>
-            {antardasha}
-          </p>
-          <p className="text-[10px] text-slate-500">Ends {formatDate(antarEnd)}</p>
-        </div>
-      </div>
-    </motion.div>
   );
 }
 
@@ -332,34 +43,348 @@ interface DashaViewProps {
 export function DashaView({ data, className }: DashaViewProps) {
   const { current_period, current_antardashas, mahadasha_sequence } = data;
 
+  // 1. Resolve Active Mahadasha dates
+  const activeMahaName = current_period.mahadasha;
+  const mahaMeta = getMeta(activeMahaName);
+
+  const currentMahaItem = useMemo(() => {
+    return mahadasha_sequence.find(m => m.planet === activeMahaName) || {
+      planet: activeMahaName,
+      start_date: new Date(new Date(current_period.mahadasha_end).getTime() - 120 * 365 * 24 * 3600 * 1000).toISOString(),
+      end_date: current_period.mahadasha_end,
+      is_current: true
+    };
+  }, [mahadasha_sequence, activeMahaName, current_period.mahadasha_end]);
+
+  const mahaPercent = useMemo(() => {
+    const start = new Date(currentMahaItem.start_date).getTime();
+    const end = new Date(currentMahaItem.end_date).getTime();
+    const total = end - start;
+    if (total <= 0) return 0;
+    return Math.min(100, Math.max(0, ((Date.now() - start) / total) * 100));
+  }, [currentMahaItem]);
+
+  // 2. Resolve Active Antardasha dates
+  const currentAntarItem = useMemo(() => {
+    return current_antardashas.find(a => a.is_current) || current_antardashas[0] || {
+      planet: current_period.antardasha,
+      start_date: new Date(new Date(current_period.antardasha_end).getTime() - 3 * 365 * 24 * 3600 * 1000).toISOString(),
+      end_date: current_period.antardasha_end,
+      is_current: true
+    };
+  }, [current_antardashas, current_period.antardasha, current_period.antardasha_end]);
+
+  // 3. Mathematical Subdivision for Pratyantardasha (Under Current Antardasha)
+  const pratyantardashas = useMemo(() => {
+    return getVimshottariSubdivisions(
+      currentAntarItem.start_date,
+      currentAntarItem.end_date,
+      currentAntarItem.planet
+    );
+  }, [currentAntarItem]);
+
+  const currentPratyantarItem = useMemo(() => {
+    return pratyantardashas.find(p => p.is_current) || pratyantardashas[0] || {
+      planet: 'Venus',
+      start_date: currentAntarItem.start_date,
+      end_date: currentAntarItem.end_date,
+      is_current: true
+    };
+  }, [pratyantardashas, currentAntarItem]);
+
+  // 4. Mathematical Subdivision for Sukshma (Under Current Pratyantardasha)
+  const sukshmas = useMemo(() => {
+    return getVimshottariSubdivisions(
+      currentPratyantarItem.start_date,
+      currentPratyantarItem.end_date,
+      currentPratyantarItem.planet
+    );
+  }, [currentPratyantarItem]);
+
+  const currentSukshmaItem = useMemo(() => {
+    return sukshmas.find(s => s.is_current) || sukshmas[0] || {
+      planet: 'Sun',
+      start_date: currentPratyantarItem.start_date,
+      end_date: currentPratyantarItem.end_date,
+      is_current: true
+    };
+  }, [sukshmas, currentPratyantarItem]);
+
+  const activeInsight = useMemo(() => getInsight(activeMahaName), [activeMahaName]);
+
+  // Pre-compute sub-period card metadata once (avoids 3× getMeta() calls per render)
+  const antarMeta = useMemo(() => getMeta(currentAntarItem.planet), [currentAntarItem.planet]);
+  const pratyantarMeta = useMemo(() => getMeta(currentPratyantarItem.planet), [currentPratyantarItem.planet]);
+  const sukshMeta = useMemo(() => getMeta(currentSukshmaItem.planet), [currentSukshmaItem.planet]);
+
   return (
-    <div className={cn('flex min-w-0 flex-col gap-8', className)}>
+    <div className={cn('flex flex-col gap-8 w-full min-w-0', className)}>
 
-      {/* Current period summary */}
-      <CurrentPeriodBanner
-        mahadasha={current_period.mahadasha}
-        mahaEnd={current_period.mahadasha_end}
-        antardasha={current_period.antardasha}
-        antarEnd={current_period.antardasha_end}
-      />
+      {/* ─── Dual-Column Responsive Dashboard Layout ─────────────────────── */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start w-full min-w-0">
 
-      {/* Mahadasha sequence strip */}
-      <section>
-        <SectionLabel>Mahadasha Sequence (Vimshottari Dasha)</SectionLabel>
-        <MahadashaStrip
-          sequence={mahadasha_sequence}
-        />
-      </section>
+        {/* LEFT COLUMN: Charts, Timeline, Sequences */}
+        <div className="lg:col-span-2 flex flex-col gap-8 w-full min-w-0">
 
-      {/* Antardasha periods table */}
-      <section>
-        <SectionLabel>
-          Antardashas in {current_period.mahadasha} Mahadasha
-        </SectionLabel>
-        <PeriodsTable
-          antardashas={current_antardashas}
-        />
-      </section>
+          {/* 1. Main Current Mahadasha Card */}
+          <motion.div
+            initial={{ opacity: 0, scale: 0.98 }}
+            animate={{ opacity: 1, scale: 1 }}
+            className="relative overflow-hidden rounded-[24px] border bg-white/5 px-6 py-6 md:rounded-[2rem] md:px-8 md:py-8 shadow-2xl"
+            style={{
+              borderColor: `${mahaMeta.color}35`,
+              boxShadow: `0 0 40px ${mahaMeta.color}0a, inset 0 0 30px ${mahaMeta.color}08`,
+            }}
+          >
+            {/* Glowing orb accent */}
+            <div
+              className="absolute -right-16 -top-16 h-40 w-40 rounded-full blur-[80px] pointer-events-none"
+              style={{ background: `${mahaMeta.color}25` }}
+            />
+
+            <div className="flex flex-col sm:flex-row items-center gap-6 relative z-10">
+              {/* Gold Ring Circle with Symbol */}
+              <div
+                className="flex h-20 w-20 flex-shrink-0 items-center justify-center rounded-full border bg-white/5 relative"
+                style={{
+                  borderColor: '#d4af37',
+                  boxShadow: '0 0 25px rgba(212, 175, 55, 0.25)',
+                }}
+              >
+                <span className="text-4xl leading-none" style={{ color: '#d4af37', textShadow: '0 0 10px rgba(212, 175, 55, 0.5)' }}>
+                  {mahaMeta.symbol}
+                </span>
+              </div>
+
+              <div className="text-center sm:text-left flex-1 space-y-1">
+                <p className="text-[10px] font-bold uppercase tracking-[0.25em] text-primary-400/80">
+                  Current Mahadasha
+                </p>
+                <h1 className="font-serif text-3xl font-bold tracking-tight text-primary-500">
+                  {activeMahaName} Mahadasha
+                </h1>
+                <p className="text-sm font-semibold text-slate-300">
+                  {formatDate(currentMahaItem.start_date)} — {formatDate(currentMahaItem.end_date)}
+                </p>
+              </div>
+            </div>
+
+            {/* Glowing Progress Bar */}
+            <div className="mt-8 space-y-2 relative z-10">
+              <div className="flex items-center justify-between text-xs font-bold text-slate-300">
+                <span className="tracking-wide">Timeline Progress</span>
+                <span className="text-primary-400 font-mono">{mahaPercent.toFixed(1)}% Complete</span>
+              </div>
+              <div className="h-2 w-full rounded-full bg-primary-500/10 overflow-hidden ring-1 ring-primary-500/20 relative">
+                <motion.div
+                  className="h-full rounded-full"
+                  style={{
+                    background: 'linear-gradient(90deg, #d4af37 0%, #f59e0b 100%)',
+                    boxShadow: '0 0 10px #f59e0b',
+                  }}
+                  initial={{ width: 0 }}
+                  animate={{ width: `${mahaPercent}%` }}
+                  transition={{ duration: 1.2, ease: 'easeOut' }}
+                />
+              </div>
+              <div className="flex items-center justify-between text-[11px] font-semibold text-slate-400">
+                <span>Started: {formatDate(currentMahaItem.start_date)}</span>
+                <span>Ends: {formatDate(currentMahaItem.end_date)}</span>
+              </div>
+            </div>
+          </motion.div>
+
+          {/* 2. Sub-Periods Capsules Row (Antardasha, Pratyantardasha, Sukshma) */}
+          <div className="grid gap-4 sm:grid-cols-3 animate-in fade-in duration-500">
+            {/* Card 1: Antardasha */}
+            <div
+              className="flex flex-col gap-2 rounded-[24px] border bg-white/5 px-5 py-4 relative shadow-sm"
+              style={{ borderColor: `${antarMeta.color}25` }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary-400/80">Antardasha</span>
+                <span className="text-lg leading-none" style={{ color: antarMeta.color }}>
+                  {antarMeta.symbol}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: antarMeta.color }}>
+                  {currentAntarItem.planet}
+                </h3>
+                <p className="text-[10px] text-slate-300 font-medium mt-1 leading-tight">
+                  {formatDate(currentAntarItem.start_date)}<br />
+                  <span className="text-primary-500 font-bold mx-1">›</span> {formatDate(currentAntarItem.end_date)}
+                </p>
+              </div>
+            </div>
+
+            {/* Card 2: Pratyantardasha */}
+            <div
+              className="flex flex-col gap-2 rounded-[24px] border bg-white/5 px-5 py-4 relative shadow-sm"
+              style={{ borderColor: `${pratyantarMeta.color}25` }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary-400/80">Pratyantardasha</span>
+                <span className="text-lg leading-none" style={{ color: pratyantarMeta.color }}>
+                  {pratyantarMeta.symbol}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: pratyantarMeta.color }}>
+                  {currentPratyantarItem.planet}
+                </h3>
+                <p className="text-[10px] text-slate-300 font-medium mt-1 leading-tight">
+                  {formatDate(currentPratyantarItem.start_date)}<br />
+                  <span className="text-primary-500 font-bold mx-1">›</span> {formatDate(currentPratyantarItem.end_date)}
+                </p>
+              </div>
+            </div>
+
+            {/* Card 3: Sukshma */}
+            <div
+              className="flex flex-col gap-2 rounded-[24px] border bg-white/5 px-5 py-4 relative shadow-sm"
+              style={{ borderColor: `${sukshMeta.color}25` }}
+            >
+              <div className="flex items-center justify-between">
+                <span className="text-[9px] font-bold uppercase tracking-[0.2em] text-primary-400/80">Sukshma</span>
+                <span className="text-lg leading-none" style={{ color: sukshMeta.color }}>
+                  {sukshMeta.symbol}
+                </span>
+              </div>
+              <div>
+                <h3 className="text-lg font-bold" style={{ color: sukshMeta.color }}>
+                  {currentSukshmaItem.planet}
+                </h3>
+                <p className="text-[10px] text-slate-300 font-medium mt-1 leading-tight">
+                  {formatDate(currentSukshmaItem.start_date)}<br />
+                  <span className="text-primary-500 font-bold mx-1">›</span> {formatDate(currentSukshmaItem.end_date)}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* 3. Mahadasha Sequence Ribbon Timeline */}
+          <section className="w-full">
+            <SectionLabel>Mahadasha Sequence (Vimshottari Timeline)</SectionLabel>
+            <MahadashaStrip
+              sequence={mahadasha_sequence}
+              activePlanet={activeMahaName}
+            />
+          </section>
+
+          {/* 4. Upcoming subperiods table */}
+          <section className="w-full">
+            <SectionLabel>
+              Antardashas in {activeMahaName} Mahadasha
+            </SectionLabel>
+            <PeriodsTable
+              antardashas={current_antardashas}
+            />
+          </section>
+
+          <p className="text-center text-[10px] font-semibold text-slate-600 tracking-wider">
+            All dates & times shown are based on Lahiri Ayanamsa (Tropical representation adjusted).
+          </p>
+
+        </div>
+
+        {/* RIGHT COLUMN: Wheel SVG & Details Sidebar */}
+        <div className="flex flex-col gap-6 w-full min-w-0">
+
+          {/* 1. Visualizer: Cosmic Wheel SVG */}
+          <div className="flex flex-col items-center justify-center animate-in fade-in duration-500">
+            <p className="mb-2 text-xs font-bold uppercase tracking-[0.2em] text-primary-400/80 text-center">
+              Dasha Rulership Wheel
+            </p>
+            <CosmicWheel activePlanet={activeMahaName} />
+            <div className="mt-4 flex items-center justify-center gap-2.5 mb-2">
+              <span className="relative flex h-2 w-2">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-2 w-2 bg-primary-500"></span>
+              </span>
+              <span className="text-[11px] font-bold uppercase tracking-wider text-primary-400 leading-none">
+                Active Lord: {activeMahaName}
+              </span>
+            </div>
+          </div>
+
+          {/* 2. Educational & Practical Insights Panel */}
+          <div
+            className="rounded-[24px] border bg-white/5 px-6 py-6 relative flex flex-col justify-between min-h-[300px] animate-in fade-in duration-700 shadow-lg"
+            style={{
+              borderColor: `${mahaMeta.color}25`,
+            }}
+          >
+            <div className="space-y-4">
+              <div className="flex items-center justify-between border-b border-primary-500/10 pb-3">
+                <h3 className="font-serif text-lg font-bold text-primary-400 flex items-center gap-2">
+                  About {activeMahaName} Mahadasha
+                </h3>
+                <div className="h-6 w-6 rounded-full flex items-center justify-center bg-primary-500/10 border border-primary-500/20">
+                  <span className="text-xs text-primary-400 font-bold">i</span>
+                </div>
+              </div>
+
+              {/* Text interpretation */}
+              <p className="text-xs text-slate-300 leading-relaxed font-medium">
+                {activeInsight.about}
+              </p>
+
+              {/* Favorable Checklist */}
+              <div className="space-y-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-emerald-400">
+                  Favorable For
+                </p>
+                <ul className="space-y-2 text-xs font-semibold text-slate-200">
+                  {activeInsight.favorable.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <CheckCircle2 className="h-3.5 w-3.5 text-emerald-400 flex-shrink-0 mt-0.5" />
+                      <span className="leading-tight">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              {/* Challenges Bullet list */}
+              <div className="space-y-2">
+                <p className="text-[9px] font-bold uppercase tracking-[0.2em] text-orange-400">
+                  May Bring Challenges
+                </p>
+                <ul className="space-y-2 text-xs font-semibold text-slate-300">
+                  {activeInsight.challenges.map((item, idx) => (
+                    <li key={idx} className="flex items-start gap-2.5">
+                      <AlertCircle className="h-3.5 w-3.5 text-orange-400 flex-shrink-0 mt-0.5" />
+                      <span className="leading-tight">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            </div>
+
+            {/* Trigger to AI Astrologer */}
+            <div className="pt-6 border-t border-primary-500/10 mt-6">
+              <button
+                className="w-full flex items-center justify-between rounded-xl bg-primary-500 hover:bg-primary-600 text-primary-950 text-xs font-bold px-4 py-3.5 transition-all duration-300 shadow-md shadow-primary-500/10 hover:shadow-primary-500/20 active:scale-95 group"
+                onClick={() => {
+                  // Dispatch custom event to trigger state change internally
+                  window.dispatchEvent(new CustomEvent('open-ai-astrologer'));
+                  
+                  // Backwards compatibility fallback query selector trigger
+                  const aiBtn = document.querySelector('[aria-label="Ask AI Astrologer"]') as HTMLButtonElement | null;
+                  if (aiBtn) {
+                    aiBtn.click();
+                  }
+                }}
+              >
+                <span className="tracking-wide">Ask AI Astrologer About Dasha</span>
+                <ChevronRight className="h-4 w-4 transition-transform group-hover:translate-x-1" />
+              </button>
+            </div>
+          </div>
+
+        </div>
+
+      </div>
 
     </div>
   );
@@ -369,28 +394,41 @@ export function DashaView({ data, className }: DashaViewProps) {
 
 export function DashaViewSkeleton() {
   return (
-    <div className="flex flex-col gap-8 animate-pulse">
-      {/* current period */}
-      <div className="grid gap-3 sm:grid-cols-2">
-        <div className="h-24 rounded-2xl bg-white/5" />
-        <div className="h-24 rounded-2xl bg-white/5" />
-      </div>
-      {/* strip */}
-      <div>
-        <div className="mb-4 h-3 w-64 rounded-full bg-white/5" />
-        <div className="flex gap-1">
-          {Array.from({ length: 9 }).map((_, i) => (
-            <div key={i} className="h-20 w-20 flex-shrink-0 rounded-xl bg-white/5" />
-          ))}
+    <div className="flex flex-col gap-8 animate-pulse w-full">
+      {/* Seeker Profile */}
+      <div className="h-16 rounded-3xl bg-white/5 border border-white/10" />
+
+      {/* Grid */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 w-full">
+        {/* Left Column */}
+        <div className="lg:col-span-2 flex flex-col gap-8">
+          <div className="h-44 rounded-3xl bg-white/5 border border-white/10" />
+          <div className="grid gap-3 sm:grid-cols-3">
+            <div className="h-24 rounded-2xl bg-white/5 border border-white/10" />
+            <div className="h-24 rounded-2xl bg-white/5 border border-white/10" />
+            <div className="h-24 rounded-2xl bg-white/5 border border-white/10" />
+          </div>
+          <div>
+            <div className="mb-4 h-3 w-64 rounded-full bg-white/5" />
+            <div className="flex gap-2.5">
+              {Array.from({ length: 9 }).map((_, i) => (
+                <div key={i} className="h-20 w-20 flex-shrink-0 rounded-2xl bg-white/5 border border-white/10" />
+              ))}
+            </div>
+          </div>
+          <div>
+            <div className="mb-4 h-3 w-72 rounded-full bg-white/5" />
+            <div className="overflow-hidden rounded-3xl border border-white/10">
+              {Array.from({ length: 7 }).map((_, i) => (
+                <div key={i} className="h-12 border-b border-white/5 bg-white/3" />
+              ))}
+            </div>
+          </div>
         </div>
-      </div>
-      {/* table */}
-      <div>
-        <div className="mb-4 h-3 w-72 rounded-full bg-white/5" />
-        <div className="overflow-hidden rounded-2xl border border-white/8">
-          {Array.from({ length: 7 }).map((_, i) => (
-            <div key={i} className="h-12 border-b border-white/5 bg-white/3" />
-          ))}
+        {/* Right Column */}
+        <div className="flex flex-col gap-6">
+          <div className="h-80 rounded-3xl bg-white/5 border border-white/10" />
+          <div className="h-96 rounded-3xl bg-white/5 border border-white/10" />
         </div>
       </div>
     </div>

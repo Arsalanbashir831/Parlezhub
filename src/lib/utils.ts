@@ -18,17 +18,27 @@ export const formatDate = (dateString: string) => {
 
 export const formatDateTime = (iso: string) => {
   const date = new Date(iso);
-  
+
   if (isToday(date)) {
     return `Today at ${format(date, 'h:mm a')}`;
   }
-  
+
   if (isTomorrow(date)) {
     return `Tomorrow at ${format(date, 'h:mm a')}`;
   }
-  
+
   return format(date, 'MMM d, yyyy');
 };
+
+/**
+ * Formats a 24-hour hour and minute into a readable AM/PM format
+ */
+export function formatTime(hour: number, minute: number): string {
+  const ampm = hour >= 12 ? 'PM' : 'AM';
+  const displayHour = hour % 12 || 12;
+  const displayMinute = minute < 10 ? `0${minute}` : minute;
+  return `${displayHour}:${displayMinute} ${ampm}`;
+}
 
 /**
  * Formats seconds into a timer string (MM:SS)
