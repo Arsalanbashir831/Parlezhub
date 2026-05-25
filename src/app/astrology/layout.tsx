@@ -285,7 +285,7 @@ export default function AstrologyLayout({
 
       {profile && !studentId && (
         <FloatingAIAstrologer
-          category={activeAnalysis === 'dashboard' ? 'd1-chart' : (activeAnalysis || 'd1-chart')}
+          category={activeAnalysis === 'dashboard' ? 'divisional-charts' : (activeAnalysis || 'divisional-charts')}
           studentId={studentId}
           guestProfileId={guestId}
         />

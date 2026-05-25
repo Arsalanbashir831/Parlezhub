@@ -53,8 +53,7 @@ export const FloatingAIAstrologer = memo(function FloatingAIAstrologer({
   }, [inputValue, isSending, sendMessage]);
 
   const currentContextName = React.useMemo(() => {
-    if (category === 'd1-chart') return 'D1 Chart';
-    if (category === 'd9-chart') return 'D9 Navamsa';
+    if (category === 'divisional-charts') return 'Divisional Charts';
     if (category === 'navatara') return 'Navatara';
     if (category === 'birth-profile') return 'Birth Profile';
     return category.split('-').map(w => w.charAt(0).toUpperCase() + w.slice(1)).join(' ');

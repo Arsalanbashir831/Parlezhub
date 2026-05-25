@@ -409,7 +409,7 @@ export default function AstrologyDashboard({
       {/* Floating AI Astrologer */}
       {profile && !currentStudentId && (
         <FloatingAIAstrologer
-          category={activeAnalysis || 'd1-chart'}
+          category='divisional-charts'
           studentId={currentStudentId}
           guestProfileId={currentGuestId}
         />
