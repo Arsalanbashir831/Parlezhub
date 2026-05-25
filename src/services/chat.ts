@@ -5,6 +5,8 @@ import { toast } from 'sonner';
 import apiCaller from '@/lib/api-caller';
 import { createClient } from '@/lib/supabase/client';
 
+import { Attachment } from '@/types/chat';
+
 export interface ChatMessage {
   id: string;
   sender_id: string;
@@ -12,6 +14,7 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   type: string;
+  attachments?: Attachment[];
 }
 
 export interface ChatRoom {
@@ -71,6 +74,9 @@ const chatApiCaller = async (
 
   if (data && method !== 'GET') {
     config.data = data;
+    if (data instanceof FormData && config.headers) {
+      delete config.headers['Content-Type'];
+    }
   }
 
   try {
@@ -135,6 +141,21 @@ class ChatService {
       API_ROUTES.CHAT.GET_CHAT_MESSAGES(chatId),
       'GET'
     );
+    return response.data;
+  }
+
+  async sendChatMessage(chatId: string, formData: FormData): Promise<ChatMessage> {
+    let token = '';
+    try {
+      const supabase = createClient();
+      const { data: { session } } = await supabase.auth.getSession();
+      token = session?.access_token || '';
+    } catch (err) {
+      console.warn('Failed to get Supabase session for sendChatMessage:', err);
+    }
+
+    const url = `${API_ROUTES.CHAT.SEND_MESSAGE(chatId)}${token ? `?token=${token}` : ''}`;
+    const response = await chatApiCaller(url, 'POST', formData);
     return response.data;
   }
 

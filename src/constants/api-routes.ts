@@ -48,6 +48,8 @@ export const API_ROUTES = {
   },
   CHAT: {
     CREATE_CHAT: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/chats/start/`,
+    SEND_MESSAGE: (chatId: string) =>
+      `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/send-message/${chatId}`,
     GET_CHATS: `/accounts/supabase/chats/`,
     GET_CHAT_MESSAGES: (chatId: string) =>
       `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/messages/${chatId}/`,

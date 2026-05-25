@@ -24,11 +24,13 @@ export interface UseRealChatReturn {
   isLoading: boolean;
   isConnected: boolean;
   isTyping: boolean;
+  draftFiles: File[];
+  isSending: boolean;
 
   // Actions
   selectChat: (chat: ChatRoom) => void;
   selectChatById: (chatId: string) => void | Promise<void>;
-  sendMessage: (content?: string) => void;
+  sendMessage: (content?: string) => Promise<void>;
   setNewMessage: (message: string) => void;
   setSearchQuery: (query: string) => void;
   createChat: (
@@ -37,6 +39,8 @@ export interface UseRealChatReturn {
   ) => Promise<ChatRoom | null>;
   loadChats: () => Promise<ChatRoom[]>;
   loadMessages: (chatId: string) => Promise<void>;
+  addDraftFiles: (files: FileList | File[]) => void;
+  removeDraftFile: (index: number) => void;
 
   // Computed
   filteredChats: ChatRoom[];
@@ -56,6 +60,8 @@ export const useRealChat = ({
   const [isLoading, setIsLoading] = useState(false);
   const [isConnected, setIsConnected] = useState(false);
   const [isTyping, setIsTyping] = useState(false);
+  const [draftFiles, setDraftFiles] = useState<File[]>([]);
+  const [isSending, setIsSending] = useState(false);
 
   // Filter chats based on search query
   const filteredChats = useMemo(() => {
@@ -82,7 +88,6 @@ export const useRealChat = ({
       consultant_name: c.teacher_details.name,
       student_avatar: c.student_details.profile_picture || undefined,
       consultant_avatar: c.teacher_details.profile_picture || undefined,
-      // last message fields are not provided in the new response
       last_message: undefined,
       last_message_timestamp: undefined,
       created_at: c.created_at,
@@ -97,7 +102,6 @@ export const useRealChat = ({
       setIsLoading(true);
       const role = currentUserRole === 'consultant' ? 'teacher' : 'student';
       const fetched = await chatService.getChats(role);
-      // Support both old (ChatRoom[]) and new (BackendChat[]) shapes
       const normalized: ChatRoom[] = Array.isArray(fetched)
         ? (fetched as unknown[]).map((item) => {
           const maybe = item as BackendChat;
@@ -123,12 +127,12 @@ export const useRealChat = ({
     try {
       setIsLoading(true);
       const messages = await chatService.getChatMessages(chatId);
-      // Normalize to ChatMessage shape in case backend fields differ
       const normalized: ChatMessage[] = messages.map((m: ChatMessage) => ({
         id: m.id?.toString?.() ?? `${Date.now()}`,
         sender_id: m.sender_id ?? '',
         content: m.content ?? '',
         timestamp: m.timestamp ?? new Date().toISOString(),
+        attachments: m.attachments || [],
       }));
       setCurrentMessages(normalized);
     } catch (error) {
@@ -149,7 +153,6 @@ export const useRealChat = ({
           teacher_id: teacherId,
         });
 
-        // Add the new chat to the list
         setChats((prev) => [...prev, newChat]);
 
         toast.success('Chat created successfully');
@@ -169,6 +172,7 @@ export const useRealChat = ({
   const selectChat = useCallback(
     async (chat: ChatRoom) => {
       setSelectedChat(chat);
+      setDraftFiles([]);
 
       // Disconnect from previous WebSocket
       chatService.disconnect();
@@ -191,17 +195,14 @@ export const useRealChat = ({
   const selectChatById = useCallback(
     async (chatId: string) => {
       if (!chatId) return;
-      // If it's already selected, skip
       if (selectedChat?.id === chatId) return;
 
-      // Try to find chat locally first
       const local = chats.find((c) => c.id === chatId);
       if (local) {
         await selectChat(local);
         return;
       }
 
-      // Reload chats and try again once using the returned list
       const reloaded = await loadChats();
       const afterReload = reloaded.find((c) => c.id === chatId);
       if (afterReload) {
@@ -211,63 +212,151 @@ export const useRealChat = ({
     [chats, selectedChat?.id, selectChat, loadChats]
   );
 
-  // Send a message
-  const sendMessage = useCallback(
-    (content?: string) => {
-      const messageContent = content || newMessage.trim();
+  // File addition handler with local guards
+  const addDraftFiles = useCallback(
+    (files: FileList | File[]) => {
+      const fileList = Array.from(files);
 
-      if (!messageContent || !selectedChat) return;
-
-      if (!chatService.isConnected()) {
-        toast.error('Not connected to chat');
+      // 1. Count Guard
+      if (draftFiles.length + fileList.length > 10) {
+        toast.error('Limit exceeded', {
+          description: 'You can upload a maximum of 10 files in a single message.',
+        });
         return;
       }
 
-      // Send message via WebSocket
-      chatService.sendMessage(messageContent);
+      const validFiles: File[] = [];
 
-      // Optimistically append the message in UI in case server does not echo back
-      const nowIso = new Date().toISOString();
-      const optimisticMessage: ChatMessage = {
-        id: `${Date.now()}`,
-        sender_id: currentUserId,
-        content: messageContent,
-        timestamp: nowIso,
-      };
-      setCurrentMessages((prev) => [...prev, optimisticMessage]);
+      for (const file of fileList) {
+        // 2. MIME Guard
+        const isImage = file.type.startsWith('image/');
+        const isVideo = file.type.startsWith('video/');
+        const isAudio = file.type.startsWith('audio/');
+        const isDoc = [
+          'application/pdf',
+          'application/msword',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document', // docx
+          'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' // xlsx
+        ].includes(file.type);
 
-      // Update chat's last message preview
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === selectedChat.id
-            ? {
-              ...chat,
-              last_message: optimisticMessage.content,
-              last_message_timestamp: optimisticMessage.timestamp,
-            }
-            : chat
-        )
-      );
+        if (!isImage && !isVideo && !isAudio && !isDoc) {
+          toast.error('Unsupported file format', {
+            description: `"${file.name}" is not a supported file type.`,
+          });
+          continue;
+        }
 
-      // Clear input
-      setNewMessage('');
+        // 3. Size Guard
+        const maxVideoSize = 50 * 1024 * 1024; // 50MB
+        const maxOtherSize = 10 * 1024 * 1024; // 10MB
+
+        if (isVideo && file.size > maxVideoSize) {
+          toast.error('File too large', {
+            description: `"${file.name}" exceeds the 50 MB size limit for videos.`,
+          });
+          continue;
+        } else if (!isVideo && file.size > maxOtherSize) {
+          toast.error('File too large', {
+            description: `"${file.name}" exceeds the 10 MB size limit.`,
+          });
+          continue;
+        }
+
+        validFiles.push(file);
+      }
+
+      if (validFiles.length > 0) {
+        setDraftFiles((prev) => [...prev, ...validFiles]);
+      }
     },
-    [newMessage, selectedChat, currentUserId]
+    [draftFiles]
+  );
+
+  // File removal handler
+  const removeDraftFile = useCallback((index: number) => {
+    setDraftFiles((prev) => prev.filter((_, i) => i !== index));
+  }, []);
+
+  // Send a message via unified HTTP POST
+  const sendMessage = useCallback(
+    async (content?: string) => {
+      const messageContent = (content || newMessage).trim();
+
+      if (!messageContent && draftFiles.length === 0) return;
+      if (!selectedChat) return;
+
+      setIsSending(true);
+
+      try {
+        const formData = new FormData();
+        if (messageContent) {
+          formData.append('content', messageContent);
+        }
+        draftFiles.forEach((file) => {
+          formData.append('files', file);
+        });
+
+        const sentMessage = await chatService.sendChatMessage(
+          selectedChat.id,
+          formData
+        );
+
+        // Success Handling
+        const newMsg: ChatMessage = {
+          id: sentMessage.id || `${Date.now()}`,
+          sender_id: sentMessage.sender_id || currentUserId,
+          content: sentMessage.content || '',
+          timestamp: sentMessage.timestamp || new Date().toISOString(),
+          attachments: sentMessage.attachments || [],
+        };
+
+        setCurrentMessages((prev) => [...prev, newMsg]);
+        setNewMessage('');
+        setDraftFiles([]);
+
+        // Update chat's last message preview
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat.id === selectedChat.id
+              ? {
+                ...chat,
+                last_message: newMsg.content || 'Sent file(s)',
+                last_message_timestamp: newMsg.timestamp,
+              }
+              : chat
+          )
+        );
+      } catch (error) {
+        console.error('Error sending message:', error);
+        toast.error('Failed to send message', {
+          description: 'Your draft has been preserved. Please try again.',
+        });
+      } finally {
+        setIsSending(false);
+      }
+    },
+    [newMessage, draftFiles, selectedChat, currentUserId]
   );
 
   // WebSocket message handler
   useEffect(() => {
     const unsubscribe = chatService.onMessage((message: WebSocketMessage) => {
-      // Treat as chat message if explicit type is 'message' or if a content field exists
+      // Ignore incoming broadcasts sent by ourselves to prevent double renders
+      if (message.sender_id === currentUserId) return;
+
       if (message.type === 'message' || (!message.type && message.content)) {
-        const newMessage: ChatMessage = {
-          id: `${Date.now()}`,
-          sender_id: message.sender_id || 'unknown',
-          content: message.content || '',
-          timestamp: message.timestamp || new Date().toISOString(),
+        // Safe casting to include attachments in websocket payload
+        const wsMsg = message as unknown as ChatMessage;
+
+        const incomingMsg: ChatMessage = {
+          id: wsMsg.id || `${Date.now()}`,
+          sender_id: wsMsg.sender_id || 'unknown',
+          content: wsMsg.content || '',
+          timestamp: wsMsg.timestamp || new Date().toISOString(),
+          attachments: wsMsg.attachments || [],
         };
 
-        setCurrentMessages((prev) => [...prev, newMessage]);
+        setCurrentMessages((prev) => [...prev, incomingMsg]);
 
         // Update chat's last message
         setChats((prev) =>
@@ -275,8 +364,8 @@ export const useRealChat = ({
             chat.id === selectedChat?.id
               ? {
                 ...chat,
-                last_message: newMessage.content,
-                last_message_timestamp: newMessage.timestamp,
+                last_message: incomingMsg.content || 'Sent attachment(s)',
+                last_message_timestamp: incomingMsg.timestamp,
               }
               : chat
           )
@@ -287,17 +376,12 @@ export const useRealChat = ({
     });
 
     return unsubscribe;
-  }, [selectedChat]);
+  }, [selectedChat, currentUserId]);
 
   // WebSocket connection handler
   useEffect(() => {
     const unsubscribe = chatService.onConnectionChange((connected: boolean) => {
       setIsConnected(connected);
-      // if (connected) {
-      //   console.log('Connected to chat');
-      // } else {
-      //   console.log('Disconnected from chat');
-      // }
     });
 
     return unsubscribe;
@@ -325,6 +409,8 @@ export const useRealChat = ({
     isLoading,
     isConnected,
     isTyping,
+    draftFiles,
+    isSending,
 
     // Actions
     selectChat,
@@ -335,6 +421,8 @@ export const useRealChat = ({
     loadChats,
     loadMessages,
     selectChatById,
+    addDraftFiles,
+    removeDraftFile,
 
     // Computed
     filteredChats,

@@ -4,7 +4,7 @@ import { memo } from 'react';
 
 import { ChatMessage } from '@/types/chat';
 import { cn } from '@/lib/utils';
-// import { Avatar, AvatarFallback } from '@/components/ui/avatar';
+import AttachmentRenderer from './attachment-renderer';
 
 import MessageBody from './message-body';
 
@@ -16,11 +16,6 @@ interface RealMessageProps {
 const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
   return (
     <div className={cn('flex gap-3 px-2', isOwnMessage && 'flex-row-reverse')}>
-      {/* <Avatar className="h-8 w-8 shrink-0 border border-primary-500/20">
-        <AvatarFallback className="bg-primary-500/10 text-[10px] font-bold text-primary-400">
-          {isOwnMessage ? '' : 'S'}
-        </AvatarFallback>
-      </Avatar> */}
       <div
         className={cn(
           'max-w-[75%] rounded-2xl px-4 py-2.5 shadow-lg transition-all sm:max-w-md',
@@ -29,14 +24,30 @@ const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
             : 'rounded-tl-none border border-primary-500/10 bg-white/5 text-primary-100 backdrop-blur-sm'
         )}
       >
-        <div
-          className={cn(
-            'text-sm leading-relaxed',
-            isOwnMessage ? 'font-medium' : 'font-normal'
-          )}
-        >
-          <MessageBody content={message.content} />
-        </div>
+        {/* Render Attachments */}
+        {message.attachments && message.attachments.length > 0 && (
+          <div className="mb-2 space-y-2">
+            {message.attachments.map((attachment, idx) => (
+              <AttachmentRenderer
+                key={attachment.file_url || `${attachment.file_name}-${idx}`}
+                attachment={attachment}
+              />
+            ))}
+          </div>
+        )}
+
+        {/* Render Text Content / Caption */}
+        {message.content && message.content.trim() !== '' && (
+          <div
+            className={cn(
+              'text-sm leading-relaxed',
+              isOwnMessage ? 'font-medium' : 'font-normal'
+            )}
+          >
+            <MessageBody content={message.content} />
+          </div>
+        )}
+
         <p
           className={cn(
             'mt-1.5 text-[9px] font-bold uppercase tracking-wider',

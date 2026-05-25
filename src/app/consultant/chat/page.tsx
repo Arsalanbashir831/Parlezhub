@@ -38,6 +38,10 @@ export default function ChatPage() {
     setSearchQuery,
     selectChatById,
     filteredChats,
+    draftFiles,
+    addDraftFiles,
+    removeDraftFile,
+    isSending,
   } = useRealChat({
     currentUserId: user?.id || '',
     currentUserRole: 'consultant',
@@ -148,6 +152,10 @@ export default function ChatPage() {
                     onChange={setNewMessage}
                     onSend={sendMessage}
                     disabled={isLoading || !isConnected}
+                    draftFiles={draftFiles}
+                    onAddFiles={addDraftFiles}
+                    onRemoveFile={removeDraftFile}
+                    isSending={isSending}
                   />
                 </div>
               )}

@@ -18,12 +18,20 @@ export interface Conversation {
   calendlyLink: string | null;
 }
 
+export interface Attachment {
+  file_url: string;
+  file_name: string;
+  file_type: string;
+  file_size: number;
+}
+
 // New API types
 export interface ChatMessage {
   id: string;
   sender_id: string;
   content: string;
   timestamp: string;
+  attachments?: Attachment[];
 }
 
 export interface ChatRoom {
@@ -73,4 +81,5 @@ export interface BackendChatMessage {
   sender_id: string;
   content: string;
   timestamp: string;
+  attachments?: Attachment[];
 }
