@@ -20,7 +20,7 @@ const TransitCard: React.FC<TransitCardProps> = ({
   return (
     <div
       className={cn(
-        'overflow-hidden rounded-3xl border border-primary-500/60 bg-white/5 p-5 shadow-sm backdrop-blur-md',
+        'overflow-hidden rounded-3xl border border-primary-500/60 bg-background p-5 shadow-sm',
         className
       )}
     >

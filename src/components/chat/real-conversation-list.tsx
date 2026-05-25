@@ -37,7 +37,7 @@ const RealConversationList = memo(
 
     return (
       <div className="w-full min-w-0 overflow-hidden border-r border-primary-500/10 bg-background md:w-80 md:min-w-80 md:max-w-80">
-        <div className="border-b border-primary-500/10 bg-background/50 p-6 backdrop-blur-md">
+        <div className="border-b border-primary-500/10 bg-background p-6">
           <div className="mb-4">
             <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500">
               Messages

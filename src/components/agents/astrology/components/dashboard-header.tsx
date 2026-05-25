@@ -25,7 +25,7 @@ export function DashboardHeader({
   return (
     <header
       className={cn(
-        'z-50 flex h-20 w-full items-center justify-between border-b border-primary-300/60 bg-background/80 px-4 backdrop-blur-md md:px-8',
+        'z-50 flex h-20 w-full items-center justify-between border-b border-primary-300/60 bg-background/95 px-4 md:px-8',
         className
       )}
     >

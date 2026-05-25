@@ -51,7 +51,7 @@ export default function SessionControls({
               onClick={onStop}
               variant="destructive"
               size="lg"
-              className="group h-16 min-w-[140px] rounded-full border border-red-500/20 bg-red-500/10 px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-red-500 backdrop-blur-md transition-all duration-300 hover:bg-red-500 hover:text-white"
+              className="group h-16 min-w-[140px] rounded-full border border-red-500/20 bg-red-500/10 px-8 py-4 text-[10px] font-black uppercase tracking-[0.2em] text-red-500 transition-[background-color,color] duration-300 hover:bg-red-500 hover:text-white"
             >
               <Square className="mr-2 h-5 w-5 fill-current" />
             </Button>
@@ -98,7 +98,7 @@ export default function SessionControls({
           onClick={onToggleMute}
           variant="ghost"
           size="lg"
-          className={`group flex h-16 w-16 items-center justify-center rounded-full border backdrop-blur-md transition-all duration-500 ${isMuted
+          className={`group flex h-16 w-16 items-center justify-center rounded-full border transition-[background-color,border-color,color,box-shadow] duration-300 ${isMuted
             ? 'border-primary-500/50 bg-primary-500/20 text-primary-500 shadow-[0_0_20px_rgba(212,175,55,0.2)]'
             : 'border-white/5 bg-white/5 text-primary-100/40 hover:border-primary-500/30 hover:bg-primary-500/10 hover:text-primary-500'
             }`}

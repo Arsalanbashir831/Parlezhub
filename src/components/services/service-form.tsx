@@ -192,7 +192,7 @@ export default function ServiceForm({
 
       <div className="grid grid-cols-1 gap-6 lg:grid-cols-2">
         {/* Basic Information */}
-        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="font-serif text-2xl font-bold text-primary-500">Basic Information</CardTitle>
           </CardHeader>
@@ -300,7 +300,7 @@ export default function ServiceForm({
         </Card>
 
         {/* Pricing & Session Details */}
-        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="font-serif text-2xl font-bold text-primary-500">Pricing & Session Details</CardTitle>
           </CardHeader>
@@ -355,7 +355,7 @@ export default function ServiceForm({
       </div>
 
       {/* Tags */}
-      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
         <CardHeader>
           <CardTitle className="font-serif text-2xl font-bold text-primary-500">Tags</CardTitle>
         </CardHeader>
@@ -399,7 +399,7 @@ export default function ServiceForm({
       </Card>
 
       {/* What You Provide */}
-      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
         <CardHeader>
           <CardTitle className="font-serif text-2xl font-bold text-primary-500">What You Provide</CardTitle>
         </CardHeader>

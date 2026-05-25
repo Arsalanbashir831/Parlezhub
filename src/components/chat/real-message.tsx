@@ -18,10 +18,10 @@ const RealMessage = memo(({ message, isOwnMessage }: RealMessageProps) => {
     <div className={cn('flex gap-3 px-2', isOwnMessage && 'flex-row-reverse')}>
       <div
         className={cn(
-          'max-w-[75%] rounded-2xl px-4 py-2.5 shadow-lg transition-all sm:max-w-md',
+          'max-w-[75%] rounded-2xl px-4 py-2.5 shadow-lg sm:max-w-md',
           isOwnMessage
             ? 'rounded-tr-none bg-primary-950 text-primary-100 shadow-primary-500/5'
-            : 'rounded-tl-none border border-primary-500/10 bg-white/5 text-primary-100 backdrop-blur-sm'
+            : 'rounded-tl-none border border-primary-500/10 bg-white/[0.06] text-primary-100'
         )}
       >
         {/* Render Attachments */}

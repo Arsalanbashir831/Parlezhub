@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useRef } from 'react';
+import { memo, useEffect, useMemo, useRef } from 'react';
 
 import { SessionStatus } from '@/types/ai-session';
 import { AITutorSettings } from '@/types/ai-tutor';
@@ -15,7 +15,7 @@ interface SessionBlobProps {
   aiSettings: AITutorSettings;
 }
 
-export default function SessionBlob({
+const SessionBlob = memo(function SessionBlob({
   sessionState,
   isUserSpeaking,
   isAISpeaking,
@@ -33,24 +33,26 @@ export default function SessionBlob({
     }
   }, [audioLevel, isUserSpeaking, isAISpeaking]);
 
+  const blobStyle = useMemo(() => ({
+    background: isActive
+      ? 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0.2) 30%, rgba(212,175,55,0.1) 60%, transparent 100%)'
+      : 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 100%)',
+    boxShadow: isActive
+      ? `0 0 ${40 + audioLevel}px rgba(212,175,55,0.3), 0 0 ${80 + audioLevel * 2}px rgba(212,175,55,0.1), inset 0 0 60px rgba(255,255,255,0.05)`
+      : '0 0 40px rgba(255,255,255,0.02)',
+    willChange: 'transform, box-shadow',
+  }), [isActive, audioLevel]);
+
   return (
     <div className="relative mb-12">
       <div
         ref={blobRef}
-        className="relative h-72 w-72 overflow-hidden rounded-full transition-all duration-300 ease-out"
-        style={{
-          background: isActive
-            ? 'radial-gradient(circle, rgba(212,175,55,0.4) 0%, rgba(212,175,55,0.2) 30%, rgba(212,175,55,0.1) 60%, transparent 100%)'
-            : 'radial-gradient(circle, rgba(255,255,255,0.05) 0%, transparent 100%)',
-          boxShadow: isActive
-            ? `0 0 ${40 + audioLevel}px rgba(212,175,55,0.3), 0 0 ${80 + audioLevel * 2
-            }px rgba(212,175,55,0.1), inset 0 0 60px rgba(255,255,255,0.05)`
-            : '0 0 40px rgba(255,255,255,0.02)',
-        }}
+        className="relative h-72 w-72 overflow-hidden rounded-full transition-transform duration-300 ease-out"
+        style={blobStyle}
       >
         {/* AI Agent Avatar - Always visible in center */}
         <div className="absolute left-1/2 top-1/2 z-10 -translate-x-1/2 -translate-y-1/2 transform">
-          <Avatar className="h-60 w-60 border-2 border-primary-500/20 bg-background/50 p-1 shadow-2xl backdrop-blur-md transition-transform duration-500 hover:scale-105">
+          <Avatar className="h-60 w-60 border-2 border-primary-500/20 bg-background/50 p-1 shadow-2xl transition-transform duration-500 hover:scale-105">
             <AvatarImage
               src={aiSettings.avatar || '/placeholders/avatar.jpg'}
               className="rounded-full object-cover brightness-[0.85] contrast-[1.1] filter"
@@ -98,4 +100,6 @@ export default function SessionBlob({
       </div>
     </div>
   );
-}
+});
+
+export default SessionBlob;

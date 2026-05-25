@@ -171,7 +171,7 @@ export function NavataraEducationView({
           </Alert>
         ) : data ? (
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="bg-white/1 border-primary-500/20 shadow-sm backdrop-blur-sm">
+            <Card className="bg-white/1 border-primary-500/20 shadow-sm shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="flex items-center justify-between text-lg text-primary-500">
                   <span>Today&apos;s Tara Bala</span>
@@ -228,7 +228,7 @@ export function NavataraEducationView({
               </CardContent>
             </Card>
 
-            <Card className="bg-white/1 border-primary-500/20 shadow-sm backdrop-blur-sm">
+            <Card className="bg-white/1 border-primary-500/20 shadow-sm shadow-sm">
               <CardHeader className="pb-3">
                 <CardTitle className="text-lg text-primary-500">
                   Daily Guidance
@@ -276,7 +276,7 @@ export function NavataraEducationView({
             </Card>
 
             {data.ai_guidance && (
-              <Card className="md:col-span-2 bg-gradient-to-br from-primary-950/40 to-transparent border-primary-500/20 shadow-lg backdrop-blur-md">
+              <Card className="md:col-span-2 bg-gradient-to-br from-primary-950/40 to-transparent border-primary-500/20 shadow-lg">
                 <CardContent className="pt-6">
                   <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-4">
@@ -308,7 +308,7 @@ export function NavataraEducationView({
       </section>
 
       {/* Educational Context */}
-      <section className="bg-white/1 rounded-xl border border-primary-500/20 p-6 backdrop-blur-sm">
+      <section className="bg-white/1 rounded-xl border border-primary-500/20 p-6 shadow-sm">
         <h2 className="mb-4 flex items-center gap-2 font-serif text-xl text-primary-400">
           <Info className="h-5 w-5 text-primary-500" />
           Educational Context: How it Works
@@ -359,7 +359,7 @@ export function NavataraEducationView({
           Bala rating.
         </p>
 
-        <div className="rounded-xl border border-primary-500/20 bg-primary-900/10 shadow-sm backdrop-blur-sm">
+        <div className="rounded-xl border border-primary-500/20 bg-primary-900/10 shadow-sm shadow-sm">
           <div className="w-full max-w-sm md:max-w-full overflow-x-auto overflow-y-hidden [webkit-overflow-scrolling:touch]">
             <table className="w-full min-w-[800px] text-left text-sm text-primary-100/80">
               <thead className="border-b border-primary-500/20 bg-primary-950/30 text-xs uppercase text-primary-300">

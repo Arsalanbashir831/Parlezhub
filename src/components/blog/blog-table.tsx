@@ -47,9 +47,34 @@ export function BlogTable({
 }: BlogTableProps) {
   if (isLoading) {
     return (
-      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md">
-        <CardContent className="flex items-center justify-center p-12">
-          <div className="text-primary-100/60">Loading blogs...</div>
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl">
+        <CardContent className="p-0">
+          <div className="overflow-x-auto">
+            <Table>
+              <TableHeader className="border-white/5">
+                <TableRow className="border-white/5">
+                  <TableHead className="w-12"></TableHead>
+                  <TableHead className="md:min-w-[200px] text-primary-100/60 font-bold uppercase tracking-widest text-[10px]">Title</TableHead>
+                  <TableHead className="hidden sm:table-cell text-primary-100/60 font-bold uppercase tracking-widest text-[10px]">Status</TableHead>
+                  <TableHead className="hidden md:table-cell text-primary-100/60 font-bold uppercase tracking-widest text-[10px]">Tags</TableHead>
+                  <TableHead className="hidden sm:table-cell text-primary-100/60 font-bold uppercase tracking-widest text-[10px]">Updated</TableHead>
+                  <TableHead className="w-12"></TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {Array.from({ length: 5 }).map((_, i) => (
+                  <TableRow key={i} className="border-white/5">
+                    <TableCell className="p-4"><div className="h-12 w-12 rounded-xl bg-white/5 animate-pulse" /></TableCell>
+                    <TableCell className="px-4"><div className="h-4 w-40 rounded bg-white/5 animate-pulse" /></TableCell>
+                    <TableCell className="hidden sm:table-cell p-4"><div className="h-5 w-16 rounded-full bg-white/5 animate-pulse" /></TableCell>
+                    <TableCell className="hidden md:table-cell p-4"><div className="h-4 w-20 rounded bg-white/5 animate-pulse" /></TableCell>
+                    <TableCell className="hidden sm:table-cell p-4"><div className="h-4 w-24 rounded bg-white/5 animate-pulse" /></TableCell>
+                    <TableCell className="p-4"><div className="h-8 w-8 rounded-xl bg-white/5 animate-pulse" /></TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
         </CardContent>
       </Card>
     );
@@ -57,7 +82,7 @@ export function BlogTable({
 
   if (blogs.length === 0) {
     return (
-      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md">
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl">
         <CardContent className="flex flex-col items-center justify-center p-12 text-center">
           <div className="mb-2 text-primary-100/60">No blogs found</div>
           <p className="mb-4 text-sm text-primary-100/40">
@@ -74,7 +99,7 @@ export function BlogTable({
   }
 
   return (
-    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md">
+    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl">
       <CardContent className="p-0">
         <div className="overflow-x-auto">
           <Table>
@@ -207,7 +232,7 @@ export function BlogTable({
                           <span className="sr-only">Open menu</span>
                         </Button>
                       </PopoverTrigger>
-                      <PopoverContent className="w-48 rounded-2xl border-white/10 bg-background/95 p-2 shadow-2xl backdrop-blur-md" align="end">
+                      <PopoverContent className="w-48 rounded-2xl border-white/10 bg-background/95 p-2 shadow-2xl" align="end">
                         <div className="space-y-1">
                           <Link href={ROUTES.TEACHER.EDIT_BLOG(blog.id.toString())}>
                             <Button

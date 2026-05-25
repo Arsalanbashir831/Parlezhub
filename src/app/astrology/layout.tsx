@@ -213,13 +213,13 @@ export default function AstrologyLayout({
               onSelect={handleSelect}
               iconMap={ICON_MAP}
               readOnly={isReadOnly}
-              className="w-64 border-r border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-r border-primary-300/60 bg-background xl:w-72 2xl:w-80"
             />
           </div>
         )}
 
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="h-full w-full flex-1 bg-white/5 backdrop-blur-sm">
+          <ScrollArea className="h-full w-full flex-1 bg-white/5">
             {children}
             <ScrollBar orientation="horizontal" />
           </ScrollArea>
@@ -231,7 +231,7 @@ export default function AstrologyLayout({
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-64 border-l border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-l border-primary-300/60 bg-background xl:w-72 2xl:w-80"
               transits={transits?.transits}
               readOnly={isReadOnly}
               isPersonal={selectedProfile.type === 'me'}

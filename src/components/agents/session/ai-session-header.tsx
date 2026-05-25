@@ -27,7 +27,7 @@ export default function AiSessionHeader({
   bottomContent,
 }: Props) {
   return (
-    <div className="relative z-50 w-full border-b border-primary-500/10 bg-background/80 text-white backdrop-blur-xl">
+    <div className="relative z-50 w-full border-b border-primary-500/10 bg-background/95 text-white">
       <div className="flex flex-wrap items-center justify-between gap-3 p-4 sm:p-5 lg:p-6 lg:px-8">
         {/* Left side - Back button */}
         <div className="min-w-0 flex-1">

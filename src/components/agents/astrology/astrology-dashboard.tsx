@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import {
   Brain,
   Briefcase,
@@ -128,32 +128,32 @@ export default function AstrologyDashboard({
     setMounted(true);
   }, []);
 
-  const handleSelect = (id: string) => {
+  const handleSelect = useCallback((id: string) => {
     setActiveAnalysis(id);
     setLeftOpen(false);
     setRightOpen(false);
-  };
+  }, []);
 
-  const handleProfileChange = (profile: SelectedProfile) => {
+  const handleProfileChange = useCallback((profile: SelectedProfile) => {
     setSelectedProfile(profile);
-    setTransitDate(''); // Reset transit date when profile changes
-  };
+    setTransitDate('');
+  }, []);
 
-  const handleAddGuest = () => {
+  const handleAddGuest = useCallback(() => {
     setIsGuestDialogOpen(true);
-  };
+  }, []);
 
-  const handleEditGuest = (id: string, name: string) => {
+  const handleEditGuest = useCallback((id: string, name: string) => {
     setSelectedProfile({ type: 'guest', id, name });
     setActiveAnalysis('birth-profile');
-  };
+  }, []);
 
-  const handleDeleteGuest = (id: string, name: string) => {
+  const handleDeleteGuest = useCallback((id: string, name: string) => {
     setGuestToDelete({ id, name });
     setIsDeleteDialogOpen(true);
-  };
+  }, []);
 
-  const confirmDelete = () => {
+  const confirmDelete = useCallback(() => {
     if (!guestToDelete) return;
     deleteGuest(Number(guestToDelete.id), {
       onSuccess: () => {
@@ -164,7 +164,7 @@ export default function AstrologyDashboard({
         setGuestToDelete(null);
       }
     });
-  };
+  }, [guestToDelete, deleteGuest, selectedProfile]);
 
   if (!mounted || isProfileLoading) {
     return (
@@ -202,7 +202,7 @@ export default function AstrologyDashboard({
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground selection:bg-primary-500/10">
       {selectedProfile.type !== 'me' && (
-        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 backdrop-blur-md md:px-8">
+        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/95 px-4 py-2 md:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold text-primary-900 md:text-sm">
             <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary-500" />
             Viewing {displayUsername}&apos;s Chart — {selectedProfile.type === 'guest' ? 'Guest Profile' : 'Read-Only Mode'}
@@ -232,14 +232,14 @@ export default function AstrologyDashboard({
               onSelect={handleSelect}
               iconMap={ICON_MAP}
               readOnly={isReadOnly}
-              className="w-64 border-r border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-r border-primary-300/60 bg-background xl:w-72 2xl:w-80"
             />
           </div>
         )}
 
         {/* Center Canvas */}
         <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="h-full w-full flex-1 bg-white/5 backdrop-blur-sm">
+          <ScrollArea className="h-full w-full flex-1 bg-white/5">
             {!profile ? (
               <BirthProfileForm
                 type={selectedProfile.type}
@@ -280,7 +280,7 @@ export default function AstrologyDashboard({
                   <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
                     {activeAnalysis === 'd1-chart' && (
                       <div className="flex flex-col items-center justify-center gap-2 mb-6">
-                        <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2 backdrop-blur-md">
+                        <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2">
                           <span className="text-xs font-semibold uppercase tracking-wider text-primary-300">
                             Transit Date:
                           </span>
@@ -368,7 +368,7 @@ export default function AstrologyDashboard({
               activeAnalysis={activeAnalysis}
               onSelect={handleSelect}
               iconMap={ICON_MAP}
-              className="w-64 border-l border-primary-300/60 bg-background/40 backdrop-blur-xl xl:w-72 2xl:w-80"
+              className="w-64 border-l border-primary-300/60 bg-background xl:w-72 2xl:w-80"
               transits={transits?.transits}
               readOnly={isReadOnly}
               isPersonal={selectedProfile.type === 'me'}

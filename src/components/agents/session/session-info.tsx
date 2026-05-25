@@ -1,5 +1,7 @@
 'use client';
 
+import { memo, useMemo } from 'react';
+
 import { getLanguageName } from '@/constants/ai-session';
 
 import { SessionConfig, SessionStatus } from '@/types/ai-session';
@@ -14,7 +16,7 @@ interface SessionInfoProps {
   statusText: string;
 }
 
-export default function SessionInfo({
+const SessionInfo = memo(function SessionInfo({
   config,
   sessionState,
   isUserSpeaking,
@@ -23,6 +25,16 @@ export default function SessionInfo({
   statusText,
 }: SessionInfoProps) {
   const isActive = sessionState === 'active';
+
+  const audioBarStyles = useMemo(() =>
+    [...Array(5)].map((_, i) => ({
+      width: '3px',
+      height: `${12 + (audioLevel / 5) * (1 - Math.abs(i - 2) * 0.3)}px`,
+      opacity: 0.3 + (audioLevel / 100) * 0.7,
+      boxShadow: `0 0 ${audioLevel / 4}px rgba(212,175,55,0.4)`,
+      willChange: 'height' as const,
+    })), [audioLevel]);
+
   return (
     <div className="mb-12 text-center duration-1000 animate-in fade-in slide-in-from-bottom-4">
       <h1 className="mb-3 font-serif text-4xl font-bold tracking-tight text-primary-500 drop-shadow-sm">
@@ -55,16 +67,11 @@ export default function SessionInfo({
             {/* User Speaking indicator - Visualizing the voice lineage */}
             {isUserSpeaking && (
               <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
+                {audioBarStyles.map((style, i) => (
                   <div
                     key={i}
-                    className="rounded-full bg-primary-500/80 transition-all duration-300"
-                    style={{
-                      width: '3px',
-                      height: `${12 + (audioLevel / 5) * (1 - Math.abs(i - 2) * 0.3)}px`,
-                      opacity: 0.3 + (audioLevel / 100) * 0.7,
-                      boxShadow: `0 0 ${audioLevel / 4}px rgba(212,175,55,0.4)`,
-                    }}
+                    className="rounded-full bg-primary-500/80 transition-[height] duration-75"
+                    style={style}
                   />
                 ))}
               </div>
@@ -72,7 +79,7 @@ export default function SessionInfo({
 
             <span
               className={cn(
-                'text-[10px] font-black uppercase tracking-[0.3em] transition-all duration-1000',
+                'text-[10px] font-black uppercase tracking-[0.3em] transition-opacity duration-1000',
                 isActive
                   ? 'animate-pulse text-primary-500'
                   : 'text-primary-100/20'
@@ -85,4 +92,6 @@ export default function SessionInfo({
       </div>
     </div>
   );
-}
+});
+
+export default SessionInfo;

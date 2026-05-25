@@ -198,7 +198,7 @@ export default function MeetingTabs() {
   ) => (
     <Card
       key={meeting.id}
-      className="group relative mb-6 overflow-hidden rounded-2xl border-primary-500/10 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.05]"
+      className="group relative mb-6 overflow-hidden rounded-2xl border-primary-500/10 bg-white/[0.03] shadow-2xl transition-colors duration-300 hover:bg-white/[0.05]"
     >
       <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500/50 shadow-[0_0_10px_rgba(212,175,55,0.2)] transition-colors group-hover:bg-primary-500" />
       <CardHeader className="pb-4">
@@ -301,7 +301,8 @@ export default function MeetingTabs() {
                           size="sm"
                           onClick={() => handleJoinMeeting(meeting)}
                           disabled={!canJoin(meeting)}
-                          className="h-10 rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-shadow hover:bg-primary-600 active:scale-95 disabled:bg-primary-500/10 disabled:text-primary-500/30"
+                          className="h-10 rounded-xl bg-primary-500 px-8 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-shadow hover:bg-primary-600 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
+                          title={!canJoin(meeting) ? 'Session is not yet available to join' : 'Join this session'}
                         >
                           Join Call
                         </Button>
@@ -518,7 +519,7 @@ export default function MeetingTabs() {
                 key={tab.id}
                 value={tab.id}
                 className={cn(
-                  'h-full rounded-xl text-[10px] font-bold uppercase tracking-[0.15em] transition-all duration-300',
+                  'h-full rounded-xl text-xs font-bold uppercase tracking-[0.15em] transition-all duration-300',
                   'data-[state=active]:bg-primary-500 data-[state=active]:text-primary-950 data-[state=active]:shadow-lg data-[state=active]:shadow-primary-500/20',
                   'text-primary-100/40 hover:text-primary-100'
                 )}

@@ -104,9 +104,9 @@ export function MainContent() {
   return (
     <div className="relative flex h-full min-h-[calc(100vh-4rem)] flex-1 flex-col items-center justify-center overflow-hidden bg-background">
       {/* Celestial Background Accents */}
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden">
-        <div className="absolute right-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden" aria-hidden="true">
+        <div className="absolute right-[-10%] top-[-10%] h-[40%] w-[40%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-10%] left-[-10%] h-[40%] w-[40%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
       </div>
 
       <div className="relative z-10 flex w-full flex-1 flex-col items-center justify-center p-8">

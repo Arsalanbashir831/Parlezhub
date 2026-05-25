@@ -27,11 +27,11 @@ export default function MarkdownPage({
     <div className="min-h-screen bg-background">
       {/* Decorative Background Elements */}
       <div className="pointer-events-none fixed inset-0 overflow-hidden">
-        <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
-        <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full bg-primary-500/5 blur-[120px]" />
+        <div className="absolute -top-[10%] -left-[10%] h-[40%] w-[40%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
+        <div className="absolute -bottom-[10%] -right-[10%] h-[40%] w-[40%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
       </div>
 
-      <header className="sticky top-0 z-50 border-b border-primary-500/10 bg-background/80 backdrop-blur-xl">
+      <header className="sticky top-0 z-50 border-b border-primary-500/10 bg-background/95">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-4 md:px-8">
           <Button onClick={() => router.back()} variant="ghost" size="sm" className="gap-2 text-primary-400 hover:bg-primary-500/10">
             <ArrowLeft className="h-4 w-4" />

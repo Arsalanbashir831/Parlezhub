@@ -46,9 +46,9 @@ export default function WelcomeSection({
               <Link href={buttonLink}>
                 <Button
                   size="lg"
-                  className="group h-14 rounded-2xl bg-white px-8 font-serif text-lg font-bold text-primary-600 shadow-xl transition-all hover:scale-105 hover:bg-white/95 active:scale-95"
+                  className="group h-14 rounded-2xl bg-white px-8 font-serif text-lg font-bold text-primary-600 shadow-xl transition-[transform,background-color] hover:scale-105 hover:bg-white/95 active:scale-95"
                 >
-                  <Plus className="mr-3 h-6 w-6 transition-transform group-hover:rotate-90" />
+                  <Plus className="mr-3 h-6 w-6 transition-transform duration-300 group-hover:rotate-90" />
                   {buttonText}
                 </Button>
               </Link>

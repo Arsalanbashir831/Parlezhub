@@ -117,7 +117,7 @@ const PlanetNode = React.memo(function PlanetNode({
   return (
     <g
       className={cn(
-        'group cursor-pointer transition-all duration-200',
+        'group cursor-pointer transition-[transform] duration-200',
         isHovered ? 'z-50' : 'z-0'
       )}
       onMouseEnter={handleMouseEnter}
@@ -134,10 +134,7 @@ const PlanetNode = React.memo(function PlanetNode({
         r={isHovered ? '19' : '16'}
         fill="transparent"
         stroke="none"
-        className={cn(
-          'transition-all duration-200',
-          isHovered ? 'drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : ''
-        )}
+        className={isHovered ? 'drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : ''}
       />
       <text
         x={cx}
@@ -259,7 +256,7 @@ const VedicChart = React.memo(function VedicChart({
       >
         <svg
           viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`}
-          className="h-auto w-full max-w-[750px] drop-shadow-[0_0_40px_rgba(249,115,22,0.1)] transition-all duration-700 lg:max-w-[1000px]"
+          className="h-auto w-full max-w-[750px] lg:max-w-[1000px]"
         >
           <defs>
             <radialGradient
@@ -334,7 +331,7 @@ const VedicChart = React.memo(function VedicChart({
                   fontSize="18"
                   textAnchor="middle"
                   alignmentBaseline="middle"
-                  className="cursor-default font-serif text-primary-400 opacity-70 transition-all group-hover:text-primary-500 group-hover:opacity-100"
+                  className="cursor-default font-serif text-primary-400 opacity-70 transition-[opacity,fill] group-hover:text-primary-500 group-hover:opacity-100"
                 >
                   {sign.symbol}
                 </text>
@@ -432,7 +429,7 @@ const VedicChart = React.memo(function VedicChart({
         </svg>
 
         {/* Legend */}
-        <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 p-2 text-[8px] font-bold text-primary-400 shadow-sm backdrop-blur-md md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
+        <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 bg-background/90 p-2 text-[8px] font-bold text-primary-400 shadow-sm md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
           <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
             <div className="h-2 w-2 rounded-full bg-white shadow-sm md:h-2.5 md:w-2.5"></div>
             <span className="uppercase tracking-widest opacity-80">Natal</span>

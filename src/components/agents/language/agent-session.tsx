@@ -1,6 +1,6 @@
 'use client';
 
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
   getLanguageName,
@@ -320,19 +320,19 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
     return isConnected && sessionState === 'active' ? 0.5 : 0;
   }, [isConnected, sessionState]);
 
-  const aiSettings = {
+  const aiSettings = useMemo(() => ({
     name: 'Language Tutor',
     gender: 'neutral' as const,
     avatar: avatarUrl || '/placeholders/avatar.jpg',
     context: config.topic || prompt,
-  };
+  }), [avatarUrl, config.topic, prompt]);
 
   return (
     <div className="relative min-h-screen overflow-hidden bg-background text-white selection:bg-primary-500/30">
       {/* Celestial Background Accents */}
-      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden">
-        <div className="absolute right-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full bg-primary-500/5 blur-[120px]" />
-        <div className="absolute bottom-[-10%] left-[-10%] h-[50%] w-[50%] rounded-full bg-primary-500/5 blur-[120px]" />
+      <div className="pointer-events-none absolute left-0 top-0 h-full w-full overflow-hidden" aria-hidden="true">
+        <div className="absolute right-[-10%] top-[-10%] h-[50%] w-[50%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
+        <div className="absolute bottom-[-10%] left-[-10%] h-[50%] w-[50%] rounded-full" style={{ background: 'radial-gradient(circle, rgba(212,175,55,0.04) 0%, transparent 70%)' }} />
       </div>
 
       {/* Header */}

@@ -63,11 +63,11 @@ const InsightView: React.FC<InsightViewProps> = ({
       {/* Content Body */}
       <ScrollArea className="flex-1">
         <div className="flex flex-1 flex-col gap-6 p-4 md:gap-12 md:p-8">
-          <div className="rounded-[24px] border border-primary-500/20 bg-white/5 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] backdrop-blur-sm md:rounded-3xl md:p-10">
+          <div className="rounded-[24px] border border-primary-500/20 bg-white/5 p-5 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] md:rounded-3xl md:p-10">
             {isLoading ? (
               <div className="flex min-h-[40vh] flex-col items-center justify-center space-y-6">
                 <div className="relative flex items-center justify-center">
-                  <div className="absolute h-24 w-24 animate-ping rounded-full bg-primary-500/10"></div>
+                  <div className="absolute h-24 w-24 animate-pulse rounded-full bg-primary-500/10"></div>
                   <Sparkles className="h-12 w-12 animate-pulse text-primary-500" />
                 </div>
                 <div className="text-center">

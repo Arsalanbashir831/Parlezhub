@@ -49,7 +49,7 @@ const SecuritySettings = memo(
     };
 
     return (
-      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center gap-3">
             <div className="flex h-10 w-10 items-center justify-center rounded-xl border border-primary-500/20 bg-primary-500/10 text-primary-500">

@@ -39,7 +39,7 @@ const RealChatHeader = memo(
     return (
       <>
         {showBackButton && (
-          <div className="flex items-center justify-between border-b border-primary-500/10 bg-background/50 px-4 py-3 backdrop-blur-md md:hidden">
+          <div className="flex items-center justify-between border-b border-primary-500/10 bg-background/95 px-4 py-3 md:hidden">
             <Button
               variant="ghost"
               size="sm"
@@ -67,7 +67,7 @@ const RealChatHeader = memo(
             </div>
           </div>
         )}
-        <div className="flex flex-col justify-between border-b border-primary-500/10 bg-background/80 px-6 py-4 backdrop-blur-xl md:flex-row md:items-center">
+        <div className="flex flex-col justify-between border-b border-primary-500/10 bg-background/95 px-6 py-4 md:flex-row md:items-center">
           <div className="flex w-full items-center gap-4">
             <div className="relative">
               <Avatar className="h-12 w-12 border-2 border-primary-500/20 p-0.5">

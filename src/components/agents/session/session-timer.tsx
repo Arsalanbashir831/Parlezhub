@@ -13,7 +13,7 @@ export default function SessionTimer({ timeRemaining }: SessionTimerProps) {
   return (
     <div className="flex items-center gap-4 md:gap-8">
       {/* Timer Container */}
-      <div className="group flex items-center gap-3 rounded-2xl border border-primary-500/10 bg-white/[0.03] px-4 py-2 shadow-lg backdrop-blur-md">
+      <div className="group flex items-center gap-3 rounded-2xl border border-primary-500/10 bg-white/[0.04] px-4 py-2 shadow-lg">
         <div className="relative">
           <Timer className="relative z-10 h-4 w-4 text-primary-500 transition-transform group-hover:rotate-12" />
           <div className="absolute -inset-1 rounded-full bg-primary-500/20 opacity-0 blur-[2px] transition-opacity group-hover:opacity-100" />
@@ -32,7 +32,7 @@ export default function SessionTimer({ timeRemaining }: SessionTimerProps) {
         </div>
         <div className="h-1 w-full overflow-hidden rounded-full border border-white/5 bg-white/5">
           <div
-            className="h-full bg-gradient-to-r from-primary-500/50 to-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.4)] transition-all duration-1000"
+            className="h-full bg-gradient-to-r from-primary-500/50 to-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.4)] transition-[width] duration-1000"
             style={{
               width: `${getPercentage(SESSION_DURATION - timeRemaining, SESSION_DURATION)}%`,
             }}

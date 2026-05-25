@@ -36,7 +36,7 @@ export default function MessageBody({ content }: { content: string }) {
     fields['Payment Status']?.includes('UNPAID');
 
   return (
-    <div className="relative my-2 overflow-hidden rounded-2xl border border-primary-500/10 bg-white/[0.03] p-5 shadow-xl backdrop-blur-sm transition-all hover:bg-white/[0.05]">
+    <div className="relative my-2 overflow-hidden rounded-2xl border border-primary-500/10 bg-white/[0.04] p-5 shadow-xl transition-colors hover:bg-white/[0.07]">
       {/* Accent bar */}
       <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.3)]" />
 

@@ -59,7 +59,7 @@ export default function TargetLanguageSelection({
           filteredLanguages.map((language) => (
             <Card
               key={language.value}
-              className={`group relative cursor-pointer overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:shadow-primary-500/5 ${
+              className={`group relative cursor-pointer overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-xl transition-[background-color,box-shadow] duration-300 hover:bg-white/[0.08] hover:shadow-primary-500/5 ${
                 config.language === language.value
                   ? 'bg-primary-500/5 ring-2 ring-primary-500'
                   : ''
@@ -75,7 +75,7 @@ export default function TargetLanguageSelection({
               />
 
               <CardContent className="p-6 text-center">
-                <div className="mb-4 text-4xl drop-shadow-lg grayscale-[0.2] filter transition-all duration-300 group-hover:grayscale-0">
+                <div className="mb-4 text-4xl drop-shadow-lg grayscale-[0.2] will-change-[filter] transition-[filter] duration-300 group-hover:grayscale-0">
                   {language.flag}
                 </div>
                 <h3 className="text-[13px] font-bold uppercase tracking-widest text-primary-100/60 transition-colors group-hover:text-primary-500">

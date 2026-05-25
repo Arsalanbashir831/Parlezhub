@@ -25,15 +25,15 @@ export default function ChartTypeSelector() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2 backdrop-blur-md">
+      <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-primary-300">
           Chart View:
         </span>
         <Select value={chartType} onValueChange={handleSelect}>
-          <SelectTrigger className="h-9 w-[180px] text-sm font-bold border-primary-500/20 bg-background/50 hover:bg-primary-500/10 text-slate-100 outline-none flex items-center justify-between rounded-xl transition-all duration-300 hover:border-primary-500/40 focus:ring-0 focus:ring-offset-0 focus:outline-none">
+          <SelectTrigger className="h-9 w-[180px] text-sm font-bold border-primary-500/20 bg-background hover:bg-primary-500/10 text-slate-100 outline-none flex items-center justify-between rounded-xl transition-[border-color,background-color] duration-200 hover:border-primary-500/40 focus:ring-0 focus:ring-offset-0 focus:outline-none">
             <SelectValue placeholder="Select Chart Type" />
           </SelectTrigger>
-          <SelectContent className="border border-primary-500/30 bg-[#0c0f1d] text-slate-100 rounded-2xl shadow-xl shadow-primary-950/50 backdrop-blur-xl">
+          <SelectContent className="border border-primary-500/30 bg-[#0c0f1d] text-slate-100 rounded-2xl shadow-xl shadow-primary-950/50">
             {ASTRO_CHART_TYPES.map((chart) => (
               <SelectItem
                 key={chart.id}

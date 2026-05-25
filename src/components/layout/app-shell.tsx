@@ -91,7 +91,7 @@ export const AppShell: React.FC<AppShellProps> = ({
 
       <SidebarInset>
         {/* Top bar */}
-        <header className="sticky top-0 z-50 border-b border-white/5 bg-background/80 backdrop-blur-md">
+        <header className="sticky top-0 z-50 border-b border-white/5 bg-background/95">
           <div className="flex h-20 shrink-0 items-center gap-4 px-8">
             <SidebarTrigger className="-ml-2 h-10 w-10 rounded-xl text-primary-50 transition-all hover:bg-white/5" />
             <h1 className="font-serif text-2xl font-bold capitalize tracking-tight text-white">

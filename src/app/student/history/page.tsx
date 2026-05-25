@@ -56,7 +56,9 @@ export default function ConversationsPage() {
       />
 
       {/* Conversations List */}
-      {conversations.length > 0 ? (
+      {isLoading && conversations.length === 0 ? (
+        <ConversationList conversations={[]} isLoading={true} />
+      ) : conversations.length > 0 ? (
         <>
           <ConversationList conversations={conversations} />
           <LoadMore

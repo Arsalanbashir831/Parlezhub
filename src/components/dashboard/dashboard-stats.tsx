@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { CalendarIcon, MessageSquare } from 'lucide-react';
 
 import { useMeetings } from '@/hooks/useMeetings';
@@ -10,7 +11,7 @@ interface DashboardStatsProps {
   conversations: ConversationData[];
 }
 
-export default function DashboardStatsCards({
+const DashboardStatsCards = memo(function DashboardStatsCards({
   conversations,
 }: DashboardStatsProps) {
   const totalConversations = conversations.length;
@@ -75,4 +76,6 @@ export default function DashboardStatsCards({
       </div>
     </>
   );
-}
+});
+
+export default DashboardStatsCards;

@@ -68,7 +68,8 @@ export const FormField: React.FC<FormFieldProps> = ({
           <button
             type="button"
             onClick={onToggle}
-            className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600"
+            aria-label={isToggled ? 'Hide password' : 'Show password'}
+            className="absolute right-3 top-1/2 -translate-y-1/2 transform text-gray-400 hover:text-gray-600 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary-500 focus-visible:ring-offset-1 rounded"
           >
             {isToggled ? (
               <EyeOff className="h-4 w-4" />

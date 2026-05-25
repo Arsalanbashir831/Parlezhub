@@ -16,14 +16,14 @@ export const ConsultantsEmptyState = React.memo<ConsultantsEmptyStateProps>(
       <Card className="py-12 text-center">
         <CardContent>
           <div className="flex flex-col items-center gap-4">
-            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-gray-100">
-              <Search className="h-8 w-8 text-gray-400" />
+            <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-500/10">
+              <Search className="h-8 w-8 text-primary-400" />
             </div>
             <div>
-              <h3 className="text-lg font-semibold text-gray-900">
+              <h3 className="text-lg font-semibold text-primary-100">
                 No consultants found
               </h3>
-              <p className="mt-1 text-gray-600">
+              <p className="mt-1 text-primary-100/60">
                 Try adjusting your search criteria or filters
               </p>
             </div>

@@ -190,7 +190,7 @@ export default function ResetPasswordPage() {
       fallback={
         <AuthLayout title="Reset Password" subtitle="Loading...">
           <div className="flex justify-center">
-            <div className="h-8 w-8 animate-spin rounded-full border-b-2 border-blue-600"></div>
+            <div className="h-8 w-8 animate-spin rounded-full border-2 border-primary-500 border-t-transparent"></div>
           </div>
         </AuthLayout>
       }

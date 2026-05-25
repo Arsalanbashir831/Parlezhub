@@ -178,7 +178,7 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
   };
 
   return (
-    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+    <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
       <CardHeader className="p-8 pb-4">
         <div className="flex items-center justify-between">
           <CardTitle className="font-serif text-2xl font-bold text-primary-500">
@@ -308,7 +308,7 @@ export default function ProfileSettings({ userRole }: ProfileSettingsProps) {
               onValueChange={handleSelectChange('country')}
               disabled={!isEditMode}
             >
-              <SelectTrigger className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-sm text-white focus:ring-primary-500/30">
+              <SelectTrigger className="h-12 rounded-xl border-primary-500/10 bg-white/5 text-sm text-white focus:ring-primary-500/30 disabled:cursor-not-allowed disabled:opacity-50">
                 <SelectValue placeholder="Select your country" />
               </SelectTrigger>
               <SelectContent className="border-primary-500/10 bg-background">

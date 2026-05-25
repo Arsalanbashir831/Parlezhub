@@ -23,7 +23,7 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
 
   return (
     <div className="lg:col-span-6">
-      <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+      <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
         <CardHeader className="p-8 pb-4">
           <div className="flex items-center justify-between">
             <CardTitle className="font-serif text-xl font-bold text-primary-500">
@@ -81,8 +81,8 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
             ))
           ) : (
             <div className="py-12 text-center">
-              <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/20">
-                No scheduled alignments found
+              <p className="text-sm font-medium text-primary-100/60">
+                No upcoming meetings scheduled
               </p>
             </div>
           )}

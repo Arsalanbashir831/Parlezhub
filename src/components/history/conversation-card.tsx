@@ -97,9 +97,10 @@ export const ConversationCard = React.memo<ConversationCardProps>(
                 <Button
                   variant="outline"
                   size="sm"
-                  className="h-10 rounded-xl border-primary-500/20 px-6 text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95"
+                  className="h-10 rounded-xl border-primary-500/20 px-6 text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95 disabled:cursor-not-allowed disabled:opacity-40"
                   onClick={handleViewTranscript}
                   disabled={!conversation.hasTranscript}
+                  title={!conversation.hasTranscript ? 'No transcript available for this session' : 'View session transcript'}
                 >
                   <MessageSquare className="mr-2 h-4 w-4" />
                   Transcript

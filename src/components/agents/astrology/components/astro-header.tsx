@@ -35,7 +35,7 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        className="relative col-span-1 overflow-hidden rounded-[24px] border border-primary-500/20 bg-white/5 p-6 shadow-sm backdrop-blur-md md:rounded-[2rem] md:p-8 xl:col-span-2"
+        className="relative col-span-1 overflow-hidden rounded-[24px] border border-primary-500/20 bg-white/5 p-6 shadow-sm md:rounded-[2rem] md:p-8 xl:col-span-2"
       >
         <div className="flex items-start justify-between">
           <div className="space-y-4">
@@ -73,7 +73,7 @@ const AstroHeader: React.FC<AstroHeaderProps> = ({
       <motion.div
         initial={{ opacity: 0, x: 20 }}
         animate={{ opacity: 1, x: 0 }}
-        className="flex flex-col items-center justify-center space-y-2 rounded-[24px] border border-primary-500/20 bg-white/5 p-6 shadow-sm backdrop-blur-md md:rounded-[2rem] md:p-8"
+        className="flex flex-col items-center justify-center space-y-2 rounded-[24px] border border-primary-500/20 bg-white/5 p-6 shadow-sm md:rounded-[2rem] md:p-8"
       >
         <p className="text-[9px] font-bold uppercase tracking-[0.3em] text-primary-500/70 md:text-[10px]">
           Birth Nakshatra

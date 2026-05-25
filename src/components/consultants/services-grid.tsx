@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { ServiceCardData } from '@/hooks/useConsultants';
 
 import { ServiceCard } from './service-card';
@@ -11,7 +12,7 @@ interface ServicesGridProps {
   className?: string;
 }
 
-export function ServicesGrid({ services, onSelectService, className }: ServicesGridProps) {
+export const ServicesGrid = memo(function ServicesGrid({ services, onSelectService, className }: ServicesGridProps) {
   return (
     <div className={cn("grid grid-cols-1 gap-6 md:grid-cols-2 lg:grid-cols-3", className)}>
       {services.map((serviceCard) => (
@@ -23,4 +24,4 @@ export function ServicesGrid({ services, onSelectService, className }: ServicesG
       ))}
     </div>
   );
-}
+});

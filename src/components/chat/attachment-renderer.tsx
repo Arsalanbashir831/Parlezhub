@@ -1,5 +1,6 @@
 'use client';
 
+import { memo } from 'react';
 import { FileText, Download, Music, Video, Eye } from 'lucide-react';
 import { Attachment } from '@/types/chat';
 
@@ -7,7 +8,7 @@ interface AttachmentRendererProps {
   attachment: Attachment;
 }
 
-export default function AttachmentRenderer({ attachment }: AttachmentRendererProps) {
+const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: AttachmentRendererProps) {
   const { file_url, file_name, file_type, file_size } = attachment;
 
   const formatFileSize = (bytes: number): string => {
@@ -28,12 +29,12 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
   // 1. Image Formats (jpg, png, gif, webp)
   if (file_type.startsWith('image/')) {
     return (
-      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 shadow-md transition-all duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
         <div className="relative max-h-72 overflow-hidden">
           <img
             src={file_url}
             alt={file_name}
-            className="w-full object-cover transition-transform duration-500 group-hover:scale-105"
+            className="w-full object-cover will-change-transform transition-transform duration-300 group-hover:scale-105"
             loading="lazy"
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-end p-3">
@@ -48,7 +49,7 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
             </a>
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-primary-500/10 bg-background/40 p-2.5 backdrop-blur-sm">
+        <div className="flex items-center justify-between border-t border-primary-500/10 bg-background/60 p-2.5">
           <span className="truncate text-xs font-medium text-primary-100 max-w-[70%]">
             {file_name}
           </span>
@@ -63,7 +64,7 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
   // 2. Video Formats (mp4, mov)
   if (file_type.startsWith('video/')) {
     return (
-      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/30 shadow-md transition-all duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/30 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
         <div className="relative aspect-video w-full overflow-hidden">
           <video
             src={file_url}
@@ -90,7 +91,7 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
   // 3. Audio Formats (mp3, wav, m4a, ogg)
   if (file_type.startsWith('audio/')) {
     return (
-      <div className="group my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 p-3 shadow-md transition-all duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 p-3 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
         <div className="mb-2 flex items-center gap-2.5">
           <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-500/15 text-primary-500 shadow-[0_0_8px_rgba(212,175,55,0.1)]">
             <Music className="h-4 w-4" />
@@ -113,7 +114,7 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
       href={file_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative my-1.5 flex items-center justify-between gap-4 overflow-hidden rounded-xl border border-primary-500/10 bg-white/[0.03] p-3 shadow-md backdrop-blur-sm transition-all duration-300 hover:border-primary-500/30 hover:bg-white/[0.06] hover:shadow-primary-500/5"
+      className="group relative my-1.5 flex items-center justify-between gap-4 overflow-hidden rounded-xl border border-primary-500/10 bg-white/[0.04] p-3 shadow-md transition-all duration-300 hover:border-primary-500/30 hover:bg-white/[0.08] hover:shadow-primary-500/5"
     >
       {/* Decorative vertical color strip */}
       <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500 shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
@@ -131,9 +132,11 @@ export default function AttachmentRenderer({ attachment }: AttachmentRendererPro
           </p>
         </div>
       </div>
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-primary-100/50 group-hover:bg-primary-500 group-hover:text-primary-950 group-hover:scale-105 active:scale-95 transition-all duration-300">
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-primary-100/50 group-hover:bg-primary-500 group-hover:text-primary-950 group-hover:scale-105 active:scale-95 will-change-transform transition-[background-color,color,transform] duration-300">
         <Download className="h-4 w-4 group-hover:animate-bounce" />
       </div>
     </a>
   );
-}
+});
+
+export default AttachmentRenderer;

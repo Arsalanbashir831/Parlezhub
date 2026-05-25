@@ -65,7 +65,7 @@ export default function ServiceCard({
   const statusAction = getStatusAction();
 
   return (
-    <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+    <Card className="h-full rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
       <CardHeader className="pb-3">
         <div className="flex items-start justify-between">
           <div className="flex items-center gap-3">

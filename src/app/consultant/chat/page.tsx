@@ -89,7 +89,7 @@ export default function ChatPage() {
   if (!user) {
     return (
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl">
           <CardContent className="h-full p-0">
             <div className="flex h-full flex-col items-center justify-center gap-6">
               <div className="h-16 w-16 animate-spin rounded-full border-b-2 border-primary-500"></div>
@@ -107,7 +107,7 @@ export default function ChatPage() {
   return (
     <>
       <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-8rem)]">
-        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="h-full overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl">
           <CardContent className="h-full p-0">
             <div className="flex h-full w-full">
               {/* Conversations List - Desktop: always show, Mobile: show only when not in chat */}

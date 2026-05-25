@@ -27,7 +27,7 @@ const MessageInput = memo(
     isSending = false,
   }: MessageInputProps) => {
     return (
-      <div className="border-t border-primary-500/10 bg-background/80 p-6 backdrop-blur-xl">
+      <div className="border-t border-primary-500/10 bg-background/95 p-6">
         <MessageComposer
           value={value}
           onChange={onChange}

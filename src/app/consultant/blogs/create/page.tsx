@@ -115,7 +115,7 @@ export default function CreateBlogPage() {
       </div>
 
       <form onSubmit={handleSubmit}>
-        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300">
+        <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl transition-colors duration-300">
           <CardHeader className="p-8 pb-4">
             <CardTitle className="font-serif text-2xl font-bold text-primary-500">Blog Details</CardTitle>
           </CardHeader>

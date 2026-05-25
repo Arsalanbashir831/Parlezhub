@@ -37,7 +37,10 @@ export const UserMiniCard: React.FC<UserMiniCardProps> = ({
         </AvatarFallback>
       </Avatar>
       <div className="min-w-0 flex-1">
-        <p className="truncate font-serif text-sm font-bold text-white leading-tight">
+        <p
+          className="truncate font-serif text-sm font-bold text-white leading-tight"
+          title={`${user?.first_name ?? ''} ${user?.last_name ?? ''}`.trim()}
+        >
           {user?.first_name} {user?.last_name}
         </p>
         <p className="text-[10px] font-bold uppercase tracking-widest text-primary-500/60 mt-0.5">{roleLabel}</p>

@@ -29,7 +29,7 @@ export const ServiceCard = React.memo<ServiceCardProps>(
 
     return (
       <Card
-        className="group relative cursor-pointer overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.08] hover:shadow-primary-500/5"
+        className="group relative cursor-pointer overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-xl transition-[background-color,box-shadow] duration-300 hover:bg-white/[0.08] hover:shadow-primary-500/5"
         onClick={handleSelectService}
       >
         {/* Gold side-accent on hover */}

@@ -98,7 +98,7 @@ export function SharedStudentsList() {
             {students.map((record: SharedStudentAccess) => (
               <div
                 key={record.id}
-                className="group relative flex flex-col items-start p-6 rounded-3xl border border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md transition-all duration-300 hover:bg-white/[0.06] hover:shadow-primary-500/10 hover:-translate-y-1"
+                className="group relative flex flex-col items-start p-6 rounded-3xl border border-white/5 bg-white/[0.03] shadow-2xl transition-[background-color,box-shadow,transform] duration-300 hover:bg-white/[0.06] hover:shadow-primary-500/10 hover:-translate-y-1 will-change-transform"
               >
                 <div className="flex w-full items-start justify-between">
                   <Avatar className="h-16 w-16 border-2 border-primary-500/10 transition-colors group-hover:border-primary-500">

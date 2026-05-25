@@ -36,7 +36,7 @@ export default function AvatarUploader({ value, onChange, disabled }: Props) {
     <div className="group flex items-center gap-4">
       <div className="relative">
         <div className="absolute -inset-1 rounded-full bg-gradient-to-r from-primary-500 to-primary-500/0 opacity-20 blur-[2px] transition-opacity duration-500 group-hover:opacity-40" />
-        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-primary-500/20 bg-white/5 shadow-lg backdrop-blur-md">
+        <div className="relative h-12 w-12 overflow-hidden rounded-full border border-primary-500/20 bg-white/5 shadow-lg">
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img
             src={value || '/placeholders/avatar.jpg'}

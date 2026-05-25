@@ -80,7 +80,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
                   >
                     <Card
                       className={cn(
-                        'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-all duration-500 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
+                        'group cursor-pointer gap-0 overflow-hidden border-primary-500/60 bg-white/5 py-0 transition-[border-color,box-shadow,background-color] duration-200 hover:border-primary-500 hover:shadow-md hover:shadow-primary-500/5',
                         isActive &&
                           'border-primary-500 bg-primary-50/10 shadow-sm'
                       )}
@@ -88,7 +88,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
                       <CardContent className="flex items-center gap-4 p-4">
                         <div
                           className={cn(
-                            'rounded-xl p-2 transition-all duration-500',
+                            'rounded-xl p-2 transition-colors duration-200',
                             isActive
                               ? 'bg-primary-500 shadow-inner'
                               : 'bg-primary-500/70 group-hover:bg-primary-500'

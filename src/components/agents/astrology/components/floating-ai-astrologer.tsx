@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { memo, useCallback, useEffect, useRef, useState } from 'react';
 import { Bot, Loader2, Send, Sparkles, User, MessageSquare, X } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
@@ -14,11 +14,11 @@ interface FloatingAIAstrologerProps {
   guestProfileId?: string;
 }
 
-export const FloatingAIAstrologer: React.FC<FloatingAIAstrologerProps> = ({
+export const FloatingAIAstrologer = memo(function FloatingAIAstrologer({
   category,
   studentId,
   guestProfileId,
-}) => {
+}: FloatingAIAstrologerProps) {
   const [isOpen, setIsOpen] = useState(false);
   const [inputValue, setInputValue] = useState('');
   const chatBottomRef = useRef<HTMLDivElement>(null);
@@ -38,11 +38,11 @@ export const FloatingAIAstrologer: React.FC<FloatingAIAstrologerProps> = ({
     };
   }, [messages, isOpen]);
 
-  const handleSend = () => {
+  const handleSend = useCallback(() => {
     if (!inputValue.trim() || isSending) return;
     sendMessage(inputValue);
     setInputValue('');
-  };
+  }, [inputValue, isSending, sendMessage]);
 
   const currentContextName = React.useMemo(() => {
     if (category === 'd1-chart') return 'D1 Chart';
@@ -67,7 +67,7 @@ export const FloatingAIAstrologer: React.FC<FloatingAIAstrologerProps> = ({
 
       {/* Floating Chat Window */}
       {isOpen && (
-        <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[350px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-primary-500/20 bg-background/95 shadow-2xl backdrop-blur-xl md:bottom-10 md:right-10 md:h-[600px] md:w-[400px]">
+        <div className="fixed bottom-4 right-4 z-50 flex h-[500px] w-[350px] max-w-[calc(100vw-2rem)] flex-col overflow-hidden rounded-2xl border border-primary-500/20 bg-background shadow-2xl md:bottom-10 md:right-10 md:h-[600px] md:w-[400px]">
           {/* Chat Header */}
           <div className="flex items-center justify-between border-b border-primary-500/20 bg-primary-950/40 px-4 py-3">
             <div className="flex items-center gap-3">
@@ -196,4 +196,4 @@ export const FloatingAIAstrologer: React.FC<FloatingAIAstrologerProps> = ({
       )}
     </>
   );
-};
+});

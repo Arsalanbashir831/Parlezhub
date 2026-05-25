@@ -36,7 +36,7 @@ export default function TransitDateSelector() {
 
   return (
     <div className="flex flex-col items-center justify-center gap-2">
-      <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2 backdrop-blur-md">
+      <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2">
         <span className="text-xs font-semibold uppercase tracking-wider text-primary-300">
           Transit Date:
         </span>
@@ -45,7 +45,7 @@ export default function TransitDateSelector() {
             <Button
               variant="outline"
               className={cn(
-                "h-9 px-3 py-2 text-sm font-bold border-primary-500/20 bg-background/50 hover:bg-primary-500/10 text-slate-100 outline-none flex items-center gap-2 rounded-xl transition-all duration-300 hover:border-primary-500/40",
+                "h-9 px-3 py-2 text-sm font-bold border-primary-500/20 bg-background hover:bg-primary-500/10 text-slate-100 outline-none flex items-center gap-2 rounded-xl transition-[border-color,background-color] duration-200 hover:border-primary-500/40",
                 !transitDate && "text-slate-400"
               )}
             >
@@ -53,7 +53,7 @@ export default function TransitDateSelector() {
               {transitDate ? format(parsedDate, "PPP") : "Select Transit Date"}
             </Button>
           </PopoverTrigger>
-          <PopoverContent className="w-auto p-0 border border-primary-500/30 bg-[#0c0f1d] text-slate-100 rounded-2xl shadow-xl shadow-primary-950/50 backdrop-blur-xl" align="center">
+          <PopoverContent className="w-auto p-0 border border-primary-500/30 bg-[#0c0f1d] text-slate-100 rounded-2xl shadow-xl shadow-primary-950/50" align="center">
             <Calendar
               mode="single"
               selected={parsedDate}

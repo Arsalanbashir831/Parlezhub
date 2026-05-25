@@ -97,9 +97,9 @@ function MahadashaStrip({ sequence }: MahaStripProps) {
             >
               <div
                 className={cn(
-                  'flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 min-w-[72px] transition-all duration-300',
+                  'flex flex-col items-center gap-1.5 rounded-xl border px-3 py-3 min-w-[72px] transition-[border-color,background-color] duration-200',
                   isCurrent
-                    ? `bg-black/40 backdrop-blur-md`
+                    ? `bg-black/60`
                     : isPast
                       ? 'border-white/5 bg-white/3 opacity-40'
                       : 'border-white/8 bg-white/5 hover:bg-white/8'
@@ -166,7 +166,7 @@ interface PeriodsTableProps {
 
 function PeriodsTable({ antardashas }: PeriodsTableProps) {
   return (
-    <div className="overflow-x-auto rounded-2xl border border-white/8 bg-white/3 backdrop-blur-sm">
+    <div className="overflow-x-auto rounded-2xl border border-white/8 bg-white/3">
       <table className="w-full min-w-[560px] border-collapse">
         <thead>
           <tr className="border-b border-white/8">
@@ -283,7 +283,7 @@ function CurrentPeriodBanner({ mahadasha, mahaEnd, antardasha, antarEnd }: Curre
     >
       {/* Mahadasha */}
       <div
-        className="flex items-center gap-4 rounded-2xl border bg-black/30 px-5 py-4 backdrop-blur-md"
+        className="flex items-center gap-4 rounded-2xl border bg-black/50 px-5 py-4"
         style={{ borderColor: mahaMeta.color + '60', boxShadow: `inset 0 0 30px ${mahaMeta.color}0d` }}
       >
         <span className="text-4xl leading-none" style={{ color: mahaMeta.color, textShadow: mahaMeta.glow }}>
@@ -302,7 +302,7 @@ function CurrentPeriodBanner({ mahadasha, mahaEnd, antardasha, antarEnd }: Curre
 
       {/* Antardasha */}
       <div
-        className="flex items-center gap-4 rounded-2xl border bg-black/30 px-5 py-4 backdrop-blur-md"
+        className="flex items-center gap-4 rounded-2xl border bg-black/50 px-5 py-4"
         style={{ borderColor: antarMeta.color + '60', boxShadow: `inset 0 0 30px ${antarMeta.color}0d` }}
       >
         <span className="text-4xl leading-none" style={{ color: antarMeta.color, textShadow: antarMeta.glow }}>
