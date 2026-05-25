@@ -117,7 +117,7 @@ export async function GET(request: NextRequest) {
 
       if (availableRoles.length > 0) {
         // Set user_roles (plural) as JSON array
-        finalResponse.cookies.set('user_roles', JSON.stringify(availableRoles), {
+        finalResponse.cookies.set('user_roles', encodeURIComponent(JSON.stringify(availableRoles)), {
           path: '/',
           maxAge: 60 * 60 * 24 * 7, // 7 days
           sameSite: 'lax'

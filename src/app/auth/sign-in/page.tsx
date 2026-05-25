@@ -27,7 +27,7 @@ const loginSchema = z.object({
 type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
-  const { login, isLoading, isAuthenticated } = useAuth();
+  const { login, isLoading, isAuthenticated, userRoles } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
   const [processingLink, setProcessingLink] = useState(false);
@@ -40,8 +40,11 @@ export default function LoginPage() {
   }, []);
 
   useEffect(() => {
-    // Client-side guard: if already authenticated, bounce to dashboard
-    if (isAuthenticated) {
+    // Client-side guard: only redirect once roles are confirmed loaded.
+    // isAuthenticated becomes true immediately on SIGNED_IN before refreshUserProfile
+    // completes, so guarding on userRoles.length prevents a premature redirect
+    // to "/" while the middleware still sees no user_roles cookie.
+    if (isAuthenticated && userRoles.length > 0) {
       const redirectTo = searchParams?.get('redirect');
       if (typeof window !== 'undefined') {
         window.location.replace(redirectTo || '/');
@@ -85,7 +88,7 @@ export default function LoginPage() {
     };
 
     void processHashLogin();
-  }, [hashParams, router, isAuthenticated, searchParams]);
+  }, [hashParams, router, isAuthenticated, userRoles, searchParams]);
 
   const {
     register,
