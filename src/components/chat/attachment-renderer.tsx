@@ -1,6 +1,7 @@
 'use client';
 
 import { memo } from 'react';
+import Image from 'next/image';
 import { FileText, Download, Music, Video, Eye } from 'lucide-react';
 import { Attachment } from '@/types/chat';
 
@@ -31,11 +32,14 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
     return (
       <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
         <div className="relative max-h-72 overflow-hidden">
-          <img
+          <Image
             src={file_url}
             alt={file_name}
-            className="w-full object-cover will-change-transform transition-transform duration-300 group-hover:scale-105"
-            loading="lazy"
+            width={0}
+            height={0}
+            sizes="100vw"
+            className="w-full h-auto object-cover will-change-transform transition-transform duration-300 group-hover:scale-105"
+            unoptimized
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-end p-3">
             <a

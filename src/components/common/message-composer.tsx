@@ -1,6 +1,7 @@
 'use client';
 
 import { KeyboardEvent, memo, useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
 import { Send, Paperclip, X, FileText, Music, Video, Loader2 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -106,10 +107,13 @@ const MessageComposer = memo(
                 >
                   {isImage ? (
                     imagePreviews[file.name] ? (
-                      <img
+                      <Image
                         src={imagePreviews[file.name]}
                         alt={file.name}
+                        width={100}
+                        height={100}
                         className="h-full w-full object-cover rounded-lg"
+                        unoptimized
                       />
                     ) : (
                       <div className="h-full w-full flex items-center justify-center bg-primary-500/10 text-primary-500 rounded-lg">
