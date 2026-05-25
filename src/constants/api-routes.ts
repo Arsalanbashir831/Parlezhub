@@ -77,6 +77,13 @@ export const API_ROUTES = {
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
     DASHA: '/astrology/dasha/',
   },
+  FAMILY_TREE: {
+    BASE: '/family-tree/',
+    MEMBERS: '/family-tree/members/',
+    MEMBER: (uuid: string) => `/family-tree/members/${uuid}/`,
+    RELATIONSHIPS: '/family-tree/relationships/',
+    REMOVE_RELATIONSHIP: '/family-tree/relationships/remove/',
+  },
   GEMINI: {
     GENERATE_CONTENT: "/api/gemini/generate-content/",
   }

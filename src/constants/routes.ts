@@ -3,6 +3,7 @@ export const ROUTES = {
   HOME: '/',
   TERMS: '/terms',
   PRIVACY: '/privacy',
+  FAMILY_TREE: '/family-tree',
   AUTH: {
     LOGIN: '/auth/sign-in',
     SIGNUP: '/auth/signup',

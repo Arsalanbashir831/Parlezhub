@@ -13,6 +13,7 @@ import {
   Star,
   Users,
   Zap,
+  Network,
 } from 'lucide-react';
 
 import { NavItem } from '@/types/nav';
@@ -91,6 +92,12 @@ export const studentNav: NavItem[] = [
     href: ROUTES.STUDENT.HISTORY,
   },
   {
+    id: 'family-tree',
+    label: 'Family Tree',
+    icon: Network,
+    href: ROUTES.FAMILY_TREE,
+  },
+  {
     id: 'settings',
     label: 'Settings',
     icon: Settings,
@@ -128,6 +135,12 @@ export const consultantNav: NavItem[] = [
     label: 'Meetings',
     icon: Calendar,
     href: ROUTES.TEACHER.MEETINGS,
+  },
+  {
+    id: 'family-tree',
+    label: 'Family Tree',
+    icon: Network,
+    href: ROUTES.FAMILY_TREE,
   },
   {
     id: 'chat',
