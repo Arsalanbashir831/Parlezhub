@@ -120,15 +120,34 @@ export default function BirthProfileForm({
     },
   });
 
-  const selectedCountry = form.watch('country_code');
-  const countries = React.useMemo(() => Country.getAllCountries(), []);
-  const cities = React.useMemo(() => {
-    if (!selectedCountry) return [];
-    return City.getCitiesOfCountry(selectedCountry) || [];
-  }, [selectedCountry]);
-
   const [countryPopoverOpen, setCountryPopoverOpen] = React.useState(false);
   const [cityPopoverOpen, setCityPopoverOpen] = React.useState(false);
+  const [citySearch, setCitySearch] = React.useState('');
+
+  const selectedCountry = form.watch('country_code');
+  const countries = React.useMemo(() => Country.getAllCountries(), []);
+
+  const allUniqueCities = React.useMemo(() => {
+    if (!selectedCountry) return [];
+    const all = City.getCitiesOfCountry(selectedCountry) || [];
+    const unique = [];
+    const seen = new Set();
+    for (const city of all) {
+      if (!seen.has(city.name)) {
+        seen.add(city.name);
+        unique.push(city);
+      }
+    }
+    return unique;
+  }, [selectedCountry]);
+
+  const filteredCities = React.useMemo(() => {
+    if (!citySearch) return allUniqueCities.slice(0, 50);
+    const lowerSearch = citySearch.toLowerCase();
+    return allUniqueCities
+      .filter((c) => c.name.toLowerCase().includes(lowerSearch))
+      .slice(0, 50);
+  }, [allUniqueCities, citySearch]);
 
   const onSubmit = (data: FormValues) => {
     const payload = {
@@ -304,6 +323,7 @@ export default function BirthProfileForm({
                                   onSelect={() => {
                                     form.setValue("country_code", country.isoCode);
                                     form.setValue("city", ""); // Reset city when country changes
+                                    setCitySearch("");
                                     setCountryPopoverOpen(false);
                                   }}
                                 >
@@ -351,12 +371,16 @@ export default function BirthProfileForm({
                         </FormControl>
                       </PopoverTrigger>
                       <PopoverContent className="w-[200px] p-0">
-                        <Command>
-                          <CommandInput placeholder="Search city..." />
+                        <Command shouldFilter={false}>
+                          <CommandInput
+                            placeholder="Search city..."
+                            value={citySearch}
+                            onValueChange={setCitySearch}
+                          />
                           <CommandList>
                             <CommandEmpty>No city found.</CommandEmpty>
                             <CommandGroup>
-                              {cities.map((city) => (
+                              {filteredCities.map((city) => (
                                 <CommandItem
                                   value={city.name}
                                   key={`${city.name}-${city.latitude}-${city.longitude}`}
@@ -392,7 +416,7 @@ export default function BirthProfileForm({
               <h3 className="text-xs font-bold tracking-widest text-primary-400 uppercase">
                 Personal & Family Details (Optional)
               </h3>
-              
+
               <div className="grid grid-cols-2 gap-4">
                 <FormField
                   control={form.control}
@@ -406,7 +430,7 @@ export default function BirthProfileForm({
                           {...field}
                           value={field.value || ''}
                           disabled={readOnly}
-                          className="bg-transparent"
+                          className="bg-transparent [color-scheme:dark]"
                         />
                       </FormControl>
                       <FormMessage />
