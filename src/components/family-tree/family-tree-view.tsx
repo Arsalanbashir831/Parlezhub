@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { toast } from 'sonner';
 
 // Import Services, Types & Helpers
@@ -15,6 +15,7 @@ import { TreeHeader } from './tree-header';
 import { TreeToolbar } from './tree-toolbar';
 import { LinkerBanner } from './linker-banner';
 import { TreeCanvas } from './tree-canvas';
+import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 
 export default function FamilyTreeView() {
   // --- States ---
@@ -152,26 +153,31 @@ export default function FamilyTreeView() {
     [selectedMember, fetchTreeData]
   );
 
-  const handleDeleteMember = useCallback(
-    async (uuid: string) => {
-      if (
-        !confirm(
-          'Are you sure you want to delete this family member? All their relationships will be removed automatically.'
-        )
-      )
-        return;
-      try {
-        await familyTreeService.deleteMember(uuid);
-        toast.success('Member removed');
-        setIsEditModalOpen(false);
-        fetchTreeData();
-      } catch (err) {
-        console.error('Failed to delete member:', err);
-        toast.error('Failed to delete member');
-      }
-    },
-    [fetchTreeData]
-  );
+  const [memberToDelete, setMemberToDelete] = useState<string | null>(null);
+  const [isDeleteMemberDialogOpen, setIsDeleteMemberDialogOpen] = useState(false);
+
+  const [relToDelete, setRelToDelete] = useState<{ fromId: string; toId: string; type: 'parent' | 'spouse' } | null>(null);
+  const [isDeleteRelDialogOpen, setIsDeleteRelDialogOpen] = useState(false);
+
+  const handleDeleteMemberClick = useCallback((uuid: string) => {
+    setMemberToDelete(uuid);
+    setIsDeleteMemberDialogOpen(true);
+  }, []);
+
+  const executeDeleteMember = useCallback(async () => {
+    if (!memberToDelete) return;
+    try {
+      await familyTreeService.deleteMember(memberToDelete);
+      toast.success('Member removed');
+      setIsEditModalOpen(false);
+      setIsDeleteMemberDialogOpen(false);
+      setMemberToDelete(null);
+      fetchTreeData();
+    } catch (err) {
+      console.error('Failed to delete member:', err);
+      toast.error('Failed to delete member');
+    }
+  }, [memberToDelete, fetchTreeData]);
 
   // --- Relationship Handling ---
   const startLinking = useCallback((member: FamilyMember) => {
@@ -225,25 +231,29 @@ export default function FamilyTreeView() {
     [linkingSource, linkingTarget, fetchTreeData]
   );
 
-  const handleRemoveRelationship = useCallback(
-    async (fromId: string, toId: string, type: 'parent' | 'spouse') => {
-      if (!confirm('Remove this relationship connection?')) return;
-      try {
-        const payload = {
-          profile_id: fromId,
-          relative_id: toId,
-          relationship_type: type,
-        };
-        await familyTreeService.removeRelationship(payload);
-        toast.success('Relationship disconnected');
-        fetchTreeData();
-      } catch (err: unknown) {
-        console.error('Failed to remove relationship:', err);
-        toast.error('Failed to disconnect relationship');
-      }
-    },
-    [fetchTreeData]
-  );
+  const handleRemoveRelationshipClick = useCallback((fromId: string, toId: string, type: 'parent' | 'spouse') => {
+    setRelToDelete({ fromId, toId, type });
+    setIsDeleteRelDialogOpen(true);
+  }, []);
+
+  const executeRemoveRelationship = useCallback(async () => {
+    if (!relToDelete) return;
+    try {
+      const payload = {
+        profile_id: relToDelete.fromId,
+        relative_id: relToDelete.toId,
+        relationship_type: relToDelete.type,
+      };
+      await familyTreeService.removeRelationship(payload);
+      toast.success('Relationship disconnected');
+      setIsDeleteRelDialogOpen(false);
+      setRelToDelete(null);
+      fetchTreeData();
+    } catch (err: unknown) {
+      console.error('Failed to remove relationship:', err);
+      toast.error('Failed to disconnect relationship');
+    }
+  }, [relToDelete, fetchTreeData]);
 
   // --- Connector lines calculations ---
   const connectorLines = useMemo(() => {
@@ -384,8 +394,8 @@ export default function FamilyTreeView() {
         onCardClick={handleCardClick}
         onEditClick={handleEditClick}
         onLinkClick={startLinking}
-        onDeleteClick={(member) => handleDeleteMember(member.id)}
-        onRemoveRelationship={handleRemoveRelationship}
+        onDeleteClick={(member) => handleDeleteMemberClick(member.id)}
+        onRemoveRelationship={handleRemoveRelationshipClick}
         onAddFirstMember={handleAddFirstMember}
         onZoomReset={handleZoomReset}
       />
@@ -405,7 +415,7 @@ export default function FamilyTreeView() {
         mode="edit"
         member={selectedMember}
         onSubmit={handleEditMember}
-        onDelete={handleDeleteMember}
+        onDelete={handleDeleteMemberClick}
       />
 
       {/* C. Create Relationship Dialog */}
@@ -415,6 +425,32 @@ export default function FamilyTreeView() {
         source={linkingSource}
         target={linkingTarget}
         onSubmit={handleCreateRelationship}
+      />
+
+      {/* D. Delete Member Confirmation */}
+      <ConfirmationDialog
+        isOpen={isDeleteMemberDialogOpen}
+        onClose={() => {
+          setIsDeleteMemberDialogOpen(false);
+          setMemberToDelete(null);
+        }}
+        onConfirm={executeDeleteMember}
+        title="Delete Family Member"
+        description="Are you sure you want to delete this family member? All their relationships will be removed automatically."
+        confirmText="Delete"
+      />
+
+      {/* E. Remove Relationship Confirmation */}
+      <ConfirmationDialog
+        isOpen={isDeleteRelDialogOpen}
+        onClose={() => {
+          setIsDeleteRelDialogOpen(false);
+          setRelToDelete(null);
+        }}
+        onConfirm={executeRemoveRelationship}
+        title="Remove Relationship"
+        description="Are you sure you want to remove this relationship connection?"
+        confirmText="Remove"
       />
     </div>
   );

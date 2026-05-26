@@ -30,7 +30,7 @@ interface MemberDialogProps {
     birth_time: string | null;
     birth_place: string | null;
   }) => Promise<void>;
-  onDelete?: (uuid: string) => Promise<void>;
+  onDelete?: (uuid: string) => Promise<void> | void;
 }
 
 export function MemberDialog({
