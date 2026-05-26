@@ -85,7 +85,7 @@ export default function AstrologyDashboard({
   const { activeRole } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [activeAnalysis, setActiveAnalysis] = useState<string | null>(
-    'd1-chart'
+    'divisional-charts'
   );
   const [transitDate, setTransitDate] = useState<string>('');
   const [leftOpen, setLeftOpen] = useState(false);
@@ -260,8 +260,7 @@ export default function AstrologyDashboard({
                 />
               </div>
             ) : // Active Analysis checks
-              activeAnalysis === 'd1-chart' ||
-                activeAnalysis === 'd9-chart' ||
+              activeAnalysis === 'divisional-charts' ||
                 !activeAnalysis ? (
                 <div className="flex min-w-0 flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-10 md:p-8">
                   <AstroHeader
@@ -278,7 +277,7 @@ export default function AstrologyDashboard({
                   />
 
                   <div className="relative flex flex-col items-center justify-center gap-12 py-4 md:gap-16 md:py-10">
-                    {activeAnalysis === 'd1-chart' && (
+                    {activeAnalysis === 'divisional-charts' && (
                       <div className="flex flex-col items-center justify-center gap-2 mb-6">
                         <div className="flex items-center gap-3 rounded-2xl border border-primary-500/30 bg-primary-500/5 px-4 py-2">
                           <span className="text-xs font-semibold uppercase tracking-wider text-primary-300">
@@ -296,18 +295,10 @@ export default function AstrologyDashboard({
                     <div className="flex w-full min-w-0 max-w-full justify-center px-2">
                       <div className="w-full max-w-[600px]">
                         <VedicChart
-                          title={
-                            activeAnalysis === 'd9-chart'
-                              ? 'D9 NAVAMSA'
-                              : 'D1 CHART'
-                          }
-                          natalPlanets={
-                            activeAnalysis === 'd9-chart'
-                              ? natalChart.d9_chart?.positions
-                              : natalChart.d1_chart?.positions
-                          }
+                          title="DIVISIONAL CHARTS"
+                          natalPlanets={natalChart.d1_chart?.positions}
                           transitPlanets={
-                            activeAnalysis === 'd1-chart' && transits
+                            activeAnalysis === 'divisional-charts' && transits
                               ? transits.transits
                               : []
                           }
@@ -317,16 +308,8 @@ export default function AstrologyDashboard({
                     </div>
                     <div className="mx-auto w-full min-w-0 max-w-full px-2">
                       <AstroDetailsTable
-                        grahaDetails={
-                          activeAnalysis === 'd9-chart'
-                            ? natalChart.d9_chart?.graha_details
-                            : natalChart.d1_chart?.graha_details
-                        }
-                        bhavaDetails={
-                          activeAnalysis === 'd9-chart'
-                            ? natalChart.d9_chart?.bhava_details
-                            : natalChart.d1_chart?.bhava_details
-                        }
+                        grahaDetails={natalChart.d1_chart?.graha_details}
+                        bhavaDetails={natalChart.d1_chart?.bhava_details}
                       />
                     </div>
                   </div>
@@ -339,20 +322,20 @@ export default function AstrologyDashboard({
                     </p>
                   </div>
                 ) : (
-                  <ShareAccessView onBack={() => setActiveAnalysis('d1-chart')} />
+                  <ShareAccessView onBack={() => setActiveAnalysis('divisional-charts')} />
                 )
               ) : activeAnalysis === 'navatara' ? (
                 <div className="flex w-full flex-col p-4 duration-500 animate-in fade-in md:p-8">
                   <NavataraEducationView
                     studentId={currentStudentId}
                     guestProfileId={currentGuestId}
-                    onClose={() => setActiveAnalysis('d1-chart')}
+                    onClose={() => setActiveAnalysis('divisional-charts')}
                   />
                 </div>
               ) : (
                 <InsightView
                   slug={activeAnalysis}
-                  onBack={() => setActiveAnalysis('d1-chart')}
+                  onBack={() => setActiveAnalysis('divisional-charts')}
                   studentId={currentStudentId}
                   guestProfileId={currentGuestId}
                 />
@@ -392,7 +375,7 @@ export default function AstrologyDashboard({
         isOpen={isGuestDialogOpen}
         onClose={() => setIsGuestDialogOpen(false)}
         onSuccess={() => {
-          setActiveAnalysis('d1-chart');
+          setActiveAnalysis('divisional-charts');
         }}
       />
 
