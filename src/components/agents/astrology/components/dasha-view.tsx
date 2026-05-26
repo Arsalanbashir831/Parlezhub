@@ -365,7 +365,9 @@ export function DashaView({ data, className }: DashaViewProps) {
             <div className="pt-6 border-t border-primary-500/10 mt-6">
               <button
                 className="w-full flex items-center justify-between rounded-xl bg-primary-500 hover:bg-primary-600 text-primary-950 text-xs font-bold px-4 py-3.5 transition-all duration-300 shadow-md shadow-primary-500/10 hover:shadow-primary-500/20 active:scale-95 group"
-                onClick={() => {
+                onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
                   // Dispatch custom event to trigger state change internally
                   window.dispatchEvent(new CustomEvent('open-ai-astrologer'));
                   

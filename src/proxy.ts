@@ -100,17 +100,12 @@ export async function proxy(request: NextRequest) {
   const activeRole = request.cookies.get('active_role')?.value;
   const userRolesStr = request.cookies.get('user_roles')?.value;
 
-  console.log(`[Middleware] Path: ${pathname}`);
-  console.log(`[Middleware] userRolesStr (raw):`, userRolesStr);
-  console.log(`[Middleware] activeRole:`, activeRole);
-
   let userRoles: string[] = [];
   if (userRolesStr) {
     try {
       // Decode the string in case it was URL encoded
       const decodedStr = decodeURIComponent(userRolesStr);
       userRoles = JSON.parse(decodedStr);
-      console.log(`[Middleware] Parsed userRoles:`, userRoles);
     } catch (err) {
       console.error(`[Middleware] Failed to parse user_roles cookie:`, err);
       userRoles = [];
@@ -120,7 +115,6 @@ export async function proxy(request: NextRequest) {
   // Derived user roles from activeRole if userRoles is missing
   if (userRoles.length === 0 && activeRole) {
     userRoles = activeRole === 'BOTH' ? ['STUDENT', 'TEACHER'] : [activeRole];
-    console.log(`[Middleware] Derived userRoles from activeRole:`, userRoles);
   }
 
   const roleToUse = activeRole || userRoles[0] || 'STUDENT';

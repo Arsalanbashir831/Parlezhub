@@ -28,7 +28,6 @@ export async function POST(request: NextRequest) {
     const voiceConfig = voice
       ? { provider: 'openai', voiceId: voice }
       : getVapiVoice(language);
-    console.log('voiceConfig', voiceConfig);
 
     // Generate first message with simplified gender handling
     const getFirstMessage = (nativeLang: string, topic: string) => {

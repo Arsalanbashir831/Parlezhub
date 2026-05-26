@@ -85,9 +85,9 @@ export function useHandleSessionHistory() {
     }
   }
 
-  function handleAgentToolStart() {}
-  function handleAgentToolEnd() {}
-  function handleGuardrailTripped() {}
+  function handleAgentToolStart() { }
+  function handleAgentToolEnd() { }
+  function handleGuardrailTripped() { }
 
   // Vapi event handlers
   function handleVapiMessage(message: VapiMessage) {
@@ -127,7 +127,7 @@ export function useHandleSessionHistory() {
 
   function handleVapiCallEnd() {
     // This handler is primarily for logging or triggering session completion in AgentSession
-    console.log('Vapi call ended from useHandleSessionHistory');
+    // console.log('Vapi call ended from useHandleSessionHistory');
   }
 
   const handlersRef = useRef({

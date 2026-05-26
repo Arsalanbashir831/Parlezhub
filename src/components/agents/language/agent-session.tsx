@@ -67,30 +67,25 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
     if (vapi) {
       // Set up Vapi event listeners
       vapi.on('call-start', () => {
-        console.log('Vapi call started');
         setIsConnected(true);
       });
 
       vapi.on('call-end', () => {
-        console.log('Vapi call ended');
         setIsConnected(false);
         setSessionState('completed');
       });
 
       vapi.on('message', (message) => {
-        console.log('Vapi message event:', message);
         if (message.type === 'transcript') {
           historyHandlers.handleVapiMessage(message);
         }
       });
 
       vapi.on('speech-start', () => {
-        console.log('Vapi speech started');
         setIsAISpeaking(true);
       });
 
       vapi.on('speech-end', () => {
-        console.log('Vapi speech ended');
         setIsAISpeaking(false);
       });
 
@@ -208,17 +203,14 @@ function AgentSessionInner({ prompt, onBack, onEnd }: AgentSessionProps) {
 
       // Get Vapi web token
       const webToken = await vapiService.getWebToken();
-      console.log('Vapi web token:', webToken);
 
       // Initialize Vapi instance
       const vapiInstance = new Vapi(webToken);
       setVapi(vapiInstance);
 
       // Start call with assistant
-      console.log('Starting Vapi call with assistant:', assistant.id);
       try {
         await vapiInstance.start(assistant.id);
-        console.log('Vapi call started successfully');
       } catch (error) {
         console.error('Error starting Vapi call:', error);
         toast.error('Failed to start voice session. Please try again.');
