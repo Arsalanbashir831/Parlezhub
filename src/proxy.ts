@@ -60,6 +60,25 @@ const PUBLIC_ROUTES = [
 export async function proxy(request: NextRequest) {
   const { pathname } = request.nextUrl;
 
+  // Intercept password reset or authentication callback codes landing on root "/"
+  if (pathname === ROUTES.HOME) {
+    if (request.nextUrl.searchParams.has('code')) {
+      const callbackUrl = new URL(ROUTES.AUTH.CALLBACK, request.url);
+      request.nextUrl.searchParams.forEach((val, key) => {
+        callbackUrl.searchParams.set(key, val);
+      });
+      return NextResponse.redirect(callbackUrl);
+    }
+
+    if (request.nextUrl.searchParams.get('type') === 'recovery') {
+      const resetUrl = new URL(ROUTES.AUTH.RESET_PASSWORD, request.url);
+      request.nextUrl.searchParams.forEach((val, key) => {
+        resetUrl.searchParams.set(key, val);
+      });
+      return NextResponse.redirect(resetUrl);
+    }
+  }
+
   // Create a response object we can mutate (needed for cookie writes)
   let supabaseResponse = NextResponse.next({ request });
 
@@ -137,8 +156,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  // 2. If user has NO roles and isn't on onboarding, send them to onboarding
-  if (userRoles.length === 0 && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
+  // 2. If user has NO roles and isn't on onboarding or a public route, send them to onboarding
+  if (userRoles.length === 0 && !isPublicRoute && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
     return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
   }
 
@@ -150,22 +169,6 @@ export async function proxy(request: NextRequest) {
 
   // 3. Root redirect
   if (pathname === ROUTES.HOME) {
-    if (request.nextUrl.searchParams.has('code')) {
-      const callbackUrl = new URL(ROUTES.AUTH.CALLBACK, request.url);
-      request.nextUrl.searchParams.forEach((val, key) => {
-        callbackUrl.searchParams.set(key, val);
-      });
-      return NextResponse.redirect(callbackUrl);
-    }
-
-    if (request.nextUrl.searchParams.get('type') === 'recovery') {
-      const resetUrl = new URL(ROUTES.AUTH.RESET_PASSWORD, request.url);
-      request.nextUrl.searchParams.forEach((val, key) => {
-        resetUrl.searchParams.set(key, val);
-      });
-      return NextResponse.redirect(resetUrl);
-    }
-
     const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
