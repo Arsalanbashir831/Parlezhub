@@ -105,12 +105,26 @@ export default function FamilyTreeView() {
       const pos = nodePositions[member.id];
       if (pos && canvasContainerRef.current) {
         const rect = canvasContainerRef.current.getBoundingClientRect();
-        setPanX(rect.width / 2 - pos.x * zoom - 110);
-        setPanY(rect.height / 3 - pos.y * zoom - 48);
+        const { width: cardWidth, height: cardHeight } = CARD_DIMENSIONS;
+
+        // Dynamic sidebar offset
+        const sidebarWidth = activeDetailMemberId ? (window.innerWidth >= 768 ? 420 : 360) : 0;
+
+        // Mathematically exact formula:
+        // screenX = rect.width / 2 + panX + (pos.x + cardWidth / 2) * zoom
+        // We want: screenX = (rect.width - sidebarWidth) / 2
+        const nextPanX = -(pos.x + cardWidth / 2) * zoom - sidebarWidth / 2;
+
+        // screenY = rect.height * 0.3 + panY + (pos.y + cardHeight / 2) * zoom
+        // We want: screenY = rect.height / 2
+        const nextPanY = rect.height * 0.2 - (pos.y + cardHeight / 2) * zoom;
+
+        setPanX(nextPanX);
+        setPanY(nextPanY);
       }
       setTimeout(() => setHighlightedNodeId(null), 3000);
     },
-    [nodePositions, zoom, setPanX, setPanY]
+    [nodePositions, zoom, setPanX, setPanY, activeDetailMemberId]
   );
 
   // ---------------------------------------------------------------------------

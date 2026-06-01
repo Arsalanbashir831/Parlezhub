@@ -157,6 +157,12 @@ export function calculateNodePositions(
     });
     const ordered = [...leftSpouses, hub, ...rightSpouses];
 
+    // Ensure all cluster members are included in ordered to prevent any unplaced nodes
+    const missing = cluster.filter((id) => !ordered.includes(id));
+    if (missing.length > 0) {
+      ordered.push(...missing);
+    }
+
     // Position cluster members centered on centerX
     const totalW = (ordered.length - 1) * horizontalSpacing;
     const startX = centerX - totalW / 2;
@@ -214,6 +220,26 @@ export function calculateNodePositions(
     layoutCluster(ci, rootX + w / 2, 0);
     rootX += w + horizontalSpacing;
   });
+
+  // Fallback for cycles/unvisited clusters: if there are any clusters that were not laid out,
+  // lay them out side-by-side to ensure they are visible in the UI.
+  const unvisitedCIs = clusterMembers
+    .map((_, ci) => ci)
+    .filter((ci) => !layoutVisited.has(ci));
+
+  if (unvisitedCIs.length > 0) {
+    const unvisitedTotalWidth =
+      unvisitedCIs.reduce((sum, ci) => sum + getSubtreeWidth(ci), 0) +
+      Math.max(0, unvisitedCIs.length - 1) * horizontalSpacing;
+
+    let fallbackX = rootClusterIdxs.length > 0 ? rootX + horizontalSpacing : -unvisitedTotalWidth / 2;
+    unvisitedCIs.forEach((ci) => {
+      if (layoutVisited.has(ci)) return;
+      const w = getSubtreeWidth(ci);
+      layoutCluster(ci, fallbackX + w / 2, 0);
+      fallbackX += w + horizontalSpacing;
+    });
+  }
 
   return positions;
 }
