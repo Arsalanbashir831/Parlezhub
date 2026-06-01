@@ -83,6 +83,7 @@ export const API_ROUTES = {
     MEMBER: (uuid: string) => `/family-tree/members/${uuid}/`,
     RELATIONSHIPS: '/family-tree/relationships/',
     REMOVE_RELATIONSHIP: '/family-tree/relationships/remove/',
+    USERS: '/family-tree/users/',
   },
   GEMINI: {
     GENERATE_CONTENT: "/api/gemini/generate-content/",

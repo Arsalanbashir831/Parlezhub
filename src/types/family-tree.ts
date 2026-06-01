@@ -5,8 +5,23 @@ export interface FamilyMember {
   birth_date: string | null; // YYYY-MM-DD
   birth_time: string | null; // HH:MM:SS
   birth_place: string | null;
+  is_connected?: boolean;
+  connected_user_details?: {
+    id: string;
+    email: string;
+    first_name: string;
+    last_name: string;
+  } | null;
   created_at: string; // ISO DateTime
   updated_at: string; // ISO DateTime
+}
+
+export interface FamilyTreeUser {
+  id: string;
+  email: string;
+  first_name: string;
+  last_name: string;
+  name: string;
 }
 
 export interface FamilyRelationship {

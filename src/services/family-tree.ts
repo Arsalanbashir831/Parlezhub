@@ -1,6 +1,6 @@
 import apiCaller from '@/lib/api-caller';
 import { API_ROUTES } from '@/constants/api-routes';
-import { FamilyMember, FamilyTreeResponse } from '@/types/family-tree';
+import { FamilyMember, FamilyTreeResponse, FamilyTreeUser } from '@/types/family-tree';
 
 class FamilyTreeService {
   async getFamilyTree(): Promise<FamilyTreeResponse> {
@@ -8,12 +8,22 @@ class FamilyTreeService {
     return res.data;
   }
 
+  async searchUsers(query: string): Promise<FamilyTreeUser[]> {
+    const res = await apiCaller(
+      `${API_ROUTES.FAMILY_TREE.USERS}?q=${encodeURIComponent(query)}`,
+      'GET'
+    );
+    return res.data;
+  }
+
   async createMember(payload: {
-    name: string;
-    gender: 'male' | 'female' | 'other' | null;
-    birth_date: string | null;
-    birth_time: string | null;
-    birth_place: string | null;
+    name?: string | null;
+    gender?: 'male' | 'female' | 'other' | null;
+    birth_date?: string | null;
+    birth_time?: string | null;
+    birth_place?: string | null;
+    connected_user_id?: string | null;
+    connected_user_email?: string | null;
   }): Promise<FamilyMember> {
     const res = await apiCaller(API_ROUTES.FAMILY_TREE.MEMBERS, 'POST', payload);
     return res.data;
@@ -22,11 +32,13 @@ class FamilyTreeService {
   async updateMember(
     uuid: string,
     payload: {
-      name: string;
-      gender: 'male' | 'female' | 'other' | null;
-      birth_date: string | null;
-      birth_time: string | null;
-      birth_place: string | null;
+      name?: string | null;
+      gender?: 'male' | 'female' | 'other' | null;
+      birth_date?: string | null;
+      birth_time?: string | null;
+      birth_place?: string | null;
+      connected_user_id?: string | null;
+      connected_user_email?: string | null;
     }
   ): Promise<FamilyMember> {
     const res = await apiCaller(API_ROUTES.FAMILY_TREE.MEMBER(uuid), 'PUT', payload);
@@ -55,4 +67,3 @@ class FamilyTreeService {
 }
 
 export const familyTreeService = new FamilyTreeService();
-export default familyTreeService;
