@@ -214,6 +214,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
         }
 
+        if (event === 'PASSWORD_RECOVERY' && session) {
+          setIsAuthenticated(true);
+          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
+          router.push(ROUTES.AUTH.RESET_PASSWORD);
+        }
+
         if (event === 'SIGNED_OUT') {
           tokenStore.clear();
           setIsAuthenticated(false);

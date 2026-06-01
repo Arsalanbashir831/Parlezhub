@@ -150,6 +150,22 @@ export async function proxy(request: NextRequest) {
 
   // 3. Root redirect
   if (pathname === ROUTES.HOME) {
+    if (request.nextUrl.searchParams.has('code')) {
+      const callbackUrl = new URL(ROUTES.AUTH.CALLBACK, request.url);
+      request.nextUrl.searchParams.forEach((val, key) => {
+        callbackUrl.searchParams.set(key, val);
+      });
+      return NextResponse.redirect(callbackUrl);
+    }
+
+    if (request.nextUrl.searchParams.get('type') === 'recovery') {
+      const resetUrl = new URL(ROUTES.AUTH.RESET_PASSWORD, request.url);
+      request.nextUrl.searchParams.forEach((val, key) => {
+        resetUrl.searchParams.set(key, val);
+      });
+      return NextResponse.redirect(resetUrl);
+    }
+
     const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
