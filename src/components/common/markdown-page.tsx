@@ -7,11 +7,12 @@ import remarkGfm from 'remark-gfm';
 import { useRouter } from 'next/navigation';
 
 import { Button } from '@/components/ui/button';
+import rehypeRaw from 'rehype-raw';
 
 interface MarkdownPageProps {
   title: string;
   subtitle?: string;
-  content: string; 
+  content: string;
   icon?: React.ReactNode;
 }
 
@@ -54,19 +55,9 @@ export default function MarkdownPage({
         </div>
 
         <div className="relative rounded-2xl border border-primary-500/10 bg-white/5 p-8 shadow-2xl backdrop-blur-sm md:p-12">
-          <article className="prose-custom prose-invert max-w-none">
-            <ReactMarkdown 
-              remarkPlugins={[remarkGfm]}
-              components={{
-                h1: () => null,
-                h2: ({ children }) => <h2 className="mt-12 mb-6 font-serif text-2xl font-bold text-primary-300 border-b border-primary-500/20 pb-2 tracking-tight">{children}</h2>,
-                p: ({ children }) => <p className="mb-6 leading-relaxed text-slate-300">{children}</p>,
-                ul: ({ children }) => <ul className="mb-6 list-outside list-disc space-y-3 pl-6 text-slate-300">{children}</ul>,
-                li: ({ children }) => <li className="pl-2">{children}</li>,
-                strong: ({ children }) => <strong className="font-bold text-primary-400">{children}</strong>,
-                em: ({ children }) => <em className="italic text-primary-500/60">{children}</em>,
-              }}
-            >
+          <article className="prose prose-invert max-w-none prose-h1:hidden prose-h2:mt-12 prose-h2:mb-6 prose-h2:font-serif prose-h2:text-2xl prose-h2:font-bold prose-h2:text-primary-300 prose-h2:border-b prose-h2:border-primary-500/20 prose-h2:pb-2 prose-h2:tracking-tight prose-p:mb-6 prose-p:leading-relaxed prose-p:text-slate-300 prose-ul:mb-6 prose-ul:list-disc prose-ul:space-y-3 prose-ul:pl-6 prose-ul:text-slate-300 prose-li:pl-2 prose-strong:font-bold prose-strong:text-primary-400 prose-em:italic prose-em:text-primary-500/60">
+            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
+
               {content}
             </ReactMarkdown>
           </article>

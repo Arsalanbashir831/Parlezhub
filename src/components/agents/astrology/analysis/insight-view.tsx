@@ -7,6 +7,8 @@ import ReactMarkdown from 'react-markdown';
 
 import { useAstrologicalInsight } from '@/hooks/useAstrology';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import remarkGfm from 'remark-gfm';
+import rehypeRaw from 'rehype-raw'
 
 interface InsightViewProps {
   slug: string;
@@ -99,51 +101,14 @@ const InsightView: React.FC<InsightViewProps> = ({
               </div>
             ) : (
               <div className="mx-auto max-w-4xl px-2">
-                <ReactMarkdown
-                  components={{
-                    h1: ({ children }) => (
-                      <h1 className="mb-12 mt-8 text-center font-serif text-3xl font-bold leading-tight text-primary-500 md:text-4xl">
-                        {children}
-                      </h1>
-                    ),
-                    h2: ({ children }) => (
-                      <h2 className="mb-10 mt-20 border-l-4 border-primary-500 pl-6 font-serif text-2xl font-bold leading-snug text-primary-400 md:text-3xl">
-                        {children}
-                      </h2>
-                    ),
-                    h3: ({ children }) => (
-                      <h3 className="mb-6 mt-14 font-serif text-xl font-bold text-primary-300">
-                        {children}
-                      </h3>
-                    ),
-                    p: ({ children }) => (
-                      <p className="my-4 text-justify text-lg font-medium leading-relaxed text-primary-100/80 last:mb-0 md:text-left">
-                        {children}
-                      </p>
-                    ),
-                    ul: ({ children }) => (
-                      <ul className="my-8 list-none space-y-8 pl-2 md:pl-6">
-                        {children}
-                      </ul>
-                    ),
-                    li: ({ children }) => (
-                      <li className="flex gap-4 text-lg font-medium text-primary-100/90">
-                        <span className="mt-3 h-2 w-2 shrink-0 rounded-full bg-primary-500 shadow-[0_0_8px_rgba(212,175,55,0.6)]" />
-                        <div>{children}</div>
-                      </li>
-                    ),
-                    hr: () => (
-                      <hr className="my-12 border-t border-primary-500/10" />
-                    ),
-                    strong: ({ children }) => (
-                      <strong className="font-bold text-primary-500">
-                        {children}
-                      </strong>
-                    ),
-                  }}
-                >
-                  {data.insight_text}
-                </ReactMarkdown>
+                <article className="prose prose-invert max-w-none prose-headings:font-serif prose-h1:mb-12 prose-h1:mt-8 prose-h1:text-center prose-h1:text-3xl prose-h1:font-bold prose-h1:text-primary-500 md:prose-h1:text-4xl prose-h2:mb-10 prose-h2:mt-20 prose-h2:border-l-4 prose-h2:border-primary-500 prose-h2:pl-6 prose-h2:text-2xl prose-h2:font-bold prose-h2:text-primary-400 md:prose-h2:text-3xl prose-h3:mb-6 prose-h3:mt-14 prose-h3:text-xl prose-h3:font-bold prose-h3:text-primary-300 prose-p:my-4 prose-p:text-justify prose-p:text-lg prose-p:font-medium prose-p:leading-relaxed prose-p:text-primary-100/80 md:prose-p:text-left prose-ul:my-8 prose-ul:list-disc prose-ul:space-y-4 prose-ul:pl-2 md:prose-ul:pl-6 prose-li:text-lg prose-li:font-medium prose-li:text-primary-100/90 prose-strong:font-bold prose-strong:text-primary-500 prose-hr:my-12 prose-hr:border-primary-500/10">
+                  <ReactMarkdown
+                    remarkPlugins={[remarkGfm]}
+                    rehypePlugins={[rehypeRaw]}
+                  >
+                    {data.insight_text}
+                  </ReactMarkdown>
+                </article>
               </div>
             )}
           </div>

@@ -7,6 +7,7 @@ import remarkGfm from 'remark-gfm';
 
 import { useAstrologyAIChat } from '@/hooks/useAstrologyAIChat';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import rehypeRaw from 'rehype-raw';
 
 interface FloatingAIAstrologerProps {
   category: string;
@@ -139,7 +140,7 @@ export const FloatingAIAstrologer = memo(function FloatingAIAstrologer({
                       >
                         {msg.role === 'assistant' ? (
                           <div className="ai-chat-markdown prose prose-sm prose-invert max-w-none text-[13px] leading-relaxed">
-                            <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                            <ReactMarkdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeRaw]}>
                               {msg.content}
                             </ReactMarkdown>
                           </div>
