@@ -10,6 +10,7 @@ import TransitDateSelector from '@/components/agents/astrology/components/transi
 import ChartTypeSelector from '@/components/agents/astrology/components/chart-type-selector';
 import { ASTRO_CHART_TYPES } from '@/constants/astrology';
 import { DivisionalChart } from '@/types/astrology';
+import DivisionalChartAnalysis from '@/components/agents/astrology/components/divisional-chart-analysis';
 
 export default function AstrologyPage() {
   const searchParams = useSearchParams();
@@ -115,10 +116,17 @@ export default function AstrologyPage() {
             </div>
           )}
           {natalChart && chartData && (
-            <AstroDetailsTable
-              grahaDetails={chartData.graha_details}
-              bhavaDetails={chartData.bhava_details}
-            />
+            <div className="flex flex-col gap-6 md:gap-10">
+              <AstroDetailsTable
+                grahaDetails={chartData.graha_details}
+                bhavaDetails={chartData.bhava_details}
+              />
+              <DivisionalChartAnalysis
+                chartType={chartType}
+                studentId={studentId}
+                guestProfileId={guestId}
+              />
+            </div>
           )}
         </div>
       </div>
