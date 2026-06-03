@@ -19,6 +19,7 @@ import {
   LifeBuoy,
   Moon,
   Orbit,
+  Plane,
   Sparkles,
   Star,
   Theater,
@@ -66,6 +67,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   '👥': Users,
   '🎭': Theater,
   '🤝': Handshake,
+  '✈️': Plane,
 };
 
 export default function AstrologyLayout({

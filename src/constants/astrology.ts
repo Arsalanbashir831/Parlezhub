@@ -101,13 +101,10 @@ export const LEFT_MENU_ITEMS = [
   { id: 'marriage', label: 'Marriage Timing', icon: '💍' },
   { id: 'prosperity_sav', label: 'Prosperity & Career (SAV)', icon: '💼' },
   { id: 'medical', label: 'Medical Astrology', icon: '🏥' },
-  {
-    id: 'btr',
-    label: 'Birth Time Rectification',
-    icon: '⏳',
-  },
+  { id: 'btr', label: 'Birth Time Rectification', icon: '⏳' },
   { id: 'parasari', label: 'Parasari Relationships', icon: '👥' },
   { id: 'darakaraka', label: 'Spouse Profile (Jaimini)', icon: '❤️' },
+  { id: 'foreign_travel', label: 'Foreign Travel', icon: '✈️' },
 ];
 
 export const PLANET_ORDER = ['Ketu', 'Venus', 'Sun', 'Moon', 'Mars', 'Rahu', 'Jupiter', 'Saturn', 'Mercury'];
