@@ -76,6 +76,7 @@ export const API_ROUTES = {
     GUEST_PROFILE_DETAIL: (id: number) => `/astrology/guest-profiles/${id}/`,
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
     DASHA: '/astrology/dasha/',
+    FESTIVAL_CALENDAR: '/astrology/festival-calendar/',
   },
   FAMILY_TREE: {
     BASE: '/family-tree/',

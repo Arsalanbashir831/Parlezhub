@@ -80,6 +80,7 @@ export const RIGHT_MENU_ITEMS = [
   { id: 'dashboard', label: 'Dashboard', icon: '🪐' },
   { id: 'dasha', label: 'Dasha Timeline', icon: '⏳' },
   { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
+  { id: 'festival-calendar', label: 'Festival Calendar', icon: '📅' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
   { id: 'share-access', label: 'Share Access', icon: '🤝' },
 ];
@@ -122,15 +123,15 @@ export const PLANET_YEARS: Record<string, number> = {
 };
 
 export const PLANET_META: Record<string, { symbol: string; color: string; border: string; glow: string }> = {
-  Sun:     { symbol: '☉', color: '#f59e0b', border: 'border-amber-500/60',   glow: '0 0 14px rgba(245,158,11,0.4)' },
-  Moon:    { symbol: '☽', color: '#38bdf8', border: 'border-sky-300/60',    glow: '0 0 14px rgba(56,189,248,0.3)' },
-  Mars:    { symbol: '♂',  color: '#ef4444', border: 'border-red-500/60',     glow: '0 0 14px rgba(239,68,68,0.4)' },
+  Sun: { symbol: '☉', color: '#f59e0b', border: 'border-amber-500/60', glow: '0 0 14px rgba(245,158,11,0.4)' },
+  Moon: { symbol: '☽', color: '#38bdf8', border: 'border-sky-300/60', glow: '0 0 14px rgba(56,189,248,0.3)' },
+  Mars: { symbol: '♂', color: '#ef4444', border: 'border-red-500/60', glow: '0 0 14px rgba(239,68,68,0.4)' },
   Mercury: { symbol: '☿', color: '#10b981', border: 'border-emerald-500/60', glow: '0 0 14px rgba(16,185,129,0.4)' },
-  Jupiter: { symbol: '♃', color: '#eab308', border: 'border-yellow-500/60',  glow: '0 0 14px rgba(234,179,8,0.4)' },
-  Venus:   { symbol: '♀',  color: '#ec4899', border: 'border-pink-500/60',    glow: '0 0 14px rgba(236,72,153,0.4)' },
-  Saturn:  { symbol: '♄', color: '#a78bfa', border: 'border-violet-400/60',  glow: '0 0 14px rgba(167,139,250,0.4)' },
-  Rahu:    { symbol: '☊', color: '#8b5cf6', border: 'border-purple-500/60',  glow: '0 0 14px rgba(139,92,246,0.5)' },
-  Ketu:    { symbol: '☋', color: '#f97316', border: 'border-orange-500/60',  glow: '0 0 14px rgba(249,115,22,0.4)' },
+  Jupiter: { symbol: '♃', color: '#eab308', border: 'border-yellow-500/60', glow: '0 0 14px rgba(234,179,8,0.4)' },
+  Venus: { symbol: '♀', color: '#ec4899', border: 'border-pink-500/60', glow: '0 0 14px rgba(236,72,153,0.4)' },
+  Saturn: { symbol: '♄', color: '#a78bfa', border: 'border-violet-400/60', glow: '0 0 14px rgba(167,139,250,0.4)' },
+  Rahu: { symbol: '☊', color: '#8b5cf6', border: 'border-purple-500/60', glow: '0 0 14px rgba(139,92,246,0.5)' },
+  Ketu: { symbol: '☋', color: '#f97316', border: 'border-orange-500/60', glow: '0 0 14px rgba(249,115,22,0.4)' },
 };
 
 export const DEFAULT_PLANET_META = {

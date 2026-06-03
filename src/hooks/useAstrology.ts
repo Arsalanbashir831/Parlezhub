@@ -368,3 +368,71 @@ export function useDasha(enabled: boolean = true, studentId?: string, guestProfi
     staleTime: 1000 * 60 * 30, // 30 min cache — dasha data changes infrequently
   });
 }
+
+export interface FestivalCalendarPayload {
+  year: number;
+  festival_type?: string | null;
+  language?: string | null;
+  region?: string | null;
+}
+
+export interface FestivalCalendarResponse {
+  year: number;
+  festival_count: number;
+  calculation_notes: {
+    note: string;
+  };
+  filters_applied: {
+    festival_type?: string;
+    language?: string;
+    region?: string;
+  };
+  festivals: {
+    date: string;
+    key: string;
+    name: string;
+    name_hindi?: string;
+    significance?: string;
+    timing_type?: string;
+    type?: string;
+    weekday?: string;
+    duration_days?: number;
+    end_date?: string;
+    regions?: string[];
+    rituals?: string[];
+  }[];
+  ekadashis: {
+    date: string;
+    lunar_month: string;
+    name: string;
+    paksha: string;
+  }[];
+  purnimas: {
+    date: string;
+    lunar_month: string;
+    name: string;
+    significance?: string;
+  }[];
+  special_amavasyas: {
+    date: string;
+    lunar_month: string;
+    name: string;
+    significance?: string;
+  }[];
+}
+
+export function useFestivalCalendar(payload: FestivalCalendarPayload, enabled: boolean = true) {
+  return useQuery({
+    queryKey: ['astrology', 'festival-calendar', payload],
+    queryFn: async () => {
+      const response = await apiCaller(
+        API_ROUTES.ASTROLOGY.FESTIVAL_CALENDAR,
+        'POST',
+        payload as unknown as Record<string, string | number | boolean>
+      );
+      return response.data as FestivalCalendarResponse;
+    },
+    enabled,
+    staleTime: 1000 * 60 * 60 * 24, // 24 hours cache
+  });
+}

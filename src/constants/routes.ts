@@ -21,6 +21,7 @@ export const ROUTES = {
       PROFILE: '/astrology/profile',
       SHARE: '/astrology/share',
       DASHA: '/astrology/dasha',
+      FESTIVAL_CALENDAR: '/astrology/festival-calendar',
       INSIGHTS: (slug: string) => `/astrology/insights/${slug}`,
     },
   },

@@ -5,6 +5,7 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import {
   Brain,
   Briefcase,
+  Calendar,
   CloudMoon,
   Compass,
   Contrast,
@@ -68,6 +69,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
   '🎭': Theater,
   '🤝': Handshake,
   '✈️': Plane,
+  '📅': Calendar,
 };
 
 export default function AstrologyLayout({
@@ -134,6 +136,7 @@ export default function AstrologyLayout({
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
       'dasha': ROUTES.AGENT.ASTROLOGY.DASHA,
+      'festival-calendar': ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR,
     };
 
     if (routeMap[id]) {
@@ -163,6 +166,7 @@ export default function AstrologyLayout({
     if (pathname === ROUTES.AGENT.ASTROLOGY.PROFILE) return 'birth-profile';
     if (pathname === ROUTES.AGENT.ASTROLOGY.SHARE) return 'share-access';
     if (pathname === ROUTES.AGENT.ASTROLOGY.DASHA) return 'dasha';
+    if (pathname === ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR) return 'festival-calendar';
     if (pathname.includes(ROUTES.AGENT.ASTROLOGY.INSIGHTS(''))) {
       const slug = pathname.split('/').pop();
       return slug || null;
