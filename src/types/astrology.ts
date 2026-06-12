@@ -317,4 +317,43 @@ export interface PlanetInsight {
   challenges: string[];
 }
 
+// === REPORT TYPES ===
+export type ReportStatus = 'pending' | 'generating' | 'ready' | 'failed';
+export type ReportType = 'full';
+
+export interface AstrologyReportRecord {
+  id: number;
+  report_type: ReportType;
+  report_type_display: string;
+  status: ReportStatus;
+  is_paid: boolean;
+  preview_content: string;
+  preview_url: string | null;
+  amount_cents: number | null;
+  paid_at: string | null;
+  generated_at: string | null;
+  download_url: string | null;
+}
+
+export interface InitiateReportPaymentResponse {
+  report_id: number;
+  report_type: ReportType;
+  status: ReportStatus;
+  amount_cents: number;
+  currency: string;
+  client_secret: string;
+  already_purchased: boolean;
+  preview_content: string;
+  preview_url?: string | null;
+  download_url?: string;
+}
+
+export interface ConfirmReportPaymentResponse {
+  report_id: number;
+  status: ReportStatus;
+  preview_content: string;
+  preview_url?: string | null;
+  message: string;
+}
+
 

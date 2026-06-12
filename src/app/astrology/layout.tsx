@@ -137,6 +137,7 @@ export default function AstrologyLayout({
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
       'dasha': ROUTES.AGENT.ASTROLOGY.DASHA,
       'festival-calendar': ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR,
+      'reports': ROUTES.AGENT.ASTROLOGY.REPORTS,
     };
 
     if (routeMap[id]) {
@@ -167,6 +168,7 @@ export default function AstrologyLayout({
     if (pathname === ROUTES.AGENT.ASTROLOGY.SHARE) return 'share-access';
     if (pathname === ROUTES.AGENT.ASTROLOGY.DASHA) return 'dasha';
     if (pathname === ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR) return 'festival-calendar';
+    if (pathname === ROUTES.AGENT.ASTROLOGY.REPORTS) return 'reports';
     if (pathname.includes(ROUTES.AGENT.ASTROLOGY.INSIGHTS(''))) {
       const slug = pathname.split('/').pop();
       return slug || null;
@@ -185,7 +187,7 @@ export default function AstrologyLayout({
   return (
     <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground selection:bg-primary-500/10">
       {selectedProfile.type !== 'me' && (
-        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 backdrop-blur-md md:px-8">
+        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 md:px-8">
           <div className="flex items-center gap-2 text-xs font-semibold text-primary-900 md:text-sm">
             <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary-500" />
             Viewing {displayUsername}&apos;s Chart — {selectedProfile.type === 'guest' ? 'Guest Profile' : 'Read-Only Mode'}

@@ -77,6 +77,10 @@ export const API_ROUTES = {
     CHAT: (category: string) => `/astrology/insights/${category}/chat/`,
     DASHA: '/astrology/dasha/',
     FESTIVAL_CALENDAR: '/astrology/festival-calendar/',
+    REPORTS: '/astrology/reports/',
+    REPORT_PURCHASE: '/astrology/reports/purchase/',
+    REPORT_CONFIRM_PAYMENT: '/astrology/reports/confirm-payment/',
+    REPORT_DOWNLOAD: (reportType: string) => `/astrology/reports/${reportType}/download/`,
   },
   FAMILY_TREE: {
     BASE: '/family-tree/',

@@ -7,8 +7,11 @@ import {
   AstrologicalInsight,
   AstrologyAccess,
   AstrologyConsultant,
+  AstrologyReportRecord,
   BirthProfile,
+  ConfirmReportPaymentResponse,
   DashaResponse,
+  InitiateReportPaymentResponse,
   NakshatraPredictionResponse,
   NatalChartResponse,
   SharedStudentAccess,
@@ -26,6 +29,7 @@ export const ASTROLOGY_QUERY_KEYS = {
   SHARED_STUDENTS: ['astrology', 'consultant', 'shared-students'],
   GUEST_PROFILES: ['astrology', 'guest-profiles'],
   DASHA: ['astrology', 'dasha'],
+  REPORTS: ['astrology', 'reports'],
 };
 
 /**
@@ -434,5 +438,82 @@ export function useFestivalCalendar(payload: FestivalCalendarPayload, enabled: b
     },
     enabled,
     staleTime: 1000 * 60 * 60 * 24, // 24 hours cache
+  });
+}
+
+// ===========================================================================
+// Report hooks
+// ===========================================================================
+
+/**
+ * Fetch all AstrologyReport records for the current user's birth profile.
+ * Teachers can pass birth_profile_id to view a guest profile's reports.
+ */
+export function useReports(birthProfileId?: number) {
+  return useQuery({
+    queryKey: [...ASTROLOGY_QUERY_KEYS.REPORTS, birthProfileId],
+    queryFn: async () => {
+      const url = birthProfileId
+        ? `${API_ROUTES.ASTROLOGY.REPORTS}?birth_profile_id=${birthProfileId}`
+        : API_ROUTES.ASTROLOGY.REPORTS;
+      const response = await apiCaller(url, 'GET');
+      return response.data as AstrologyReportRecord[];
+    },
+    staleTime: 1000 * 30, // 30-second cache — refetch after payment
+  });
+}
+
+/**
+ * Create (or retrieve an existing) Stripe PaymentIntent for a report.
+ * Returns the client_secret used by Stripe.js to confirm payment on the frontend.
+ */
+export function useInitiateReportPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (payload: {
+      report_type?: string;
+      birth_profile_id?: number;
+    }) => {
+      const response = await apiCaller(
+        API_ROUTES.ASTROLOGY.REPORT_PURCHASE,
+        'POST',
+        payload as RequestData
+      );
+      return response.data as InitiateReportPaymentResponse;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.REPORTS });
+    },
+    onError: (error: AxiosError<{ detail?: string }>) => {
+      const msg = error.response?.data?.detail || 'Failed to initiate payment. Please try again.';
+      toast.error('Payment Error', { description: msg });
+    },
+  });
+}
+
+/**
+ * Called after Stripe.js successfully confirms a card payment.
+ * Sends the payment_intent_id to the backend which will verify it,
+ * mark the report as paid, and trigger PDF generation.
+ */
+export function useConfirmReportPayment() {
+  const queryClient = useQueryClient();
+  return useMutation({
+    mutationFn: async (paymentIntentId: string) => {
+      const response = await apiCaller(
+        API_ROUTES.ASTROLOGY.REPORT_CONFIRM_PAYMENT,
+        'POST',
+        { payment_intent_id: paymentIntentId } as RequestData
+      );
+      return response.data as ConfirmReportPaymentResponse;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.REPORTS });
+      toast.success('Payment confirmed!', { description: 'Your report is being generated.' });
+    },
+    onError: (error: AxiosError<{ detail?: string }>) => {
+      const msg = error.response?.data?.detail || 'Could not confirm payment. Please contact support.';
+      toast.error('Confirmation Error', { description: msg });
+    },
   });
 }

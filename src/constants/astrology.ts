@@ -81,6 +81,7 @@ export const RIGHT_MENU_ITEMS = [
   { id: 'dasha', label: 'Dasha Timeline', icon: '⏳' },
   { id: 'navatara', label: 'Navatara (Nine Stars)', icon: '⭐' },
   { id: 'festival-calendar', label: 'Festival Calendar', icon: '📅' },
+  { id: 'reports', label: 'My Reports', icon: '📋' },
   { id: 'birth-profile', label: 'Update Birth Profile', icon: '⚙️' },
   { id: 'share-access', label: 'Share Access', icon: '🤝' },
 ];

@@ -53,6 +53,7 @@ const NavigationSidebar: React.FC<NavigationSidebarProps> = ({
       'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
       'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
       'festival-calendar': ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR,
+      'reports': ROUTES.AGENT.ASTROLOGY.REPORTS,
     };
 
     return `${routeMap[id] || ROUTES.AGENT.ASTROLOGY.ROOT}${suffix}`;
