@@ -59,9 +59,9 @@ const formSchema = z.object({
     .max(59, 'Minute must be 0-59'),
   city: z.string().min(1, 'City is required'),
   country_code: z.string().length(2, 'Must be 2 letters (e.g., IN, US)'),
-  marriage_date: z.string().nullable().optional(),
-  kids: z.number().min(0, 'Kids count cannot be negative').or(z.literal('')).nullable().optional(),
-  comments: z.string().max(5000, 'Max 5000 characters').nullable().optional(),
+  // marriage_date: z.string().nullable().optional(),
+  // kids: z.number().min(0, 'Kids count cannot be negative').or(z.literal('')).nullable().optional(),
+  // comments: z.string().max(5000, 'Max 5000 characters').nullable().optional(),
 });
 
 type FormValues = z.infer<typeof formSchema>;
@@ -114,9 +114,9 @@ export default function BirthProfileForm({
       birth_minute: profile?.birth_minute || 0,
       city: profile?.city || '',
       country_code: profile?.country_code || 'US',
-      marriage_date: profile?.marriage_date || '',
-      kids: profile?.kids !== null && profile?.kids !== undefined ? profile?.kids : '',
-      comments: profile?.comments || '',
+      // marriage_date: profile?.marriage_date || '',
+      // kids: profile?.kids !== null && profile?.kids !== undefined ? profile?.kids : '',
+      // comments: profile?.comments || '',
     },
   });
 
@@ -158,9 +158,9 @@ export default function BirthProfileForm({
       birth_minute: data.birth_minute,
       city: data.city,
       country_code: data.country_code,
-      marriage_date: data.marriage_date || null,
-      kids: typeof data.kids === 'number' ? data.kids : null,
-      comments: data.comments || null,
+      // marriage_date: data.marriage_date || null,
+      // kids: typeof data.kids === 'number' ? data.kids : null,
+      // comments: data.comments || null,
     };
 
     if (type === 'guest') {
@@ -411,7 +411,7 @@ export default function BirthProfileForm({
               />
             </div>
 
-            {/* Optional Personal & Family Details */}
+            {/* Optional Personal & Family Details (Commented out)
             <div className="space-y-4 rounded-xl border border-primary-500/10 bg-primary-500/5 p-4">
               <h3 className="text-xs font-bold tracking-widest text-primary-400 uppercase">
                 Personal & Family Details (Optional)
@@ -484,6 +484,7 @@ export default function BirthProfileForm({
                 )}
               />
             </div>
+            */}
 
             {!readOnly && (
               <Button
