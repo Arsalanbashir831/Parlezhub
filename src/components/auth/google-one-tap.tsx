@@ -1,7 +1,7 @@
 'use client';
 
 import Script from 'next/script';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 
 import { createClient } from '@/lib/supabase/client';
 import { authApi } from '@/services/auth';
@@ -65,6 +65,7 @@ declare global {
  */
 export function GoogleOneTap() {
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const initializeOneTap = async () => {
@@ -101,14 +102,22 @@ export function GoogleOneTap() {
             console.error('[One-Tap] Django sync failed:', syncErr);
             // Even if sync fails, user is authenticated in Supabase.
             // Redirect to onboarding so they can retry via set-role.
-            router.push(ROUTES.ONBOARDING.CHOOSE_ROLE);
+            const redirectParam = searchParams.get('redirect');
+            const onboardingUrl = redirectParam
+              ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectParam)}`
+              : ROUTES.ONBOARDING.CHOOSE_ROLE;
+            router.push(onboardingUrl);
             return;
           }
 
           // Step 3: Route based on sync result
           if (syncResult.requires_role_selection) {
             // New user — go pick a role
-            router.push(ROUTES.ONBOARDING.CHOOSE_ROLE);
+            const redirectParam = searchParams.get('redirect');
+            const onboardingUrl = redirectParam
+              ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectParam)}`
+              : ROUTES.ONBOARDING.CHOOSE_ROLE;
+            router.push(onboardingUrl);
           } else {
             // Returning user — fetch their profile and go to dashboard
             try {
@@ -119,14 +128,16 @@ export function GoogleOneTap() {
               setUserRoles(roles);
               const role = roles[0] ?? 'STUDENT';
               setActiveRole(role);
+              const redirectTo = searchParams.get('redirect');
               router.push(
-                role === 'TEACHER'
+                redirectTo || (role === 'TEACHER'
                   ? ROUTES.TEACHER.DASHBOARD
-                  : ROUTES.STUDENT.DASHBOARD
+                  : ROUTES.STUDENT.DASHBOARD)
               );
             } catch {
-              // Profile fetch failed for unexpected reason — go home, middleware will route
-              router.push(ROUTES.HOME);
+              // Profile fetch failed for unexpected reason — go to redirect or home
+              const redirectTo = searchParams.get('redirect');
+              router.push(redirectTo || ROUTES.HOME);
             }
           }
         } catch (err) {

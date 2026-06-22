@@ -56,7 +56,8 @@ axiosInstance.interceptors.response.use(
         clearAuthCookies();
         if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });
-          window.location.href = ROUTES.AUTH.LOGIN;
+          const currentPath = window.location.pathname + window.location.search;
+          window.location.href = `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`;
         }
         return Promise.reject(error);
       }
@@ -84,7 +85,8 @@ axiosInstance.interceptors.response.use(
         clearAuthCookies();
         if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });
-          window.location.href = ROUTES.AUTH.LOGIN;
+          const currentPath = window.location.pathname + window.location.search;
+          window.location.href = `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`;
         }
         return Promise.reject(refreshError);
       }

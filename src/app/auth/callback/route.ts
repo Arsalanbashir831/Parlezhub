@@ -18,7 +18,9 @@ import { API_ROUTES } from '@/constants/api-routes';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  const next = searchParams.get('next') ?? '/';
+  
+  const oauthRedirectCookie = request.cookies.get('oauth_redirect')?.value;
+  const next = oauthRedirectCookie || searchParams.get('next') || '/';
 
   if (!code) {
     console.error('[auth/callback] No code param received');
@@ -139,6 +141,10 @@ export async function GET(request: NextRequest) {
   // Clean up the intended_role cookie
   if (intendedRoleCookie) {
     finalResponse.cookies.delete('intended_role');
+  }
+  // Clean up the oauth_redirect cookie
+  if (oauthRedirectCookie) {
+    finalResponse.cookies.delete('oauth_redirect');
   }
 
   return finalResponse;

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 import { useAuth } from '@/contexts/auth-context';
 import { toast } from 'sonner';
 
@@ -17,11 +18,13 @@ export function GoogleOAuthButton({
 }: GoogleOAuthButtonProps) {
   const [isLoading, setIsLoading] = useState(false);
   const { signInWithGoogle } = useAuth();
+  const searchParams = useSearchParams();
 
   const handleGoogleAuth = async () => {
     setIsLoading(true);
     try {
-      await signInWithGoogle();
+      const redirectTo = searchParams.get('redirect') || undefined;
+      await signInWithGoogle(redirectTo);
 
       // We don't set isLoading(false) here because the page will redirect to Google
     } catch (error) {

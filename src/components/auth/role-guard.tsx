@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 
@@ -19,13 +19,17 @@ export default function RoleGuard({
   const { isAuthenticated, userRoles, activeRole, isLoading, canAccessRole } =
     useAuth();
   const router = useRouter();
+  const pathname = usePathname();
+  const searchParams = useSearchParams();
 
   useEffect(() => {
     if (isLoading) return; // Wait for auth check to complete
 
     if (!isAuthenticated) {
       // Redirect to login if not authenticated
-      router.push(ROUTES.AUTH.LOGIN);
+      const params = searchParams.toString();
+      const currentPath = pathname + (params ? `?${params}` : '');
+      router.push(`${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`);
       return;
     }
 

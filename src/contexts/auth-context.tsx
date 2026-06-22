@@ -19,6 +19,8 @@ import {
   setActiveRole,
   setUserRoles,
   clearAuthCookies,
+  setCookie,
+  removeCookie,
 } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
 import { createClient } from '@/lib/supabase/client';
@@ -44,7 +46,7 @@ interface AuthContextType {
   forgotPassword: (email: string) => Promise<{ message: string }>;
   resetPassword: (token: string, password: string) => Promise<{ message: string }>;
   resendVerificationEmail: (email: string) => Promise<{ message: string }>;
-  signInWithGoogle: () => Promise<void>;
+  signInWithGoogle: (redirectTo?: string) => Promise<void>;
   switchRole: (role: 'TEACHER' | 'STUDENT') => Promise<void>;
   refreshUserProfile: () => Promise<void>;
   becomeConsultant: () => Promise<BecomeRoleResponse>;
@@ -344,7 +346,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * Google OAuth Sign-In (PKCE flow)
    * Supabase redirects to /auth/callback which handles the rest.
    */
-  const signInWithGoogle = async () => {
+  const signInWithGoogle = async (redirectTo?: string) => {
+    if (redirectTo) {
+      setCookie('oauth_redirect', redirectTo);
+    } else {
+      removeCookie('oauth_redirect');
+    }
+
     const { error: oauthError } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {

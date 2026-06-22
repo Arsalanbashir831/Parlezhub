@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { authApi } from '@/services/auth';
@@ -21,6 +21,7 @@ export default function ChooseRolePage() {
   const [isLoading, setIsLoading] = useState(false);
   const [selected, setSelected] = useState<'STUDENT' | 'TEACHER' | null>(null);
   const router = useRouter();
+  const searchParams = useSearchParams();
   const supabase = createClient();
 
   const handleSelectRole = async (role: 'STUDENT' | 'TEACHER') => {
@@ -44,8 +45,9 @@ export default function ChooseRolePage() {
 
       toast.success(`Welcome! You're set up as a ${role.toLowerCase()}.`);
 
+      const redirectTo = searchParams.get('redirect');
       router.push(
-        role === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD
+        redirectTo || (role === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD)
       );
     } catch (err) {
       console.error('Role selection failed:', err);
