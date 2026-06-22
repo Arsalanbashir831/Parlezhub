@@ -35,7 +35,7 @@ export function AuthLayout({ children, title, subtitle }: AuthLayoutProps) {
 
         <div className="text-center">
           <p className="text-sm text-primary-500/60">
-            © {new Date().getFullYear()} ParlezHub. All rights reserved.
+            © {new Date().getFullYear()} Shakti Wheel. All rights reserved.
           </p>
         </div>
       </div>

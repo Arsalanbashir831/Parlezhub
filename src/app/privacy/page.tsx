@@ -4,8 +4,8 @@ import { ShieldCheck } from 'lucide-react';
 import MarkdownPage from '@/components/common/markdown-page';
 
 export const metadata = {
-  title: 'Privacy Policy | ParlezHub',
-  description: 'Learn how we protect and manage your data at ParlezHub.',
+  title: 'Privacy Policy | Shakti Wheel',
+  description: 'Learn how we protect and manage your data at Shakti Wheel.',
 };
 
 export default function PrivacyPage() {

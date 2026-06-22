@@ -25,13 +25,13 @@ export function Logo({
     <div className={cn('flex items-center gap-2', className)}>
       <div className="relative">
         <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-primary-500 to-primary-600">
-          <span className="text-sm font-bold text-white">P</span>
+          <span className="text-sm font-bold text-white">S</span>
         </div>
         <div className="absolute -right-1 -top-1 h-3 w-3 animate-pulse rounded-full bg-primary-400"></div>
       </div>
       {!isCollapsed && (
         <span className={cn('font-bold text-primary-50', sizeClasses[size])}>
-          Parlez<span className="text-primary-500">Hub</span>
+          Shakti {" "}<span className="text-primary-500">Wheel</span>
         </span>
       )}
     </div>

@@ -3,8 +3,8 @@ import path from 'path';
 import MarkdownPage from '@/components/common/markdown-page';
 
 export const metadata = {
-  title: 'Terms and Conditions | ParlezHub',
-  description: 'Rules and regulations for using the ParlezHub platform.',
+  title: 'Terms and Conditions | Shakti Wheel',
+  description: 'Rules and regulations for using the Shakti Wheel platform.',
 };
 
 export default function TermsPage() {

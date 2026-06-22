@@ -61,10 +61,10 @@ export default function ChooseRolePage() {
       <div className="w-full max-w-md space-y-8 text-center">
         <div className="space-y-2">
           <h1 className="text-3xl font-bold text-foreground">
-            Welcome to ParlezHub!
+            Welcome to Shakti Wheel!
           </h1>
           <p className="text-muted-foreground">
-            How would you like to use ParlezHub?
+            How would you like to use Shakti Wheel?
           </p>
         </div>
 

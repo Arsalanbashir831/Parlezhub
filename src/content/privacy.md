@@ -2,7 +2,7 @@
 
 Last Updated: April 21, 2026
 
-At **ParlezHub**, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our platform.
+At **Shakti Wheel**, we are committed to protecting your privacy. This Privacy Policy explains how we collect, use, and safeguard your information when you use our platform.
 
 ## 1. Information We Collect
 We collect information that you provide directly to us when you create an account, update your profile, or use our services.
@@ -24,7 +24,7 @@ Astrologers are solely responsible for the data of the **Guest Profiles** they c
 We do not sell your personal data to third parties. Information may only be shared:
 - With your explicit consent (e.g., sharing a chart with a consultant).
 - To comply with legal obligations.
-- To protect and defend the rights or property of ParlezHub.
+- To protect and defend the rights or property of Shakti Wheel.
 
 ## 5. Your Rights
 You have the right to:
@@ -37,4 +37,4 @@ The security of your data is important to us, but remember that no method of tra
 
 ## Contact Us
 For any privacy-related concerns, please reach out to us at:
-Privacy@parlezhub.com
+Privacy@shaktiwheel.com

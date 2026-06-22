@@ -98,10 +98,10 @@ export default function VerifyEmailPage() {
           <p>
             Having trouble? Contact our support team at{' '}
             <a
-              href="mailto:support@parlezhub.com"
+              href="mailto:support@shaktiwheel.com"
               className="text-primary-600 hover:underline"
             >
-              support@parlezhub.com
+              support@shaktiwheel.com
             </a>
           </p>
         </div>

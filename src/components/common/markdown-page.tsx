@@ -40,7 +40,7 @@ export default function MarkdownPage({
           </Button>
           <div className="flex items-center gap-2">
             {icon || <ScrollText className="h-5 w-5 text-primary-500" />}
-            <span className="font-serif text-lg font-bold tracking-tight text-primary-200">ParlezHub</span>
+            <span className="font-serif text-lg font-bold tracking-tight text-primary-200">Shakti Wheel</span>
           </div>
           <div className="w-16" /> {/* Spacer */}
         </div>
@@ -64,7 +64,7 @@ export default function MarkdownPage({
         </div>
 
         <footer className="mt-12 text-center text-sm text-slate-500">
-          <p>© {new Date().getFullYear()} ParlezHub. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Shakti Wheel. All rights reserved.</p>
         </footer>
       </main>
     </div>
