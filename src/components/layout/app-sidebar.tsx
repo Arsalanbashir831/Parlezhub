@@ -264,12 +264,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               <div className="space-y-3">
                 {/* Dashboard Links - show opposite role dashboard */}
                 <SidebarMenu>
-                  {renderMenuItem({
+                  {/* {renderMenuItem({
                     id: 'family-tree',
                     label: 'Family Tree',
                     href: ROUTES.FAMILY_TREE,
                     icon: Network,
-                  })}
+                  })} */}
                   {activeRole === 'STUDENT' &&
                     hasTeacherRole &&
                     renderRoleSwitchMenuItem(
