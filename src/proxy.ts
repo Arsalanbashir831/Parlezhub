@@ -1,6 +1,7 @@
 import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
+import { readRoleCookies } from '@/lib/auth-cookies';
 import { ROUTES } from './constants/routes';
 
 /**
@@ -87,11 +88,17 @@ export async function proxy(request: NextRequest) {
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
     process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY!,
     {
+      cookieOptions: {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax',
+        path: '/',
+      },
       cookies: {
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet, headers) {
           // Write cookies to both the request (for this middleware pass)
           // and the response (so the browser receives them)
           cookiesToSet.forEach(({ name, value }) =>
@@ -100,6 +107,11 @@ export async function proxy(request: NextRequest) {
           supabaseResponse = NextResponse.next({ request });
           cookiesToSet.forEach(({ name, value, options }) =>
             supabaseResponse.cookies.set(name, value, options)
+          );
+          // Responses that set auth cookies must not be cached by a CDN or
+          // reverse proxy, or one user's session can be served to another.
+          Object.entries(headers).forEach(([key, value]) =>
+            supabaseResponse.headers.set(key, value)
           );
         },
       },
@@ -116,27 +128,13 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Read roles from cookies
-  const activeRole = request.cookies.get('active_role')?.value;
-  const userRolesStr = request.cookies.get('user_roles')?.value;
+  const {
+    rolesKnown,
+    userRoles,
+    activeRole,
+  } = readRoleCookies(request.cookies);
 
-  let userRoles: string[] = [];
-  if (userRolesStr) {
-    try {
-      // Decode the string in case it was URL encoded
-      const decodedStr = decodeURIComponent(userRolesStr);
-      userRoles = JSON.parse(decodedStr);
-    } catch (err) {
-      console.error(`[Middleware] Failed to parse user_roles cookie:`, err);
-      userRoles = [];
-    }
-  }
-
-  // Derived user roles from activeRole if userRoles is missing
-  if (userRoles.length === 0 && activeRole) {
-    userRoles = activeRole === 'BOTH' ? ['STUDENT', 'TEACHER'] : [activeRole];
-  }
-
-  const roleToUse = activeRole || userRoles[0] || 'STUDENT';
+  const roleToUse = activeRole ?? userRoles[0] ?? 'STUDENT';
 
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
@@ -156,8 +154,8 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  // 2. If user has NO roles and isn't on onboarding or a public route, send them to onboarding
-  if (userRoles.length === 0 && !isPublicRoute && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
+  // 2. If the server resolved NO roles, send the user to onboarding
+  if (rolesKnown && userRoles.length === 0 && !isPublicRoute && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
     return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
   }
 
@@ -173,7 +171,11 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(dashboard, request.url));
   }
 
-  // 4. Role-based route protection (Strict Enforcement)
+  // 4. Role-based route protection (Strict Enforcement). While roles are unknown
+  // the guard is relaxed: /api/auth/session resolves them and the client-side
+  // RoleGuard enforces immediately, so the next navigation is fully gated.
+  if (!rolesKnown) return supabaseResponse;
+
   const isStudentRoute = STUDENT_ROUTES.some((route) => pathname.startsWith(route));
   const isTeacherRoute = TEACHER_ROUTES.some((route) => pathname.startsWith(route));
 

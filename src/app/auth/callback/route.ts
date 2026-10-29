@@ -3,6 +3,19 @@ import { type NextRequest, NextResponse } from 'next/server';
 import { createClient } from '@/lib/supabase/server';
 import { ROUTES } from '@/constants/routes';
 import { API_ROUTES } from '@/constants/api-routes';
+import {
+  pickActiveRole,
+  rolesFromProfileFlags,
+  writeRoleCookies,
+} from '@/lib/auth-cookies';
+import type { UserRole } from '@/types/user';
+
+/** Only allow same-site absolute paths as post-login destinations. */
+function safeRedirect(value: string | undefined | null): string {
+  if (!value) return '/';
+  if (!value.startsWith('/') || value.startsWith('//')) return '/';
+  return value;
+}
 
 /**
  * Auth Callback Route Handler — handles PKCE code exchange for:
@@ -18,9 +31,9 @@ import { API_ROUTES } from '@/constants/api-routes';
 export async function GET(request: NextRequest) {
   const { searchParams, origin } = new URL(request.url);
   const code = searchParams.get('code');
-  
+
   const oauthRedirectCookie = request.cookies.get('oauth_redirect')?.value;
-  const next = oauthRedirectCookie || searchParams.get('next') || '/';
+  const next = safeRedirect(oauthRedirectCookie || searchParams.get('next'));
 
   if (!code) {
     console.error('[auth/callback] No code param received');
@@ -36,15 +49,13 @@ export async function GET(request: NextRequest) {
   }
 
   const accessToken = data.session.access_token;
-  const isRecovery = data.session.user?.app_metadata?.provider === undefined
-    ? false
-    : searchParams.get('type') === 'recovery';
+  const isRecovery = searchParams.get('type') === 'recovery';
 
-  // Password reset flow — skip sync, go straight to reset page
+  // Password reset flow — the recovery session already lives in httpOnly
+  // cookies, so no credential is put in the URL (it would land in history
+  // and server logs). /auth/reset-password acts on the session directly.
   if (isRecovery) {
-    const resetUrl = new URL(ROUTES.AUTH.RESET_PASSWORD, origin);
-    resetUrl.searchParams.set('token', accessToken);
-    return NextResponse.redirect(resetUrl.toString());
+    return NextResponse.redirect(`${origin}${ROUTES.AUTH.RESET_PASSWORD}`);
   }
 
   // Read intended_role cookie (set by GoogleOAuthButton for new signups)
@@ -98,8 +109,9 @@ export async function GET(request: NextRequest) {
   }
 
   // ── SET ROLE COOKIES ──────────────────────────────────────────────────────
-  // We MUST set these cookies on the server side so the first request 
-  // to the dashboard (which goes through middleware) has them.
+  // We MUST set these cookies on the server side so the first request
+  // to the dashboard (which goes through middleware) has them. They are
+  // httpOnly: role decisions are the server's, not something JS can forge.
   try {
     const rolesRes = await fetch(
       `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
@@ -113,25 +125,13 @@ export async function GET(request: NextRequest) {
 
     if (rolesRes.ok) {
       const rolesData = await rolesRes.json();
-      const availableRoles: string[] = [];
-      if (rolesData.has_teacher) availableRoles.push('TEACHER');
-      if (rolesData.has_student) availableRoles.push('STUDENT');
-
+      const availableRoles: UserRole[] = rolesFromProfileFlags(rolesData);
       if (availableRoles.length > 0) {
-        // Set user_roles (plural) as JSON array
-        finalResponse.cookies.set('user_roles', encodeURIComponent(JSON.stringify(availableRoles)), {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7, // 7 days
-          sameSite: 'lax'
-        });
-
-        // Set active_role (default to first role)
-        const defaultRole = availableRoles[0];
-        finalResponse.cookies.set('active_role', defaultRole, {
-          path: '/',
-          maxAge: 60 * 60 * 24 * 7,
-          sameSite: 'lax'
-        });
+        writeRoleCookies(
+          finalResponse,
+          availableRoles,
+          pickActiveRole(availableRoles)
+        );
       }
     }
   } catch (rolesErr) {

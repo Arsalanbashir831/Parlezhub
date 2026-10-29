@@ -5,7 +5,6 @@ import React, {
   useCallback,
   useContext,
   useEffect,
-  useRef,
   useState,
 } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
@@ -13,38 +12,24 @@ import { ROUTES } from '@/constants/routes';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
-import {
-  getActiveRole,
-  getUserRoles,
-  setActiveRole,
-  setUserRoles,
-  clearAuthCookies,
-  setCookie,
-  removeCookie,
-} from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
-import { createClient } from '@/lib/supabase/client';
-import { tokenStore } from '@/lib/token-store';
+import { landingPathFor, rolesNeedRecheck } from '@/lib/guard-rules';
 
+import type { SessionSnapshot } from '@/types/auth';
 import type { User, UserRole } from '@/types/user';
 import {
   authApi,
   BecomeRoleResponse,
   type ForgotPasswordRequest,
   type ResendVerificationEmailRequest,
-  type ResetPasswordRequest,
-  type UnifiedProfileResponse,
 } from '../services/auth';
 
 interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
-  signup: (
-    userData: Partial<User>,
-    password: string
-  ) => Promise<void>;
+  signup: (userData: Partial<User>, password: string) => Promise<void>;
   forgotPassword: (email: string) => Promise<{ message: string }>;
-  resetPassword: (token: string, password: string) => Promise<{ message: string }>;
+  resetPassword: (password: string) => Promise<{ message: string }>;
   resendVerificationEmail: (email: string) => Promise<{ message: string }>;
   signInWithGoogle: (redirectTo?: string) => Promise<void>;
   switchRole: (role: 'TEACHER' | 'STUDENT') => Promise<void>;
@@ -60,37 +45,66 @@ interface AuthContextType {
   hasTeacherRole: boolean;
   hasStudentRole: boolean;
   canAccessRole: (role: UserRole) => boolean;
-  setIsAuthenticated: (value: boolean) => void;
-  setUserRole: (role: UserRole | null) => void;
+  /** True until the server resolves roles, so guards can wait instead of bouncing. */
+  rolesUnknown: boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
+const ROLE_RECHECK_ATTEMPTS = 2;
+const ROLE_RECHECK_DELAY_MS = 500;
+
+/**
+ * Roles can lag the backend profile row for a moment right after sign-in. A
+ * bounded re-read keeps that window on a loading state instead of flashing the
+ * role picker at somebody who already has a role.
+ */
+async function settleRoles(snapshot: SessionSnapshot): Promise<SessionSnapshot> {
+  let current = snapshot;
+
+  for (
+    let attempt = 0;
+    attempt < ROLE_RECHECK_ATTEMPTS && rolesNeedRecheck(current);
+    attempt++
+  ) {
+    await new Promise((resolve) => setTimeout(resolve, ROLE_RECHECK_DELAY_MS));
+    try {
+      current = await authApi.syncRoles();
+    } catch (err) {
+      console.error('Role lookup still failing:', err);
+      break;
+    }
+  }
+
+  return current;
+}
+
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  // Pre-populate from cookies synchronously so the page renders without a loader on refresh.
-  // Session validity is confirmed asynchronously in the background.
-  const [isLoading, setIsLoading] = useState(() => {
-    if (typeof document === 'undefined') return true;
-    return getUserRoles().length === 0;
-  });
-  const isRefreshingRef = useRef(false);
+  // Session and roles come from /api/auth/session, so the first paint is
+  // identical on server and client — no cookie peeking, no hydration mismatch.
+  const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isAuthenticated, setIsAuthenticated] = useState(() => {
-    if (typeof document === 'undefined') return false;
-    return getUserRoles().length > 0;
-  });
-  const [userRoles, setUserRolesState] = useState<(UserRole)[]>(() => {
-    if (typeof document === 'undefined') return [];
-    return getUserRoles();
-  });
-  const [activeRole, setActiveRoleState] = useState<UserRole | null>(() => {
-    if (typeof document === 'undefined') return null;
-    return getActiveRole();
-  });
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [userRoles, setUserRolesState] = useState<UserRole[]>([]);
+  const [activeRole, setActiveRoleState] = useState<UserRole | null>(null);
+  const [rolesUnknown, setRolesUnknown] = useState(true);
 
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+
+  const applySession = useCallback((snapshot: SessionSnapshot) => {
+    setIsAuthenticated(snapshot.isAuthenticated);
+    setUserRolesState(snapshot.userRoles);
+    setActiveRoleState(snapshot.activeRole);
+    setRolesUnknown(snapshot.rolesUnknown === true);
+  }, []);
+
+  const clearSession = useCallback(() => {
+    setIsAuthenticated(false);
+    setUserRolesState([]);
+    setActiveRoleState(null);
+    setRolesUnknown(false);
+  }, []);
 
   // Computed values
   const userRole = activeRole;
@@ -98,195 +112,65 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const hasStudentRole = userRoles.includes('STUDENT');
   const canAccessRole = (role: UserRole) => userRoles.includes(role);
 
-  // ── Role helpers ───────────────────────────────────────────────────────────
-  const updateRolesFromProfile = useCallback(
-    (profileData: UnifiedProfileResponse) => {
-      const availableRoles: (UserRole)[] = [];
-      if (profileData.has_teacher) availableRoles.push('TEACHER');
-      if (profileData.has_student) availableRoles.push('STUDENT');
+  useEffect(() => {
+    let cancelled = false;
 
-      // If both are present, also add BOTH to match user's new types
-      if (profileData.has_teacher && profileData.has_student) {
-        availableRoles.push('BOTH');
-      }
+    authApi
+      .session()
+      .then(async (snapshot) => {
+        const settled = await settleRoles(snapshot);
+        if (!cancelled) applySession(settled);
+      })
+      .catch((err: unknown) => {
+        console.error('Auth init failed:', err);
+        if (!cancelled) clearSession();
+      })
+      .finally(() => {
+        if (!cancelled) setIsLoading(false);
+      });
 
-      setUserRolesState(availableRoles);
-      setUserRoles(availableRoles);
+    return () => {
+      cancelled = true;
+    };
+  }, [applySession, clearSession]);
 
-      const currentActiveRole = getActiveRole();
-      let newActiveRole: UserRole | null = null;
-
-      // If current role is still valid, keep it. 
-      // Note: If teacher profile was deleted, availableRoles won't have TEACHER, 
-      // so this will fall through to the else block.
-      if (currentActiveRole && availableRoles.includes(currentActiveRole as UserRole)) {
-        newActiveRole = currentActiveRole as UserRole;
-      } else if (availableRoles.length > 0) {
-        // Default to STUDENT if available, otherwise first available
-        newActiveRole = availableRoles.includes('STUDENT') ? 'STUDENT' : (availableRoles[0] as UserRole);
-      }
-
-      setActiveRoleState(newActiveRole);
-      if (newActiveRole) {
-        setActiveRole(newActiveRole);
-      }
-    },
-    []
-  );
-
-  const refreshUserProfile = useCallback(async (force = false) => {
-    if (isRefreshingRef.current && !force) return;
-    isRefreshingRef.current = true;
-
+  /** Re-reads roles from the backend after anything that can change them. */
+  const refreshUserProfile = useCallback(async () => {
     try {
-      const profileData = await authApi.getUnifiedProfile();
-      updateRolesFromProfile(profileData);
+      applySession(await authApi.syncRoles());
     } catch (err) {
       console.error('Failed to refresh user profile:', err);
       throw err;
-    } finally {
-      isRefreshingRef.current = false;
     }
-  }, [updateRolesFromProfile]);
-
-  // ── Supabase session listener ──────────────────────────────────────────────
-  useEffect(() => {
-    let isMounted = true;
-
-    const initializeAuth = async () => {
-      try {
-        const { data: { session } } = await supabase.auth.getSession();
-
-        if (!isMounted) return;
-
-        if (session?.user) {
-          setIsAuthenticated(true);
-          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-
-          // Roles may already be pre-populated from cookies (synchronous useState init).
-          // Only fetch from the API when cookies are genuinely absent.
-          const storedRoles = getUserRoles();
-          if (storedRoles.length === 0) {
-            try {
-              await refreshUserProfile(true);
-            } catch (err) {
-              console.error('Failed to fetch roles during init:', err);
-            }
-          }
-        } else {
-          // Session invalid or expired — clear everything
-          tokenStore.clear();
-          setIsAuthenticated(false);
-          setUserRolesState([]);
-          setActiveRoleState(null);
-        }
-      } catch (err) {
-        console.error('Auth init failed:', err);
-        setIsAuthenticated(false);
-      } finally {
-        if (isMounted) setIsLoading(false);
-      }
-    };
-
-    initializeAuth();
-
-    // Listen for auth state changes (login, logout, token refresh)
-    const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (event, session) => {
-        if (!isMounted) return;
-
-        if (event === 'SIGNED_IN' && session) {
-          setIsAuthenticated(true);
-          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-          try {
-            // Attempt to load profile from Django.
-            // This may fail with "User not found" if the user just signed up via
-            // One-Tap/Google and the sync hasn't completed yet.
-            // That's fine — the One-Tap component calls syncUser first, THEN
-            // manually fetches the profile and redirects. So we just silently skip.
-            await refreshUserProfile();
-          } catch {
-            // Non-fatal — the One-Tap/OAuth flow handles sync+redirect itself
-          }
-        }
-
-        if (event === 'TOKEN_REFRESHED' && session) {
-          // Keep the in-memory token cache up to date so the Axios interceptor
-          // always has the fresh token without needing to call getSession().
-          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-        }
-
-        if (event === 'PASSWORD_RECOVERY' && session) {
-          setIsAuthenticated(true);
-          tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-          router.push(ROUTES.AUTH.RESET_PASSWORD);
-        }
-
-        if (event === 'SIGNED_OUT') {
-          tokenStore.clear();
-          setIsAuthenticated(false);
-          setUserRolesState([]);
-          setActiveRoleState(null);
-          clearAuthCookies();
-        }
-      }
-    );
-
-    return () => {
-      isMounted = false;
-      subscription.unsubscribe();
-    };
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [applySession]);
 
   // ── Role switcher ─────────────────────────────────────────────────────────
   const switchRole = async (role: 'TEACHER' | 'STUDENT') => {
     if (!canAccessRole(role)) {
       throw new Error(`You don't have access to ${role} role`);
     }
-    setActiveRoleState(role);
-    setActiveRole(role);
+    const snapshot = await authApi.setActiveRole(role);
+    applySession(snapshot);
     router.push(role === 'STUDENT' ? ROUTES.STUDENT.DASHBOARD : ROUTES.TEACHER.DASHBOARD);
     toast.success(`Switched to ${role.toLowerCase()} mode`);
   };
 
   // ── Auth actions ───────────────────────────────────────────────────────────
 
-  /**
-   * Email/Password Login
-   * Calls Supabase SDK directly — no Django login endpoint needed.
-   * After a successful sign-in, the middleware auto-syncs the session cookies.
-   * We then call Django /api/auth/sync/ to ensure the user record exists.
-   */
   const login = async (email: string, password: string) => {
     setError(null);
     setIsLoading(true);
     try {
-      const { data, error: signInError } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
+      let snapshot = await authApi.login(email, password);
 
-      if (signInError) throw signInError;
-      if (!data.session) throw new Error('No session returned');
+      // Settle roles before navigating: the guards land on a resolved answer,
+      // so nobody is routed through onboarding to a dashboard they own.
+      snapshot = await settleRoles(snapshot);
 
-      // Sync user record in Django (idempotent)
-      await authApi.syncUser(data.session.access_token);
-
-      await refreshUserProfile(true);
-      setIsAuthenticated(true);
+      applySession(snapshot);
       toast.success('Welcome back!');
 
-      const redirectTo = searchParams.get('redirect');
-      if (redirectTo) {
-        router.push(redirectTo);
-      } else {
-        const currentActiveRole = getActiveRole();
-        router.push(
-          currentActiveRole === 'TEACHER'
-            ? ROUTES.TEACHER.DASHBOARD
-            : ROUTES.STUDENT.DASHBOARD
-        );
-      }
+      router.push(landingPathFor(snapshot, searchParams.get('redirect')));
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'login');
       setError(msg);
@@ -296,35 +180,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     }
   };
 
-  /**
-   * Email/Password Signup
-   * Calls Supabase SDK directly — no Django register endpoint needed.
-   * After sign-up, Supabase sends a verification email.
-   * The /auth/callback route handler does the Django sync after verification.
-   */
-  const signup = async (
-    userData: Partial<User>,
-    password: string
-  ) => {
+  const signup = async (userData: Partial<User>, password: string) => {
     setError(null);
     setIsLoading(true);
     try {
-      const { error: signUpError } = await supabase.auth.signUp({
-        email: userData.email!,
-        password,
-        options: {
-          data: {
-            full_name: userData.username || '',
-            first_name: userData.username?.split(' ')[0] || '',
-            last_name: userData.username?.split(' ').slice(1).join(' ') || '',
-          },
-          emailRedirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
-        },
-      });
+      await authApi.signup(userData.email!, password, userData.username || '');
 
-      if (signUpError) throw signUpError;
-
-      setError(null);
       toast.success('Account Created Successfully!', {
         description: 'Please check your email to verify your account before signing in.',
       });
@@ -343,49 +204,27 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   };
 
   /**
-   * Google OAuth Sign-In (PKCE flow)
-   * Supabase redirects to /auth/callback which handles the rest.
+   * Google OAuth sign-in. The PKCE exchange, Django sync and role cookies are
+   * all handled by /auth/callback on the server.
    */
   const signInWithGoogle = async (redirectTo?: string) => {
-    if (redirectTo) {
-      setCookie('oauth_redirect', redirectTo);
-    } else {
-      removeCookie('oauth_redirect');
+    const { url } = await authApi.googleOAuthStart(redirectTo);
+    if (!url) {
+      toast.error('Google Sign-In Failed', { description: 'No authorization URL returned' });
+      return;
     }
-
-    const { error: oauthError } = await supabase.auth.signInWithOAuth({
-      provider: 'google',
-      options: {
-        redirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
-        queryParams: {
-          access_type: 'offline',
-          prompt: 'consent',
-        },
-      },
-    });
-
-    if (oauthError) {
-      toast.error('Google Sign-In Failed', { description: oauthError.message });
-    }
-    // Supabase redirects the browser — no further action needed here
+    window.location.href = url;
   };
 
-  /**
-   * Logout
-   * Calls Supabase SDK — clears the managed session cookies automatically.
-   */
   const logout = async () => {
-    await supabase.auth.signOut();
-    clearAuthCookies();
-    setIsAuthenticated(false);
-    setUserRolesState([]);
-    setActiveRoleState(null);
+    await authApi.logout();
+    clearSession();
     setError(null);
     toast.success('Logged Out Successfully');
     router.push(ROUTES.AUTH.LOGIN);
   };
 
-  // ── Password flows (still call Django which proxies to Supabase) ──────────
+  // ── Password flows ────────────────────────────────────────────────────────
   const forgotPasswordMutation = useMutation({
     mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
     onSuccess: () => {
@@ -401,7 +240,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   });
 
   const resetPasswordMutation = useMutation({
-    mutationFn: (data: ResetPasswordRequest) => authApi.resetPassword(data),
+    mutationFn: (password: string) => authApi.resetPassword(password),
     onSuccess: () => {
       toast.success('Password Reset Successful!', {
         description: 'You can now sign in with your new password.',
@@ -422,9 +261,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Verification Email Sent!');
     },
     onError: (err: unknown) => {
-      const msg = getErrorMessage(err, 'resend-verification-email');
-      setError(msg);
-      toast.error('Failed to Resend', { description: msg });
+      toast.error('Failed to Resend', {
+        description: getErrorMessage(err, 'resend-verification-email'),
+      });
     },
   });
 
@@ -432,8 +271,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mutationFn: () => authApi.becomeConsultant(),
     onSuccess: async () => {
       await refreshUserProfile();
-      setActiveRoleState('TEACHER');
-      setActiveRole('TEACHER');
+      applySession(await authApi.setActiveRole('TEACHER'));
       router.push(ROUTES.TEACHER.DASHBOARD);
       toast.success('Consultant profile created!');
     },
@@ -448,8 +286,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     mutationFn: () => authApi.becomeStudent(),
     onSuccess: async () => {
       await refreshUserProfile();
-      setActiveRoleState('STUDENT');
-      setActiveRole('STUDENT');
+      applySession(await authApi.setActiveRole('STUDENT'));
       router.push(ROUTES.STUDENT.DASHBOARD);
       toast.success('Student profile created!');
     },
@@ -460,26 +297,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     },
   });
 
-  const forgotPassword = async (email: string) =>
-    forgotPasswordMutation.mutateAsync({ email });
+  const forgotPassword = async (email: string) => {
+    await forgotPasswordMutation.mutateAsync({ email });
+    return { message: 'Password reset link sent to your email.' };
+  };
 
-  const resetPassword = async (token: string, password: string) =>
-    resetPasswordMutation.mutateAsync({ token, new_password: password });
+  const resetPassword = async (password: string) => {
+    await resetPasswordMutation.mutateAsync(password);
+    return { message: 'Password has been reset successfully.' };
+  };
 
-  const resendVerificationEmail = async (email: string) =>
-    resendVerificationEmailMutation.mutateAsync({ email });
+  const resendVerificationEmail = async (email: string) => {
+    await resendVerificationEmailMutation.mutateAsync({ email });
+    return { message: 'Verification email has been resent.' };
+  };
 
   const becomeConsultant = async () => becomeConsultantMutation.mutateAsync();
   const becomeStudent = async () => becomeStudentMutation.mutateAsync();
-
-  const setUserRole = (role: UserRole | null) => {
-    if (role) {
-      setActiveRoleState(role);
-      setActiveRole(role);
-    } else {
-      setActiveRoleState(null);
-    }
-  };
 
   const isMutationLoading =
     forgotPasswordMutation.isPending ||
@@ -511,8 +345,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         hasTeacherRole,
         hasStudentRole,
         canAccessRole,
-        setIsAuthenticated,
-        setUserRole,
+        rolesUnknown,
       }}
     >
       {children}

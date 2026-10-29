@@ -2,93 +2,188 @@
 @tailwind components;
 @tailwind utilities;
 
+/* -------------------------------------------------------
+   Shakti Wheel — Pitch-Black Cosmic design system
+   Theme: pure black canvas, single ember accent (#ffa35a),
+   translucent white surfaces, light-as-hierarchy.
+   Source of truth: DESIGN_SYSTEM.md (vedic-astrology-wisdom)
+   Variables stored as HSL channels for Tailwind v3 opacity
+   modifiers (bg-primary/20 etc.).
+------------------------------------------------------- */
+
 @layer base {
   :root,
   .dark {
-    --background: 271 100% 10%;
-    /* #1a0033 */
-    --foreground: 0 0% 100%;
+    --background: 0 0% 0%;
+    /* #000000 */
+    --foreground: 0 0% 93%;
+    /* #ededed */
 
-    --card: 271 80% 15%;
-    /* slightly lighter purple for cards */
-    --card-foreground: 0 0% 100%;
+    --card: 0 0% 4%;
+    /* #0a0a0a */
+    --card-foreground: 0 0% 93%;
 
-    --popover: 271 80% 15%;
-    --popover-foreground: 0 0% 100%;
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 93%;
 
-    --primary: 46 64.6% 52.4%;
-    /* #d4af37 (Light gold) */
-    --primary-foreground: 271 100% 10%;
-    /* Very dark purple text on gold */
+    --primary: 0 0% 93%;
+    /* neutral, not colored */
+    --primary-foreground: 0 0% 0%;
 
-    --secondary: 271 50% 25%;
-    --secondary-foreground: 0 0% 100%;
+    --secondary: 0 0% 6.7%;
+    /* #111111 */
+    --secondary-foreground: 0 0% 93%;
 
-    --muted: 271 50% 25%;
-    --muted-foreground: 271 10% 70%;
+    --muted: 0 0% 6.7%;
+    --muted-foreground: 0 0% 63%;
+    /* #a1a1a1 */
 
-    --accent: 46 71.2% 42.2%;
-    /* #b8941f (Dark gold) */
-    --accent-foreground: 0 0% 100%;
+    --accent: 0 0% 10%;
+    /* #1a1a1a */
+    --accent-foreground: 0 0% 93%;
 
-    --destructive: 0 84.2% 60.2%;
+    --destructive: 0 84% 60%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 271 50% 25%;
-    --input: 271 50% 25%;
-    --ring: 46 64.6% 52.4%;
-    --radius: 0.5rem;
+    --border: 0 0% 100% / 0.1;
+    /* white/10 hairline */
+    --input: 0 0% 100% / 0.12;
+    --ring: 25 100% 68%;
+    /* #ffa35a ember */
+    --radius: 0.75rem;
 
-    --chart-1: 46 64.6% 52.4%;
-    --chart-2: 46 71.2% 42.2%;
-    --chart-3: 197 37% 24%;
-    --chart-4: 43 74% 66%;
-    --chart-5: 27 87% 67%;
+    --chart-1: 25 100% 68%;
+    /* ember */
+    --chart-2: 231 96% 77%;
+    /* nebula */
+    --chart-3: 0 0% 93%;
+    --chart-4: 0 0% 63%;
+    --chart-5: 0 0% 25%;
   }
-}
 
-@layer base {
   * {
     @apply border-border;
   }
 
+  html {
+    scroll-behavior: smooth;
+  }
+
   body {
-    @apply bg-background text-foreground;
+    @apply bg-background text-foreground antialiased;
+    overflow-x: hidden;
+    font-feature-settings: 'ss01', 'cv11';
   }
 }
 
-/* Custom scrollbar */
+input[type='date']::-webkit-calendar-picker-indicator,
+input[type='time']::-webkit-calendar-picker-indicator {
+  filter: invert(1);
+  cursor: pointer;
+}
+
+/* -------------------------------------------------------
+   Custom utilities (DESIGN_SYSTEM.md §5)
+------------------------------------------------------- */
+.text-gradient {
+  background-image: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #ffffff 35%,
+    rgb(255 255 255 / 0.45) 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.text-gradient-ember {
+  background-image: linear-gradient(
+    100deg,
+    #ffffff 0%,
+    #ffd2a8 45%,
+    #ffa35a 100%
+  );
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.bg-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.05) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.05) 1px, transparent 1px);
+  background-size: 64px 64px;
+}
+
+.bg-dots {
+  background-image: radial-gradient(
+    rgb(255 255 255 / 0.12) 1px,
+    transparent 1px
+  );
+  background-size: 22px 22px;
+}
+
+.mask-radial {
+  -webkit-mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+  mask-image: radial-gradient(ellipse at center, #000 20%, transparent 70%);
+}
+
+.mask-fade-b {
+  -webkit-mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+  mask-image: linear-gradient(to bottom, #000 40%, transparent 100%);
+}
+
+.hairline {
+  background-image: linear-gradient(
+    90deg,
+    transparent,
+    rgb(255 255 255 / 0.25),
+    transparent
+  );
+}
+
+.hairline-ember {
+  background-image: linear-gradient(90deg, transparent, #ffa35a, transparent);
+}
+
+/* -------------------------------------------------------
+   Scrollbar & selection (DESIGN_SYSTEM.md §10)
+------------------------------------------------------- */
 ::-webkit-scrollbar {
-  width: 5px;
+  width: 10px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: #000;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply rounded-full bg-primary/20 backdrop-blur-md;
+  background: #1f1f1f;
+  border-radius: 999px;
+  border: 2px solid #000;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  @apply bg-primary/40;
+  background: #333;
 }
 
-/* Animations */
-@keyframes fadeIn {
-  from {
-    opacity: 0;
-    transform: translateY(10px);
-  }
-
-  to {
-    opacity: 1;
-    transform: translateY(0);
-  }
+::selection {
+  background-color: rgb(255 163 90 / 0.3);
+  color: #fff;
 }
 
-.animate-fade-in {
-  animation: fadeIn 0.3s ease-out;
+/* -------------------------------------------------------
+   Reduced motion (DESIGN_SYSTEM.md §6)
+------------------------------------------------------- */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    scroll-behavior: auto !important;
+  }
 }
 
 /* Responsive utilities */
@@ -106,11 +201,13 @@
   overflow: hidden;
 }
 
-/* AI Chat Markdown Styles */
+/* -------------------------------------------------------
+   AI Chat Markdown Styles — cosmic palette
+------------------------------------------------------- */
 .ai-chat-markdown p {
   margin-bottom: 0.5rem;
   line-height: 1.65;
-  color: #d7af2caa;
+  color: #a1a1a1;
 }
 
 .ai-chat-markdown p:last-child {
@@ -137,21 +234,22 @@
 
 .ai-chat-markdown li {
   line-height: 1.65;
-  color: #d7af2caa;
+  color: #a1a1a1;
 }
 
 .ai-chat-markdown strong {
   font-weight: 700;
-  color: #b8941f;
+  color: #ededed;
 }
 
 .ai-chat-markdown em {
   font-style: italic;
+  color: #ffa35a;
 }
 
 .ai-chat-markdown code {
-  background: #eef2ff;
-  color: #4338ca;
+  background: rgb(255 255 255 / 0.06);
+  color: #ffd2a8;
   padding: 0.1rem 0.35rem;
   border-radius: 0.25rem;
   font-size: 0.8em;
@@ -161,8 +259,7 @@
 .ai-chat-markdown h2,
 .ai-chat-markdown h3 {
   font-weight: 700;
-  color: #d7af2c;
+  color: #ffa35a;
   margin-top: 1rem;
   margin-bottom: 0.5rem;
-  font-family: 'Outfit', sans-serif;
 }

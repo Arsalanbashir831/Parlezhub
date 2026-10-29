@@ -1,16 +1,18 @@
 'use client';
 
-import Script from 'next/script';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { useSearchParams } from 'next/navigation';
 
-import { createClient } from '@/lib/supabase/client';
-import { authApi } from '@/services/auth';
 import { ROUTES } from '@/constants/routes';
-import { setActiveRole, setUserRoles } from '@/lib/cookie-utils';
+import { landingPathFor } from '@/lib/guard-rules';
+import { getErrorMessage } from '@/lib/error-utils';
+import { authApi } from '@/services/auth';
+import type { SessionSnapshot } from '@/types/auth';
+import { toast } from 'sonner';
 
 /**
  * Generates a cryptographic nonce pair:
- * - `nonce` (raw)     → passed to supabase.auth.signInWithIdToken()
+ * - `nonce` (raw)     → sent to our server, which passes it to Supabase
  * - `hashedNonce`     → passed to Google's data-nonce attribute (SHA-256 hex)
  *
  * Supabase expects the provider to hash the nonce, so Google receives the
@@ -30,13 +32,16 @@ async function generateNonce(): Promise<[string, string]> {
   return [nonce, hashedNonce];
 }
 
+/** Time the failure toast stays visible before middleware takes over. */
+const FAILURE_MESSAGE_MS = 3000;
+
 declare global {
   interface Window {
     google: {
       accounts: {
         id: {
           initialize: (config: object) => void;
-          prompt: () => void;
+          prompt: (callback?: (notification: unknown) => void) => void;
           cancel: () => void;
         };
       };
@@ -50,98 +55,72 @@ declare global {
  * Flow:
  * 1. User taps "Continue as <name>" in the One-Tap UI
  * 2. Google returns an ID token (credential)
- * 3. We exchange it with Supabase for a full session
- * 4. We immediately call Django /api/auth/sync/ with the access_token
- *    — this creates the Django user record before anything else happens
- * 5. If new user → redirect to /onboarding/choose-role
- * 6. If returning user → set role cookies and redirect to dashboard
- *
- * Why we call syncUser BEFORE refreshUserProfile:
- * Supabase fires onAuthStateChange('SIGNED_IN') the moment signInWithIdToken
- * resolves. The auth-context listener may try to call GET /accounts/profiles/me/roles/
- * simultaneously. If that hits Django before the user is synced, it gets a 404.
- * By awaiting syncUser here first and catching errors in the auth-context listener,
- * we avoid the race condition.
+ * 3. The credential goes to /api/auth/google-id-token, which exchanges it with
+ *    Supabase, syncs the Django record and resolves roles — all server-side,
+ *    so the resulting session lands in httpOnly cookies the browser cannot read
+ * 4. New user → /onboarding/choose-role, returning user → their dashboard
  */
 export function GoogleOneTap() {
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const [isWorking, setIsWorking] = useState(false);
 
   const initializeOneTap = async () => {
-    if (typeof window === 'undefined' || !window.google) return;
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (typeof window === 'undefined' || !window.google || !clientId) return;
 
     // Don't show One-Tap if user is already signed in
-    const { data: { session } } = await supabase.auth.getSession();
-    if (session) return;
+    try {
+      const { isAuthenticated } = await authApi.session();
+      if (isAuthenticated) return;
+    } catch {
+      // Treat an unreadable session as signed out; the exchange will fail loudly.
+    }
 
     const [nonce, hashedNonce] = await generateNonce();
 
+    const onboardingUrl = (redirectTo: string | null) =>
+      redirectTo
+        ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectTo)}`
+        : ROUTES.ONBOARDING.CHOOSE_ROLE;
+
     window.google.accounts.id.initialize({
-      client_id: process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID!,
+      client_id: clientId,
       callback: async (response: { credential: string }) => {
+        const redirectTo = searchParams.get('redirect');
+        setIsWorking(true);
         try {
-          // Step 1: Exchange Google ID token for Supabase session
-          const { data, error } = await supabase.auth.signInWithIdToken({
-            provider: 'google',
-            token: response.credential,
-            nonce,
-          });
+          const snapshot: SessionSnapshot = await authApi.googleIdToken(
+            response.credential,
+            nonce
+          );
 
-          if (error) throw error;
-          if (!data.session) throw new Error('No session returned');
+          const destination =
+            snapshot.requiresRoleSelection ||
+            (!snapshot.rolesUnknown && snapshot.userRoles.length === 0)
+              ? onboardingUrl(redirectTo)
+              : snapshot.rolesUnknown
+                ? // Roles haven't resolved yet; middleware and the guard finish
+                  // the job instead of offering a choice this user may already have.
+                  redirectTo || '/'
+                : landingPathFor(snapshot, redirectTo);
 
-          const accessToken = data.session.access_token;
-
-          // Step 2: Sync with Django — MUST complete before any profile fetch.
-          // This call creates the Django User record if it doesn't exist.
-          let syncResult;
-          try {
-            syncResult = await authApi.syncUser(accessToken);
-          } catch (syncErr) {
-            console.error('[One-Tap] Django sync failed:', syncErr);
-            // Even if sync fails, user is authenticated in Supabase.
-            // Redirect to onboarding so they can retry via set-role.
-            const redirectParam = searchParams.get('redirect');
-            const onboardingUrl = redirectParam
-              ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectParam)}`
-              : ROUTES.ONBOARDING.CHOOSE_ROLE;
-            router.push(onboardingUrl);
-            return;
-          }
-
-          // Step 3: Route based on sync result
-          if (syncResult.requires_role_selection) {
-            // New user — go pick a role
-            const redirectParam = searchParams.get('redirect');
-            const onboardingUrl = redirectParam
-              ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectParam)}`
-              : ROUTES.ONBOARDING.CHOOSE_ROLE;
-            router.push(onboardingUrl);
-          } else {
-            // Returning user — fetch their profile and go to dashboard
-            try {
-              const profile = await authApi.getUnifiedProfile();
-              const roles: ('TEACHER' | 'STUDENT')[] = [];
-              if (profile.has_teacher) roles.push('TEACHER');
-              if (profile.has_student) roles.push('STUDENT');
-              setUserRoles(roles);
-              const role = roles[0] ?? 'STUDENT';
-              setActiveRole(role);
-              const redirectTo = searchParams.get('redirect');
-              router.push(
-                redirectTo || (role === 'TEACHER'
-                  ? ROUTES.TEACHER.DASHBOARD
-                  : ROUTES.STUDENT.DASHBOARD)
-              );
-            } catch {
-              // Profile fetch failed for unexpected reason — go to redirect or home
-              const redirectTo = searchParams.get('redirect');
-              router.push(redirectTo || ROUTES.HOME);
-            }
-          }
+          // Hard navigation, not router.push: the session cookies are brand new
+          // while this page's in-memory auth state still says "signed out". A
+          // client-side push would render the dashboard against that stale state
+          // and leave nothing on screen until a manual reload.
+          window.location.replace(destination);
         } catch (err) {
           console.error('[One-Tap] Authentication error:', err);
+          setIsWorking(false);
+          toast.error('Google sign-in failed', {
+            description: getErrorMessage(err, 'google-one-tap'),
+          });
+          // Let middleware decide once the message has been read: it sends a live
+          // session to its dashboard or onboarding, an anonymous browser to sign-in.
+          setTimeout(
+            () => window.location.replace(redirectTo || '/'),
+            FAILURE_MESSAGE_MS
+          );
         }
       },
       nonce: hashedNonce,
@@ -151,16 +130,54 @@ export function GoogleOneTap() {
       itp_support: true,
     });
 
+    // No prompt-status callback: Google logs a deprecation warning for any
+    // callback using the pre-FedCM display/skipped moment API.
     window.google.accounts.id.prompt();
   };
 
+  // Injected imperatively: React 19 warns ("Encountered a script tag while
+  // rendering React component") for any <script> produced during render, which
+  // includes next/script on client navigations.
+  useEffect(() => {
+    const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
+    if (!clientId) return;
+
+    const start = () => void initializeOneTap();
+
+    if (window.google?.accounts?.id) {
+      start();
+      return;
+    }
+
+    const id = 'gsi-client-script';
+    let script = document.getElementById(id) as HTMLScriptElement | null;
+    if (!script) {
+      script = document.createElement('script');
+      script.id = id;
+      script.src = 'https://accounts.google.com/gsi/client';
+      script.async = true;
+      document.head.appendChild(script);
+    }
+
+    script.addEventListener('load', start);
+    return () => script?.removeEventListener('load', start);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  // The credential exchange, the Django sync and the role lookup all happen
+  // before the browser can move, so the wait needs to look intentional.
+  if (!isWorking) return null;
+
   return (
-    <Script
-      src="https://accounts.google.com/gsi/client"
-      onReady={() => {
-        initializeOneTap();
-      }}
-      strategy="afterInteractive"
-    />
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-[100] flex flex-col items-center justify-center gap-5 bg-background"
+    >
+      <div className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
+      <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-neutral-500">
+        Signing you in…
+      </p>
+    </div>
   );
 }

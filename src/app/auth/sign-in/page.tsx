@@ -1,16 +1,14 @@
 'use client';
 
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect } from 'react';
 import Link from 'next/link';
-import { useRouter, useSearchParams } from 'next/navigation';
+import { useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
 import { z } from 'zod';
 
-import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { GoogleOAuthButton } from '@/components/auth/google-oauth-button';
@@ -28,67 +26,15 @@ type LoginFormData = z.infer<typeof loginSchema>;
 
 export default function LoginPage() {
   const { login, isLoading, isAuthenticated, userRoles } = useAuth();
-  const router = useRouter();
   const searchParams = useSearchParams();
-  const [processingLink, setProcessingLink] = useState(false);
-
-  const hashParams = useMemo(() => {
-    if (typeof window === 'undefined') return null;
-    const raw = window.location.hash || '';
-    if (!raw) return null;
-    return new URLSearchParams(raw.startsWith('#') ? raw.slice(1) : raw);
-  }, []);
 
   useEffect(() => {
-    // Client-side guard: only redirect once roles are confirmed loaded.
-    // isAuthenticated becomes true immediately on SIGNED_IN before refreshUserProfile
-    // completes, so guarding on userRoles.length prevents a premature redirect
-    // to "/" while the middleware still sees no user_roles cookie.
+    // Guard once the session call has resolved: userRoles stays empty until the
+    // server confirms them, so this can't bounce to "/" before middleware agrees.
     if (isAuthenticated && userRoles.length > 0) {
-      const redirectTo = searchParams?.get('redirect');
-      if (typeof window !== 'undefined') {
-        window.location.replace(redirectTo || '/');
-      }
-      return;
+      window.location.replace(searchParams?.get('redirect') || '/');
     }
-
-    const processHashLogin = async () => {
-      if (!hashParams) return;
-      const accessToken = hashParams.get('access_token');
-      const refreshToken = hashParams.get('refresh_token');
-      if (!accessToken || !refreshToken) return;
-
-      try {
-        setProcessingLink(true);
-        // The auth context will handle profile fetching and role determination automatically
-        // No need to manually fetch profiles here
-        try {
-          window.history.replaceState(null, '', window.location.pathname);
-        } catch { }
-
-        // The auth context will handle profile fetching and role determination automatically
-        // No need to manually fetch profiles here
-
-        toast.success('Signed in successfully');
-
-        const redirectTo = searchParams?.get('redirect');
-        if (typeof window !== 'undefined') {
-          if (redirectTo) {
-            window.location.replace(redirectTo);
-          } else {
-            // Let the auth context handle the redirection based on user roles
-            window.location.replace('/');
-          }
-        }
-      } catch {
-        // If anything fails, stay on sign-in and show a message
-        toast.error('Sign-in link processing failed. Please sign in manually.');
-        setProcessingLink(false);
-      }
-    };
-
-    void processHashLogin();
-  }, [hashParams, router, isAuthenticated, userRoles, searchParams]);
+  }, [isAuthenticated, userRoles, searchParams]);
 
   const {
     register,
@@ -101,16 +47,6 @@ export default function LoginPage() {
   const onSubmit = async (data: LoginFormData) => {
     await login(data.email, data.password);
   };
-
-  if (processingLink) {
-    return (
-      <AuthLayout title="Signing you in..." subtitle="Please wait">
-        <div className="text-center text-sm text-gray-600 dark:text-gray-400">
-          Redirecting to your dashboard
-        </div>
-      </AuthLayout>
-    );
-  }
 
   return (
     <AuthLayout
@@ -129,16 +65,12 @@ export default function LoginPage() {
           Sign In
         </AuthButton>
 
-        <div className="flex items-center justify-center gap-2">
-          <Separator
-            orientation="horizontal"
-            className="w-full bg-primary-100"
-          />
-          <p className="px-2 text-primary-100">OR</p>
-          <Separator
-            orientation="horizontal"
-            className="w-full bg-primary-100"
-          />
+        <div className="flex items-center gap-3">
+          <span className="hairline h-px flex-1" />
+          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-neutral-500">
+            or
+          </p>
+          <span className="hairline h-px flex-1" />
         </div>
 
         <GoogleOAuthButton
@@ -147,19 +79,19 @@ export default function LoginPage() {
         />
 
         <div className="text-center">
-          <p className="text-sm text-primary-100">
+          <p className="text-sm text-neutral-400">
             Don&apos;t have an account?{' '}
             <Link
               href={ROUTES.AUTH.SIGNUP}
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="font-medium text-ember transition-colors hover:text-ember-soft"
             >
               Sign up
             </Link>
           </p>
-          <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
+          <p className="mt-2 text-sm text-neutral-400">
             <Link
               href={ROUTES.AUTH.FORGOT_PASSWORD}
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="font-medium text-ember transition-colors hover:text-ember-soft"
             >
               Forgot your password?
             </Link>

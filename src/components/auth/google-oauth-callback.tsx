@@ -3,19 +3,23 @@
 import { useEffect, useRef, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
+import { landingPathFor } from '@/lib/guard-rules';
 import { authApi } from '@/services/auth';
 import { toast } from 'sonner';
-
-import { setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
+
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 
+/**
+ * Fallback landing page for the Google redirect. The PKCE exchange, the Django
+ * sync and the role cookies all happen in /auth/callback on the server, so this
+ * page only asks the server what session it ended up with — it never parses
+ * tokens out of the URL.
+ */
 export function GoogleOAuthCallback() {
   const [error, setError] = useState<string | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { setIsAuthenticated, setUserRole } = useAuth();
 
   const hasRun = useRef(false);
 
@@ -24,135 +28,31 @@ export function GoogleOAuthCallback() {
     if (hasRun.current) return;
     hasRun.current = true;
 
-    const handleCallback = async () => {
-      try {
-        // Get the tokens from URL hash (Supabase OAuth returns them in the hash)
-        const hash = window.location.hash.substring(1);
-        const params = new URLSearchParams(hash);
+    const redirectTo = searchParams.get('redirect');
 
-        const accessToken = params.get('access_token');
-        const refreshToken = params.get('refresh_token');
-
-        // Clear the URL hash ASAP to remove tokens from browser history
-        if (window.location.hash) {
-          window.history.replaceState(null, '', window.location.pathname);
+    authApi
+      .session()
+      .then((snapshot) => {
+        if (!snapshot.isAuthenticated) {
+          throw new Error('Invalid OAuth callback. Please sign in again.');
         }
 
-        if (!accessToken || !refreshToken) {
-          // Delay error to avoid flash on first render before hash is parsed
-          setTimeout(() => {
-            setError('Invalid OAuth callback. Please sign in again.');
-            setTimeout(() => router.push(ROUTES.AUTH.LOGIN), 3000);
-          }, 300);
-          return;
+        if (snapshot.rolesUnknown) {
+          // Roles haven't resolved; middleware and the guard will settle them
+          // rather than offering the picker to somebody who may already have one.
+          return router.push(redirectTo || '/');
         }
 
-        // Get stored OAuth mode and role from sessionStorage
-        const oauthMode = sessionStorage.getItem('oauth_mode') as
-          | 'login'
-          | 'signup'
-          | null;
-        const oauthRole = sessionStorage.getItem('oauth_role') as
-          | 'TEACHER'
-          | 'STUDENT'
-          | null;
-
-        if (!oauthMode) {
-          // If oauth_mode is missing (e.g., page refresh), redirect to sign-in
-          toast.error('OAuth session expired', {
-            description:
-              'Please try signing in again. Do not refresh the page during sign-in.',
-          });
-
-          setError(
-            'OAuth session expired. This usually happens when you refresh the page during sign-in. Please try signing in again.'
-          );
-
-          setTimeout(() => {
-            router.push(ROUTES.AUTH.LOGIN);
-          }, 3000);
-          return;
-        }
-
-        try {
-          // Call the backend callback endpoint
-          const response = await authApi.syncUser(accessToken, oauthRole || undefined);
-
-          // Set user roles based on the response
-          const roles: ('STUDENT' | 'TEACHER')[] = [];
-          if (response.user!.role === 'BOTH') {
-            roles.push('STUDENT', 'TEACHER');
-          } else if (response.user!.role) {
-            roles.push(response.user!.role as 'STUDENT' | 'TEACHER');
-          }
-
-          if (roles.length > 0) {
-            setCookie('user_roles', JSON.stringify(roles));
-            setCookie('active_role', roles[0]);
-
-            // Update auth context
-            setIsAuthenticated(true);
-            setUserRole(roles[0]);
-          } else {
-            // No role assigned yet — this will trigger onboarding
-            setIsAuthenticated(true);
-          }
-
-          // Clean up sessionStorage
-          sessionStorage.removeItem('oauth_mode');
-          sessionStorage.removeItem('oauth_role');
-
-          // Show success message
-          const isNewUser = false; // SyncUser doesn't explicitly return created status
-          toast.success(
-            isNewUser ? 'Account created successfully!' : 'Welcome back!',
-            {
-              description: isNewUser
-                ? 'Your Google account has been linked successfully.'
-                : 'You have been logged in successfully.',
-            }
-          );
-
-          // Redirect based on role
-          const redirectTo = searchParams.get('redirect');
-          if (redirectTo) {
-            router.push(redirectTo);
-          } else {
-            if (response.user!.role === 'STUDENT') {
-              router.push(ROUTES.STUDENT.DASHBOARD);
-            } else if (response.user!.role === 'TEACHER') {
-              router.push(ROUTES.TEACHER.DASHBOARD);
-            } else {
-              // No role - go to onboarding
-              router.push(ROUTES.ONBOARDING.CHOOSE_ROLE);
-            }
-          }
-        } catch (apiError: unknown) {
-          // No longer handling role selection required (400) here
-          throw apiError;
-        }
-      } catch (error) {
-        console.error('OAuth callback error:', error);
-        const errorMessage = getErrorMessage(error, 'google-oauth');
+        router.push(landingPathFor(snapshot, redirectTo));
+      })
+      .catch((err: unknown) => {
+        console.error('OAuth callback error:', err);
+        const errorMessage = getErrorMessage(err, 'google-oauth');
         setError(errorMessage);
-        toast.error('Authentication failed', {
-          description: errorMessage,
-        });
-
-        // Clean up sessionStorage on error
-        sessionStorage.removeItem('oauth_mode');
-        sessionStorage.removeItem('oauth_role');
-
-        // Redirect to sign-in page after a delay
-        setTimeout(() => {
-          router.push(ROUTES.AUTH.LOGIN);
-        }, 3000);
-      }
-    };
-
-    handleCallback();
-  }, [router, searchParams, setIsAuthenticated, setUserRole]);
-
+        toast.error('Authentication failed', { description: errorMessage });
+        setTimeout(() => router.push(ROUTES.AUTH.LOGIN), 3000);
+      });
+  }, [router, searchParams]);
 
   if (error) {
     return (

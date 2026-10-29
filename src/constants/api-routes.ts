@@ -47,12 +47,11 @@ export const API_ROUTES = {
     SCHEDULE_BOOKING: '/bookings/bookings/',
   },
   CHAT: {
-    CREATE_CHAT: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/chats/start/`,
-    SEND_MESSAGE: (chatId: string) =>
-      `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/send-message/${chatId}`,
+    // Relative to the /api/chat gateway — the chat server is never called from the browser.
+    CREATE_CHAT: '/chats/start/',
+    SEND_MESSAGE: (chatId: string) => `/send-message/${chatId}`,
     GET_CHATS: `/accounts/supabase/chats/`,
-    GET_CHAT_MESSAGES: (chatId: string) =>
-      `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL}/messages/${chatId}/`,
+    GET_CHAT_MESSAGES: (chatId: string) => `/messages/${chatId}/`,
     WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}/ws/chat/`,
   },
   VOICE: {

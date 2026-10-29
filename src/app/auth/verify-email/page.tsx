@@ -39,18 +39,18 @@ export default function VerifyEmailPage() {
     >
       <div className="space-y-6 text-center">
         <div className="flex justify-center">
-          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-primary-100">
+          <div className="flex h-16 w-16 items-center justify-center rounded-full border border-ember/30 bg-ember/10">
             <Mail className="h-8 w-8 text-primary-600" />
           </div>
         </div>
 
         <div>
-          <p className="mb-4 text-gray-600">
+          <p className="mb-4 text-neutral-400">
             Please check your email and click the verification link to activate
             your account.
           </p>
           {email && (
-            <p className="rounded-lg bg-gray-50 p-3 font-medium text-gray-900">
+            <p className="rounded-lg border border-ember/30 bg-ember/10 p-3 font-medium text-ember-soft">
               {email}
             </p>
           )}
@@ -94,7 +94,7 @@ export default function VerifyEmailPage() {
           </Link>
         </div>
 
-        <div className="text-xs text-gray-500">
+        <div className="text-xs text-neutral-500">
           <p>
             Having trouble? Contact our support team at{' '}
             <a

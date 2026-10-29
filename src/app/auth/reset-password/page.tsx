@@ -5,6 +5,7 @@ import Link from 'next/link';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
+import { authApi } from '@/services/auth';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -36,51 +37,34 @@ function ResetPasswordContent() {
   const { resetPassword, isLoading, error, isAuthenticated, isLoading: authLoading } = useAuth();
   const router = useRouter();
   const searchParams = useSearchParams();
-  const [token, setToken] = useState<string | null>(null);
+  const [hasSession, setHasSession] = useState(false);
   const [isVerifying, setIsVerifying] = useState(true);
 
+  // A recovery link either arrives with ?code= (PKCE) or lands here with the
+  // recovery session already stored in httpOnly cookies by /auth/callback.
+  // No credential is ever read from the URL.
   useEffect(() => {
-    const initializeToken = async () => {
-      if (typeof window === 'undefined') return;
+    let cancelled = false;
 
-      // 1. Check for token/code in query params (standard for our callback or direct redirect)
-      const qToken = searchParams.get('token');
-      const qCode = searchParams.get('code');
-
-      if (qToken) {
-        setToken(qToken);
-        setIsVerifying(false);
-        return;
+    const verify = async () => {
+      const code = searchParams.get('code');
+      try {
+        const snapshot = code
+          ? await authApi.exchangeCode(code)
+          : await authApi.session();
+        if (!cancelled) setHasSession(snapshot.isAuthenticated);
+      } catch (err) {
+        console.error('Failed to verify reset link:', err);
+        if (!cancelled) setHasSession(false);
+      } finally {
+        if (!cancelled) setIsVerifying(false);
       }
-
-      if (qCode) {
-        try {
-          const { createClient } = await import('@/lib/supabase/client');
-          const supabase = createClient();
-          const { error: exchangeError } = await supabase.auth.exchangeCodeForSession(qCode);
-          if (!exchangeError) {
-            setToken('session-active'); // Mark that we have a session
-          }
-        } catch (err) {
-          console.error('Failed to exchange reset code:', err);
-        }
-        setIsVerifying(false);
-        return;
-      }
-
-      // 2. Check for access_token in hash fragment (Supabase legacy/implicit flow)
-      const hash = window.location.hash.substring(1);
-      const params = new URLSearchParams(hash);
-      const accessToken = params.get('access_token');
-
-      if (accessToken) {
-        setToken(accessToken);
-      }
-
-      setIsVerifying(false);
     };
 
-    initializeToken();
+    void verify();
+    return () => {
+      cancelled = true;
+    };
   }, [searchParams]);
 
   const {
@@ -92,9 +76,7 @@ function ResetPasswordContent() {
   });
 
   const onSubmit = async (data: ResetPasswordFormData) => {
-    // We don't strictly need the token if we have an active session,
-    // but we pass it for backward compatibility if it exists.
-    await resetPassword(token || 'session', data.password);
+    await resetPassword(data.password);
   };
 
   // Show loading while verifying the link or waiting for auth
@@ -108,8 +90,7 @@ function ResetPasswordContent() {
     );
   }
 
-  // If no token found AND not authenticated, it's an invalid link
-  if (!token && !isAuthenticated) {
+  if (!hasSession && !isAuthenticated) {
     return (
       <AuthLayout
         title="Invalid Reset Link"

@@ -43,7 +43,7 @@ export function FormField({
         </Label>
         <div className="relative mt-1">
           {Icon && (
-            <Icon className="absolute left-3 top-3 h-4 w-4 text-gray-400" />
+            <Icon className="absolute left-3 top-3 h-4 w-4 text-neutral-500" />
           )}
           <Textarea
             id={fieldId}
@@ -52,7 +52,7 @@ export function FormField({
             {...register}
           />
         </div>
-        {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
+        {error && <p className="mt-1 text-sm text-destructive">{error.message}</p>}
       </div>
     );
   }
@@ -65,7 +65,7 @@ export function FormField({
       </Label>
       <div className="relative mt-1">
         {Icon && (
-          <Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-gray-400" />
+          <Icon className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-neutral-500" />
         )}
         <Input
           id={fieldId}
@@ -79,18 +79,18 @@ export function FormField({
             type="button"
             variant="ghost"
             size="sm"
-            className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
+            className="absolute right-0 top-0 h-full px-3 py-2 text-neutral-500 hover:bg-transparent hover:text-ember"
             onClick={() => setShowPassword(!showPassword)}
           >
             {showPassword ? (
-              <EyeOff className="h-4 w-4 text-gray-400" />
+              <EyeOff className="h-4 w-4" />
             ) : (
-              <Eye className="h-4 w-4 text-gray-400" />
+              <Eye className="h-4 w-4" />
             )}
           </Button>
         )}
       </div>
-      {error && <p className="mt-1 text-sm text-red-600">{error.message}</p>}
+      {error && <p className="mt-1 text-sm text-destructive">{error.message}</p>}
     </div>
   );
 }

@@ -1,116 +1,58 @@
 import { ROUTES } from '@/constants/routes';
-import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 
-import { clearAuthCookies } from '@/lib/cookie-utils';
-import { tokenStore } from '@/lib/token-store';
+// Same-origin gateways; each attaches the bearer token server-side, so no
+// credential ever reaches this bundle.
+const backendInstance = axios.create({ baseURL: '/api/backend' });
+const chatInstance = axios.create({ baseURL: '/api/chat' });
 
-// Singleton instance
-const axiosInstance: AxiosInstance = axios.create({
-  baseURL: process.env.NEXT_PUBLIC_BACKEND_URL,
-});
-
-// Request interceptor
-axiosInstance.interceptors.request.use(
-  async (config: InternalAxiosRequestConfig) => {
-    if (!config.headers.Authorization) {
-      // Use the in-memory token cache first.
-      // Calling supabase.auth.getSession() on every request blocks on the Web Locks API
-      // whenever Supabase's background token-refresh timer is running (~every 30s), which
-      // causes all concurrent API calls to freeze for up to 5 seconds. The cache is kept
-      // fresh by onAuthStateChange in auth-context.tsx so this is always the current token.
-      const cached = tokenStore.get();
-      if (cached) {
-        config.headers.Authorization = `Bearer ${cached}`;
-      } else {
-        // Cache miss: fall back to getSession (first page load or just after token expiry)
-        try {
-          const { createClient } = await import('@/lib/supabase/client');
-          const supabase = createClient();
-          const { data: { session } } = await supabase.auth.getSession();
-          if (session?.access_token) {
-            config.headers.Authorization = `Bearer ${session.access_token}`;
-            tokenStore.set(session.access_token, session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-          }
-        } catch (err) {
-          console.warn('Failed to get Supabase session for API request:', err);
-        }
-      }
-    }
-    return config;
-  },
-  (error) => Promise.reject(error)
-);
-
-// Response interceptor
-axiosInstance.interceptors.response.use(
-  (response) => response,
-  async (error: AxiosError) => {
-    // Handle 401 Unauthorized
-    if (error.response && error.response.status === 401) {
-      const originalRequest = error.config as InternalAxiosRequestConfig & { _retry?: boolean };
-
-      // If we already retried and it still failed, the session is truly dead
-      if (originalRequest._retry) {
-        tokenStore.clear();
-        clearAuthCookies();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
+// The gateway refreshes an expired session and replays the request itself. A 401
+// that comes back here is therefore a genuinely dead session.
+function rejectWhenSessionIsDead(instance: AxiosInstance) {
+  instance.interceptors.response.use(
+    (response) => response,
+    async (error: AxiosError) => {
+      if (error.response?.status === 401 && typeof window !== 'undefined') {
+        if (!window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });
           const currentPath = window.location.pathname + window.location.search;
           window.location.href = `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`;
         }
-        return Promise.reject(error);
       }
 
-      originalRequest._retry = true;
-
-      try {
-        // Force a session refresh — clear the stale cached token first
-        tokenStore.clear();
-        const { createClient } = await import('@/lib/supabase/client');
-        const supabase = createClient();
-        const { data, error: refreshError } = await supabase.auth.refreshSession();
-
-        if (refreshError || !data.session) {
-          throw refreshError || new Error('No session returned');
-        }
-
-        const tokenToUse = data.session.access_token;
-        tokenStore.set(tokenToUse, data.session.expires_at ?? Math.floor(Date.now() / 1000) + 3600);
-        originalRequest.headers.Authorization = `Bearer ${tokenToUse}`;
-
-        return axiosInstance(originalRequest);
-      } catch (refreshError) {
-        tokenStore.clear();
-        clearAuthCookies();
-        if (typeof window !== 'undefined' && !window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
-          toast.error('Session Expired', { description: 'Please sign in again.' });
-          const currentPath = window.location.pathname + window.location.search;
-          window.location.href = `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`;
-        }
-        return Promise.reject(refreshError);
-      }
+      return Promise.reject(error);
     }
+  );
+}
 
-    return Promise.reject(error);
-  }
-);
+rejectWhenSessionIsDead(backendInstance);
+rejectWhenSessionIsDead(chatInstance);
 
 export type RequestData =
   | Record<string, string | number | boolean | File | Blob | null | undefined>
   | FormData;
 
-const apiCaller = async (
+function buildRequest(
   url: string,
   method: AxiosRequestConfig['method'] = 'GET',
   data?: RequestData,
   options: AxiosRequestConfig = {},
   useAuth: boolean = true,
   dataType: 'json' | 'formdata' = 'json',
-  onErrorRefresh: boolean = false,
   signal?: AbortSignal
-): Promise<AxiosResponse> => {
+): AxiosRequestConfig {
   const headers = { ...(options.headers || {}) } as Record<string, string>;
+
+  // Public endpoints: ask the gateway to forward without credentials so a stale
+  // session cannot turn an otherwise public read into a 401.
+  if (!useAuth) headers['X-Gateway-No-Auth'] = '1';
+
+  // The gateway needs the exact upstream path, trailing slash included, because
+  // Next 308s any URL it serves that ends with one. The URL itself stays
+  // slash-free so no redirect ever happens.
+  const upstreamPath = url.split('?')[0] || '/';
+  headers['X-Upstream-Path'] = upstreamPath;
 
   // Set default Content-Type to JSON only for data-carrying requests
   if (dataType === 'json' && !headers['Content-Type'] && ['POST', 'PUT', 'PATCH'].includes(method.toUpperCase())) {
@@ -118,10 +60,13 @@ const apiCaller = async (
   }
 
   // Prevent browser caching for GET requests via query parameter
-  let finalUrl = url;
+  let finalUrl = upstreamPath.replace(/\/$/, '');
   if (method.toUpperCase() === 'GET') {
-    const separator = finalUrl.includes('?') ? '&' : '?';
-    finalUrl = `${finalUrl}${separator}_t=${Date.now()}`;
+    const query = url.slice(upstreamPath.length);
+    const separator = query.includes('?') ? '&' : '?';
+    finalUrl = `${finalUrl}${query}${separator}_t=${Date.now()}`;
+  } else {
+    finalUrl = `${finalUrl}${url.slice(upstreamPath.length)}`;
   }
 
   const config: AxiosRequestConfig = {
@@ -131,10 +76,6 @@ const apiCaller = async (
     signal,
     headers,
   };
-
-  if (useAuth === false && config.headers) {
-    delete (config.headers as Record<string, string>).Authorization;
-  }
 
   if (data) {
     if (dataType === 'formdata') {
@@ -154,14 +95,55 @@ const apiCaller = async (
     }
   }
 
+  return config;
+}
+
+async function send(
+  instance: AxiosInstance,
+  config: AxiosRequestConfig,
+  onErrorRefresh: boolean
+): Promise<AxiosResponse> {
   try {
-    return await axiosInstance(config);
+    return await instance(config);
   } catch (error) {
     if (onErrorRefresh && typeof window !== 'undefined') {
       window.location.reload();
     }
     throw error;
   }
-};
+}
+
+const apiCaller = async (
+  url: string,
+  method: AxiosRequestConfig['method'] = 'GET',
+  data?: RequestData,
+  options: AxiosRequestConfig = {},
+  useAuth: boolean = true,
+  dataType: 'json' | 'formdata' = 'json',
+  onErrorRefresh: boolean = false,
+  signal?: AbortSignal
+): Promise<AxiosResponse> =>
+  send(
+    backendInstance,
+    buildRequest(url, method, data, options, useAuth, dataType, signal),
+    onErrorRefresh
+  );
+
+/** Chat-server calls: same gateway behaviour, different upstream. */
+export const chatApiCaller = async (
+  url: string,
+  method: AxiosRequestConfig['method'] = 'GET',
+  data?: RequestData,
+  options: AxiosRequestConfig = {},
+  useAuth: boolean = true,
+  dataType: 'json' | 'formdata' = 'json',
+  onErrorRefresh: boolean = false,
+  signal?: AbortSignal
+): Promise<AxiosResponse> =>
+  send(
+    chatInstance,
+    buildRequest(url, method, data, options, useAuth, dataType, signal),
+    onErrorRefresh
+  );
 
 export default apiCaller;

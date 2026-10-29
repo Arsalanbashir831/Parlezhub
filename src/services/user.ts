@@ -205,40 +205,8 @@ export const userApi = {
     currentPassword: string,
     newPassword: string
   ): Promise<{ message: string }> => {
-    // Dynamic import to avoid SSR issues if this file is imported in server contexts
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    // 1. Get current user's email
-    const { data: { user }, error: userError } = await supabase.auth.getUser();
-    if (userError || !user?.email) {
-      throw new Error('Could not find authenticated user.');
-    }
-
-    // 2. Verify current password by attempting to sign in
-    const { error: signInError } = await supabase.auth.signInWithPassword({
-      email: user.email,
-      password: currentPassword,
-    });
-
-    if (signInError) {
-      // Throw an error that looks like our standard API error for compatibility
-      const err = new Error('Current password is incorrect.');
-      (err as unknown as Record<string, unknown>).response = { data: { error: 'Current password is incorrect.' } };
-      throw err;
-    }
-
-    // 3. Update password
-    const { error: updateError } = await supabase.auth.updateUser({
-      password: newPassword,
-    });
-
-    if (updateError) {
-      const err = new Error(updateError.message);
-      (err as unknown as Record<string, unknown>).response = { data: { error: updateError.message } };
-      throw err;
-    }
-
+    // Ownership check + update happen on the server, against the session cookie.
+    await authApi.changePassword(currentPassword, newPassword);
     return { message: 'Password updated successfully.' };
   },
 };

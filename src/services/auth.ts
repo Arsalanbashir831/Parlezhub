@@ -1,24 +1,11 @@
 import { API_ROUTES } from '@/constants/api-routes';
-import { ROUTES } from '@/constants/routes';
 import apiCaller from '@/lib/api-caller';
+import type { SessionSnapshot } from '@/types/auth';
 import { UserRole } from '@/types/user';
-
-interface MockAxiosError extends Error {
-  response?: {
-    data?: {
-      error?: string;
-    };
-  };
-}
 
 // ── Request / Response types ─────────────────────────────────────────────────
 export interface ForgotPasswordRequest {
   email: string;
-}
-
-export interface ResetPasswordRequest {
-  token: string;
-  new_password: string;
 }
 
 export interface ResendVerificationEmailRequest {
@@ -78,21 +65,6 @@ export interface UnifiedProfileResponse {
   student_profile: StudentProfile | null;
 }
 
-export interface SyncUserResponse {
-  success: boolean;
-  message: string;
-  user?: {
-    id: string;
-    email: string;
-    first_name: string | null;
-    last_name: string | null;
-    role: UserRole | null;
-    auth_provider: string;
-    email_verified: boolean;
-  };
-  requires_role_selection?: boolean;
-}
-
 export interface SetRoleResponse {
   success: boolean;
   message: string;
@@ -109,34 +81,89 @@ export interface BecomeRoleResponse {
   profile: StudentProfile | ConsultantProfile;
 }
 
-// ── API methods ───────────────────────────────────────────────────────────────
+// ── API methods ──────────────────────────────────────────────────────────────
+
+/**
+ * Auth calls are plain fetches to our own server: Supabase is only contacted
+ * from route handlers, so no token ever passes through the browser bundle.
+ */
+async function authRequest<T extends SessionSnapshot = SessionSnapshot>(
+  action: string,
+  body?: Record<string, unknown>
+): Promise<T> {
+  const response = await fetch(`/api/auth/${action}`, {
+    method: body === undefined ? 'GET' : 'POST',
+    ...(body === undefined
+      ? null
+      : { headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) }),
+    credentials: 'same-origin',
+    cache: 'no-store',
+  });
+
+  const data = (await response.json().catch(() => ({}))) as T & { error?: string };
+
+  if (!response.ok) {
+    throw new Error(data.error || 'Authentication request failed');
+  }
+
+  return data;
+}
 
 export const authApi = {
-  /**
-   * Sync the authenticated Supabase user to Django.
-   * Called after every successful auth (email login, Google OAuth, One-Tap).
-   * Django creates/updates the local User and UserProfile records.
-   */
-  syncUser: async (accessToken: string, role?: 'TEACHER' | 'STUDENT'): Promise<SyncUserResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.SYNC,
-      'POST',
-      { access_token: accessToken, ...(role ? { role } : {}) } as Record<string, string>,
-      {
-        // Explicitly set the Authorization header so the interceptor doesn't
-        // need to fetch a session (which may not be in cookies yet for brand-new
-        // One-Tap / OAuth users). The sync endpoint itself validates the token
-        // via the Supabase admin client on the backend.
-        headers: { Authorization: `Bearer ${accessToken}` },
-      },
-      false // permission_classes=[AllowAny] on the backend — no DRF auth needed
-    );
+  login: (email: string, password: string) =>
+    authRequest('login', { email, password }),
+
+  signup: (email: string, password: string, full_name: string) =>
+    authRequest('signup', { email, password, full_name }),
+
+  logout: () => authRequest('logout', {}),
+
+  /** Verified session plus server-resolved roles — replaces cookie reads. */
+  session: () => authRequest('session'),
+
+  /** Re-reads roles from the backend after become-teacher / set-role etc. */
+  syncRoles: () => authRequest('sync-roles', {}),
+
+  setActiveRole: (role: UserRole) => authRequest('active-role', { role }),
+
+  forgotPassword: (data: ForgotPasswordRequest) =>
+    authRequest('forgot-password', { email: data.email }),
+
+  /** Completes a reset on the live recovery session — no token involved. */
+  resetPassword: (password: string) => authRequest('reset-password', { password }),
+
+  resendVerificationEmail: (data: ResendVerificationEmailRequest) =>
+    authRequest('resend-verification', { email: data.email }),
+
+  exchangeCode: (code: string) => authRequest('exchange-code', { code }),
+
+  changePassword: (currentPassword: string, newPassword: string) =>
+    authRequest('change-password', {
+      current_password: currentPassword,
+      new_password: newPassword,
+    }),
+
+  googleOAuthStart: (redirectTo?: string) =>
+    authRequest('google-oauth-start', { redirectTo }),
+
+  googleIdToken: (credential: string, nonce: string) =>
+    authRequest('google-id-token', { credential, nonce }),
+
+  /** Short-lived credential for the chat WebSocket handshake. */
+  wsToken: async (): Promise<string> => {
+    const { token } = await authRequest('ws-token', {});
+    if (!token) throw new Error('No credential available');
+    return token;
+  },
+
+  getUnifiedProfile: async (): Promise<UnifiedProfileResponse> => {
+    const response = await apiCaller(API_ROUTES.AUTH.ME, 'GET', undefined, {}, true);
     return response.data;
   },
 
   /**
-   * Finalize role for new Google/One-Tap users.
-   * Called from /onboarding/choose-role page after the user selects their role.
+   * Finalize the role for a new Google/One-Tap user, then refresh the
+   * server-held role cookies so middleware and the UI agree on it.
    */
   setRole: async (role: 'TEACHER' | 'STUDENT'): Promise<SetRoleResponse> => {
     const response = await apiCaller(
@@ -144,98 +171,18 @@ export const authApi = {
       'POST',
       { role } as Record<string, string>,
       {},
-      true // Requires Authorization header (user is already authenticated)
-    );
-    return response.data;
-  },
-
-  forgotPassword: async (data: ForgotPasswordRequest): Promise<{ message: string }> => {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.resetPasswordForEmail(data.email, {
-      redirectTo: `${window.location.origin}${ROUTES.AUTH.RESET_PASSWORD}`,
-    });
-
-    if (error) {
-      const err = new Error(error.message) as MockAxiosError;
-      err.response = { data: { error: error.message } };
-      throw err;
-    }
-
-    return { message: 'Password reset link sent to your email.' };
-  },
-
-  resetPassword: async (data: ResetPasswordRequest): Promise<{ message: string }> => {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.updateUser({
-      password: data.new_password,
-    });
-
-    if (error) {
-      const err = new Error(error.message) as MockAxiosError;
-      err.response = { data: { error: error.message } };
-      throw err;
-    }
-
-    return { message: 'Password has been reset successfully.' };
-  },
-
-  resendVerificationEmail: async (
-    data: ResendVerificationEmailRequest
-  ): Promise<{ message: string }> => {
-    const { createClient } = await import('@/lib/supabase/client');
-    const supabase = createClient();
-
-    const { error } = await supabase.auth.resend({
-      type: 'signup',
-      email: data.email,
-      options: {
-        emailRedirectTo: `${window.location.origin}${ROUTES.AUTH.CALLBACK}`,
-      },
-    });
-
-    if (error) {
-      const err = new Error(error.message) as MockAxiosError;
-      err.response = { data: { error: error.message } };
-      throw err;
-    }
-
-    return { message: 'Verification email has been resent.' };
-  },
-
-  getUnifiedProfile: async (): Promise<UnifiedProfileResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.ME,
-      'GET',
-      undefined,
-      {},
       true
     );
     return response.data;
   },
 
   becomeConsultant: async (): Promise<BecomeRoleResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.BECOME_TEACHER,
-      'POST',
-      {},
-      {},
-      true
-    );
+    const response = await apiCaller(API_ROUTES.AUTH.BECOME_TEACHER, 'POST', {}, {}, true);
     return response.data;
   },
 
   becomeStudent: async (): Promise<BecomeRoleResponse> => {
-    const response = await apiCaller(
-      API_ROUTES.AUTH.BECOME_STUDENT,
-      'POST',
-      {},
-      {},
-      true
-    );
+    const response = await apiCaller(API_ROUTES.AUTH.BECOME_STUDENT, 'POST', {}, {}, true);
     return response.data;
   },
 };

@@ -1,13 +1,12 @@
 'use client';
 
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 
 import { authApi } from '@/services/auth';
-import { createClient } from '@/lib/supabase/client';
-import { setActiveRole, setUserRoles } from '@/lib/cookie-utils';
-import { ROUTES } from '@/constants/routes';
+import { useAuth } from '@/contexts/auth-context';
+import { landingPathFor } from '@/lib/guard-rules';
 
 /**
  * /onboarding/choose-role
@@ -19,36 +18,50 @@ import { ROUTES } from '@/constants/routes';
  */
 export default function ChooseRolePage() {
   const [isLoading, setIsLoading] = useState(false);
+  const [isCheckingRole, setIsCheckingRole] = useState(true);
   const [selected, setSelected] = useState<'STUDENT' | 'TEACHER' | null>(null);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const supabase = createClient();
+  const { refreshUserProfile, userRoles, activeRole } = useAuth();
+
+  // Middleware can only bounce an already-roled user if the role cookies had
+  // arrived. The session fetch may resolve them after this page mounts, so
+  // leave as soon as they are known instead of waiting for a manual refresh.
+  useEffect(() => {
+    if (userRoles.length === 0) return;
+    router.replace(landingPathFor({ isAuthenticated: true, userRoles, activeRole }, searchParams?.get('redirect')));
+  }, [userRoles, activeRole, router, searchParams]);
+
+  // Ask the server one more time before showing the picker: roles can lag the
+  // profile row right after sign-in, and a stale empty answer would otherwise
+  // offer the choice to somebody who already made it.
+  useEffect(() => {
+    let cancelled = false;
+
+    refreshUserProfile()
+      .catch((err: unknown) => console.error('Role check failed:', err))
+      .finally(() => {
+        if (!cancelled) setIsCheckingRole(false);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [refreshUserProfile]);
 
   const handleSelectRole = async (role: 'STUDENT' | 'TEACHER') => {
     setSelected(role);
     setIsLoading(true);
 
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session) {
-        toast.error('Session expired. Please sign in again.');
-        router.push(ROUTES.AUTH.LOGIN);
-        return;
-      }
-
+      // Django records the role, then the server rewrites its own role cookies.
       await authApi.setRole(role);
-
-      // Update local role cookies so middleware/context picks them up
-      const roles: ('STUDENT' | 'TEACHER')[] = [role];
-      setUserRoles(roles);
-      setActiveRole(role);
+      const snapshot = await authApi.setActiveRole(role);
+      await refreshUserProfile();
 
       toast.success(`Welcome! You're set up as a ${role.toLowerCase()}.`);
 
-      const redirectTo = searchParams.get('redirect');
-      router.push(
-        redirectTo || (role === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD)
-      );
+      router.push(landingPathFor(snapshot, searchParams.get('redirect')));
     } catch (err) {
       console.error('Role selection failed:', err);
       toast.error('Failed to set your role. Please try again.');
@@ -57,6 +70,23 @@ export default function ChooseRolePage() {
       setIsLoading(false);
     }
   };
+
+  // Roles are still being confirmed, or have just arrived and are carrying the
+  // user away: hold the screen rather than flashing the picker.
+  if (isCheckingRole || userRoles.length > 0) {
+    return (
+      <div className="flex min-h-screen flex-col items-center justify-center gap-5 bg-background px-4">
+        <div
+          role="status"
+          aria-label="Checking your role"
+          className="h-12 w-12 animate-spin rounded-full border-4 border-primary-500 border-t-transparent"
+        />
+        <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-neutral-500">
+          Preparing your account…
+        </p>
+      </div>
+    );
+  }
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background px-4">

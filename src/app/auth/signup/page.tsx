@@ -8,7 +8,6 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 
-import { Separator } from '@/components/ui/separator';
 import { AuthButton } from '@/components/auth/auth-button';
 import { AuthLayout } from '@/components/auth/auth-layout';
 import { GoogleOAuthButton } from '@/components/auth/google-oauth-button';
@@ -97,42 +96,38 @@ export default function SignupPage() {
           Create Account
         </AuthButton>
 
-        <div className="flex items-center justify-center gap-2">
-          <Separator
-            orientation="horizontal"
-            className="w-full bg-primary-100"
-          />
-          <p className="px-2 text-primary-100">OR</p>
-          <Separator
-            orientation="horizontal"
-            className="w-full bg-primary-100"
-          />
+        <div className="flex items-center gap-3">
+          <span className="hairline h-px flex-1" />
+          <p className="font-mono text-[10px] uppercase tracking-[0.25em] text-neutral-500">
+            or
+          </p>
+          <span className="hairline h-px flex-1" />
         </div>
 
         <GoogleOAuthButton disabled={isLoading} className="w-full" />
 
         <div className="text-center">
-          <p className="text-sm text-primary-100">
+          <p className="text-sm text-neutral-400">
             Already have an account?{' '}
             <Link
               href={ROUTES.AUTH.LOGIN}
-              className="font-medium text-primary-600 hover:text-primary-500 dark:text-primary-400 dark:hover:text-primary-300"
+              className="font-medium text-ember transition-colors hover:text-ember-soft"
             >
               Sign in
             </Link>
           </p>
-          <p className="mt-4 text-[10px] text-primary-200/50">
+          <p className="mt-4 text-xs text-neutral-600">
             By creating an account, you agree to our{' '}
             <Link
               href={ROUTES.TERMS}
-              className="text-primary-400 hover:text-primary-300 underline underline-offset-4 decoration-primary-500/30"
+              className="text-neutral-400 underline decoration-white/20 underline-offset-4 transition-colors hover:text-ember"
             >
               Terms
             </Link>{' '}
             and{' '}
             <Link
               href={ROUTES.PRIVACY}
-              className="text-primary-400 hover:text-primary-300 underline underline-offset-4 decoration-primary-500/30"
+              className="text-neutral-400 underline decoration-white/20 underline-offset-4 transition-colors hover:text-ember"
             >
               Privacy Policy
             </Link>

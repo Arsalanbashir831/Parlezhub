@@ -12,7 +12,6 @@ import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { AxiosError } from 'axios';
 import { toast } from 'sonner';
 
-import { removeCookie, setCookie } from '@/lib/cookie-utils';
 import { getErrorMessage } from '@/lib/error-utils';
 import { useAuth } from '@/contexts/auth-context';
 import { UserRole } from '@/types/user';
@@ -22,8 +21,6 @@ interface UserContextType {
   isLoading: boolean;
   error: string | null;
   refetchUser: () => void;
-  clearUser: () => void;
-  setUserRole: (role: UserRole | null) => void;
   updateStudentProfile: (
     data: UpdateStudentProfileRequest
   ) => Promise<UserProfile>;
@@ -172,26 +169,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     refetch();
   };
 
-  const clearUser = () => {
-    // Clear cookies only
-    removeCookie('active_role');
-    setUserRole(null);
-    // Invalidate user profile query
-    queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-  };
-
-  const handleSetUserRole = (role: UserRole | null) => {
-    setUserRole(role);
-    // Store role in cookies only
-    if (role) {
-      setCookie('active_role', role);
-    } else {
-      removeCookie('active_role');
-    }
-    // Invalidate existing queries to trigger refetch
-    queryClient.invalidateQueries({ queryKey: ['user-profile'] });
-  };
-
   const updateStudentProfile = async (
     data: UpdateStudentProfileRequest
   ): Promise<UserProfile> => {
@@ -241,8 +218,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
         isLoading,
         error: error?.message || null,
         refetchUser,
-        clearUser,
-        setUserRole: handleSetUserRole,
         updateStudentProfile,
         updateConsultantProfile,
         isUpdatingProfile:

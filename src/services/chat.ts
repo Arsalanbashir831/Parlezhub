@@ -1,9 +1,7 @@
 import { API_ROUTES } from '@/constants/api-routes';
-import axios, { AxiosRequestConfig, AxiosResponse } from 'axios';
-import { toast } from 'sonner';
 
-import apiCaller from '@/lib/api-caller';
-import { createClient } from '@/lib/supabase/client';
+import apiCaller, { chatApiCaller } from '@/lib/api-caller';
+import { authApi } from '@/services/auth';
 
 import { Attachment } from '@/types/chat';
 
@@ -31,10 +29,10 @@ export interface ChatRoom {
   updated_at: string;
 }
 
-export interface CreateChatRequest {
+export type CreateChatRequest = {
   student_id: string;
   teacher_id: string;
-}
+};
 
 export interface WebSocketMessage {
   type: 'message' | 'typing' | 'read' | 'error';
@@ -43,66 +41,6 @@ export interface WebSocketMessage {
   is_typing?: boolean;
   timestamp: string;
 }
-
-// Chat-specific API caller that doesn't prepend the main backend URL
-const chatApiCaller = async (
-  url: string,
-  method: AxiosRequestConfig['method'] = 'GET',
-  data?: unknown,
-  options: AxiosRequestConfig = {}
-): Promise<AxiosResponse> => {
-  const config: AxiosRequestConfig = {
-    ...options,
-    method,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(options.headers || {}),
-    },
-  };
-
-  // Add authorization header
-  try {
-    const supabase = createClient();
-    const { data: { session } } = await supabase.auth.getSession();
-    const token = session?.access_token;
-    if (token) {
-      config.headers!.Authorization = `Bearer ${token}`;
-    }
-  } catch (err) {
-    console.warn('Failed to get Supabase session for Chat API:', err);
-  }
-
-  if (data && method !== 'GET') {
-    config.data = data;
-    if (data instanceof FormData && config.headers) {
-      delete config.headers['Content-Type'];
-    }
-  }
-
-  try {
-    const response = await axios(url, config);
-    return response;
-  } catch (error: unknown) {
-    console.error('Chat API Error:', error);
-
-    if (
-      axios.isAxiosError(error) &&
-      (error.response?.status === 401 || error.response?.status === 403)
-    ) {
-      toast.error('Authentication failed', {
-        description: 'Please log in again to continue chatting.',
-      });
-    } else {
-      toast.error('Chat service error', {
-        description: axios.isAxiosError(error)
-          ? error.response?.data?.message || 'Failed to connect to chat service'
-          : 'Failed to connect to chat service',
-      });
-    }
-
-    throw error;
-  }
-};
 
 class ChatService {
   private ws: WebSocket | null = null;
@@ -145,34 +83,30 @@ class ChatService {
   }
 
   async sendChatMessage(chatId: string, formData: FormData): Promise<ChatMessage> {
-    let token = '';
-    try {
-      const supabase = createClient();
-      const { data: { session } } = await supabase.auth.getSession();
-      token = session?.access_token || '';
-    } catch (err) {
-      console.warn('Failed to get Supabase session for sendChatMessage:', err);
-    }
-
-    const url = `${API_ROUTES.CHAT.SEND_MESSAGE(chatId)}${token ? `?token=${token}` : ''}`;
-    const response = await chatApiCaller(url, 'POST', formData);
+    // The gateway authenticates this server-side; the token used to sit in the URL.
+    const response = await chatApiCaller(
+      API_ROUTES.CHAT.SEND_MESSAGE(chatId),
+      'POST',
+      formData,
+      {},
+      true,
+      'formdata'
+    );
     return response.data;
   }
 
   // WebSocket Methods
   connect(chatId: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
-      let token: string | undefined;
+      // Channels authenticates the handshake itself and a Next.js route handler
+      // cannot proxy WebSockets, so this one credential is fetched per connect and
+      // kept in memory only — the durable session stays in httpOnly cookies.
+      let token: string;
 
       try {
-        const supabase = createClient();
-        const { data: { session } } = await supabase.auth.getSession();
-        token = session?.access_token;
+        token = await authApi.wsToken();
       } catch (err) {
-        console.error('Failed to get Supabase session for Chat WebSocket:', err);
-      }
-
-      if (!token) {
+        console.error('Failed to get credential for Chat WebSocket:', err);
         reject(new Error('No access token available'));
         return;
       }
