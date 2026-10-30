@@ -3,33 +3,32 @@
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
+import { HOME_PATH } from '@/lib/guard-rules';
 import { useAuth } from '@/contexts/auth-context';
 
 export default function HomePage() {
-  const { isAuthenticated, userRole, isLoading } = useAuth();
+  const { isAuthenticated, userRoles, isLoading } = useAuth();
   const router = useRouter();
 
   useEffect(() => {
     if (isLoading) return; // Wait for auth check to complete
 
-    if (isAuthenticated && userRole) {
-      // Redirect authenticated users to their role-specific dashboard
-      if (userRole === 'STUDENT') {
-        router.push(ROUTES.STUDENT.DASHBOARD);
-      } else if (userRole === 'TEACHER') {
-        router.push(ROUTES.TEACHER.DASHBOARD);
-      }
+    if (isAuthenticated && userRoles.length > 0) {
+      router.replace(HOME_PATH);
+    } else if (isAuthenticated) {
+      // Live session, no role yet: the picker owns the next step.
+      router.replace(ROUTES.ONBOARDING.CHOOSE_ROLE);
     } else {
       // Redirect unauthenticated users to the language agent page
-      router.push(ROUTES.AGENT.LANGUAGE);
+      router.replace(ROUTES.AGENT.LANGUAGE);
     }
-  }, [isAuthenticated, userRole, isLoading, router]);
+  }, [isAuthenticated, userRoles, isLoading, router]);
 
   // Show loading while determining redirect
   if (isLoading) {
     return (
       <div className="flex min-h-screen items-center justify-center">
-        <div role="status" aria-label="Loading, redirecting to your dashboard" className="h-10 w-10 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
+        <div role="status" aria-label="Loading, redirecting to your workspace" className="h-10 w-10 animate-spin rounded-full border-2 border-primary-500 border-t-transparent" />
       </div>
     );
   }

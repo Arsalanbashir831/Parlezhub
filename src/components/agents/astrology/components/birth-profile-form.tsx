@@ -16,7 +16,7 @@ import {
   FormMessage,
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
+import type { BirthProfile } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 import { Country, City } from 'country-state-city';
 import { Check, ChevronsUpDown } from 'lucide-react';
@@ -72,22 +72,26 @@ export default function BirthProfileForm({
   guestProfileId,
   type = 'me',
   onSuccess,
+  showHeading = true,
   className
 }: {
   readOnly?: boolean;
   studentId?: string;
   guestProfileId?: string;
   type?: 'me' | 'student' | 'guest';
-  onSuccess?: () => void;
+  onSuccess?: (profile: BirthProfile) => void;
+  showHeading?: boolean;
   className?: string;
 }) {
   // Only fetch existing profile if updating or viewing student
   const shouldFetchProfile = type !== 'guest' || !!guestProfileId;
-  const { data: profile } = useBirthProfile(
+  const { data: existingProfile, isLoading, isError, refetch } = useBirthProfile(
     type === 'student' ? studentId : undefined,
     type === 'guest' ? guestProfileId : undefined,
     shouldFetchProfile
   );
+  const profile = shouldFetchProfile ? existingProfile : undefined;
+  readOnly = readOnly || type === 'student';
 
   // If we are in 'me' mode and no IDs provided, useBirthProfile() without args fetches 'me'.
   // If we are in 'guest' mode and no guestProfileId, we want a fresh form.
@@ -150,6 +154,7 @@ export default function BirthProfileForm({
   }, [allUniqueCities, citySearch]);
 
   const onSubmit = (data: FormValues) => {
+    if (readOnly) return;
     const payload = {
       birth_year: data.birth_year,
       birth_month: data.birth_month,
@@ -180,19 +185,22 @@ export default function BirthProfileForm({
     }
   };
 
+  if (shouldFetchProfile && isLoading) return <div role="status" className="obs-card w-full p-8 text-sm text-muted-foreground">Loading birth details…</div>;
+  if (isError && shouldFetchProfile) return <div role="alert" className="obs-card w-full p-8"><p>Could not load birth details.</p><button className="obs-control mt-4" onClick={() => refetch()}>Retry</button></div>;
+
   return (
-    <div className="flex h-full w-full flex-col items-center justify-center p-4">
-      <div className={cn("bg-white/1 w-full max-w-md rounded-2xl border border-primary-500/20 p-8 shadow-2xl backdrop-blur-md", className)}>
-        <div className="mb-6 text-center">
-          <h2 className="font-serif text-2xl font-bold tracking-wide text-primary-500">
+    <div className="w-full">
+      <div className={cn("obs-card w-full p-5 sm:p-8", className)}>
+        {showHeading && <div className="mb-6">
+          <h2 className="text-2xl font-semibold text-foreground">
             {isGuestFlow ? (guestProfileId ? 'Edit Guest Profile' : 'New Guest Profile') : 'Birth Profile'}
           </h2>
-          <p className="mt-2 text-sm text-primary-100/60">
+          <p className="mt-2 text-sm text-muted-foreground">
             {isGuestFlow
               ? 'Enter guest details to generate an astrological chart.'
               : 'Please enter your birth details to generate your astrological charts.'}
           </p>
-        </div>
+        </div>}
 
         <Form {...form}>
           <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
@@ -211,7 +219,7 @@ export default function BirthProfileForm({
                 )}
               />
             )}
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="birth_year"
@@ -253,7 +261,7 @@ export default function BirthProfileForm({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <FormField
                 control={form.control}
                 name="birth_hour"
@@ -282,7 +290,7 @@ export default function BirthProfileForm({
               />
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
                 name="country_code"
@@ -296,7 +304,7 @@ export default function BirthProfileForm({
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-full justify-between bg-transparent font-normal",
+                              "min-h-11 w-full min-w-0 justify-between overflow-hidden bg-transparent font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                             disabled={readOnly}
@@ -310,7 +318,7 @@ export default function BirthProfileForm({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
+                      <PopoverContent className="observatory-theme w-[min(320px,85vw)] p-0">
                         <Command>
                           <CommandInput placeholder="Search country..." />
                           <CommandList>
@@ -360,7 +368,7 @@ export default function BirthProfileForm({
                             variant="outline"
                             role="combobox"
                             className={cn(
-                              "w-full justify-between bg-transparent font-normal",
+                              "min-h-11 w-full min-w-0 justify-between overflow-hidden bg-transparent font-normal",
                               !field.value && "text-muted-foreground"
                             )}
                             disabled={readOnly || !selectedCountry}
@@ -370,7 +378,7 @@ export default function BirthProfileForm({
                           </Button>
                         </FormControl>
                       </PopoverTrigger>
-                      <PopoverContent className="w-[200px] p-0">
+                      <PopoverContent className="observatory-theme w-[min(320px,85vw)] p-0">
                         <Command shouldFilter={false}>
                           <CommandInput
                             placeholder="Search city..."
@@ -489,7 +497,7 @@ export default function BirthProfileForm({
             {!readOnly && (
               <Button
                 type="submit"
-                className="w-full bg-primary-500 font-bold text-primary-950 hover:bg-primary-600"
+                className="obs-button w-full"
                 disabled={isPending}
               >
                 {isPending ? (

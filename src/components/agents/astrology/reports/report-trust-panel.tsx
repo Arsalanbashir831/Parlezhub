@@ -9,11 +9,16 @@ const TRUST_ITEMS = [
 
 export function ReportTrustPanel() {
   return (
-    <div className="rounded-2xl border border-white/8 bg-white/[0.02] p-5">
-      <h3 className="mb-3 text-sm font-semibold text-primary-300">Secure Purchase</h3>
+    <div className="obs-card p-5">
+      <h3 className="mb-3 text-base font-semibold text-foreground">
+        Secure purchase
+      </h3>
       <div className="flex flex-col gap-2.5">
         {TRUST_ITEMS.map(({ icon: Icon, label }) => (
-          <div key={label} className="flex items-center gap-2.5 text-xs text-muted-foreground">
+          <div
+            key={label}
+            className="flex items-center gap-2.5 text-xs text-muted-foreground"
+          >
             <Icon className="h-3.5 w-3.5 shrink-0 text-green-500" />
             {label}
           </div>

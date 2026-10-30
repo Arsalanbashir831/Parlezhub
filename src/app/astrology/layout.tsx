@@ -1,303 +1,104 @@
 'use client';
 
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState } from 'react';
+import Link from 'next/link';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import {
-  Brain,
-  Briefcase,
-  Calendar,
-  CloudMoon,
-  Compass,
-  Contrast,
-  Crown,
-  FileText,
-  Flame,
-  Gem,
-  Handshake,
-  Hospital,
-  Hourglass,
-  Landmark,
-  LifeBuoy,
-  Moon,
-  Orbit,
-  Plane,
-  Sparkles,
-  Star,
-  Theater,
-  Tornado,
-  Users,
-} from 'lucide-react';
-
-import { useAuth } from '@/contexts/auth-context';
-import {
-  useBirthProfile,
-  useDeleteGuestProfile,
-  useTransits,
-} from '@/hooks/useAstrology';
-import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
-
-import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
+import { ChevronRight, Eye } from 'lucide-react';
+import { toast } from 'sonner';
+import { useBirthProfile, useDeleteGuestProfile } from '@/hooks/useAstrology';
 import { DashboardHeader } from '@/components/agents/astrology/components/dashboard-header';
-import { FloatingFooter } from '@/components/agents/astrology/components/floating-footer';
 import { GuestProfileDialog } from '@/components/agents/astrology/components/guest-profile-dialog';
 import { ProfileSelector, SelectedProfile } from '@/components/agents/astrology/components/profile-selector';
-import { FloatingAIAstrologer } from '@/components/agents/astrology/components/floating-ai-astrologer';
-import AnalysisSidebar from '@/components/agents/astrology/layout/analysis-sidebar';
-import NavigationSidebar from '@/components/agents/astrology/layout/navigation-sidebar';
+import { PrimarySidebar } from '@/components/agents/astrology/layout/primary-sidebar';
+import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
+import { Logo } from '@/components/ui/logo';
+import { Sheet, SheetContent, SheetDescription, SheetTitle } from '@/components/ui/sheet';
+import { ANALYSIS_CATEGORIES, ANALYSIS_TOPICS } from '@/constants/astrology';
 import { ROUTES } from '@/constants/routes';
+import { astrologyChatHref, astrologyHref, profileHref } from '@/lib/astrology-navigation';
 
-const ICON_MAP: Record<string, React.ComponentType<{ className?: string }>> = {
-  '✨': Sparkles,
-  '🪐': Orbit,
-  '⭐': Star,
-  '🧭': Compass,
-  '☸️': LifeBuoy,
-  '🌙': Moon,
-  '💎': Gem,
-  '🔥': Flame,
-  '📜': FileText,
-  '🌌': CloudMoon,
-  '🌀': Tornado,
-  '👑': Crown,
-  '🏛️': Landmark,
-  '☯️': Contrast,
-  '🧠': Brain,
-  '💼': Briefcase,
-  '🏥': Hospital,
-  '⏳': Hourglass,
-  '👥': Users,
-  '🎭': Theater,
-  '🤝': Handshake,
-  '✈️': Plane,
-  '📅': Calendar,
+const pageTitles: Record<string, string> = {
+  [ROUTES.AGENT.ASTROLOGY.ANALYSIS]: 'Chart Analysis',
+  [ROUTES.AGENT.ASTROLOGY.DASHA]: 'Dasha Timeline',
+  [ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR]: 'Festival Calendar',
+  [ROUTES.AGENT.ASTROLOGY.CHAT]: 'AI Vedic Astrologer',
+  [ROUTES.AGENT.ASTROLOGY.REPORTS]: 'My Reports',
+  [ROUTES.AGENT.ASTROLOGY.PROFILES]: 'Birth Profiles',
+  [ROUTES.AGENT.ASTROLOGY.PROFILE]: 'Birth Details',
+  [ROUTES.AGENT.ASTROLOGY.SHARE]: 'Share Access',
 };
 
-export default function AstrologyLayout({
-  children,
-}: {
-  children: React.ReactNode;
-}) {
+export default function AstrologyLayout({ children }: { children: React.ReactNode }) {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { activeRole } = useAuth();
-
-  const [mounted, setMounted] = useState(false);
-  const [leftOpen, setLeftOpen] = useState(false);
-  const [rightOpen, setRightOpen] = useState(false);
-
-  // Profile selection state from URL
+  const search = searchParams.toString();
   const studentId = searchParams.get('student_id') || undefined;
-  const guestId = searchParams.get('guest_id') || undefined;
-
-  const selectedProfile = useMemo((): SelectedProfile => {
-    if (studentId) return { type: 'student', id: studentId, name: 'Student' };
-    if (guestId) return { type: 'guest', id: guestId, name: 'Guest' };
-    return { type: 'me', name: 'My Chart' };
-  }, [studentId, guestId]);
-
-  const [isGuestDialogOpen, setIsGuestDialogOpen] = useState(false);
-  const [isDeleteDialogOpen, setIsDeleteDialogOpen] = useState(false);
+  const guestId = studentId ? undefined : searchParams.get('guest_id') || undefined;
+  const { data: profile, isLoading } = useBirthProfile(studentId, guestId);
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [guestOpen, setGuestOpen] = useState(false);
   const [guestToDelete, setGuestToDelete] = useState<{ id: string; name: string } | null>(null);
-
-  const transitDate = searchParams.get('transit_date') || undefined;
-  const { data: profile } = useBirthProfile(studentId, guestId);
-  const { data: transits } = useTransits(true, studentId, guestId, transitDate);
-  const { mutate: deleteGuest } = useDeleteGuestProfile();
+  const deleteGuest = useDeleteGuestProfile();
+  const selectedProfile: SelectedProfile = {
+    type: studentId ? 'student' : guestId ? 'guest' : 'me',
+    id: studentId || guestId,
+    name: isLoading ? 'Loading profile…' : profile?.guest_name || profile?.user_name || (studentId ? 'Shared profile' : guestId ? 'Guest profile' : 'My Chart'),
+  };
+  const topic = ANALYSIS_TOPICS.find(item => pathname === ROUTES.AGENT.ASTROLOGY.INSIGHTS(item.id) || (item.id === 'navatara' && pathname === ROUTES.AGENT.ASTROLOGY.NAVATARA));
+  const category = topic && ANALYSIS_CATEGORIES.find(item => item.id === topic.category);
+  const chatCategory = pathname.includes('/insights/') ? pathname.split('/').pop()! : pathname === ROUTES.AGENT.ASTROLOGY.DASHA ? 'dasha' : pathname === ROUTES.AGENT.ASTROLOGY.NAVATARA ? 'navatara' : 'divisional-charts';
 
   useEffect(() => {
-    setMounted(true);
-  }, []);
+    const openChat = () => router.push(astrologyChatHref(search, chatCategory));
+    window.addEventListener('open-ai-astrologer', openChat);
+    return () => window.removeEventListener('open-ai-astrologer', openChat);
+  }, [router, search, chatCategory]);
 
-  const handleProfileChange = (profile: SelectedProfile) => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete('student_id');
-    params.delete('guest_id');
-
-    if (profile.type === 'student') params.set('student_id', profile.id!);
-    if (profile.type === 'guest') params.set('guest_id', profile.id!);
-
-    router.push(`${pathname}?${params.toString()}`);
-  };
-
-  const handleSelect = (id: string) => {
-    setLeftOpen(false);
-    setRightOpen(false);
-
-    const params = new URLSearchParams(searchParams.toString());
-    if (id !== 'dashboard') {
-      params.delete('chart_type');
-    }
-
-    // Mapping internal IDs to routes
-    const routeMap: Record<string, string> = {
-      'dashboard': ROUTES.AGENT.ASTROLOGY.ROOT,
-      'navatara': ROUTES.AGENT.ASTROLOGY.NAVATARA,
-      'birth-profile': ROUTES.AGENT.ASTROLOGY.PROFILE,
-      'share-access': ROUTES.AGENT.ASTROLOGY.SHARE,
-      'dasha': ROUTES.AGENT.ASTROLOGY.DASHA,
-      'festival-calendar': ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR,
-      'reports': ROUTES.AGENT.ASTROLOGY.REPORTS,
-    };
-
-    if (routeMap[id]) {
-      router.push(`${routeMap[id]}?${params.toString()}`);
-    } else {
-      // Default to dynamic insights route for all other analysis items
-      router.push(`${ROUTES.AGENT.ASTROLOGY.INSIGHTS(id)}?${params.toString()}`);
-    }
-  };
-
-  const confirmDelete = () => {
-    if (!guestToDelete) return;
-    deleteGuest(Number(guestToDelete.id), {
-      onSuccess: () => {
-        if (guestId === guestToDelete.id) {
-          handleProfileChange({ type: 'me', name: 'My Chart' });
-        }
-        setIsDeleteDialogOpen(false);
-        setGuestToDelete(null);
-      }
-    });
-  };
-
-  const activeAnalysis = useMemo(() => {
-    if (pathname === ROUTES.AGENT.ASTROLOGY.ROOT) return 'dashboard';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.NAVATARA) return 'navatara';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.PROFILE) return 'birth-profile';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.SHARE) return 'share-access';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.DASHA) return 'dasha';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.FESTIVAL_CALENDAR) return 'festival-calendar';
-    if (pathname === ROUTES.AGENT.ASTROLOGY.REPORTS) return 'reports';
-    if (pathname.includes(ROUTES.AGENT.ASTROLOGY.INSIGHTS(''))) {
-      const slug = pathname.split('/').pop();
-      return slug || null;
-    }
-    return null;
-  }, [pathname]);
-
-  const isReadOnly = useMemo(() => {
-    return selectedProfile.type === 'student';
-  }, [selectedProfile]);
-
-  if (!mounted) return null;
-
-  const displayUsername = profile?.guest_name || profile?.user_name || selectedProfile.name || 'Seeker';
-
+  const switchProfile = (selection: SelectedProfile, destination = pathname) => router.push(profileHref(destination, search, selection));
   return (
-    <div className="flex h-[100dvh] w-full flex-col overflow-hidden bg-background text-foreground selection:bg-primary-500/10">
-      {selectedProfile.type !== 'me' && (
-        <div className="sticky top-0 z-[60] flex w-full items-center justify-between gap-4 border-b border-primary-100 bg-primary-50/80 px-4 py-2 md:px-8">
-          <div className="flex items-center gap-2 text-xs font-semibold text-primary-900 md:text-sm">
-            <span className="flex h-2 w-2 animate-pulse rounded-full bg-primary-500" />
-            Viewing {displayUsername}&apos;s Chart — {selectedProfile.type === 'guest' ? 'Guest Profile' : 'Read-Only Mode'}
-          </div>
-        </div>
-      )}
-
-      <DashboardHeader>
-        {activeRole === 'TEACHER' && (
-          <ProfileSelector
-            selectedProfile={selectedProfile}
-            onSelect={handleProfileChange}
-            onAddGuest={() => setIsGuestDialogOpen(true)}
-            onEditGuest={(id, name) => {
-              handleProfileChange({ type: 'guest', id, name });
-              router.push(`/astrology/profile?${searchParams.toString()}`);
-            }}
-            onDeleteGuest={(id, name) => {
-              setGuestToDelete({ id, name });
-              setIsDeleteDialogOpen(true);
-            }}
-          />
-        )}
+    <div className="observatory-shell fixed inset-x-0 top-0 flex h-[100dvh] w-full flex-col overflow-hidden">
+      <a href="#observatory-content" className="obs-button fixed left-4 top-4 z-[100] -translate-y-24 focus:translate-y-0">Skip to content</a>
+      <DashboardHeader onToggleNavigation={() => setMobileOpen(value => !value)}>
+        <ProfileSelector selectedProfile={selectedProfile} onSelect={switchProfile} onAddGuest={() => setGuestOpen(true)}
+          onEditGuest={(id, name) => switchProfile({ type: 'guest', id, name }, ROUTES.AGENT.ASTROLOGY.PROFILE)}
+          onDeleteGuest={(id, name) => setGuestToDelete({ id, name })}
+          onEditBirth={() => router.push(astrologyHref(ROUTES.AGENT.ASTROLOGY.PROFILE, search))}
+          onManageProfiles={() => router.push(astrologyHref(ROUTES.AGENT.ASTROLOGY.PROFILES, search))} />
       </DashboardHeader>
-
-      <div className="relative z-10 flex flex-1 overflow-hidden">
-        {profile && (
-          <div className="hidden duration-300 animate-in slide-in-from-left-full xl:block">
-            <AnalysisSidebar
-              activeAnalysis={activeAnalysis}
-              onSelect={handleSelect}
-              iconMap={ICON_MAP}
-              readOnly={isReadOnly}
-              className="w-64 border-r border-primary-300/60 bg-background xl:w-72 2xl:w-80"
-            />
-          </div>
-        )}
-
-        <main className="flex min-w-0 flex-1 flex-col overflow-hidden">
-          <ScrollArea className="h-full w-full flex-1 bg-white/5">
+      <div className="flex min-h-0 flex-1">
+        <aside id="observatory-navigation" className="hidden w-60 shrink-0 overflow-y-auto overscroll-y-contain border-r border-border bg-[var(--cosmos-900)] lg:block"><PrimarySidebar /></aside>
+        <main id="observatory-content" tabIndex={-1} className="min-h-0 min-w-0 flex-1 overflow-y-auto overflow-x-hidden overscroll-y-contain outline-none">
+          <div className="obs-page" key={studentId ? `student:${studentId}` : guestId ? `guest:${guestId}` : 'me'}>
+            {selectedProfile.type !== 'me' && <div className="mb-5 flex items-start gap-2 rounded-xl border border-border bg-secondary px-4 py-3 text-sm text-muted-foreground"><Eye className="mt-0.5 h-4 w-4 shrink-0" /><p><span className="font-medium text-foreground">{selectedProfile.name}</span> · {studentId ? 'Shared chart · birth details are read-only' : 'Guest chart'}</p></div>}
+            {pathname !== ROUTES.AGENT.ASTROLOGY.ROOT && <nav aria-label="Breadcrumb" className="mb-6">
+              <ol className="flex flex-wrap items-center gap-x-2 gap-y-1 text-xs text-muted-foreground">
+                <li><Link className="inline-flex min-h-8 items-center hover:text-foreground" href={astrologyHref(ROUTES.AGENT.ASTROLOGY.ROOT, search)}>Dashboard</Link></li>
+                {topic && <><li aria-hidden="true"><ChevronRight className="h-3 w-3" /></li><li><Link href={astrologyHref(ROUTES.AGENT.ASTROLOGY.ANALYSIS, search)} className="inline-flex min-h-8 items-center hover:text-foreground">Chart Analysis</Link></li></>}
+                {category && <><li aria-hidden="true"><ChevronRight className="h-3 w-3" /></li><li><Link href={`${astrologyHref(ROUTES.AGENT.ASTROLOGY.ANALYSIS, search)}${studentId || guestId ? '&' : '?'}category=${category.id}`} className="inline-flex min-h-8 items-center hover:text-foreground">{category.title}</Link></li></>}
+                <li aria-hidden="true"><ChevronRight className="h-3 w-3" /></li><li aria-current="page" className="text-foreground">{topic?.title || pageTitles[pathname] || 'Chart exploration'}</li>
+              </ol>
+            </nav>}
             {children}
-            <ScrollBar orientation="horizontal" />
-          </ScrollArea>
-        </main>
-
-        {profile && (
-          <div className="hidden duration-300 animate-in slide-in-from-right-full xl:block">
-            <NavigationSidebar
-              activeAnalysis={activeAnalysis}
-              onSelect={handleSelect}
-              iconMap={ICON_MAP}
-              className="w-64 border-l border-primary-300/60 bg-background xl:w-72 2xl:w-80"
-              transits={transits?.transits}
-              readOnly={isReadOnly}
-              isPersonal={selectedProfile.type === 'me'}
-            />
           </div>
-        )}
+        </main>
       </div>
-
-      <FloatingFooter
-        leftOpen={leftOpen}
-        setLeftOpen={setLeftOpen}
-        rightOpen={rightOpen}
-        setRightOpen={setRightOpen}
-        renderLeftSidebar={() => (
-          <AnalysisSidebar
-            activeAnalysis={activeAnalysis}
-            onSelect={handleSelect}
-            iconMap={ICON_MAP}
-            readOnly={isReadOnly}
-          />
-        )}
-        renderRightSidebar={() => (
-          <NavigationSidebar
-            activeAnalysis={activeAnalysis}
-            onSelect={handleSelect}
-            iconMap={ICON_MAP}
-            transits={transits?.transits}
-            readOnly={isReadOnly}
-          />
-        )}
-      />
-
-      <GuestProfileDialog
-        isOpen={isGuestDialogOpen}
-        onClose={() => setIsGuestDialogOpen(false)}
-        onSuccess={() => {
-          // Redirect to chart after creation? 
-          // Handled by user feedback usually
-        }}
-      />
-
-      <ConfirmationDialog
-        isOpen={isDeleteDialogOpen}
-        onClose={() => setIsDeleteDialogOpen(false)}
-        onConfirm={confirmDelete}
-        title="Delete Guest Profile"
-        description={`Are you sure you want to delete ${guestToDelete?.name}'s profile?`}
-        confirmText="Delete Profile"
-        variant="destructive"
-      />
-
-      {profile && !studentId && (
-        <FloatingAIAstrologer
-          category={activeAnalysis === 'dashboard' ? 'divisional-charts' : (activeAnalysis || 'divisional-charts')}
-          studentId={studentId}
-          guestProfileId={guestId}
-        />
-      )}
+      <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+        <SheetContent side="left" className="observatory-theme flex w-[min(300px,90vw)] flex-col gap-0 border-border p-0">
+          <SheetTitle className="sr-only">Shakti Wheel navigation</SheetTitle>
+          <div className="px-7 pb-0 pt-7"><Logo size="sm" href={ROUTES.AGENT.ASTROLOGY.ROOT} /></div>
+          <SheetDescription className="sr-only">Navigate your personal observatory.</SheetDescription>
+          <div className="min-h-0 flex-1 overflow-y-auto"><PrimarySidebar onNavigate={() => setMobileOpen(false)} /></div>
+        </SheetContent>
+      </Sheet>
+      <GuestProfileDialog isOpen={guestOpen} onClose={() => setGuestOpen(false)} onSuccess={created => switchProfile({ type: 'guest', id: String(created.id), name: created.guest_name || 'Guest' }, ROUTES.AGENT.ASTROLOGY.ROOT)} />
+      <ConfirmationDialog isOpen={!!guestToDelete} onClose={() => { if (!deleteGuest.isPending) setGuestToDelete(null); }} title="Delete guest profile?" description={`Delete ${guestToDelete?.name || 'this guest'}’s birth profile? This cannot be undone.`} confirmText="Delete profile" isLoading={deleteGuest.isPending} onConfirm={() => {
+        if (!guestToDelete) return;
+        deleteGuest.mutate(Number(guestToDelete.id), { onSuccess: () => {
+          if (guestId === guestToDelete.id) switchProfile({ type: 'me', name: 'My Chart' }, ROUTES.AGENT.ASTROLOGY.PROFILES);
+          setGuestToDelete(null);
+        }, onError: () => toast.error('Could not delete this profile. Please try again.') });
+      }} />
     </div>
   );
 }

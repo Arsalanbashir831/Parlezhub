@@ -1,6 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { API_ROUTES } from '@/constants/api-routes';
-
+import { apiReaderMessage } from '@/hooks/useAstrology';
 import apiCaller from '@/lib/api-caller';
 
 export interface ChatMessage {
@@ -9,123 +9,60 @@ export interface ChatMessage {
   content: string;
   created_at?: string;
 }
-
-interface BackendChatMessage {
-  id: string;
-  role: 'user' | 'model';
-  content: string;
-  created_at: string;
-}
+interface BackendChatMessage { id: string; role: 'user' | 'model'; content: string; created_at: string }
+const mapMessage = (message: BackendChatMessage): ChatMessage => ({ ...message, role: message.role === 'model' ? 'assistant' : 'user' });
 
 export function useAstrologyAIChat(category: string, studentId?: string, guestProfileId?: string) {
-  const [messages, setMessages] = useState<ChatMessage[]>([]);
-  const [isSending, setIsSending] = useState(false);
-  const [isLoadingHistory, setIsLoadingHistory] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  const fetchHistory = useCallback(async () => {
-    setIsLoadingHistory(true);
-    setError(null);
-    try {
-      let url = API_ROUTES.ASTROLOGY.CHAT(category);
-      const params = new URLSearchParams();
-      if (studentId) params.append('student_id', studentId);
-      if (guestProfileId) params.append('guest_profile_id', guestProfileId);
-      const query = params.toString();
-      if (query) url += `?${query}`;
-
+  const queryClient = useQueryClient();
+  const queryKey = ['astrology', 'chat', category, studentId || null, studentId ? null : guestProfileId || null];
+  const params = new URLSearchParams();
+  if (studentId) params.set('student_id', studentId);
+  else if (guestProfileId) params.set('guest_profile_id', guestProfileId);
+  const url = `${API_ROUTES.ASTROLOGY.CHAT(category)}${params.size ? `?${params}` : ''}`;
+  const history = useQuery({
+    queryKey,
+    queryFn: async () => {
       const response = await apiCaller(url, 'GET');
-
-      // Since it's paginated, results are likely in results array
-      const rawMessages = response.data.results || response.data;
-
-      // Backend returns 'model' for AI replies — map to 'assistant' for the frontend
-      // API returns newest first, so reverse to get chronological order
-      const sortedMessages = [...rawMessages]
-        .reverse()
-        .map((msg: BackendChatMessage) => ({
-          id: msg.id,
-          role: (msg.role === 'model' ? 'assistant' : 'user') as
-            | 'user'
-            | 'assistant',
-          content: msg.content,
-          created_at: msg.created_at,
-        }));
-
-      setMessages(sortedMessages);
-    } catch (err) {
-      console.error('Failed to fetch chat history:', err);
-      setError('Could not restore cosmic session.');
-    } finally {
-      setIsLoadingHistory(false);
-    }
-  }, [category, studentId, guestProfileId]);
-
-  useEffect(() => {
-    fetchHistory();
-  }, [fetchHistory]);
-
-  const sendMessage = async (content: string) => {
-    if (!content.trim()) return;
-
-    // Optimistically add user message
-    // Wait: backend returns model reaction, but does it return both at the same time?
-    // User requested: "Sends a new message to Gemini, saves both user and model responses, returns model response."
-    const optimisticUserReq: ChatMessage = { role: 'user', content };
-    setMessages((prev) => [...prev, optimisticUserReq]);
-
-    setIsSending(true);
-    setError(null);
-
-    try {
-      let url = API_ROUTES.ASTROLOGY.CHAT(category);
-      const params = new URLSearchParams();
-      if (studentId) params.append('student_id', studentId);
-      if (guestProfileId) params.append('guest_profile_id', guestProfileId);
-      const query = params.toString();
-      if (query) url += `?${query}`;
-
+      const data: BackendChatMessage[] = response.data.results || response.data;
+      return [...data].reverse().map(mapMessage);
+    },
+    staleTime: 0,
+  });
+  const send = useMutation({
+    mutationFn: async (content: string) => {
       const response = await apiCaller(url, 'POST', { message: content });
-
-      // Response shape: {"message": AstrologyChatSerializer(model_chat).data}
-      const modelData = response.data.message;
-
-      if (modelData) {
-        const modelMessage: ChatMessage = {
-          id: modelData.id,
-          role: modelData.role === 'model' ? 'assistant' : 'user',
-          content: modelData.content,
-          created_at: modelData.created_at,
-        };
-
-        setMessages((prev) => [...prev, modelMessage]);
-      }
-    } catch (err) {
-      const msg =
-        err instanceof Error
-          ? err.message
-          : 'Heavenly silence... (Error sending message)';
-      setError(msg);
-      // Remove the optimistic user message on failure if you want
-      setMessages((prev) => prev.slice(0, -1));
-    } finally {
-      setIsSending(false);
-    }
+      const message: BackendChatMessage = response.data.message;
+      if (!message?.content) throw new Error('No answer was returned. Please try again.');
+      return mapMessage(message);
+    },
+    onMutate: async content => {
+      await queryClient.cancelQueries({ queryKey });
+      const optimisticId = `draft:${crypto.randomUUID()}`;
+      queryClient.setQueryData<ChatMessage[]>(queryKey, previous => [...(previous || []), { id: optimisticId, role: 'user', content }]);
+      return { queryKey, optimisticId };
+    },
+    onSuccess: (message, _content, context) => {
+      queryClient.setQueryData<ChatMessage[]>(context.queryKey, previous => [...(previous || []), message]);
+    },
+    onError: (_error, _content, context) => {
+      if (context) queryClient.setQueryData<ChatMessage[]>(context.queryKey, previous => previous?.filter(message => message.id !== context.optimisticId));
+    },
+  });
+  const sendMessage = async (content: string): Promise<boolean> => {
+    if (!content.trim() || send.isPending || history.isFetching || history.isError) return false;
+    try { await send.mutateAsync(content.trim()); return true; } catch { return false; }
   };
-
-  const clearChat = async () => {
-    // Optional: implement DELETE if backend supports it. For now just clear local state.
-    setMessages([]);
-    setError(null);
-  };
-
   return {
-    messages,
-    isSending,
-    isLoadingHistory,
-    error,
+    messages: history.data || [],
+    isSending: send.isPending,
+    isLoadingHistory: history.isFetching,
+    error: history.isError
+      ? 'Could not load conversation history. Please retry.'
+      : send.isError
+        ? apiReaderMessage(send.error, 'Could not send your question. Your draft has been kept.')
+        : null,
     sendMessage,
-    clearChat,
-    refreshHistory: fetchHistory,
+    clearChat: async () => { queryClient.setQueryData(queryKey, []); send.reset(); },
+    refreshHistory: history.refetch,
   };
 }

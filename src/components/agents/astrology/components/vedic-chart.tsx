@@ -6,27 +6,35 @@ import { ZODIAC_SIGNS } from '@/constants/astrology';
 import { ChartPlanet, TransitPlanet } from '@/types/astrology';
 import { cn } from '@/lib/utils';
 
+export type ChartSelection = {
+  planet: string;
+  sign: string;
+  degree: number;
+  isTransit: boolean;
+};
+
 interface ChartProps {
   natalPlanets?: ChartPlanet[];
   transitPlanets?: TransitPlanet[];
   className?: string;
   title?: string;
+  onSelectPlanet?: (selection: ChartSelection) => void;
 }
 
-const PLANET_INFO: Record<
-  string,
-  { symbol: string; color: string; textColor?: string }
-> = {
-  Sun: { symbol: 'Sun', color: 'transparent', textColor: '#fff' },
-  Moon: { symbol: 'Moon', color: 'transparent', textColor: '#fff' },
-  Mars: { symbol: 'Mars', color: 'transparent', textColor: '#fff' },
-  Mercury: { symbol: 'Mer', color: 'transparent', textColor: '#fff' },
-  Jupiter: { symbol: 'Jup', color: 'transparent', textColor: '#fff' },
-  Venus: { symbol: 'Ven', color: 'transparent', textColor: '#fff' },
-  Saturn: { symbol: 'Sat', color: 'transparent', textColor: '#fff' },
-  Rahu: { symbol: 'Rahu', color: 'transparent', textColor: '#fff' },
-  Ketu: { symbol: 'Ketu', color: 'transparent', textColor: '#fff' },
-  Ascendant: { symbol: 'Asc', color: 'transparent', textColor: '#EAB308' },
+const SOLAR_GOLD = 'var(--solar-gold,#ffd2a8)';
+const TEXT_PRIMARY = 'var(--text-primary,#ededed)';
+
+const PLANET_INFO: Record<string, { symbol: string }> = {
+  Sun: { symbol: 'Sun' },
+  Moon: { symbol: 'Moon' },
+  Mars: { symbol: 'Mars' },
+  Mercury: { symbol: 'Mer' },
+  Jupiter: { symbol: 'Jup' },
+  Venus: { symbol: 'Ven' },
+  Saturn: { symbol: 'Sat' },
+  Rahu: { symbol: 'Rahu' },
+  Ketu: { symbol: 'Ketu' },
+  Ascendant: { symbol: 'Asc' },
 };
 
 // Chart geometry constants — defined once at module level
@@ -63,18 +71,14 @@ const getAngleRad = (
   return (angleDeg * Math.PI) / 180;
 };
 
-interface PlanetNodeProps {
-  planet: string;
-  sign: string;
-  degree?: number;
+interface PlanetNodeProps extends ChartSelection {
   displayDegree?: number;
-  isTransit: boolean;
-  hide: boolean;
   id: string;
   radialOffset?: number;
   isHovered: boolean;
   rotationOffset: number;
   setHoveredId: (id: string | null) => void;
+  onSelectPlanet?: (selection: ChartSelection) => void;
 }
 
 const PlanetNode = React.memo(function PlanetNode({
@@ -83,18 +87,15 @@ const PlanetNode = React.memo(function PlanetNode({
   degree,
   displayDegree,
   isTransit,
-  hide,
   id,
   radialOffset,
   isHovered,
   rotationOffset,
   setHoveredId,
+  onSelectPlanet,
 }: PlanetNodeProps) {
-  const info = PLANET_INFO[planet] || {
-    symbol: planet[0],
-    color: '#ccc',
-    textColor: '#000',
-  };
+  const [isFocused, setIsFocused] = React.useState(false);
+  const info = PLANET_INFO[planet] || { symbol: planet[0] };
 
   const deg = displayDegree ?? degree ?? 15;
   const rad = getAngleRad(sign, deg, rotationOffset);
@@ -110,37 +111,75 @@ const PlanetNode = React.memo(function PlanetNode({
 
   const cx = CHART_CENTER + radiusDist * Math.cos(rad);
   const cy = CHART_CENTER + radiusDist * Math.sin(rad);
+  const markerRadius = isHovered ? 19 : 16;
+  const signName = ZODIAC_SIGNS[getSignIndex(sign)]?.name ?? sign;
 
   const handleMouseEnter = React.useCallback(() => setHoveredId(id), [setHoveredId, id]);
   const handleMouseLeave = React.useCallback(() => setHoveredId(null), [setHoveredId]);
+  const handleSelect = React.useCallback(() => {
+    onSelectPlanet?.({ planet, sign, degree, isTransit });
+  }, [onSelectPlanet, planet, sign, degree, isTransit]);
 
   return (
     <g
-      className={cn(
-        'group cursor-pointer transition-[transform] duration-200',
-        isHovered ? 'z-50' : 'z-0'
-      )}
+      role="button"
+      tabIndex={0}
+      aria-label={`${isTransit ? 'Transit' : 'Natal'} ${planet}, ${signName}, ${degree} degrees`}
+      className="group cursor-pointer outline-none transition-[transform] duration-200 motion-reduce:transition-none"
       onMouseEnter={handleMouseEnter}
       onMouseLeave={handleMouseLeave}
+      onFocus={() => setIsFocused(true)}
+      onBlur={() => setIsFocused(false)}
+      onClick={handleSelect}
+      onKeyDown={(event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+          event.preventDefault();
+          if (!event.repeat) handleSelect();
+        }
+      }}
       style={{
         transform: isHovered ? 'scale(1.1)' : 'scale(1)',
         transformOrigin: `${cx}px ${cy}px`,
-        visibility: hide ? 'hidden' : 'visible',
       }}
     >
-      <circle
-        cx={cx}
-        cy={cy}
-        r={isHovered ? '19' : '16'}
-        fill="transparent"
-        stroke="none"
-        className={isHovered ? 'drop-shadow-[0_0_8px_rgba(234,179,8,0.3)]' : ''}
-      />
+      {isFocused && (
+        <circle
+          cx={cx}
+          cy={cy}
+          r="24"
+          fill="none"
+          stroke={SOLAR_GOLD}
+          strokeWidth="2"
+          className="pointer-events-none"
+          aria-hidden="true"
+        />
+      )}
+      {isTransit ? (
+        <rect
+          x={cx - markerRadius}
+          y={cy - markerRadius}
+          width={markerRadius * 2}
+          height={markerRadius * 2}
+          fill="transparent"
+          stroke={SOLAR_GOLD}
+          strokeWidth="1.5"
+          strokeDasharray="3,2"
+        />
+      ) : (
+        <circle
+          cx={cx}
+          cy={cy}
+          r={markerRadius}
+          fill="transparent"
+          stroke={TEXT_PRIMARY}
+          strokeWidth="1.5"
+        />
+      )}
       <text
         x={cx}
         y={cy + 1}
-        fill={isTransit ? '#EAB308' : info.textColor}
-        fontSize={isHovered ? '12' : '11'}
+        fill={isTransit || planet === 'Ascendant' ? SOLAR_GOLD : TEXT_PRIMARY}
+        fontSize={isHovered ? '14' : '13'}
         fontWeight="bold"
         textAnchor="middle"
         alignmentBaseline="middle"
@@ -156,8 +195,14 @@ const VedicChart = React.memo(function VedicChart({
   className,
   natalPlanets = [],
   transitPlanets = [],
-  title = 'D1 CHART',
+  title = 'Vedic chart',
+  onSelectPlanet,
 }: ChartProps) {
+  const chartId = React.useId();
+  const titleId = `${chartId}-title`;
+  const descriptionId = `${chartId}-description`;
+  const gradientId = `${chartId}-house-gradient`;
+  const glowId = `${chartId}-glow`;
   const [hoveredId, setHoveredId] = React.useState<string | null>(null);
 
   const stableSetHoveredId = React.useCallback(
@@ -244,7 +289,6 @@ const VedicChart = React.memo(function VedicChart({
 
   const natalWithIdx = processedPlanets.filter((p) => !p.isTransit);
   const transitWithIdx = processedPlanets.filter((p) => p.isTransit);
-  const hoveredPlanetData = processedPlanets.find((p) => p.id === hoveredId);
 
   return (
     <div className="flex flex-col items-center justify-center w-full">
@@ -257,20 +301,30 @@ const VedicChart = React.memo(function VedicChart({
         <svg
           viewBox={`0 0 ${CHART_SIZE} ${CHART_SIZE}`}
           className="h-auto w-full max-w-[750px] lg:max-w-[1000px]"
+          role="group"
+          aria-labelledby={titleId}
+          aria-describedby={descriptionId}
+          style={{ color: SOLAR_GOLD }}
         >
+          <title id={titleId}>{title || 'Vedic chart'}</title>
+          <desc id={descriptionId}>
+            Zodiac placements with circular natal markers
+            {transitPlanets.length > 0 ? ' and dashed square transit markers' : ''}.
+            Select a planet by clicking or focusing it and pressing Enter or Space.
+          </desc>
           <defs>
             <radialGradient
-              id="houseGradient"
+              id={gradientId}
               cx="50%"
               cy="50%"
               r="50%"
               fx="50%"
               fy="50%"
             >
-              <stop offset="0%" stopColor="#f97316" stopOpacity="0.08" />
-              <stop offset="100%" stopColor="#f97316" stopOpacity="0" />
+              <stop offset="0%" stopColor={SOLAR_GOLD} stopOpacity="0.08" />
+              <stop offset="100%" stopColor={SOLAR_GOLD} stopOpacity="0" />
             </radialGradient>
-            <filter id="glow">
+            <filter id={glowId}>
               <feGaussianBlur stdDeviation="2.5" result="coloredBlur" />
               <feMerge>
                 <feMergeNode in="coloredBlur" />
@@ -289,7 +343,7 @@ const VedicChart = React.memo(function VedicChart({
               stroke="currentColor"
               strokeWidth="1.5"
               strokeDasharray="5,5"
-              className="text-primary-800 opacity-40"
+              className="opacity-40"
             />
           )}
 
@@ -314,7 +368,7 @@ const VedicChart = React.memo(function VedicChart({
             const y2 = Number((CHART_CENTER + outerR * Math.sin(rad)).toFixed(2));
 
             return (
-              <g key={sign.name} className="group">
+              <g key={sign.name} className="group" aria-hidden="true">
                 <line
                   x1={x1}
                   y1={y1}
@@ -322,16 +376,16 @@ const VedicChart = React.memo(function VedicChart({
                   y2={y2}
                   stroke="currentColor"
                   strokeWidth="1"
-                  className="text-primary-400 opacity-20"
+                  className="opacity-20"
                 />
                 <text
                   x={textX}
                   y={textY}
-                  fill="currentColor"
-                  fontSize="18"
+                  fill={TEXT_PRIMARY}
+                  fontSize="20"
                   textAnchor="middle"
                   alignmentBaseline="middle"
-                  className="cursor-default font-serif text-primary-400 opacity-70 transition-[opacity,fill] group-hover:text-primary-500 group-hover:opacity-100"
+                  className="cursor-default font-serif opacity-80 transition-opacity group-hover:opacity-100"
                 >
                   {sign.symbol}
                 </text>
@@ -347,20 +401,23 @@ const VedicChart = React.memo(function VedicChart({
             fill="none"
             stroke="currentColor"
             strokeWidth="1"
-            className="text-primary-700 opacity-30"
+            className="opacity-30"
           />
           <circle
             cx={CHART_CENTER}
             cy={CHART_CENTER}
             r={INNER_RADIUS}
-            fill="url(#houseGradient)"
+            fill={`url(#${gradientId})`}
             stroke="currentColor"
             strokeWidth="1.5"
-            className="text-primary-200"
           />
 
           {/* Celestial Accent / Compass Rose at Center */}
-          <g style={{ filter: 'url(#glow)' }} className="pointer-events-none text-primary-400/80">
+          <g
+            style={{ filter: `url(#${glowId})` }}
+            className="pointer-events-none opacity-80"
+            aria-hidden="true"
+          >
             {/* Elegant outer dashed fine ring */}
             <circle
               cx={CHART_CENTER}
@@ -370,7 +427,7 @@ const VedicChart = React.memo(function VedicChart({
               stroke="currentColor"
               strokeWidth="0.8"
               strokeDasharray="3,3"
-              className="text-primary-500/40"
+              className="opacity-40"
             />
             {/* Elegant 4-pointed celestial star */}
             <path
@@ -389,7 +446,7 @@ const VedicChart = React.memo(function VedicChart({
               cx={CHART_CENTER}
               cy={CHART_CENTER}
               r="2.5"
-              fill="#fff"
+              fill={TEXT_PRIMARY}
             />
           </g>
 
@@ -398,61 +455,49 @@ const VedicChart = React.memo(function VedicChart({
             <PlanetNode
               key={p.id}
               {...p}
-              hide={hoveredId === p.id}
               isHovered={hoveredId === p.id}
               rotationOffset={rotationOffset}
               setHoveredId={stableSetHoveredId}
+              onSelectPlanet={onSelectPlanet}
             />
           ))}
           {transitWithIdx.map((p) => (
             <PlanetNode
               key={p.id}
               {...p}
-              hide={hoveredId === p.id}
               isHovered={hoveredId === p.id}
               rotationOffset={rotationOffset}
               setHoveredId={stableSetHoveredId}
+              onSelectPlanet={onSelectPlanet}
             />
           ))}
-
-          {/* Hover Overlay Layer (Ensures immediate "on top" rendering) */}
-          {hoveredPlanetData && (
-            <PlanetNode
-              key={`${hoveredPlanetData.id}-overlay`}
-              {...hoveredPlanetData}
-              hide={false}
-              isHovered={true}
-              rotationOffset={rotationOffset}
-              setHoveredId={stableSetHoveredId}
-            />
-          )}
         </svg>
-
-        {/* Legend */}
-        <div className="absolute left-2 top-2 z-20 rounded-xl border border-primary-500/30 bg-background/90 p-2 text-[8px] font-bold text-primary-400 shadow-sm md:left-4 md:top-4 md:rounded-2xl md:p-4 md:text-[10px]">
-          <div className="mb-1 flex items-center gap-2 md:mb-2 md:gap-3">
-            <div className="h-2 w-2 rounded-full bg-white shadow-sm md:h-2.5 md:w-2.5"></div>
-            <span className="uppercase tracking-widest opacity-80">Natal</span>
-          </div>
-          {transitPlanets.length > 0 && (
-            <div className="flex items-center gap-2 md:gap-3">
-              <div className="h-2 w-2 rounded-full bg-[#EAB308] shadow-sm md:h-2.5 md:w-2.5"></div>
-              <span className="uppercase tracking-widest text-[#EAB308] opacity-90">
-                Transit
-              </span>
-            </div>
-          )}
-        </div>
       </div>
 
-      {/* Dynamic Title Under the Chart */}
-      {title && (
-        <div className="text-center select-none px-6 pb-2 animate-fade-in">
-          <h3 className="font-serif text-base sm:text-lg md:text-xl font-bold tracking-widest text-primary-500 uppercase drop-shadow-[0_0_12px_rgba(249,115,22,0.3)]">
-            {title}
-          </h3>
-        </div>
-      )}
+      <ul
+        aria-label="Chart legend"
+        className="flex flex-wrap items-center justify-center gap-x-6 gap-y-2 px-4 pb-2 text-sm leading-5"
+        style={{ color: TEXT_PRIMARY }}
+      >
+        <li className="flex items-center gap-2">
+          <span
+            aria-hidden="true"
+            className="h-3 w-3 rounded-full border"
+            style={{ borderColor: TEXT_PRIMARY }}
+          />
+          <span>Natal</span>
+        </li>
+        {transitPlanets.length > 0 && (
+          <li className="flex items-center gap-2">
+            <span
+              aria-hidden="true"
+              className="h-3 w-3 border border-dashed"
+              style={{ borderColor: SOLAR_GOLD }}
+            />
+            <span>Transit</span>
+          </li>
+        )}
+      </ul>
     </div>
   );
 });

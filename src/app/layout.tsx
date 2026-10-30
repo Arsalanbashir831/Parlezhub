@@ -17,9 +17,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: 'Shakti Wheel - Learn Languages with AI',
+  title: 'Shakti Wheel — Vedic Astrology',
   description:
-    'Master new languages through AI-powered conversations and expert tutoring',
+    'Birth charts, Vimshottari Dasha timelines, festival calendars and traditional interpretations from your own chart data',
   generator: 'v0.dev',
 };
 

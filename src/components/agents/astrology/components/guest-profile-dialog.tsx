@@ -8,11 +8,12 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import BirthProfileForm from './birth-profile-form';
+import type { BirthProfile } from '@/types/astrology';
 
 interface GuestProfileDialogProps {
   isOpen: boolean;
   onClose: () => void;
-  onSuccess?: () => void;
+  onSuccess?: (profile: BirthProfile) => void;
 }
 
 export function GuestProfileDialog({
@@ -22,21 +23,25 @@ export function GuestProfileDialog({
 }: GuestProfileDialogProps) {
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
-      <DialogContent className="max-w-xl border-primary-500/20 bg-background/95 p-0 backdrop-blur-xl">
-        <DialogHeader className="sr-only">
-          <DialogTitle>Guest Profile</DialogTitle>
-          <DialogDescription>
-            Manage and create astrologer guest profiles.
+      <DialogContent className="observatory-theme flex max-h-[90dvh] w-[calc(100%-2rem)] max-w-2xl flex-col gap-0 overflow-hidden rounded-2xl border border-[color-mix(in_srgb,var(--solar-orange)_25%,transparent)] bg-popover p-0 sm:rounded-2xl">
+        <DialogHeader className="shrink-0 border-b border-border bg-[linear-gradient(135deg,color-mix(in_srgb,var(--solar-orange)_16%,var(--surface-1)),var(--surface-1)_70%)] px-6 py-5 pr-14 text-left">
+          <DialogTitle className="text-lg font-semibold tracking-tight">
+            Add a birth profile
+          </DialogTitle>
+          <DialogDescription className="mt-1.5 text-sm text-muted-foreground">
+            Name, date, time and place of birth. We use these to calculate the
+            chart.
           </DialogDescription>
         </DialogHeader>
-        <div className="max-h-[90vh] overflow-y-auto">
+        <div className="min-h-0 flex-1 overflow-y-auto px-6 py-6">
           <BirthProfileForm
             type="guest"
-            onSuccess={() => {
-              onSuccess?.();
+            showHeading={false}
+            onSuccess={(profile) => {
+              onSuccess?.(profile);
               onClose();
             }}
-            className='border-none shadow-none'
+            className="border-none bg-transparent p-0 shadow-none"
           />
         </div>
       </DialogContent>

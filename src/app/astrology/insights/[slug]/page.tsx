@@ -3,6 +3,7 @@
 import { useParams, useRouter, useSearchParams } from 'next/navigation';
 import InsightView from '@/components/agents/astrology/analysis/insight-view';
 import { ROUTES } from '@/constants/routes';
+import { astrologyHref } from '@/lib/astrology-navigation';
 
 export default function InsightDetailPage() {
   const params = useParams();
@@ -17,7 +18,7 @@ export default function InsightDetailPage() {
     <div className="flex h-full w-full flex-col">
       <InsightView
         slug={slug}
-        onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)}
+        onBack={() => router.push(astrologyHref(ROUTES.AGENT.ASTROLOGY.ANALYSIS, searchParams.toString()))}
         studentId={studentId}
         guestProfileId={guestId}
       />

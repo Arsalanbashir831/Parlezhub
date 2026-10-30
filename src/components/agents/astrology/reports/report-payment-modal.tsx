@@ -1,15 +1,18 @@
 'use client';
 
-import { CreditCard } from 'lucide-react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
+import { CreditCard } from 'lucide-react';
 
 import { InitiateReportPaymentResponse } from '@/types/astrology';
+
 import { ReportPaymentForm } from './report-payment-form';
 
 // Singleton — instantiated once so the Stripe.js script is loaded only once
 // regardless of how many times the modal mounts/unmounts.
-const stripePromise = loadStripe(process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!);
+const stripePromise = loadStripe(
+  process.env.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY!
+);
 
 const STRIPE_APPEARANCE = { theme: 'night' } as const;
 
@@ -19,7 +22,11 @@ export interface ReportPaymentModalProps {
   onClose: () => void;
 }
 
-export function ReportPaymentModal({ paymentData, onSuccess, onClose }: ReportPaymentModalProps) {
+export function ReportPaymentModal({
+  paymentData,
+  onSuccess,
+  onClose,
+}: ReportPaymentModalProps) {
   return (
     <div className="fixed inset-0 z-[9999] flex items-center justify-center p-4">
       {/* Backdrop */}
@@ -34,11 +41,11 @@ export function ReportPaymentModal({ paymentData, onSuccess, onClose }: ReportPa
         role="dialog"
         aria-modal="true"
         aria-labelledby="payment-modal-title"
-        className="relative z-10 w-full max-w-md animate-in zoom-in-95 fade-in duration-200"
+        className="relative z-10 w-full max-w-md duration-200 animate-in fade-in zoom-in-95"
       >
-        <div className="overflow-hidden rounded-2xl border border-primary-500/20 bg-background/95 shadow-2xl shadow-primary-900/40">
+        <div className="obs-card max-h-[90dvh] overflow-y-auto text-foreground">
           {/* Modal header */}
-          <div className="border-b border-white/5 bg-gradient-to-r from-primary-900/40 to-violet-900/20 px-6 py-5">
+          <div className="border-b border-border px-6 py-5">
             <div className="flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-primary-500/20">
                 <CreditCard className="h-5 w-5 text-primary-400" />

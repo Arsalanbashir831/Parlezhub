@@ -1,23 +1,25 @@
 'use client';
 
-import React, { useState, useMemo } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { useMemo, useState } from 'react';
 import {
   CalendarDays,
   ChevronLeft,
   ChevronRight,
-  Filter,
-  Sparkles,
-  Info,
-  Calendar as CalendarIcon,
-  MapPin,
   Clock,
-  BookOpen,
+  Filter,
+  Info,
   Loader2,
+  MapPin,
+  Moon,
+  MoonStar,
+  Sparkles,
+  Wheat,
 } from 'lucide-react';
-import { useFestivalCalendar } from '@/hooks/useAstrology';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+
+import {
+  useFestivalCalendar,
+  type FestivalCalendarResponse,
+} from '@/hooks/useAstrology';
 import {
   Select,
   SelectContent,
@@ -25,640 +27,941 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Badge } from '@/components/ui/badge';
-import { Separator } from '@/components/ui/separator';
+import { cn } from '@/lib/utils';
 
-// Helper lists for selections
-const YEARS = Array.from({ length: 16 }, (_, i) => 2020 + i); // 2020 to 2035
-
+const YEARS = Array.from({ length: 16 }, (_, i) => 2020 + i);
 const FESTIVAL_TYPES = [
-  { value: 'all', label: 'All Festivals' },
-  { value: 'major', label: 'Major Festivals Only' },
+  { value: 'all', label: 'All festivals' },
+  { value: 'major', label: 'Major festivals only' },
   { value: 'regional', label: 'Regional' },
   { value: 'religious', label: 'Religious' },
   { value: 'fasting', label: 'Fasting / Vrat' },
-  { value: 'auspicious', label: 'Auspicious Days' },
+  { value: 'auspicious', label: 'Auspicious days' },
 ];
-
 const REGIONS = [
-  { value: 'all', label: 'All Regions' },
-  { value: 'North India', label: 'North India' },
-  { value: 'South India', label: 'South India' },
-  { value: 'Maharashtra', label: 'Maharashtra' },
-  { value: 'Karnataka', label: 'Karnataka' },
-  { value: 'Gujarat', label: 'Gujarat' },
-  { value: 'Tamil Nadu', label: 'Tamil Nadu' },
-  { value: 'Bengal', label: 'Bengal' },
+  { value: 'all', label: 'All regions' },
+  ...[
+    'North India',
+    'South India',
+    'Maharashtra',
+    'Karnataka',
+    'Gujarat',
+    'Tamil Nadu',
+    'Bengal',
+  ].map((value) => ({ value, label: value })),
 ];
-
 const MONTHS = [
-  'January', 'February', 'March', 'April', 'May', 'June',
-  'July', 'August', 'September', 'October', 'November', 'December'
+  'January',
+  'February',
+  'March',
+  'April',
+  'May',
+  'June',
+  'July',
+  'August',
+  'September',
+  'October',
+  'November',
+  'December',
 ];
-
 const WEEKDAYS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
 
-// Calendar grid helper
+type DailyEvents = Pick<
+  FestivalCalendarResponse,
+  'festivals' | 'ekadashis' | 'purnimas' | 'special_amavasyas'
+>;
+type EventType = 'festival' | 'ekadashi' | 'purnima' | 'amavasya';
+type CalendarEvent = {
+  type: EventType;
+  date: string;
+  title: string;
+  subtitle?: string;
+  significance?: string;
+  rituals?: string[];
+  raw:
+    | FestivalCalendarResponse['festivals'][number]
+    | FestivalCalendarResponse['ekadashis'][number]
+    | FestivalCalendarResponse['purnimas'][number]
+    | FestivalCalendarResponse['special_amavasyas'][number];
+};
+
+// Each observance kind keeps one colour everywhere: cells, dots, chips, cards.
+const EVENT_TONE: Record<EventType, 'deep' | 'jade' | 'gold' | 'nebula'> = {
+  festival: 'deep',
+  ekadashi: 'jade',
+  purnima: 'gold',
+  amavasya: 'nebula',
+};
+const EVENT_LABEL: Record<EventType, string> = {
+  festival: 'Festival',
+  ekadashi: 'Ekadashi',
+  purnima: 'Full moon',
+  amavasya: 'New moon',
+};
+const EVENT_DOT: Record<EventType, string> = {
+  festival: 'bg-ember-deep',
+  ekadashi: 'bg-[var(--success)]',
+  purnima: 'bg-[var(--solar-gold)]',
+  amavasya: 'bg-nebula',
+};
+const EVENT_ICON: Record<EventType, typeof Sparkles> = {
+  festival: Sparkles,
+  ekadashi: Wheat,
+  purnima: Moon,
+  amavasya: MoonStar,
+};
+
+// Calendar padding and date matching retain the existing date-only rules.
 function getDaysInMonth(year: number, month: number) {
-  const date = new Date(year, month, 1);
   const days = [];
-  const firstDayIndex = date.getDay();
+  const firstDayIndex = new Date(year, month, 1).getDay();
   const totalDays = new Date(year, month + 1, 0).getDate();
   const prevMonthTotalDays = new Date(year, month, 0).getDate();
-
-  // Previous month padding
-  for (let i = firstDayIndex - 1; i >= 0; i--) {
+  for (let i = firstDayIndex - 1; i >= 0; i--)
     days.push({
       day: prevMonthTotalDays - i,
       month: month === 0 ? 11 : month - 1,
       year: month === 0 ? year - 1 : year,
       isCurrentMonth: false,
     });
-  }
-
-  // Current month days
-  for (let i = 1; i <= totalDays; i++) {
-    days.push({
-      day: i,
-      month,
-      year,
-      isCurrentMonth: true,
-    });
-  }
-
-  // Next month padding to fill standard 6-row calendar (42 cells)
+  for (let i = 1; i <= totalDays; i++)
+    days.push({ day: i, month, year, isCurrentMonth: true });
   const remainingCells = 42 - days.length;
-  for (let i = 1; i <= remainingCells; i++) {
+  for (let i = 1; i <= remainingCells; i++)
     days.push({
       day: i,
       month: month === 11 ? 0 : month + 1,
       year: month === 11 ? year + 1 : year,
       isCurrentMonth: false,
     });
-  }
-
   return days;
 }
 
+const pad = (value: number) => String(value).padStart(2, '0');
+const isoDate = (year: number, month: number, day: number) =>
+  `${year}-${pad(month + 1)}-${pad(day)}`;
+
+function dayEvents(date: string, data?: FestivalCalendarResponse) {
+  return data?.festivals?.filter((f) => f.date === date) ?? [];
+}
+
 export default function FestivalCalendarPage() {
-  const searchParams = useSearchParams();
-  const currentYear = new Date().getFullYear();
-  const currentMonth = new Date().getMonth();
+  const today = new Date();
+  const currentYear = today.getFullYear();
+  const currentMonth = today.getMonth();
+  const todayIso = isoDate(currentYear, currentMonth, today.getDate());
+  const [year, setYear] = useState(currentYear);
+  const [activeMonth, setActiveMonth] = useState(currentMonth);
+  const [festivalType, setFestivalType] = useState('all');
+  const [region, setRegion] = useState('all');
+  const [selectedDay, setSelectedDay] = useState<{
+    day: number;
+    month: number;
+    year: number;
+  } | null>({ day: today.getDate(), month: currentMonth, year: currentYear });
+  const payload = useMemo(
+    () => ({
+      year,
+      festival_type: festivalType === 'all' ? null : festivalType,
+      region: region === 'all' ? null : region,
+    }),
+    [year, festivalType, region]
+  );
+  const { data, isLoading, isError, refetch } = useFestivalCalendar(payload);
 
-  // State
-  const [year, setYear] = useState<number>(currentYear);
-  const [activeMonth, setActiveMonth] = useState<number>(currentMonth);
-  const [festivalType, setFestivalType] = useState<string>('all');
-  const [region, setRegion] = useState<string>('all');
-
-  // Selected day for detailed preview
-  const [selectedDay, setSelectedDay] = useState<{ day: number; month: number; year: number } | null>({
-    day: new Date().getDate(),
-    month: currentMonth,
-    year: currentYear,
-  });
-
-  // API query payload mapping
-  const payload = useMemo(() => ({
-    year,
-    festival_type: festivalType === 'all' ? null : festivalType,
-    region: region === 'all' ? null : region,
-  }), [year, festivalType, region]);
-
-  const { data, isLoading, isError } = useFestivalCalendar(payload);
-
-  // Parse calendar date matching
-  const matchDate = (eventDate: string, targetYear: number, targetMonth: number, targetDay: number) => {
-    if (!eventDate) return false;
-    const [y, m, d] = eventDate.split('-').map(Number);
-    return y === targetYear && (m - 1) === targetMonth && d === targetDay;
-  };
-
-  // Get active month's days
-  const calendarDays = useMemo(() => getDaysInMonth(year, activeMonth), [year, activeMonth]);
-
-  // Map API response events to daily items
+  const calendarDays = useMemo(
+    () => getDaysInMonth(year, activeMonth),
+    [year, activeMonth]
+  );
   const dailyEventsMap = useMemo(() => {
-    if (!data) return {};
-
-    const map: Record<string, {
-      festivals: typeof data.festivals;
-      ekadashis: typeof data.ekadashis;
-      purnimas: typeof data.purnimas;
-      special_amavasyas: typeof data.special_amavasyas;
-    }> = {};
-
+    const map: Record<string, DailyEvents> = {};
+    if (!data) return map;
     calendarDays.forEach((d) => {
-      const key = `${d.year}-${d.month}-${d.day}`;
-
-      const dayFestivals = data.festivals?.filter((f) => matchDate(f.date, d.year, d.month, d.day)) || [];
-      const dayEkadashis = data.ekadashis?.filter((e) => matchDate(e.date, d.year, d.month, d.day)) || [];
-      const dayPurnimas = data.purnimas?.filter((p) => matchDate(p.date, d.year, d.month, d.day)) || [];
-      const dayAmavasyas = data.special_amavasyas?.filter((a) => matchDate(a.date, d.year, d.month, d.day)) || [];
-
-      if (dayFestivals.length > 0 || dayEkadashis.length > 0 || dayPurnimas.length > 0 || dayAmavasyas.length > 0) {
-        map[key] = {
-          festivals: dayFestivals,
-          ekadashis: dayEkadashis,
-          purnimas: dayPurnimas,
-          special_amavasyas: dayAmavasyas,
+      const date = isoDate(d.year, d.month, d.day);
+      const festivals = dayEvents(date, data);
+      const ekadashis =
+        data.ekadashis?.filter((e) => e.date === date) || [];
+      const purnimas = data.purnimas?.filter((p) => p.date === date) || [];
+      const special_amavasyas =
+        data.special_amavasyas?.filter((a) => a.date === date) || [];
+      if (
+        festivals.length ||
+        ekadashis.length ||
+        purnimas.length ||
+        special_amavasyas.length
+      )
+        map[`${d.year}-${d.month}-${d.day}`] = {
+          festivals,
+          ekadashis,
+          purnimas,
+          special_amavasyas,
         };
-      }
     });
-
     return map;
   }, [data, calendarDays]);
 
-  // Selected date events list
+  const allEvents = useMemo(() => {
+    const list: CalendarEvent[] = [];
+    if (!data) return list;
+    data.festivals?.forEach((f) =>
+      list.push({
+        type: 'festival',
+        date: f.date,
+        title: f.name,
+        subtitle: f.name_hindi,
+        significance: f.significance,
+        rituals: f.rituals,
+        raw: f,
+      })
+    );
+    data.ekadashis?.forEach((e) =>
+      list.push({
+        type: 'ekadashi',
+        date: e.date,
+        title: e.name,
+        subtitle: `${e.lunar_month} Month, ${e.paksha} Paksha`,
+        raw: e,
+      })
+    );
+    data.purnimas?.forEach((p) =>
+      list.push({
+        type: 'purnima',
+        date: p.date,
+        title: p.name,
+        subtitle: `${p.lunar_month} Month`,
+        significance: p.significance,
+        raw: p,
+      })
+    );
+    data.special_amavasyas?.forEach((a) =>
+      list.push({
+        type: 'amavasya',
+        date: a.date,
+        title: a.name,
+        subtitle: `${a.lunar_month} Month`,
+        significance: a.significance,
+        raw: a,
+      })
+    );
+    return list.sort((a, b) => a.date.localeCompare(b.date));
+  }, [data]);
+
+  const monthEvents = useMemo(
+    () =>
+      allEvents.filter((event) => {
+        const [y, m] = event.date.split('-').map(Number);
+        return y === year && m - 1 === activeMonth;
+      }),
+    [allEvents, year, activeMonth]
+  );
+  const nextEvent = useMemo(
+    () => allEvents.find((event) => event.date >= todayIso),
+    [allEvents, todayIso]
+  );
+
   const selectedDateEvents = useMemo(() => {
     if (!selectedDay) return null;
-    const key = `${selectedDay.year}-${selectedDay.month}-${selectedDay.day}`;
-    return dailyEventsMap[key] || { festivals: [], ekadashis: [], purnimas: [], special_amavasyas: [] };
+    return (
+      dailyEventsMap[
+        `${selectedDay.year}-${selectedDay.month}-${selectedDay.day}`
+      ] || { festivals: [], ekadashis: [], purnimas: [], special_amavasyas: [] }
+    );
   }, [selectedDay, dailyEventsMap]);
 
-  // All events in the active month
-  const activeMonthEvents = useMemo(() => {
-    const list: {
-      type: 'festival' | 'ekadashi' | 'purnima' | 'amavasya';
-      date: string;
-      title: string;
-      subtitle?: string;
-      significance?: string;
-      rituals?: string[];
-      raw: any;
-    }[] = [];
-
-    if (!data) return list;
-
-    // Filter festivals
-    data.festivals?.forEach((f) => {
-      const [y, m] = f.date.split('-').map(Number);
-      if (y === year && (m - 1) === activeMonth) {
-        list.push({
-          type: 'festival',
-          date: f.date,
-          title: f.name,
-          subtitle: f.name_hindi,
-          significance: f.significance,
-          rituals: f.rituals,
-          raw: f,
-        });
-      }
-    });
-
-    // Filter ekadashis
-    data.ekadashis?.forEach((e) => {
-      const [y, m] = e.date.split('-').map(Number);
-      if (y === year && (m - 1) === activeMonth) {
-        list.push({
-          type: 'ekadashi',
-          date: e.date,
-          title: e.name,
-          subtitle: `${e.lunar_month} Month, ${e.paksha} Paksha`,
-          raw: e,
-        });
-      }
-    });
-
-    // Filter purnimas
-    data.purnimas?.forEach((p) => {
-      const [y, m] = p.date.split('-').map(Number);
-      if (y === year && (m - 1) === activeMonth) {
-        list.push({
-          type: 'purnima',
-          date: p.date,
-          title: p.name,
-          subtitle: `${p.lunar_month} Month`,
-          significance: p.significance,
-          raw: p,
-        });
-      }
-    });
-
-    // Filter amavasyas
-    data.special_amavasyas?.forEach((a) => {
-      const [y, m] = a.date.split('-').map(Number);
-      if (y === year && (m - 1) === activeMonth) {
-        list.push({
-          type: 'amavasya',
-          date: a.date,
-          title: a.name,
-          subtitle: `${a.lunar_month} Month`,
-          significance: a.significance,
-          raw: a,
-        });
-      }
-    });
-
-    return list.sort((a, b) => a.date.localeCompare(b.date));
-  }, [data, year, activeMonth]);
-
-  // Navigate months
   const handlePrevMonth = () => {
     if (activeMonth === 0) {
       setActiveMonth(11);
       setYear((y) => Math.max(1900, y - 1));
-    } else {
-      setActiveMonth((m) => m - 1);
-    }
+    } else setActiveMonth((m) => m - 1);
   };
-
   const handleNextMonth = () => {
     if (activeMonth === 11) {
       setActiveMonth(0);
       setYear((y) => Math.min(2100, y + 1));
-    } else {
-      setActiveMonth((m) => m + 1);
-    }
+    } else setActiveMonth((m) => m + 1);
   };
-
-  const handleDayClick = (dayObj: typeof calendarDays[0]) => {
-    setSelectedDay({
-      day: dayObj.day,
-      month: dayObj.month,
-      year: dayObj.year,
-    });
-    // Sync current month view to day clicked if it is a padding day
-    if (dayObj.month !== activeMonth) {
-      setActiveMonth(dayObj.month);
-      setYear(dayObj.year);
-    }
+  const goToDay = (day: number, month: number, targetYear: number) => {
+    setSelectedDay({ day, month, year: targetYear });
+    setActiveMonth(month);
+    setYear(targetYear);
   };
 
   const formattedSelectedDateLabel = selectedDay
     ? `${MONTHS[selectedDay.month]} ${selectedDay.day}, ${selectedDay.year}`
-    : '';
+    : 'Select a date';
+  const selectedCount = selectedDateEvents
+    ? selectedDateEvents.festivals.length +
+      selectedDateEvents.ekadashis.length +
+      selectedDateEvents.purnimas.length +
+      selectedDateEvents.special_amavasyas.length
+    : 0;
+  const daysUntilNext = nextEvent
+    ? Math.round(
+        (new Date(`${nextEvent.date}T00:00:00`).getTime() -
+          new Date(`${todayIso}T00:00:00`).getTime()) /
+          86400000
+      )
+    : null;
 
   return (
-    <div className="flex min-w-0 flex-col gap-6 p-4 duration-1000 animate-in fade-in zoom-in-95 md:gap-8 md:p-8">
-      {/* Page Header */}
-      <div className="flex flex-col items-start justify-between gap-4 border-b border-primary-500/10 pb-6 md:flex-row md:items-center">
-        <div>
-          <h1 className="flex items-center gap-3 font-serif text-2xl font-bold tracking-tight text-primary-500 md:text-4xl">
-            <CalendarIcon className="h-8 w-8 text-primary-500 md:h-10 md:w-10" />
-            Vedic Festival Calendar
-          </h1>
-          <p className="mt-2 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-500">
-            Hindu calendar & celestial alignments
-          </p>
-        </div>
-      </div>
+    <div className="flex min-w-0 flex-col gap-6 text-foreground">
+      <header className="relative space-y-2 overflow-hidden">
+        <div className="obs-orbit" aria-hidden="true" />
+        <p className="obs-label flex items-center gap-2">
+          <CalendarDays className="h-4 w-4" /> Festivals & lunar dates
+        </p>
+        <h1 className="obs-title">Festival Calendar</h1>
+        <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+          Festivals and lunar observances for the selected year. Each kind keeps
+          its own colour, so the month grid, the day list and the detail cards
+          read at a glance.
+        </p>
+      </header>
 
-      {/* Filter Toolbar */}
-      <Card className="border-primary-500/10 bg-white/5 shadow-xl">
-        <CardContent className="p-4 md:p-6">
-          <div className="flex flex-wrap items-center gap-4">
-            <div className="flex flex-1 min-w-[120px] flex-col gap-1.5">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-500/80">
-                <CalendarIcon className="h-3 w-3" /> Year
+      {nextEvent && !isError && (
+        <section
+          data-tone={EVENT_TONE[nextEvent.type]}
+          className="obs-glass flex min-w-0 flex-wrap items-center justify-between gap-4 p-5 sm:p-6"
+          aria-label="Next observance"
+        >
+          <div className="flex min-w-0 items-center gap-4">
+            <span
+              data-tone={EVENT_TONE[nextEvent.type]}
+              className="obs-tile flex h-14 w-14 shrink-0 flex-col items-center justify-center"
+              aria-hidden="true"
+            >
+              <span className="text-lg font-bold leading-none">
+                {Number(nextEvent.date.slice(-2))}
               </span>
-              <Select value={String(year)} onValueChange={(val) => setYear(Number(val))}>
-                <SelectTrigger className="border-primary-500/25 bg-background text-sm font-semibold">
-                  <SelectValue placeholder="Year" />
-                </SelectTrigger>
-                <SelectContent className="border-primary-500/20 bg-background text-primary-200">
-                  {YEARS.map((y) => (
-                    <SelectItem key={y} value={String(y)} className="focus:bg-primary-500/10">
-                      {y}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-[2] min-w-[160px] flex-col gap-1.5">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-500/80">
-                <Filter className="h-3 w-3" /> Type
+              <span className="text-[10px] uppercase tracking-wider opacity-80">
+                {MONTHS[Number(nextEvent.date.slice(5, 7)) - 1].slice(0, 3)}
               </span>
-              <Select value={festivalType} onValueChange={setFestivalType}>
-                <SelectTrigger className="border-primary-500/25 bg-background text-sm font-semibold">
-                  <SelectValue placeholder="Festival Type" />
-                </SelectTrigger>
-                <SelectContent className="border-primary-500/20 bg-background text-primary-200">
-                  {FESTIVAL_TYPES.map((t) => (
-                    <SelectItem key={t.value} value={t.value} className="focus:bg-primary-500/10">
-                      {t.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-
-            <div className="flex flex-[2] min-w-[160px] flex-col gap-1.5">
-              <span className="flex items-center gap-1 text-[10px] font-bold uppercase tracking-wider text-primary-500/80">
-                <MapPin className="h-3 w-3" /> Region
-              </span>
-              <Select value={region} onValueChange={setRegion}>
-                <SelectTrigger className="border-primary-500/25 bg-background text-sm font-semibold">
-                  <SelectValue placeholder="Region" />
-                </SelectTrigger>
-                <SelectContent className="border-primary-500/20 bg-background text-primary-200">
-                  {REGIONS.map((r) => (
-                    <SelectItem key={r.value} value={r.value} className="focus:bg-primary-500/10">
-                      {r.label}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
+            </span>
+            <div className="min-w-0 space-y-1">
+              <p className="obs-label">Next observance</p>
+              <h2 className="truncate text-xl font-semibold">
+                {nextEvent.title}
+              </h2>
+              <p className="flex flex-wrap items-center gap-2 text-sm text-muted-foreground">
+                <span className="obs-chip" data-tone={EVENT_TONE[nextEvent.type]}>
+                  {EVENT_LABEL[nextEvent.type]}
+                </span>
+                {nextEvent.subtitle}
+              </p>
             </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {/* Main Grid View */}
-      <div className="grid grid-cols-1 gap-6 lg:grid-cols-12">
-        {/* Left Side: Calendar Grid */}
-        <div className="flex flex-col gap-4 lg:col-span-8">
-          <Card className="relative overflow-hidden border-primary-500/15 bg-white/5 shadow-2xl">
-            {isLoading && (
-              <div className="absolute inset-0 z-30 flex items-center justify-center bg-background/60 backdrop-blur-xs">
-                <div className="flex flex-col items-center gap-3">
-                  <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-                  <span className="text-xs font-semibold text-primary-300">Calculating tithis and nakshatras...</span>
-                </div>
-              </div>
-            )}
-            <CardHeader className="flex flex-row items-center justify-between border-b border-primary-500/10 py-4">
-              <div>
-                <CardTitle className="font-serif text-xl font-extrabold text-primary-200">
-                  {MONTHS[activeMonth]} {year}
-                </CardTitle>
-                <CardDescription className="text-xs text-primary-100/60">
-                  Select a day to view celestial alignments
-                </CardDescription>
-              </div>
-              <div className="flex items-center gap-2">
-                <Button onClick={handlePrevMonth} variant="outline" size="icon" className="h-8 w-8 border-primary-500/20 bg-background/30 hover:bg-primary-500/10">
-                  <ChevronLeft className="h-4 w-4 text-primary-400" />
-                </Button>
-                <Button onClick={handleNextMonth} variant="outline" size="icon" className="h-8 w-8 border-primary-500/20 bg-background/30 hover:bg-primary-500/10">
-                  <ChevronRight className="h-4 w-4 text-primary-400" />
-                </Button>
-              </div>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              {/* Day Headers */}
-              <div className="grid grid-cols-7 gap-1 text-center font-serif text-xs font-black uppercase tracking-wider text-primary-500/80 mb-2">
-                {WEEKDAYS.map((d) => (
-                  <div key={d} className="py-2">{d}</div>
-                ))}
-              </div>
-
-              {/* Day Cells */}
-              <div className="grid grid-cols-7 gap-1.5 md:gap-2">
-                {calendarDays.map((d, index) => {
-                  const key = `${d.year}-${d.month}-${d.day}`;
-                  const dayEvents = dailyEventsMap[key];
-                  const hasEvents = !!dayEvents;
-
-                  const isSelected = selectedDay && selectedDay.day === d.day && selectedDay.month === d.month && selectedDay.year === d.year;
-                  const isToday = new Date().getDate() === d.day && new Date().getMonth() === d.month && new Date().getFullYear() === d.year;
-
-                  return (
-                    <button
-                      key={`${key}-${index}`}
-                      onClick={() => handleDayClick(d)}
-                      className={`group relative flex min-h-[70px] flex-col justify-between rounded-xl border p-2 text-left transition-all duration-200 outline-none ${d.isCurrentMonth
-                        ? 'border-primary-500/10 bg-white/[0.01] hover:bg-primary-500/5'
-                        : 'border-transparent bg-transparent text-primary-100/20'
-                        } ${isSelected
-                          ? 'border-primary-500 ring-1 ring-primary-500 bg-primary-500/5 shadow-inner'
-                          : ''
-                        }`}
-                    >
-                      <div className="flex items-center justify-between">
-                        <span className={`text-xs font-black ${isToday
-                          ? 'flex h-5 w-5 items-center justify-center rounded-full bg-primary-500 text-primary-950 font-bold'
-                          : isSelected ? 'text-primary-400' : d.isCurrentMonth ? 'text-primary-100' : ''
-                          }`}>
-                          {d.day}
-                        </span>
-
-                        {/* Moon Icon for Purnima/Amavasya indicator */}
-                        {dayEvents?.purnimas.length > 0 && (
-                          <span className="text-[10px]" title="Purnima (Full Moon)">🌕</span>
-                        )}
-                        {dayEvents?.special_amavasyas.length > 0 && (
-                          <span className="text-[10px]" title="Amavasya (New Moon)">🌑</span>
-                        )}
-                      </div>
-
-                      {/* Event Mini Indicators */}
-                      {hasEvents && d.isCurrentMonth && (
-                        <div className="mt-1 flex flex-col gap-0.5 w-full overflow-hidden">
-                          {dayEvents.festivals.slice(0, 1).map((f) => (
-                            <div
-                              key={f.key}
-                              className={`truncate text-[8px] font-black uppercase px-1 py-0.5 rounded-md leading-tight text-center ${f.type === 'major'
-                                ? 'bg-amber-500/20 border border-amber-500/35 text-amber-300'
-                                : 'bg-primary-500/10 border border-primary-500/15 text-primary-300'
-                                }`}
-                            >
-                              {f.name}
-                            </div>
-                          ))}
-                          {dayEvents.ekadashis.slice(0, 1).map((e) => (
-                            <div
-                              key={e.name}
-                              className="truncate text-[8px] font-black uppercase px-1 py-0.5 rounded-md leading-tight text-center bg-emerald-500/25 border border-emerald-500/35 text-emerald-300"
-                            >
-                              {e.name.replace(' Ekadashi', '')} Ekad.
-                            </div>
-                          ))}
-                          {/* More dots if multiple events */}
-                          {(dayEvents.festivals.length + dayEvents.ekadashis.length) > 1 && (
-                            <div className="flex justify-center gap-0.5 mt-0.5">
-                              <span className="h-1 w-1 rounded-full bg-primary-500"></span>
-                              <span className="h-1 w-1 rounded-full bg-primary-500"></span>
-                            </div>
-                          )}
-                        </div>
-                      )}
-                    </button>
-                  );
-                })}
-              </div>
-            </CardContent>
-          </Card>
-
-          {/* Monthly Info Note */}
-          {data?.calculation_notes?.note && (
-            <div className="flex items-start gap-3 rounded-2xl border border-primary-500/10 bg-primary-500/5 p-4 text-xs text-primary-300/80">
-              <Info className="mt-0.5 h-4 w-4 shrink-0 text-primary-500" />
-              <div>
-                <span className="font-extrabold uppercase tracking-wide text-primary-500 text-[10px]">Panchang Notes</span>
-                <p className="mt-1 leading-relaxed">{data.calculation_notes.note}</p>
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Right Side: Details / Events lists */}
-        <div className="flex flex-col gap-6 lg:col-span-4">
-          {/* Day Detail panel */}
-          <Card className="border-primary-500/15 bg-white/5 shadow-2xl overflow-hidden">
-            <CardHeader className="border-b border-primary-500/10 bg-primary-950/20 py-4">
-              <span className="text-[10px] font-black uppercase tracking-wider text-primary-500/80 flex items-center gap-1.5">
-                <Sparkles className="h-3.5 w-3.5" /> Selection Preview
+          <div className="flex items-center gap-2">
+            {daysUntilNext !== null && (
+              <span className="obs-chip" data-tone="gold">
+                <Clock className="h-3 w-3" aria-hidden="true" />
+                {daysUntilNext === 0
+                  ? 'Today'
+                  : daysUntilNext === 1
+                    ? 'Tomorrow'
+                    : `in ${daysUntilNext} days`}
               </span>
-              <CardTitle className="font-serif text-lg font-bold text-primary-200">
-                {formattedSelectedDateLabel}
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              {!selectedDay ||
-                (selectedDateEvents?.festivals.length === 0 &&
-                  selectedDateEvents?.ekadashis.length === 0 &&
-                  selectedDateEvents?.purnimas.length === 0 &&
-                  selectedDateEvents?.special_amavasyas.length === 0) ? (
-                <div className="flex min-h-[180px] flex-col items-center justify-center text-center p-4">
-                  <CalendarDays className="h-8 w-8 text-primary-500/25 mb-3" />
-                  <p className="text-xs italic text-primary-100/40">
-                    No major festivals or lunar alignments registered on this date.
-                  </p>
-                </div>
-              ) : (
-                <ScrollArea className="h-[300px] pr-2">
-                  <div className="space-y-5">
-                    {/* Festivals */}
-                    {selectedDateEvents?.festivals.map((f) => (
-                      <div key={f.key} className="space-y-2.5 rounded-xl border border-primary-500/10 bg-white/[0.01] p-4">
-                        <div className="flex items-start justify-between gap-2">
-                          <div>
-                            <h4 className="text-sm font-extrabold text-primary-300">{f.name}</h4>
-                            {f.name_hindi && <p className="text-xs text-primary-500/70 font-semibold mt-0.5">{f.name_hindi}</p>}
-                          </div>
-                          <Badge variant="outline" className={`text-[9px] uppercase tracking-wider ${f.type === 'major' ? 'border-amber-500/40 bg-amber-500/5 text-amber-400' : 'border-primary-500/30 text-primary-400'
-                            }`}>
-                            {f.type}
-                          </Badge>
-                        </div>
-                        {f.significance && (
-                          <div className="text-xs text-primary-100/70">
-                            <span className="font-bold text-primary-500/90 text-[10px] uppercase block tracking-wide">Significance</span>
-                            <p className="mt-0.5 leading-relaxed">{f.significance}</p>
-                          </div>
-                        )}
-                        {f.rituals && f.rituals.length > 0 && (
-                          <div className="text-xs text-primary-100/70">
-                            <span className="font-bold text-primary-500/90 text-[10px] uppercase block tracking-wide">Rituals</span>
-                            <div className="mt-1 flex flex-wrap gap-1.5">
-                              {f.rituals.map((r) => (
-                                <Badge key={r} variant="outline" className="border-primary-500/10 bg-white/5 text-[9px] text-primary-200">
-                                  {r}
-                                </Badge>
-                              ))}
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    ))}
+            )}
+            <button
+              type="button"
+              className="obs-control obs-accent gap-2"
+              onClick={() => {
+                const [y, m, d] = nextEvent.date.split('-').map(Number);
+                goToDay(d, m - 1, y);
+              }}
+            >
+              Show this day
+            </button>
+          </div>
+        </section>
+      )}
 
-                    {/* Ekadashis */}
-                    {selectedDateEvents?.ekadashis.map((e) => (
-                      <div key={e.name} className="space-y-2 rounded-xl border border-emerald-500/15 bg-emerald-500/5 p-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold text-emerald-400">{e.name}</h4>
-                          <span className="text-[10px] uppercase font-bold text-emerald-500/80">Lunar 11th Day</span>
-                        </div>
-                        <div className="flex flex-wrap gap-2 text-xs text-primary-100/70">
-                          <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-300 uppercase tracking-wide">
-                            {e.lunar_month} Month
-                          </span>
-                          <span className="rounded bg-emerald-500/10 px-2 py-0.5 text-[9px] font-bold text-emerald-300 uppercase tracking-wide">
-                            {e.paksha} Paksha
-                          </span>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* Purnimas */}
-                    {selectedDateEvents?.purnimas.map((p) => (
-                      <div key={p.name} className="space-y-2 rounded-xl border border-sky-500/15 bg-sky-500/5 p-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold text-sky-400">🌕 {p.name}</h4>
-                          <span className="text-[10px] uppercase font-bold text-sky-500/80">Full Moon</span>
-                        </div>
-                        <p className="text-xs text-primary-100/60 font-semibold">{p.lunar_month} Month</p>
-                        {p.significance && (
-                          <p className="text-xs leading-relaxed text-primary-100/70 border-t border-sky-500/10 pt-2">{p.significance}</p>
-                        )}
-                      </div>
-                    ))}
-
-                    {/* Amavasyas */}
-                    {selectedDateEvents?.special_amavasyas.map((a) => (
-                      <div key={a.name} className="space-y-2 rounded-xl border border-purple-500/15 bg-purple-500/5 p-4">
-                        <div className="flex items-center justify-between">
-                          <h4 className="text-sm font-extrabold text-purple-400">🌑 {a.name}</h4>
-                          <span className="text-[10px] uppercase font-bold text-purple-500/80">New Moon</span>
-                        </div>
-                        <p className="text-xs text-primary-100/60 font-semibold">{a.lunar_month} Month</p>
-                        {a.significance && (
-                          <p className="text-xs leading-relaxed text-primary-100/70 border-t border-purple-500/10 pt-2">{a.significance}</p>
-                        )}
-                      </div>
-                    ))}
-                  </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
-
-          {/* Month Summary Event List */}
-          <Card className="border-primary-500/15 bg-white/5 shadow-2xl flex-1">
-            <CardHeader className="py-4 border-b border-primary-500/10">
-              <CardTitle className="font-serif text-sm font-bold text-primary-300 uppercase tracking-wider flex items-center gap-1.5">
-                <BookOpen className="h-4 w-4" /> Month Event Summary
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-4 md:p-6">
-              {activeMonthEvents.length === 0 ? (
-                <div className="text-center py-6 text-xs italic text-primary-100/30">
-                  No events found in this month.
-                </div>
-              ) : (
-                <ScrollArea className="h-[250px] pr-2">
-                  <div className="space-y-3">
-                    {activeMonthEvents.map((evt, index) => {
-                      const dayNumber = Number(evt.date.split('-')[2]);
-                      const weekday = new Date(evt.date).toLocaleDateString('en-US', { weekday: 'short' });
-
-                      let typeBadgeClasses = 'border-primary-500/20 text-primary-400 bg-white/5';
-                      if (evt.type === 'ekadashi') typeBadgeClasses = 'border-emerald-500/30 text-emerald-400 bg-emerald-500/5';
-                      if (evt.type === 'purnima') typeBadgeClasses = 'border-sky-500/30 text-sky-400 bg-sky-500/5';
-                      if (evt.type === 'amavasya') typeBadgeClasses = 'border-purple-500/30 text-purple-400 bg-purple-500/5';
-
-                      return (
-                        <button
-                          key={`${evt.title}-${index}`}
-                          onClick={() => setSelectedDay({ day: dayNumber, month: activeMonth, year })}
-                          className="w-full flex items-center justify-between gap-3 p-3 rounded-xl border border-primary-500/5 bg-white/[0.01] hover:bg-primary-500/5 transition-all text-left group"
-                        >
-                          <div className="flex items-center gap-3">
-                            <div className="flex h-10 w-10 flex-col items-center justify-center rounded-lg bg-primary-500/10 border border-primary-500/15 group-hover:border-primary-500/30 transition-colors">
-                              <span className="text-xs font-black text-primary-300">{dayNumber}</span>
-                              <span className="text-[8px] font-bold text-primary-500/80 uppercase">{weekday}</span>
-                            </div>
-                            <div className="min-w-0">
-                              <h5 className="text-xs font-bold text-primary-200 truncate group-hover:text-primary-300 transition-colors">{evt.title}</h5>
-                              {evt.subtitle && <p className="text-[10px] text-primary-500/60 truncate mt-0.5">{evt.subtitle}</p>}
-                            </div>
-                          </div>
-                          <Badge variant="outline" className={`text-[8px] tracking-wider uppercase shrink-0 ${typeBadgeClasses}`}>
-                            {evt.type}
-                          </Badge>
-                        </button>
-                      );
-                    })}
-                  </div>
-                </ScrollArea>
-              )}
-            </CardContent>
-          </Card>
+      <section
+        className="obs-card grid min-w-0 gap-4 p-4 sm:grid-cols-3 sm:p-5"
+        aria-label="Calendar filters"
+      >
+        <div className="space-y-2">
+          <label id="calendar-year-label" className="obs-label">
+            Year
+          </label>
+          <Select
+            value={String(year)}
+            onValueChange={(value) => setYear(Number(value))}
+          >
+            <SelectTrigger
+              aria-labelledby="calendar-year-label"
+              className="obs-control h-11 text-base"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="observatory-theme border-border bg-card text-foreground">
+              {Array.from(new Set([...YEARS, year]))
+                .sort((a, b) => a - b)
+                .map((y) => (
+                  <SelectItem key={y} value={String(y)}>
+                    {y}
+                  </SelectItem>
+                ))}
+            </SelectContent>
+          </Select>
         </div>
+        <div className="space-y-2">
+          <label
+            id="calendar-type-label"
+            className="obs-label flex items-center gap-1"
+          >
+            <Filter className="h-3 w-3" /> Type
+          </label>
+          <Select value={festivalType} onValueChange={setFestivalType}>
+            <SelectTrigger
+              aria-labelledby="calendar-type-label"
+              className="obs-control h-11 text-base"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="observatory-theme border-border bg-card text-foreground">
+              {FESTIVAL_TYPES.map((type) => (
+                <SelectItem key={type.value} value={type.value}>
+                  {type.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <label
+            id="calendar-region-label"
+            className="obs-label flex items-center gap-1"
+          >
+            <MapPin className="h-3 w-3" /> Region
+          </label>
+          <Select value={region} onValueChange={setRegion}>
+            <SelectTrigger
+              aria-labelledby="calendar-region-label"
+              className="obs-control h-11 text-base"
+            >
+              <SelectValue />
+            </SelectTrigger>
+            <SelectContent className="observatory-theme border-border bg-card text-foreground">
+              {REGIONS.map((item) => (
+                <SelectItem key={item.value} value={item.value}>
+                  {item.label}
+                </SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="flex flex-wrap items-center gap-2 sm:col-span-3">
+          {(Object.keys(EVENT_LABEL) as EventType[]).map((type) => (
+            <span key={type} className="obs-chip" data-tone={EVENT_TONE[type]}>
+              {EVENT_LABEL[type]}
+            </span>
+          ))}
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Region:{' '}
+            {data?.filters_applied?.region ||
+              REGIONS.find((item) => item.value === region)?.label}
+            . Dates are as supplied by the calendar service; it does not provide
+            a location timezone.
+          </p>
+        </div>
+      </section>
+
+      {isError && (
+        <div role="alert" className="obs-card space-y-3 p-5">
+          <h2 className="font-semibold">Calendar could not be loaded</h2>
+          <p className="text-sm text-muted-foreground">
+            Try again or adjust the filters. No empty calendar should be
+            interpreted as a confirmed absence of festivals.
+          </p>
+          <button
+            type="button"
+            onClick={() => refetch()}
+            className="obs-control obs-accent"
+          >
+            Try again
+          </button>
+        </div>
+      )}
+      {isLoading && (
+        <p
+          role="status"
+          className="flex items-center gap-2 text-sm text-muted-foreground"
+        >
+          <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />{' '}
+          Loading calendar dates…
+        </p>
+      )}
+
+      <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)]">
+        <section
+          className="obs-card min-w-0 overflow-hidden"
+          aria-busy={isLoading}
+          aria-label={`${MONTHS[activeMonth]} ${year} calendar`}
+        >
+          <header className="flex flex-wrap items-center justify-between gap-3 border-b border-border p-4 sm:p-5">
+            <div>
+              <h2 className="text-xl font-semibold">
+                {MONTHS[activeMonth]}{' '}
+                <span className="text-muted-foreground">{year}</span>
+              </h2>
+              <p className="mt-1 text-sm text-muted-foreground">
+                {monthEvents.length} observance
+                {monthEvents.length === 1 ? '' : 's'} this month · select a day
+                for its details
+              </p>
+            </div>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() => goToDay(today.getDate(), currentMonth, currentYear)}
+                className="obs-control h-11 gap-2"
+              >
+                <CalendarDays className="h-4 w-4" />
+                Today
+              </button>
+              <button
+                type="button"
+                onClick={handlePrevMonth}
+                aria-label="Previous month"
+                className="obs-control h-11 w-11 p-0"
+              >
+                <ChevronLeft className="h-4 w-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleNextMonth}
+                aria-label="Next month"
+                className="obs-control h-11 w-11 p-0"
+              >
+                <ChevronRight className="h-4 w-4" />
+              </button>
+            </div>
+          </header>
+          <div className="p-2 sm:p-4">
+            <div className="mb-2 grid grid-cols-7 text-center">
+              {WEEKDAYS.map((d) => (
+                <div key={d} className="obs-label py-2">
+                  {d}
+                </div>
+              ))}
+            </div>
+            <div className="grid grid-cols-7 gap-1 sm:gap-1.5">
+              {calendarDays.map((d) => {
+                const key = `${d.year}-${d.month}-${d.day}`;
+                const events =
+                  !isError && !isLoading ? dailyEventsMap[key] : undefined;
+                const list: CalendarEvent[] = events
+                  ? [
+                      ...events.festivals.map((f) => ({
+                        type: 'festival' as const,
+                        date: isoDate(d.year, d.month, d.day),
+                        title: f.name,
+                        raw: f,
+                      })),
+                      ...events.ekadashis.map((e) => ({
+                        type: 'ekadashi' as const,
+                        date: isoDate(d.year, d.month, d.day),
+                        title: e.name,
+                        raw: e,
+                      })),
+                      ...events.purnimas.map((p) => ({
+                        type: 'purnima' as const,
+                        date: isoDate(d.year, d.month, d.day),
+                        title: p.name,
+                        raw: p,
+                      })),
+                      ...events.special_amavasyas.map((a) => ({
+                        type: 'amavasya' as const,
+                        date: isoDate(d.year, d.month, d.day),
+                        title: a.name,
+                        raw: a,
+                      })),
+                    ]
+                  : [];
+                const count = list.length;
+                const isSelected =
+                  selectedDay?.day === d.day &&
+                  selectedDay.month === d.month &&
+                  selectedDay.year === d.year;
+                const isToday = isoDate(d.year, d.month, d.day) === todayIso;
+                const names = list.map((event) => event.title).join(', ');
+                return (
+                  <button
+                    key={key}
+                    type="button"
+                    onClick={() => goToDay(d.day, d.month, d.year)}
+                    aria-pressed={isSelected}
+                    aria-current={isToday ? 'date' : undefined}
+                    aria-label={`${MONTHS[d.month]} ${d.day}, ${d.year}${isToday ? ', today' : ''}${count ? `, ${count} observances: ${names}` : ''}`}
+                    data-tone={count ? EVENT_TONE[list[0].type] : 'none'}
+                    className={cn(
+                      'obs-cal-cell flex min-h-[54px] min-w-0 flex-col gap-1 p-1.5 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-400 sm:min-h-[92px] sm:p-2',
+                      isSelected && 'ring-2 ring-primary-400',
+                      !d.isCurrentMonth &&
+                        'opacity-45 saturate-50'
+                    )}
+                  >
+                    <span className="flex items-center justify-between gap-1">
+                      <span
+                        className={cn(
+                          'text-sm font-semibold tabular-nums',
+                          isToday
+                            ? 'text-[var(--solar-gold)]'
+                            : 'text-foreground',
+                          !d.isCurrentMonth && 'text-muted-foreground'
+                        )}
+                      >
+                        {d.day}
+                      </span>
+                      {isToday && (
+                        <span className="hidden text-[10px] font-semibold uppercase tracking-[0.08em] text-[var(--solar-gold)] sm:inline">
+                          Today
+                        </span>
+                      )}
+                    </span>
+                    {count > 0 && (
+                      <span className="flex flex-wrap gap-1">
+                        {list.slice(0, 3).map((event, index) => (
+                          <span
+                            key={`${event.title}-${index}`}
+                            aria-hidden="true"
+                            className={cn(
+                              'h-1.5 w-1.5 rounded-full',
+                              EVENT_DOT[event.type]
+                            )}
+                          />
+                        ))}
+                        {count > 3 && (
+                          <span className="text-[10px] leading-none text-muted-foreground">
+                            +{count - 3}
+                          </span>
+                        )}
+                      </span>
+                    )}
+                    {d.isCurrentMonth && list[0] && (
+                      <span className="hidden min-w-0 flex-col gap-0.5 text-xs sm:flex">
+                        <span className="truncate text-muted-foreground">
+                          {list[0].title}
+                        </span>
+                        {count > 1 && (
+                          <span className="text-muted-foreground">
+                            +{count - 1} more
+                          </span>
+                        )}
+                      </span>
+                    )}
+                  </button>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section
+          className="obs-card flex min-w-0 flex-col gap-3 p-4 sm:p-5"
+          aria-label={`Observances in ${MONTHS[activeMonth]}`}
+        >
+          <div className="flex items-center justify-between gap-2">
+            <h2 className="obs-label">
+              {MONTHS[activeMonth]} observances
+            </h2>
+            <span className="obs-chip">{monthEvents.length}</span>
+          </div>
+          {isLoading ? (
+            <p className="text-sm text-muted-foreground">Loading observances…</p>
+          ) : isError ? (
+            <p className="text-sm text-muted-foreground">
+              The day list is unavailable until the calendar loads.
+            </p>
+          ) : monthEvents.length === 0 ? (
+            <p className="text-sm leading-relaxed text-muted-foreground">
+              No observances were returned for this month and these filters. Try
+              another month or region.
+            </p>
+          ) : (
+            <ol className="-mx-1 max-h-[520px] min-w-0 space-y-1 overflow-y-auto px-1">
+              {monthEvents.map((event, index) => {
+                const [y, m, dayNumber] = event.date.split('-').map(Number);
+                const isNext = event.date === nextEvent?.date;
+                const isPast = event.date < todayIso;
+                const weekday = new Date(
+                  y,
+                  m - 1,
+                  dayNumber
+                ).toLocaleDateString('en-US', { weekday: 'short' });
+                const Icon = EVENT_ICON[event.type];
+                return (
+                  <li key={`${event.title}-${index}`}>
+                    <button
+                      type="button"
+                      onClick={() => goToDay(dayNumber, m - 1, y)}
+                      className={cn(
+                        'obs-tile flex min-h-11 w-full min-w-0 items-start gap-3 p-3 text-left focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary-400',
+                        isPast && 'opacity-60 saturate-50'
+                      )}
+                      data-tone={EVENT_TONE[event.type]}
+                    >
+                      <span className="w-9 shrink-0 text-center">
+                        <span className="block text-base font-semibold tabular-nums leading-tight">
+                          {dayNumber}
+                        </span>
+                        <span className="text-[11px] text-muted-foreground">
+                          {weekday}
+                        </span>
+                      </span>
+                      <span className="min-w-0 flex-1 space-y-1">
+                        <span className="flex flex-wrap items-center gap-2">
+                          <span className="break-words text-sm font-semibold">
+                            {event.title}
+                          </span>
+                          {isNext && (
+                            <span className="obs-chip" data-tone="gold">
+                              Next
+                            </span>
+                          )}
+                        </span>
+                        <span className="flex flex-wrap items-center gap-1.5 text-[11px] text-muted-foreground">
+                          <span className="flex items-center gap-1">
+                            <Icon className="h-3 w-3" aria-hidden="true" />
+                            {EVENT_LABEL[event.type]}
+                          </span>
+                          {event.subtitle && (
+                            <span className="truncate">{event.subtitle}</span>
+                          )}
+                        </span>
+                      </span>
+                    </button>
+                  </li>
+                );
+              })}
+            </ol>
+          )}
+          <p className="text-xs leading-relaxed text-muted-foreground">
+            Dates already past are dimmed. Selecting an entry jumps the calendar
+            to that day.
+          </p>
+        </section>
       </div>
+
+      {data?.calculation_notes?.note && !isError && (
+        <section className="obs-card flex items-start gap-3 p-5">
+          <Info className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
+          <div>
+            <h2 className="text-sm font-semibold">
+              Panchang calculation notes
+            </h2>
+            <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
+              {data.calculation_notes.note}
+            </p>
+          </div>
+        </section>
+      )}
+
+      <section
+        className="obs-card min-w-0 space-y-4 p-5"
+        aria-label="Selected date details"
+      >
+        <div className="flex flex-wrap items-end justify-between gap-3 border-b border-border pb-4">
+          <div className="space-y-1">
+            <p className="obs-label">Selected date</p>
+            <h2 className="text-xl font-semibold">
+              {formattedSelectedDateLabel}
+            </h2>
+          </div>
+          <div className="flex flex-wrap items-center gap-2">
+            {selectedCount > 0 ? (
+              (Object.keys(EVENT_LABEL) as EventType[]).map((type) => {
+                const countForType = selectedDateEvents
+                  ? type === 'festival'
+                    ? selectedDateEvents.festivals.length
+                    : type === 'ekadashi'
+                      ? selectedDateEvents.ekadashis.length
+                      : type === 'purnima'
+                        ? selectedDateEvents.purnimas.length
+                        : selectedDateEvents.special_amavasyas.length
+                  : 0;
+                return countForType ? (
+                  <span
+                    key={type}
+                    className="obs-chip"
+                    data-tone={EVENT_TONE[type]}
+                  >
+                    {countForType} {EVENT_LABEL[type]}
+                  </span>
+                ) : null;
+              })
+            ) : (
+              <span className="obs-chip" data-tone="nebula">
+                No observances
+              </span>
+            )}
+          </div>
+        </div>
+
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Loading date details…</p>
+        ) : isError ? (
+          <p className="text-sm text-muted-foreground">
+            Date details are currently unavailable.
+          </p>
+        ) : !selectedDay || !selectedCount ? (
+          <p className="text-sm leading-relaxed text-muted-foreground">
+            No festivals or lunar observances were returned for this date and
+            the current filters.
+          </p>
+        ) : (
+          <div className="grid min-w-0 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+            {selectedDateEvents?.festivals.map((f) => {
+              const Icon = EVENT_ICON.festival;
+              return (
+                <article
+                  key={f.key}
+                  data-tone={EVENT_TONE.festival}
+                  className="obs-tile min-w-0 space-y-3 p-4"
+                >
+                  <div className="flex items-start gap-3">
+                    <span className="mt-0.5 text-primary-400">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <div className="min-w-0 space-y-1">
+                      <h3 className="text-base font-semibold">{f.name}</h3>
+                      {f.name_hindi && (
+                        <p className="text-sm text-muted-foreground">
+                          {f.name_hindi}
+                        </p>
+                      )}
+                      {f.type && (
+                        <span className="obs-chip" data-tone="deep">
+                          {f.type.replace(/_/g, ' ')}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {f.significance && (
+                    <div className="space-y-1">
+                      <h4 className="obs-label">Significance</h4>
+                      <p className="text-sm leading-relaxed text-muted-foreground">
+                        {f.significance}
+                      </p>
+                    </div>
+                  )}
+                  <div className="flex flex-wrap gap-x-4 gap-y-1 text-xs text-muted-foreground">
+                    {f.timing_type && (
+                      <p>
+                        <span className="font-medium text-foreground">
+                          Date rule:{' '}
+                        </span>
+                        {f.timing_type.replace(/_/g, ' ')}
+                      </p>
+                    )}
+                    {f.duration_days && (
+                      <p>
+                        Duration: {f.duration_days} day
+                        {f.duration_days === 1 ? '' : 's'}
+                        {f.end_date ? ` · Ends ${f.end_date}` : ''}
+                      </p>
+                    )}
+                  </div>
+                  {f.regions?.length ? (
+                    <div className="flex flex-wrap gap-1.5">
+                      {f.regions.map((item) => (
+                        <span key={item} className="obs-chip">
+                          {item}
+                        </span>
+                      ))}
+                    </div>
+                  ) : null}
+                  {f.rituals?.length ? (
+                    <div className="space-y-1 border-t border-border pt-3">
+                      <h4 className="obs-label">Traditional rituals</h4>
+                      <ul className="space-y-1 text-sm leading-relaxed text-muted-foreground marker:text-primary-400">
+                        {f.rituals.map((ritual) => (
+                          <li key={ritual} className="list-disc pl-4">
+                            {ritual}
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  ) : null}
+                </article>
+              );
+            })}
+            {selectedDateEvents?.ekadashis.map((e) => {
+              const Icon = EVENT_ICON.ekadashi;
+              return (
+                <article
+                  key={e.name}
+                  data-tone={EVENT_TONE.ekadashi}
+                  className="obs-tile min-w-0 space-y-2 p-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[var(--success)]">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <h3 className="text-base font-semibold">{e.name}</h3>
+                  </div>
+                  <span className="obs-chip" data-tone="jade">
+                    Ekadashi · lunar 11th day
+                  </span>
+                  <p className="text-sm text-muted-foreground">
+                    {e.lunar_month} month · {e.paksha} Paksha
+                  </p>
+                </article>
+              );
+            })}
+            {selectedDateEvents?.purnimas.map((p) => {
+              const Icon = EVENT_ICON.purnima;
+              return (
+                <article
+                  key={p.name}
+                  data-tone={EVENT_TONE.purnima}
+                  className="obs-tile min-w-0 space-y-2 p-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-[var(--solar-gold)]">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <h3 className="text-base font-semibold">{p.name}</h3>
+                  </div>
+                  <span className="obs-chip" data-tone="gold">
+                    Full moon · {p.lunar_month} month
+                  </span>
+                  {p.significance && (
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {p.significance}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+            {selectedDateEvents?.special_amavasyas.map((a) => {
+              const Icon = EVENT_ICON.amavasya;
+              return (
+                <article
+                  key={a.name}
+                  data-tone={EVENT_TONE.amavasya}
+                  className="obs-tile min-w-0 space-y-2 p-4"
+                >
+                  <div className="flex items-center gap-2">
+                    <span className="text-nebula">
+                      <Icon className="h-4 w-4" aria-hidden="true" />
+                    </span>
+                    <h3 className="text-base font-semibold">{a.name}</h3>
+                  </div>
+                  <span className="obs-chip" data-tone="nebula">
+                    New moon · {a.lunar_month} month
+                  </span>
+                  {a.significance && (
+                    <p className="text-sm leading-relaxed text-muted-foreground">
+                      {a.significance}
+                    </p>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
     </div>
   );
 }

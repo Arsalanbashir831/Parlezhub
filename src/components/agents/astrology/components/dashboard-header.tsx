@@ -1,57 +1,38 @@
 'use client';
 
-import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 import { ROUTES } from '@/constants/routes';
-import { useAuth } from '@/contexts/auth-context';
-import { LogOut } from 'lucide-react';
+import { Menu } from 'lucide-react';
 
-import { cn } from '@/lib/utils';
-import { Button } from '@/components/ui/button';
 import { Logo } from '@/components/ui/logo';
-import { UserMiniCard } from '@/components/layout/user-mini-card';
-
-interface DashboardHeaderProps {
-  className?: string;
-  children?: React.ReactNode;
-}
 
 export function DashboardHeader({
-  className,
   children,
-}: DashboardHeaderProps) {
-  const router = useRouter();
-  const { logout } = useAuth();
-
+  onToggleNavigation,
+}: {
+  children?: React.ReactNode;
+  onToggleNavigation: () => void;
+}) {
   return (
-    <header
-      className={cn(
-        'z-50 flex h-20 w-full items-center justify-between border-b border-primary-300/60 bg-background/95 px-4 md:px-8',
-        className
-      )}
-    >
-      <div className="flex items-center gap-2 md:gap-4">
-        <Logo href={ROUTES.HOME} />
+    <header className="relative z-30 flex min-h-20 shrink-0 items-center gap-3 border-b border-border bg-[var(--cosmos-900)] px-4 md:gap-6 md:px-6">
+      <button
+        type="button"
+        onClick={onToggleNavigation}
+        aria-label="Open navigation"
+        aria-controls="observatory-navigation"
+        className="obs-control h-11 w-11 shrink-0 p-0 lg:hidden"
+      >
+        <Menu className="h-5 w-5" />
+      </button>
+      <Link
+        href={ROUTES.AGENT.ASTROLOGY.ROOT}
+        className="shrink-0"
+        aria-label="Shakti Wheel dashboard"
+      >
+        <Logo size="sm" />
+      </Link>
+      <div className="ml-auto flex min-w-0 flex-1 items-center justify-end">
         {children}
-      </div>
-
-      <div className="flex items-center gap-2 md:gap-6">
-        <div className="flex items-center gap-2 md:gap-4">
-          <div className="hidden sm:block">
-            <UserMiniCard roleLabel="Astrologer" />
-          </div>
-          <Button
-            variant="ghost"
-            size="icon"
-            className="text-red-500 hover:bg-red-600 hover:text-red-200"
-            onClick={() => {
-              logout();
-              router.push(ROUTES.AUTH.LOGIN);
-            }}
-            title="Sign Out"
-          >
-            <LogOut className="h-5 w-5" />
-          </Button>
-        </div>
       </div>
     </header>
   );

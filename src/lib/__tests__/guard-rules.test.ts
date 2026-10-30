@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   dashboardFor,
   evaluateRoleGuard,
+  HOME_PATH,
   landingPathFor,
   rolesNeedRecheck,
   type GuardInput,
@@ -190,25 +191,35 @@ describe('landingPathFor', () => {
     ).toBe('/onboarding/choose-role');
   });
 
-  it('lands a teacher on the consultant dashboard', () => {
+  it('lands a teacher on the astrology workspace', () => {
     expect(
       landingPathFor({ isAuthenticated: true, userRoles: ['TEACHER'], activeRole: 'TEACHER' })
-    ).toBe('/consultant/dashboard');
+    ).toBe('/astrology');
   });
 
-  it('prefers the active role over the first held one', () => {
+  it('lands a student on the same home as a teacher', () => {
+    expect(
+      landingPathFor({
+        isAuthenticated: true,
+        userRoles: ['STUDENT'],
+        activeRole: 'STUDENT',
+      })
+    ).toBe(HOME_PATH);
+  });
+
+  it('does not branch on the active role', () => {
     expect(
       landingPathFor({
         isAuthenticated: true,
         userRoles: ['TEACHER', 'STUDENT', 'BOTH'],
         activeRole: 'STUDENT',
       })
-    ).toBe('/student/dashboard');
+    ).toBe(HOME_PATH);
   });
 
-  it('falls back to the first held role when none is active', () => {
+  it('keeps the astrology workspace as home when no role is active', () => {
     expect(
       landingPathFor({ isAuthenticated: true, userRoles: ['TEACHER'], activeRole: null })
-    ).toBe('/consultant/dashboard');
+    ).toBe(HOME_PATH);
   });
 });

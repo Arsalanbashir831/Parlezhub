@@ -64,19 +64,21 @@ export function GoogleOneTap() {
   const searchParams = useSearchParams();
   const [isWorking, setIsWorking] = useState(false);
 
-  const initializeOneTap = async () => {
+  const initializeOneTap = async (isCancelled: () => boolean) => {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (typeof window === 'undefined' || !window.google || !clientId) return;
 
     // Don't show One-Tap if user is already signed in
     try {
       const { isAuthenticated } = await authApi.session();
-      if (isAuthenticated) return;
+      if (isAuthenticated || isCancelled()) return;
     } catch {
       // Treat an unreadable session as signed out; the exchange will fail loudly.
+      if (isCancelled()) return;
     }
 
     const [nonce, hashedNonce] = await generateNonce();
+    if (isCancelled()) return;
 
     const onboardingUrl = (redirectTo: string | null) =>
       redirectTo
@@ -142,11 +144,14 @@ export function GoogleOneTap() {
     const clientId = process.env.NEXT_PUBLIC_GOOGLE_CLIENT_ID;
     if (!clientId) return;
 
-    const start = () => void initializeOneTap();
+    let cancelled = false;
+    const start = () => void initializeOneTap(() => cancelled);
 
     if (window.google?.accounts?.id) {
       start();
-      return;
+      return () => {
+        cancelled = true;
+      };
     }
 
     const id = 'gsi-client-script';
@@ -160,7 +165,10 @@ export function GoogleOneTap() {
     }
 
     script.addEventListener('load', start);
-    return () => script?.removeEventListener('load', start);
+    return () => {
+      cancelled = true;
+      script?.removeEventListener('load', start);
+    };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 

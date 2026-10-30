@@ -140,8 +140,9 @@ export function useSaveBirthProfile(isUpdate: boolean = false) {
       );
       return response.data as BirthProfile;
     },
-    onSuccess: () => {
+    onSuccess: (profile) => {
       toast.success('Birth profile saved successfully');
+      queryClient.setQueryData(ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, profile);
       queryClient.invalidateQueries({
         queryKey: ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE,
       });
@@ -161,31 +162,81 @@ export function useSaveBirthProfile(isUpdate: boolean = false) {
   });
 }
 
+/**
+ * Django answers a cache miss with 202 while Gemini is still writing the
+ * reading. Throwing lets the query poll instead of handing back a payload
+ * without text, which every consumer would render as a blank or a crash.
+ */
+export class InsightGeneratingError extends Error {
+  constructor() {
+    super('This interpretation is still being written.');
+    this.name = 'InsightGeneratingError';
+  }
+}
+
+/**
+ * Django words these failures for readers; anything longer is an unhandled
+ * upstream body and stays out of the interface.
+ */
+export function apiReaderMessage(error: unknown, fallback: string): string {
+  const detail = (error as AxiosError<{ detail?: string }> | undefined)?.response?.data?.detail;
+  if (typeof detail === 'string' && detail.trim().length > 0 && detail.length < 240) {
+    return detail;
+  }
+  return fallback;
+}
+
+export function insightFailureMessage(error: unknown): string {
+  const status = (error as AxiosError | undefined)?.response?.status;
+  let fallback: string;
+  if (status === 400) fallback = 'Fetch your natal chart first, then reopen this analysis.';
+  else if (status === 404) fallback = 'No birth chart is linked to this view yet.';
+  else if (status === 502) fallback = 'The ephemeris service did not respond. Please try again in a moment.';
+  else if (status === 500 || status === 503)
+    fallback = 'The interpretation service is temporarily unavailable. Your chart is untouched — please try again shortly.';
+  else fallback = 'We could not load this interpretation. Your chart details have not been changed.';
+  return apiReaderMessage(error, fallback);
+}
+
 export function useAstrologicalInsight(
   slug: string,
   enabled: boolean = true,
   studentId?: string,
   guestProfileId?: string
 ) {
-  return useQuery({
+  const query = useQuery({
     queryKey: guestProfileId
       ? ['astrology', 'insights', slug, 'guest', guestProfileId]
       : studentId
         ? ['astrology', 'insights', slug, 'student', studentId]
         : ['astrology', 'insights', slug],
-    queryFn: async () => {
+    queryFn: async (): Promise<AstrologicalInsight> => {
       const baseUrl = `${API_ROUTES.ASTROLOGY.INSIGHTS}/${slug}/`;
       const url = buildAstroUrl(baseUrl, studentId, guestProfileId);
       const response = await apiCaller(url, 'GET');
-      return response.data as AstrologicalInsight;
+      const payload = response.data as Partial<AstrologicalInsight> & { status?: string };
+      if (payload?.status === 'generating' || typeof payload?.insight_text !== 'string') {
+        throw new InsightGeneratingError();
+      }
+      return { category: payload.category ?? slug, insight_text: payload.insight_text };
     },
     enabled,
     staleTime: 1000 * 60 * 60,
+    retry: 1,
+    refetchInterval: (query) =>
+      query.state.error instanceof InsightGeneratingError ? 5000 : false,
   });
+
+  return {
+    ...query,
+    isGenerating: query.error instanceof InsightGeneratingError,
+    failureMessage: insightFailureMessage(query.error),
+  };
 }
 
-export function useGuestProfiles(params: { search?: string; page?: number; page_size?: number } = {}) {
+export function useGuestProfiles(params: { search?: string; page?: number; page_size?: number } = {}, enabled = true) {
   return useQuery({
+    enabled,
     queryKey: [...ASTROLOGY_QUERY_KEYS.GUEST_PROFILES, params],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
@@ -194,7 +245,7 @@ export function useGuestProfiles(params: { search?: string; page?: number; page_
       if (params.page_size) queryParams.append('page_size', params.page_size.toString());
 
       const queryString = queryParams.toString();
-      const url = queryString 
+      const url = queryString
         ? `${API_ROUTES.ASTROLOGY.GUEST_PROFILES}?${queryString}`
         : API_ROUTES.ASTROLOGY.GUEST_PROFILES;
 
@@ -219,8 +270,9 @@ export function useCreateGuestProfile() {
       );
       return response.data as BirthProfile;
     },
-    onSuccess: () => {
+    onSuccess: (profile) => {
       toast.success('Guest profile created successfully');
+      queryClient.setQueryData([...ASTROLOGY_QUERY_KEYS.BIRTH_PROFILE, 'guest', String(profile.id)], profile);
       queryClient.invalidateQueries({ queryKey: ASTROLOGY_QUERY_KEYS.GUEST_PROFILES });
     },
     onError: (error: unknown) => {
@@ -336,8 +388,12 @@ export function useRevokeAstrologyAccess() {
   });
 }
 
-export function useConsultantSharedStudents(params: { search?: string; page?: number; page_size?: number } = {}) {
+export function useConsultantSharedStudents(
+  params: { search?: string; page?: number; page_size?: number } = {},
+  enabled: boolean = true
+) {
   return useQuery({
+    enabled,
     queryKey: [...ASTROLOGY_QUERY_KEYS.SHARED_STUDENTS, params],
     queryFn: async () => {
       const queryParams = new URLSearchParams();
@@ -346,7 +402,7 @@ export function useConsultantSharedStudents(params: { search?: string; page?: nu
       if (params.page_size) queryParams.append('page_size', params.page_size.toString());
 
       const queryString = queryParams.toString();
-      const url = queryString 
+      const url = queryString
         ? `${API_ROUTES.ASTROLOGY.TEACHER_STUDENTS}?${queryString}`
         : API_ROUTES.ASTROLOGY.TEACHER_STUDENTS;
 

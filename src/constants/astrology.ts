@@ -277,3 +277,33 @@ export const DEFAULT_PLANET_INSIGHT = {
   challenges: ["Adapting to transition phases", "Patience with timing parameters"]
 };
 
+export const ANALYSIS_CATEGORIES = [
+  { id: 'planets', title: 'Planetary fundamentals', description: 'Get to know the planets and their roles in your chart.', icon: 'orbit' },
+  { id: 'birth-chart', title: 'Birth chart interpretation', description: 'Explore chart patterns, houses, and your nine stars.', icon: 'compass' },
+  { id: 'career', title: 'Career and prosperity', description: 'Study traditional indicators for work and resources.', icon: 'briefcase' },
+  { id: 'relationships', title: 'Relationships and life events', description: 'Explore partnerships, connections, and travel.', icon: 'heart' },
+  { id: 'wellbeing', title: 'Wellbeing and reflection', description: 'Traditional perspectives, not clinical conclusions.', icon: 'leaf' },
+  { id: 'advanced', title: 'Advanced techniques', description: 'Go deeper into energy and birth-time methods.', icon: 'telescope' },
+  { id: 'growth', title: 'Personal growth', description: 'Reflect on challenges and opportunities to learn.', icon: 'sparkles' },
+] as const;
+
+export const ANALYSIS_TOPICS = [
+  { id: 'benefic_planets', category: 'planets', title: 'Supportive planets', terms: 'Benefic Planets', description: 'Explore the traditionally supportive influences in your chart.' },
+  { id: 'malefic_planets', category: 'planets', title: 'Challenging planets', terms: 'Malefic Planets', description: 'Understand traditionally challenging planetary influences.' },
+  { id: 'planetary_states', category: 'planets', title: 'Planetary states', terms: 'Planetary Avatars Avasthas and States', description: 'Learn how planetary conditions are interpreted.' },
+  { id: 'rashi_planets', category: 'planets', title: 'Rashi rulers', terms: 'Meaning of Rashi Rulers', description: 'Understand the planets that rule each zodiac sign.' },
+  { id: 'lagna_lord', category: 'planets', title: 'Your ascendant ruler', terms: 'Your Lagna Lord Position', description: 'Explore the placement of the planet ruling your ascendant.' },
+  { id: 'chart_analysis', category: 'birth-chart', title: 'Birth chart analysis', terms: 'Chart Analysis', description: 'Read the existing interpretation of your natal chart.' },
+  { id: 'navatara', category: 'birth-chart', title: 'Your nine stars', terms: 'Navatara Nine Stars Tara Bala', description: 'Explore the nine-star relationship to your birth Nakshatra.' },
+  { id: 'charts', category: 'birth-chart', title: 'Divisional charts', terms: 'D1 D2 D3 D4 D7 D9 D10 D12 D16 D20 D24 D27 D30 D40 D45 D60 Graha Bhava houses strengths', description: 'Switch charts and explore planetary and house details.' },
+  { id: 'prosperity_sav', category: 'career', title: 'Career and prosperity', terms: 'Prosperity Career SAV Sarvashtakavarga', description: 'Explore traditional career and prosperity indicators.' },
+  { id: 'marriage', category: 'relationships', title: 'Marriage timing', terms: 'Marriage Timing', description: 'Study traditional timing indicators for partnerships.' },
+  { id: 'parasari', category: 'relationships', title: 'Planetary relationships', terms: 'Parasari Relationships', description: 'Explore relationships between planets in the Parasari tradition.' },
+  { id: 'darakaraka', category: 'relationships', title: 'Partnership profile', terms: 'Spouse Profile Jaimini Darakaraka', description: 'Explore partnership indicators through the Jaimini tradition.' },
+  { id: 'foreign_travel', category: 'relationships', title: 'Travel and relocation', terms: 'Foreign Travel', description: 'Study the chart’s traditional travel indicators.' },
+  { id: 'mental_health', category: 'wellbeing', title: 'Emotional wellbeing', terms: 'Mental Health', description: 'Traditional reflective interpretation, not mental-health advice.' },
+  { id: 'medical', category: 'wellbeing', title: 'Medical astrology', terms: 'Medical Astrology', description: 'Traditional symbolism, not diagnosis or medical advice.' },
+  { id: 'astro_energy', category: 'advanced', title: '12-dimensional energy', terms: '12-Dimensional Astro Energy', description: 'Explore the existing multidimensional energy analysis.' },
+  { id: 'btr', category: 'advanced', title: 'Birth-time rectification', terms: 'Birth Time Rectification BTR', description: 'Explore the advanced birth-time assessment tool.' },
+  { id: 'challenges', category: 'growth', title: 'Challenges and learning', terms: 'Challenges Learning', description: 'Reflect on the chart’s traditional learning themes.' },
+] as const;

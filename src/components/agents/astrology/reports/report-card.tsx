@@ -1,21 +1,25 @@
 'use client';
 
-import { BookOpen, ChevronRight, Download, Lock, Loader2, RefreshCw, Sparkles, Eye, FileText } from 'lucide-react';
+import {
+  BookOpen,
+  ChevronRight,
+  Download,
+  Eye,
+  FileText,
+  Loader2,
+  Lock,
+  RefreshCw,
+} from 'lucide-react';
 
 import { AstrologyReportRecord } from '@/types/astrology';
-import { cn } from '@/lib/utils';
+
+import { ReportFailedBanner, ReportGeneratingBanner } from './report-states';
 import { ReportStatusBadge } from './report-status-badge';
-import {
-  ReportGeneratingBanner,
-  ReportFailedBanner,
-} from './report-states';
 
 export interface ReportCardProps {
-  /** The existing report record from the API, or undefined if no report has been created yet */
   report: AstrologyReportRecord | undefined;
-  /** Whether the "purchase" CTA is currently initiating a PaymentIntent */
+  profileLabel?: string;
   isInitiatingPayment: boolean;
-  /** Whether a download is in progress for this report's type */
   isDownloading: boolean;
   onPurchase: () => void;
   onDownload: () => void;
@@ -23,8 +27,17 @@ export interface ReportCardProps {
   onViewPreview?: () => void;
 }
 
+function displayDate(date: string) {
+  return new Date(date).toLocaleDateString('en-US', {
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric',
+  });
+}
+
 export function ReportCard({
   report,
+  profileLabel,
   isInitiatingPayment,
   isDownloading,
   onPurchase,
@@ -32,142 +45,163 @@ export function ReportCard({
   onRefreshStatus,
   onViewPreview,
 }: ReportCardProps) {
-  const isPaidAndReady = report?.status === 'ready' && report.is_paid;
-
   return (
-    <div
-      className={cn(
-        'group relative overflow-hidden rounded-2xl border p-6 transition-all duration-300',
-        isPaidAndReady
-          ? 'border-green-500/30 bg-gradient-to-br from-green-950/10 to-background/50'
-          : 'border-primary-500/15 bg-gradient-to-br from-primary-950/10 to-background/50',
-      )}
-    >
-      {/* Subtle hover glow */}
-      <div className="pointer-events-none absolute inset-0 rounded-2xl bg-primary-500/0 transition-all duration-500 group-hover:bg-primary-500/[0.02]" />
-
-      <div className="relative flex flex-col gap-6">
-        {/* ── Title row ── */}
-        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-center gap-4">
-            <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-primary-500/15 to-violet-500/10 border border-primary-500/20">
-              <BookOpen className="h-6 w-6 text-primary-400" />
-            </div>
-            <div>
-              <h2 className="text-lg font-semibold leading-tight text-white">
-                {report?.report_type_display ?? 'Full Vedic Astrology Report'}
-              </h2>
-              <p className="mt-1 text-xs text-muted-foreground">
-                {report?.generated_at
-                  ? `Generated ${new Date(report.generated_at).toLocaleDateString('en-US', {
-                    month: 'short',
-                    day: 'numeric',
-                    year: 'numeric',
-                  })}`
-                  : 'Complete 20+ page personalized cosmic analysis'}
-              </p>
-            </div>
-          </div>
-
-          <div className="self-start sm:self-auto">
-            <ReportStatusBadge
-              status={report?.status ?? 'pending'}
-              isPaid={report?.is_paid ?? false}
-            />
-          </div>
-        </div>
-
-        {/* ── Preview excerpt ── */}
-        {report?.preview_content && (
-          <div className="relative overflow-hidden rounded-xl border border-white/5 bg-white/[0.01] p-5">
-            {/* Decorative top-right corner fold */}
-            <div className="absolute top-0 right-0 h-16 w-16 bg-gradient-to-bl from-primary-500/5 to-transparent rounded-tr-xl pointer-events-none" />
-            
-            <div className="flex items-center gap-2 mb-3">
-              <FileText className="h-4 w-4 text-primary-400/70" />
-              <span className="text-[10px] font-bold uppercase tracking-wider text-primary-400/70">
-                Sample Excerpt
-              </span>
-            </div>
-            
-            <p className="line-clamp-4 text-sm leading-relaxed text-muted-foreground/80 pl-3 border-l border-primary-500/30">
-              {report.preview_content}
+    <article className="obs-card min-w-0 space-y-5 p-5 text-foreground sm:p-6">
+      <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+        <div className="flex min-w-0 items-start gap-3">
+          <span className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-muted">
+            <BookOpen className="h-5 w-5 text-primary-400" />
+          </span>
+          <div className="min-w-0 space-y-1">
+            <h2 className="break-words text-lg font-semibold">
+              {report?.report_type_display || 'Full Vedic Astrology Report'}
+            </h2>
+            <p className="text-sm text-muted-foreground">
+              {profileLabel || 'Selected birth profile'} · PDF analysis
             </p>
           </div>
-        )}
-
-        {/* ── CTA area — driven by report state ── */}
-        <div className="flex flex-col gap-3">
-          {!report || !report.is_paid ? (
-            // Not purchased yet
-            <div className="flex flex-col gap-3 sm:flex-row">
-              {report?.preview_url && onViewPreview && (
-                <button
-                  type="button"
-                  onClick={onViewPreview}
-                  className="flex flex-1 items-center justify-center gap-2 rounded-xl border border-primary-500/20 bg-primary-500/5 px-6 py-3.5 text-sm font-semibold text-primary-400 transition-all hover:bg-primary-500/10 hover:border-primary-500/40 active:scale-98"
-                >
-                  <Eye className="h-4 w-4" />
-                  View PDF Sample
-                </button>
-              )}
-              <button
-                type="button"
-                onClick={onPurchase}
-                disabled={isInitiatingPayment}
-                className={cn(
-                  "flex items-center justify-center gap-2 rounded-xl bg-primary-500 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all active:scale-98 disabled:cursor-not-allowed disabled:opacity-60",
-                  report?.preview_url ? "flex-1" : "w-full"
-                )}
-              >
-                {isInitiatingPayment ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Preparing Secure Checkout…
-                  </>
-                ) : (
-                  <>
-                    <Sparkles className="h-4 w-4 text-primary-200" />
-                    Get Full Report — $9.99
-                    <ChevronRight className="h-4 w-4 ml-0.5" />
-                  </>
-                )}
-              </button>
-            </div>
-          ) : report.status === 'generating' ? (
-            <ReportGeneratingBanner />
-          ) : report.status === 'ready' ? (
-            // Paid + ready → download
-            <button
-              onClick={onDownload}
-              disabled={isDownloading}
-              className="flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-3.5 text-sm font-semibold text-white shadow-lg shadow-green-500/20 transition-all hover:shadow-green-500/30 active:scale-98 disabled:cursor-not-allowed disabled:opacity-60"
-            >
-              {isDownloading ? (
-                <>
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                  Downloading Report…
-                </>
-              ) : (
-                <>
-                  <Download className="h-4 w-4" />
-                  Download PDF Report
-                </>
-              )}
-            </button>
-          ) : report.status === 'failed' ? (
-            <ReportFailedBanner onRefresh={onRefreshStatus} />
-          ) : null}
-
-          {/* Secure purchase lock text */}
-          {!report?.is_paid && (
-            <div className="flex items-center justify-center gap-2 text-[11px] text-muted-foreground/60 mt-1">
-              <Lock className="h-3.5 w-3.5 text-muted-foreground/40" />
-              <span>One-time payment · Instant lifetime access · Secure checkout via Stripe</span>
-            </div>
+        </div>
+        <div className="self-start">
+          {report ? (
+            <ReportStatusBadge status={report.status} isPaid={report.is_paid} />
+          ) : (
+            <span className="text-xs text-muted-foreground">
+              Not generated yet
+            </span>
           )}
         </div>
       </div>
-    </div>
+
+      {report ? (
+        <dl className="grid gap-3 border-y border-border py-4 text-sm sm:grid-cols-2">
+          <div>
+            <dt className="obs-label">Generated</dt>
+            <dd className="mt-1 text-muted-foreground">
+              {report.generated_at ? (
+                <time dateTime={report.generated_at}>
+                  {displayDate(report.generated_at)}
+                </time>
+              ) : (
+                'No generation date available'
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="obs-label">Payment</dt>
+            <dd className="mt-1 text-muted-foreground">
+              {report.is_paid ? 'Paid' : 'Not purchased'}
+              {report.paid_at && (
+                <>
+                  {' '}
+                  ·{' '}
+                  <time dateTime={report.paid_at}>
+                    {displayDate(report.paid_at)}
+                  </time>
+                </>
+              )}
+            </dd>
+          </div>
+          <div>
+            <dt className="obs-label">Generation status</dt>
+            <dd className="mt-1 capitalize text-muted-foreground">
+              {report.status}
+            </dd>
+          </div>
+        </dl>
+      ) : (
+        <p className="text-sm leading-relaxed text-muted-foreground">
+          No report record is available for this profile yet. Checkout will show
+          the price before you confirm payment.
+        </p>
+      )}
+
+      {report?.preview_content && (
+        <section className="space-y-2 rounded-xl border border-border bg-muted/30 p-4">
+          <h3 className="flex items-center gap-2 text-sm font-medium">
+            <FileText className="h-4 w-4" /> Sample excerpt
+          </h3>
+          <p className="line-clamp-4 text-sm leading-relaxed text-muted-foreground">
+            {report.preview_content}
+          </p>
+        </section>
+      )}
+
+      <div className="flex flex-col gap-3">
+        {report?.preview_url && onViewPreview && (
+          <button
+            type="button"
+            onClick={onViewPreview}
+            className="obs-control flex w-full items-center justify-center gap-2 px-4 text-sm"
+          >
+            <Eye className="h-4 w-4" /> View PDF sample
+          </button>
+        )}
+        {!report?.is_paid ? (
+          <button
+            type="button"
+            onClick={onPurchase}
+            disabled={isInitiatingPayment}
+            className="obs-button flex w-full items-center justify-center gap-2 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+          >
+            {isInitiatingPayment ? (
+              <>
+                <Loader2 className="h-4 w-4 animate-spin" /> Preparing checkout…
+              </>
+            ) : (
+              <>
+                Get full report <ChevronRight className="h-4 w-4" />
+              </>
+            )}
+          </button>
+        ) : report.status === 'generating' ? (
+          <ReportGeneratingBanner />
+        ) : report.status === 'ready' ? (
+          <>
+            <button
+              type="button"
+              onClick={onDownload}
+              disabled={isDownloading || !report.download_url}
+              className="obs-button flex w-full items-center justify-center gap-2 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              {isDownloading ? (
+                <>
+                  <Loader2 className="h-4 w-4 animate-spin" /> Downloading…
+                </>
+              ) : (
+                <>
+                  <Download className="h-4 w-4" /> Download PDF report
+                </>
+              )}
+            </button>
+            {!report.download_url && (
+              <p className="text-sm text-muted-foreground">
+                The report is marked ready, but a download is not available yet.
+              </p>
+            )}
+          </>
+        ) : report.status === 'failed' ? (
+          <ReportFailedBanner onRefresh={onRefreshStatus} />
+        ) : (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">
+              Payment recorded. Report generation is pending.
+            </p>
+            <button
+              type="button"
+              onClick={onRefreshStatus}
+              className="obs-control flex items-center gap-2 px-4 text-sm"
+            >
+              <RefreshCw className="h-4 w-4" /> Refresh status
+            </button>
+          </div>
+        )}
+        {!report?.is_paid && (
+          <p className="flex items-start justify-center gap-2 text-xs leading-relaxed text-muted-foreground">
+            <Lock className="mt-0.5 h-3.5 w-3.5 shrink-0" /> One-time purchase ·
+            Secure Stripe checkout · Price confirmed before payment
+          </p>
+        )}
+      </div>
+    </article>
   );
 }

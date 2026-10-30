@@ -11,10 +11,10 @@ const CARD_ELEMENT_OPTIONS = {
   style: {
     base: {
       fontSize: '15px',
-      color: '#e2d4f0',
+      color: '#ededed',
       fontFamily: 'Inter, system-ui, sans-serif',
-      '::placeholder': { color: '#6b5d8a' },
-      iconColor: '#a78bfa',
+      '::placeholder': { color: '#a1a1a1' },
+      iconColor: '#ffa35a',
     },
     invalid: { color: '#f87171', iconColor: '#f87171' },
   },
@@ -57,9 +57,12 @@ export function ReportPaymentForm({
     const cardElement = elements.getElement(CardElement);
     if (!cardElement) return;
 
-    const { error, paymentIntent } = await stripe.confirmCardPayment(clientSecret, {
-      payment_method: { card: cardElement },
-    });
+    const { error, paymentIntent } = await stripe.confirmCardPayment(
+      clientSecret,
+      {
+        payment_method: { card: cardElement },
+      }
+    );
 
     if (error) {
       setCardError(error.message ?? 'Payment failed. Please try again.');
@@ -72,7 +75,9 @@ export function ReportPaymentForm({
         await confirmPayment(paymentIntent.id);
         onSuccess();
       } catch {
-        setCardError('Payment was captured but confirmation failed. Please contact support.');
+        setCardError(
+          'Payment was captured but confirmation failed. Please contact support.'
+        );
       }
     }
 
@@ -83,7 +88,9 @@ export function ReportPaymentForm({
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
       {/* Amount display */}
       <div className="flex items-center justify-between rounded-xl border border-primary-500/20 bg-primary-500/5 px-4 py-3">
-        <span className="text-sm font-medium text-muted-foreground">Total due today</span>
+        <span className="text-sm font-medium text-muted-foreground">
+          Total due today
+        </span>
         <span className="text-xl font-bold text-primary-400">
           ${(amountCents / 100).toFixed(2)}
         </span>
@@ -105,7 +112,8 @@ export function ReportPaymentForm({
       {/* Security note */}
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Shield className="h-3.5 w-3.5 text-green-500" />
-        256-bit SSL secured · Powered by Stripe · We never store your card details
+        256-bit SSL secured · Powered by Stripe · We never store your card
+        details
       </div>
 
       {/* Actions */}
@@ -114,14 +122,14 @@ export function ReportPaymentForm({
           type="button"
           onClick={onCancel}
           disabled={isLoading}
-          className="flex-1 rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-sm font-medium text-muted-foreground transition-all hover:bg-white/10 disabled:opacity-50"
+          className="obs-control flex-1 px-4 text-sm disabled:opacity-50"
         >
           Cancel
         </button>
         <button
           type="submit"
           disabled={isLoading || !stripe}
-          className="flex flex-1 items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-primary-500 to-violet-500 px-4 py-3 text-sm font-semibold text-white shadow-lg shadow-primary-500/25 transition-all hover:from-primary-400 hover:to-violet-400 hover:shadow-primary-500/40 disabled:cursor-not-allowed disabled:opacity-50"
+          className="obs-button flex flex-1 items-center justify-center gap-2 px-4 text-sm disabled:cursor-not-allowed disabled:opacity-50"
         >
           {isLoading ? (
             <>

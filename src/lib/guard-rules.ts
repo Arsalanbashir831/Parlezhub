@@ -25,6 +25,13 @@ export interface GuardDecision {
   render: boolean;
 }
 
+/**
+ * Where a signed-in user belongs. Every role starts in the astrology workspace;
+ * the role dashboards stay reachable but are no longer anybody's landing page.
+ * Shared with proxy.ts so the server and client can never disagree.
+ */
+export const HOME_PATH = ROUTES.AGENT.ASTROLOGY.ROOT;
+
 /** The dashboard matching a role, used whenever a guard has to pick a home. */
 export function dashboardFor(role: UserRole | null | undefined): string {
   return role === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
@@ -44,9 +51,9 @@ export function rolesNeedRecheck(snapshot: SessionSnapshot): boolean {
 }
 
 /**
- * Where a freshly authenticated session belongs: the page it came for, else its
- * own dashboard, else onboarding — decided from resolved roles only, so nobody
- * is routed through the picker on their way to a dashboard they already have.
+ * Where a freshly authenticated session belongs: the page it came for, else
+ * onboarding when it has no role, else home. Decided from resolved roles only,
+ * so nobody is routed through the picker on the way to the workspace they own.
  */
 export function landingPathFor(
   snapshot: SessionSnapshot,
@@ -54,7 +61,7 @@ export function landingPathFor(
 ): string {
   if (redirectTo) return redirectTo;
   if (snapshot.userRoles.length === 0) return ROUTES.ONBOARDING.CHOOSE_ROLE;
-  return dashboardFor(snapshot.activeRole ?? snapshot.userRoles[0]);
+  return HOME_PATH;
 }
 
 /**

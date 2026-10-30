@@ -2,6 +2,7 @@ import { createServerClient } from '@supabase/ssr';
 import { type NextRequest, NextResponse } from 'next/server';
 
 import { readRoleCookies } from '@/lib/auth-cookies';
+import { HOME_PATH } from '@/lib/guard-rules';
 import { ROUTES } from './constants/routes';
 
 /**
@@ -52,7 +53,7 @@ const PUBLIC_ROUTES = [
  * Responsibilities:
  * 1. Refresh the Supabase session (keeps HTTP-only cookies fresh).
  * 2. Protect routes: redirect unauthenticated users to sign-in.
- * 3. Redirect authenticated users away from auth pages to their dashboard.
+ * 3. Redirect authenticated users away from auth pages to their home workspace.
  * 4. Enforce role-based route access.
  *
  * Token refresh is handled HERE automatically by @supabase/ssr —
@@ -134,8 +135,6 @@ export async function proxy(request: NextRequest) {
     activeRole,
   } = readRoleCookies(request.cookies);
 
-  const roleToUse = activeRole ?? userRoles[0] ?? 'STUDENT';
-
   const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
 
   // ── Unauthenticated Users ───────────────────────────────────────────────
@@ -150,8 +149,7 @@ export async function proxy(request: NextRequest) {
 
   // 1. Prevent access to auth pages (login/signup) if already logged in
   if (isPublicRoute && (pathname.startsWith(ROUTES.AUTH.LOGIN) || pathname.startsWith(ROUTES.AUTH.SIGNUP))) {
-    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
-    return NextResponse.redirect(new URL(dashboard, request.url));
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // 2. If the server resolved NO roles, send the user to onboarding
@@ -159,16 +157,14 @@ export async function proxy(request: NextRequest) {
     return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
   }
 
-  // 3. If user ALREADY has roles but is trying to access onboarding, send them to dashboard
+  // 3. If user ALREADY has roles but is trying to access onboarding, send them home
   if (userRoles.length > 0 && pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)) {
-    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
-    return NextResponse.redirect(new URL(dashboard, request.url));
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // 3. Root redirect
   if (pathname === ROUTES.HOME) {
-    const dashboard = roleToUse === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
-    return NextResponse.redirect(new URL(dashboard, request.url));
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // 4. Role-based route protection (Strict Enforcement). While roles are unknown

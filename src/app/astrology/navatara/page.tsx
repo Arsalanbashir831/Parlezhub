@@ -3,6 +3,7 @@
 import { useRouter, useSearchParams } from 'next/navigation';
 import { NavataraEducationView } from '@/components/agents/astrology/components/navatara-education-view';
 import { ROUTES } from '@/constants/routes';
+import { astrologyHref } from '@/lib/astrology-navigation';
 
 export default function NavataraPage() {
   const router = useRouter();
@@ -11,11 +12,11 @@ export default function NavataraPage() {
   const guestId = searchParams.get('guest_id') || undefined;
 
   return (
-    <div className="flex w-full flex-col p-4 duration-500 animate-in fade-in md:p-8">
+    <div className="flex w-full min-w-0 flex-col">
       <NavataraEducationView
         studentId={studentId}
         guestProfileId={guestId}
-        onClose={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)}
+        onClose={() => router.push(astrologyHref(ROUTES.AGENT.ASTROLOGY.ANALYSIS, searchParams.toString()))}
       />
     </div>
   );

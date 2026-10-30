@@ -1,15 +1,8 @@
 'use client';
 
-import { BhavaDetail, GrahaDetail } from '@/types/astrology';
-import { cn } from '@/lib/utils';
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from '@/components/ui/table';
+import { PLANET_META } from '@/constants/astrology';
+
+import type { BhavaDetail, GrahaDetail } from '@/types/astrology';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 
 interface AstroDetailsTableProps {
@@ -17,238 +10,270 @@ interface AstroDetailsTableProps {
   bhavaDetails?: BhavaDetail[];
 }
 
-const AstroDetailsTable: React.FC<AstroDetailsTableProps> = ({
+const headingClass =
+  'px-4 py-3 text-left text-xs font-semibold uppercase tracking-wider text-[var(--solar-gold)]';
+const theadClass =
+  'border-b border-[color-mix(in_srgb,var(--solar-gold)_30%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_14%,var(--surface-1))]';
+const cellClass = 'px-4 py-4 text-sm text-foreground';
+const rowClass =
+  'border-t border-[color-mix(in_srgb,var(--solar-orange)_14%,transparent)] bg-[color-mix(in_srgb,var(--solar-orange)_4%,var(--surface-1))] transition-colors even:bg-[color-mix(in_srgb,var(--solar-orange)_9%,var(--surface-1))] hover:bg-[color-mix(in_srgb,var(--solar-orange)_16%,var(--surface-1))]';
+const mobileCardClass =
+  'p-4 even:bg-[color-mix(in_srgb,var(--solar-orange)_7%,transparent)] sm:p-5';
+
+function MobileField({
+  label,
+  children,
+}: {
+  label: string;
+  children: React.ReactNode;
+}) {
+  return (
+    <div className="min-w-0">
+      <dt className="text-xs font-medium text-muted-foreground">{label}</dt>
+      <dd className="mt-1 break-words text-sm font-medium text-foreground">
+        {children}
+      </dd>
+    </div>
+  );
+}
+
+function EmptyState({ label }: { label: string }) {
+  return (
+    <p className="px-5 py-10 text-center text-sm text-muted-foreground">
+      No {label} details are available for this chart.
+    </p>
+  );
+}
+
+export default function AstroDetailsTable({
   grahaDetails = [],
   bhavaDetails = [],
-}) => {
+}: AstroDetailsTableProps) {
   return (
-    <div className="w-full duration-700 animate-in fade-in slide-in-from-bottom-4">
-      <Tabs defaultValue="graha" className="w-full">
-        {/* Scrollable Tabs on Mobile */}
-        <div className="scrollbar-hide overflow-x-auto pb-1">
-          <TabsList className="h-auto w-full min-w-max justify-start gap-px border-none bg-transparent p-0">
-            <TabsTrigger
-              value="graha"
-              className="rounded-t-2xl border-none px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-primary-500 data-[state=inactive]:bg-primary-500/10 data-[state=active]:text-primary-950 data-[state=inactive]:text-primary-500 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-primary-500/20 md:px-6 md:text-xs"
-            >
-              Graha Details
-            </TabsTrigger>
-            <TabsTrigger
-              value="bhava"
-              className="rounded-t-2xl border-none px-4 py-2.5 text-[10px] font-bold uppercase tracking-widest data-[state=active]:bg-primary-500 data-[state=inactive]:bg-primary-500/10 data-[state=active]:text-primary-950 data-[state=inactive]:text-primary-500 data-[state=active]:shadow-lg data-[state=inactive]:hover:bg-primary-500/20 md:px-6 md:text-xs"
-            >
-              Bhava Details
-            </TabsTrigger>
-          </TabsList>
+    <Tabs defaultValue="graha" className="min-w-0">
+      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+        <div>
+          <p className="obs-label">Chart reference</p>
+          <h3 className="mt-1 text-base font-semibold">Placements & houses</h3>
         </div>
+        <TabsList
+          aria-label="Chart detail type"
+          className="h-auto gap-1 rounded-xl border border-border bg-secondary p-1"
+        >
+          <TabsTrigger
+            value="graha"
+            className="min-h-10 rounded-lg px-4 text-sm font-medium text-muted-foreground data-[state=active]:bg-[var(--solar-orange)] data-[state=active]:text-black data-[state=active]:shadow-none"
+          >
+            Planets
+          </TabsTrigger>
+          <TabsTrigger
+            value="bhava"
+            className="min-h-10 rounded-lg px-4 text-sm font-medium text-muted-foreground data-[state=active]:bg-[var(--solar-orange)] data-[state=active]:text-black data-[state=active]:shadow-none"
+          >
+            Houses
+          </TabsTrigger>
+        </TabsList>
+      </div>
 
-        <div className="overflow-hidden rounded-2xl border border-primary-500/20 bg-card shadow-2xl md:rounded-tl-none">
-          <TabsContent value="graha" className="m-0 border-none outline-none">
-            {/* Desktop Table */}
-            <div className="hidden overflow-x-auto md:block">
-              <Table className="border-collapse">
-                <TableHeader className="bg-primary-900/50 hover:bg-primary-900/50">
-                  <TableRow className="border-none hover:bg-transparent">
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Graha
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Longitude
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
+      <TabsContent
+        value="graha"
+        className="m-0 overflow-hidden rounded-2xl border border-border bg-[var(--surface-1)]"
+      >
+        {grahaDetails.length === 0 ? (
+          <EmptyState label="planetary" />
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full min-w-[880px] border-collapse text-left">
+                <caption className="sr-only">
+                  Planetary positions and the houses they rule
+                </caption>
+                <thead className={theadClass}>
+                  <tr>
+                    <th scope="col" className={headingClass}>
+                      Planet
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      Position
+                    </th>
+                    <th scope="col" className={headingClass}>
                       Nakshatra
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Nak Lord/Sub
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Ruler (Bhavas)
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-2 py-3 text-center text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Is In (Bhava)
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="text-[11px] font-medium text-foreground">
-                  {grahaDetails.map((row, idx) => (
-                    <TableRow
-                      key={idx}
-                      className={cn(
-                        'border-b border-primary-500/10 hover:bg-primary-500/10',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-primary-500/5'
-                      )}
-                    >
-                      <TableCell className="border-r border-primary-500/10 px-2 py-2.5 font-bold">
-                        {row.graha}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-primary-500/10 px-2 py-2.5 font-bold text-primary-400">
-                        {row.longitude_degree.toFixed(2)}° {row.longitude_rashi}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-primary-500/10 px-2 py-2.5">
-                        {row.nakshatra} (Pada {row.nakshatra_pada})
-                      </TableCell>
-                      <TableCell className="border-r border-primary-500/10 px-2 py-2.5 text-center text-primary-400">
-                        {row.nakshatra_lord} / {row.nakshatra_sublord}
-                      </TableCell>
-                      <TableCell className="border-r border-primary-500/10 px-2 py-2.5 text-center">
-                        {row.rules_bhavas.join(', ') || '-'}
-                      </TableCell>
-                      <TableCell className="border-r border-primary-500/10 px-2 py-2.5 text-center">
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      Lord / sublord
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      Rules houses
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      In house
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {grahaDetails.map((row, index) => (
+                    <tr key={`${row.graha}-${index}`} className={rowClass}>
+                      <th
+                        scope="row"
+                        className={`${cellClass} whitespace-nowrap font-semibold`}
+                      >
+                        <span
+                          className="inline-flex h-8 w-8 items-center justify-center rounded-full bg-[color-mix(in_srgb,var(--solar-orange)_14%,transparent)] text-lg text-[var(--solar-gold)]"
+                          aria-hidden="true"
+                        >
+                          {PLANET_META[row.graha]?.symbol ?? '✦'}
+                        </span>
+                        <span className="ml-3">{row.graha}</span>
+                      </th>
+                      <td
+                        className={`${cellClass} whitespace-nowrap font-medium tabular-nums`}
+                      >
+                        <span className="text-[var(--solar-gold)]">
+                          {row.longitude_degree.toFixed(2)}°
+                        </span>{' '}
+                        <span className="text-muted-foreground">
+                          {row.longitude_rashi}
+                        </span>
+                      </td>
+                      <td className={`${cellClass} whitespace-nowrap`}>
+                        {row.nakshatra}
+                        <span className="ml-1 text-muted-foreground">
+                          · Pada {row.nakshatra_pada}
+                        </span>
+                      </td>
+                      <td className={`${cellClass} whitespace-nowrap`}>
+                        {row.nakshatra_lord}
+                        <span className="mx-1 text-muted-foreground">/</span>
+                        {row.nakshatra_sublord}
+                      </td>
+                      <td className={cellClass}>
+                        {row.rules_bhavas.join(', ') || '—'}
+                      </td>
+                      <td className={`${cellClass} font-semibold tabular-nums`}>
                         {row.current_bhava}
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                    </tr>
                   ))}
-                  {grahaDetails.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={6} className="py-4 text-center">
-                        No data available.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
-
-            {/* Mobile Card View */}
-            <div className="space-y-4 p-4 md:hidden">
-              {grahaDetails.map((row, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-primary-500/20 bg-primary-500/5 p-4 shadow-sm"
-                >
-                  <div className="mb-3 flex items-center justify-between border-b border-primary-500/10 pb-2">
-                    <span className="text-sm font-bold text-primary-400">
+            <div className="divide-y divide-border lg:hidden">
+              {grahaDetails.map((row, index) => (
+                <article key={`${row.graha}-${index}`} className={mobileCardClass}>
+                  <div className="flex flex-wrap items-center justify-between gap-3">
+                    <h4 className="flex items-center gap-3 text-base font-semibold">
+                      <span
+                        className="flex h-9 w-9 items-center justify-center rounded-full bg-secondary text-xl text-[var(--solar-gold)]"
+                        aria-hidden="true"
+                      >
+                        {PLANET_META[row.graha]?.symbol ?? '✦'}
+                      </span>
                       {row.graha}
-                    </span>
-                    <span className="rounded-full bg-primary-500/10 px-2 py-0.5 text-[10px] font-bold text-primary-300">
+                    </h4>
+                    <span className="rounded-full border border-border bg-secondary px-3 py-1.5 text-sm font-medium tabular-nums text-[var(--solar-gold)]">
                       {row.longitude_degree.toFixed(2)}° {row.longitude_rashi}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px]">
-                    <div className="col-span-2">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-primary-500/60">
-                        Nakshatra
-                      </p>
-                      <p className="font-medium text-foreground">
-                        {row.nakshatra} (Pada {row.nakshatra_pada})
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-primary-500/60">
-                        Lord/Sub
-                      </p>
-                      <p className="font-medium text-primary-300">
-                        {row.nakshatra_lord} / {row.nakshatra_sublord}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-primary-500/60">
-                        Ruler / In Bhava
-                      </p>
-                      <p className="font-medium text-foreground">
-                        {row.rules_bhavas.join(', ') || '-'} /{' '}
-                        {row.current_bhava}
-                      </p>
-                    </div>
-                  </div>
-                </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-x-4 gap-y-4 border-t border-border pt-4">
+                    <MobileField label="Nakshatra">
+                      {row.nakshatra} · Pada {row.nakshatra_pada}
+                    </MobileField>
+                    <MobileField label="Lord / sublord">
+                      {row.nakshatra_lord} / {row.nakshatra_sublord}
+                    </MobileField>
+                    <MobileField label="Rules houses">
+                      {row.rules_bhavas.join(', ') || '—'}
+                    </MobileField>
+                    <MobileField label="In house">
+                      {row.current_bhava}
+                    </MobileField>
+                  </dl>
+                </article>
               ))}
             </div>
-          </TabsContent>
+          </>
+        )}
+      </TabsContent>
 
-          <TabsContent value="bhava" className="m-0 border-none outline-none">
-            {/* Desktop Table */}
-            <div className="hidden overflow-x-auto md:block">
-              <Table className="border-collapse">
-                <TableHeader className="bg-primary-900/50 hover:bg-primary-900/50">
-                  <TableRow className="border-none hover:bg-transparent">
-                    <TableHead className="h-auto border-r border-primary-500/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Bhava
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Residents
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
+      <TabsContent
+        value="bhava"
+        className="m-0 overflow-hidden rounded-2xl border border-border bg-[var(--surface-1)]"
+      >
+        {bhavaDetails.length === 0 ? (
+          <EmptyState label="house" />
+        ) : (
+          <>
+            <div className="hidden overflow-x-auto lg:block">
+              <table className="w-full border-collapse text-left">
+                <caption className="sr-only">
+                  House signs, residents, and owners
+                </caption>
+                <thead className={theadClass}>
+                  <tr>
+                    <th scope="col" className={headingClass}>
+                      House
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      Sign
+                    </th>
+                    <th scope="col" className={headingClass}>
+                      Resident planets
+                    </th>
+                    <th scope="col" className={headingClass}>
                       Owner
-                    </TableHead>
-                    <TableHead className="h-auto border-r border-primary-500/20 px-3 py-3 text-[10px] font-bold uppercase tracking-wider text-primary-300">
-                      Rashi
-                    </TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody className="text-[11px] font-medium text-foreground">
-                  {bhavaDetails.map((row, idx) => (
-                    <TableRow
-                      key={idx}
-                      className={cn(
-                        'border-b border-primary-500/10 hover:bg-primary-500/10',
-                        idx % 2 === 0 ? 'bg-transparent' : 'bg-primary-500/5'
-                      )}
-                    >
-                      <TableCell className="border-r border-primary-500/10 px-3 py-3 font-bold">
-                        {row.bhava}
-                      </TableCell>
-                      <TableCell className="border-r border-primary-500/10 px-3 py-3 font-bold text-primary-400">
-                        {row.residents.join(', ') || '-'}
-                      </TableCell>
-                      <TableCell className="border-r border-primary-500/10 px-3 py-3 font-bold">
-                        {row.owner}
-                      </TableCell>
-                      <TableCell className="whitespace-nowrap border-r border-primary-500/10 px-3 py-3 font-bold text-primary-400">
+                    </th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {bhavaDetails.map((row) => (
+                    <tr key={row.bhava} className={rowClass}>
+                      <th
+                        scope="row"
+                        className={`${cellClass} font-semibold tabular-nums`}
+                      >
+                        <span className="mr-2 text-[var(--solar-gold)]">
+                          {String(row.bhava).padStart(2, '0')}
+                        </span>{' '}
+                        House
+                      </th>
+                      <td className={`${cellClass} font-medium`}>
                         {row.rashi}
-                      </TableCell>
-                    </TableRow>
+                      </td>
+                      <td className={cellClass}>
+                        {row.residents.join(', ') || '—'}
+                      </td>
+                      <td className={cellClass}>{row.owner}</td>
+                    </tr>
                   ))}
-                  {bhavaDetails.length === 0 && (
-                    <TableRow>
-                      <TableCell colSpan={4} className="py-4 text-center">
-                        No data available.
-                      </TableCell>
-                    </TableRow>
-                  )}
-                </TableBody>
-              </Table>
+                </tbody>
+              </table>
             </div>
-
-            {/* Mobile Card View */}
-            <div className="space-y-4 p-4 md:hidden">
-              {bhavaDetails.map((row, idx) => (
-                <div
-                  key={idx}
-                  className="rounded-xl border border-primary-500/20 bg-primary-500/5 p-4 shadow-sm"
-                >
-                  <div className="mb-3 flex items-center justify-between border-b border-primary-500/10 pb-2">
-                    <span className="text-sm font-bold text-primary-400">
-                      Bhava {row.bhava}
-                    </span>
-                    <span className="text-[10px] font-bold text-primary-300">
+            <div className="divide-y divide-border lg:hidden">
+              {bhavaDetails.map((row) => (
+                <article key={row.bhava} className={mobileCardClass}>
+                  <div className="flex items-center justify-between gap-3">
+                    <h4 className="text-base font-semibold">
+                      <span className="mr-2 text-[var(--solar-gold)]">
+                        {String(row.bhava).padStart(2, '0')}
+                      </span>{' '}
+                      House
+                    </h4>
+                    <span className="text-sm font-medium text-[var(--solar-gold)]">
                       {row.rashi}
                     </span>
                   </div>
-                  <div className="grid grid-cols-2 gap-x-4 gap-y-3 text-[11px]">
-                    <div className="col-span-2">
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-primary-500/60">
-                        Residents
-                      </p>
-                      <p className="font-bold text-primary-300">
-                        {row.residents.join(', ') || '-'}
-                      </p>
-                    </div>
-                    <div>
-                      <p className="text-[9px] font-bold uppercase tracking-tighter text-primary-500/60">
-                        Owner
-                      </p>
-                      <p className="font-bold text-foreground">{row.owner}</p>
-                    </div>
-                  </div>
-                </div>
+                  <dl className="mt-4 grid grid-cols-2 gap-4 border-t border-border pt-4">
+                    <MobileField label="Resident planets">
+                      {row.residents.join(', ') || '—'}
+                    </MobileField>
+                    <MobileField label="Owner">{row.owner}</MobileField>
+                  </dl>
+                </article>
               ))}
             </div>
-          </TabsContent>
-        </div>
-      </Tabs>
-    </div>
+          </>
+        )}
+      </TabsContent>
+    </Tabs>
   );
-};
-
-export default AstroDetailsTable;
+}

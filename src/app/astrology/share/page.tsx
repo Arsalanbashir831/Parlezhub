@@ -1,8 +1,9 @@
 'use client';
 
 import { useRouter, useSearchParams } from 'next/navigation';
-import ShareAccessView from '@/components/agents/astrology/analysis/share-access-view';
 import { ROUTES } from '@/constants/routes';
+
+import ShareAccessView from '@/components/agents/astrology/analysis/share-access-view';
 
 export default function ShareAccessPage() {
   const router = useRouter();
@@ -13,17 +14,26 @@ export default function ShareAccessPage() {
   // Sharing access is restricted to personal charts
   if (studentId || guestId) {
     return (
-      <div className="flex h-full w-full items-center justify-center">
-        <p className="font-serif text-lg text-slate-500">
-          Sharing access is restricted to personal charts.
+      <section className="obs-card space-y-3 p-6 text-foreground">
+        <h1 className="text-xl font-semibold">Personal charts only</h1>
+        <p className="max-w-xl text-sm leading-relaxed text-muted-foreground">
+          You can manage sharing for your own personal birth profile, not a
+          guest profile or another student’s chart. Switch to your personal
+          profile to manage access.
         </p>
-      </div>
+      </section>
     );
   }
 
   return (
-    <div className="flex h-full w-full items-center justify-center p-4">
-      <ShareAccessView onBack={() => router.push(`${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`)} />
+    <div className="w-full min-w-0">
+      <ShareAccessView
+        onBack={() =>
+          router.push(
+            `${ROUTES.AGENT.ASTROLOGY.ROOT}?${searchParams.toString()}`
+          )
+        }
+      />
     </div>
   );
 }

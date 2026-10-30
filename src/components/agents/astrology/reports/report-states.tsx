@@ -1,79 +1,81 @@
 import { Loader2, RefreshCw, XCircle } from 'lucide-react';
 
-// ---------------------------------------------------------------------------
-// Centered loading spinner
-// ---------------------------------------------------------------------------
 export function ReportLoadingState() {
   return (
-    <div className="flex min-h-[300px] items-center justify-center">
-      <div className="flex flex-col items-center gap-3">
-        <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent" />
-        <p className="animate-pulse text-sm text-muted-foreground">Loading your reports…</p>
-      </div>
+    <div
+      role="status"
+      className="obs-card flex min-h-[240px] items-center justify-center gap-3 p-6"
+    >
+      <Loader2 className="h-5 w-5 animate-spin text-primary-400 motion-reduce:animate-none" />
+      <p className="text-sm text-muted-foreground">Loading your reports…</p>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Error state with retry button
-// ---------------------------------------------------------------------------
 interface ReportErrorStateProps {
   onRetry: () => void;
 }
-
 export function ReportErrorState({ onRetry }: ReportErrorStateProps) {
   return (
-    <div className="flex min-h-[200px] flex-col items-center justify-center gap-4 rounded-2xl border border-destructive/20 bg-destructive/5 p-8">
-      <XCircle className="h-10 w-10 text-destructive/60" />
-      <p className="text-sm text-muted-foreground">Failed to load reports. Please try again.</p>
+    <div
+      role="alert"
+      className="obs-card flex min-h-[200px] flex-col items-center justify-center gap-4 p-6 text-center"
+    >
+      <XCircle className="h-8 w-8 text-red-400" />
+      <p className="text-sm text-muted-foreground">
+        Failed to load reports. Please try again.
+      </p>
       <button
+        type="button"
         onClick={onRetry}
-        className="flex items-center gap-2 rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-muted-foreground transition-all hover:bg-white/10"
+        className="obs-control flex items-center gap-2 px-4 text-sm"
       >
-        <RefreshCw className="h-4 w-4" />
-        Retry
+        <RefreshCw className="h-4 w-4" /> Retry
       </button>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Inline "generating" status banner (shown inside the report card)
-// ---------------------------------------------------------------------------
 export function ReportGeneratingBanner() {
   return (
-    <div className="flex items-center gap-3 rounded-xl border border-primary-500/20 bg-primary-500/5 px-4 py-3">
-      <Loader2 className="h-5 w-5 animate-spin text-primary-400" />
+    <div
+      role="status"
+      className="flex items-start gap-3 rounded-xl border border-border bg-muted/30 p-4"
+    >
+      <Loader2 className="mt-0.5 h-5 w-5 shrink-0 animate-spin text-primary-400 motion-reduce:animate-none" />
       <div>
-        <p className="text-sm font-medium text-primary-300">Generating your report…</p>
-        <p className="text-xs text-muted-foreground">
-          This usually takes under 60 seconds. We&apos;ll update automatically.
+        <p className="text-sm font-medium text-foreground">
+          Generating your report…
+        </p>
+        <p className="mt-1 text-sm leading-relaxed text-muted-foreground">
+          Status refreshes automatically every 5 seconds while generation is in
+          progress. You can return later to download it.
         </p>
       </div>
     </div>
   );
 }
 
-// ---------------------------------------------------------------------------
-// Inline "failed" status banner (shown inside the report card)
-// ---------------------------------------------------------------------------
 interface ReportFailedBannerProps {
   onRefresh: () => void;
 }
-
 export function ReportFailedBanner({ onRefresh }: ReportFailedBannerProps) {
   return (
-    <div className="flex flex-col gap-3">
-      <div className="flex items-center gap-2 rounded-xl border border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
-        <XCircle className="h-4 w-4 shrink-0" />
-        Report generation failed. Your payment is recorded — please contact support.
+    <div className="space-y-3">
+      <div
+        role="alert"
+        className="flex items-start gap-2 rounded-xl border border-red-400/30 p-4 text-sm leading-relaxed text-red-400"
+      >
+        <XCircle className="mt-0.5 h-4 w-4 shrink-0" /> Report generation
+        failed. Your payment is recorded; please contact support if refreshing
+        does not resolve the status.
       </div>
       <button
+        type="button"
         onClick={onRefresh}
-        className="flex items-center gap-2 self-start rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-muted-foreground transition-all hover:bg-white/10"
+        className="obs-control flex items-center gap-2 px-4 text-sm"
       >
-        <RefreshCw className="h-3.5 w-3.5" />
-        Refresh Status
+        <RefreshCw className="h-4 w-4" /> Refresh status
       </button>
     </div>
   );

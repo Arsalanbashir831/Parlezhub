@@ -2,7 +2,6 @@
 
 import React from 'react';
 import { LEFT_MENU_ITEMS } from '@/constants/astrology';
-import { useAuth } from '@/contexts/auth-context';
 import { Info } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
@@ -17,7 +16,6 @@ interface AnalysisSidebarProps {
   onSelect: (id: string) => void;
   iconMap: Record<string, React.ComponentType<{ className?: string }>>;
   className?: string;
-  readOnly?: boolean;
 }
 
 const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
@@ -25,16 +23,8 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
   onSelect,
   iconMap,
   className,
-  readOnly,
 }) => {
-  const { activeRole } = useAuth();
   const searchParams = useSearchParams();
-
-  // If a student is viewing their own profile, limit to the first 8 basic analysis items
-  const isStudentOwnProfile = activeRole === 'STUDENT' && !readOnly;
-  const displayItems = isStudentOwnProfile
-    ? LEFT_MENU_ITEMS.slice(0, 8)
-    : LEFT_MENU_ITEMS;
 
   const getHref = (id: string) => {
     const params = new URLSearchParams(searchParams.toString());
@@ -68,7 +58,7 @@ const AnalysisSidebar: React.FC<AnalysisSidebarProps> = ({
               Analysis & Strength
             </p>
             <div className="grid gap-3">
-              {displayItems.map((item) => {
+              {LEFT_MENU_ITEMS.map((item) => {
                 const Icon = iconMap[item.icon] || Info;
                 const isActive = activeAnalysis === item.id;
                 return (

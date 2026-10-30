@@ -110,23 +110,28 @@ describe('role resolution', () => {
       request('/onboarding/choose-role', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
     );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/consultant/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
-  it('sends an unknown-role user on the root to the student dashboard', async () => {
+  it('sends a roleless account on the root to the same home as everybody else', async () => {
     // Root is exempt from the onboarding rule so a roleless account is not stuck
     // between two redirects.
     const res = await proxy(request('/', ROLES([])));
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/student/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
+  });
+
+  it('sends a teacher on the root to the astrology workspace', async () => {
+    const res = await proxy(request('/', { ...ROLES(['TEACHER']), active_role: 'TEACHER' }));
+
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('falls back to the active role when the roles list is missing', async () => {
     const res = await proxy(request('/onboarding/choose-role', { active_role: 'BOTH' }));
 
-    const location = new URL(res.headers.get('location')!);
-    // BOTH is not TEACHER, and the list derived from it holds STUDENT.
-    expect(location.pathname).toBe('/student/dashboard');
+    // BOTH still counts as an assigned role, so onboarding lets go of them.
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 });
 
@@ -191,7 +196,7 @@ describe('authenticated visitors on auth pages', () => {
       request('/auth/sign-in', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
     );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/consultant/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('lets a logged-in user open password recovery', async () => {
