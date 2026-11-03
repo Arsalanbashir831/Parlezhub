@@ -1,38 +1,71 @@
 import { Loader2, RefreshCw, XCircle } from 'lucide-react';
 
+import {
+  LoadingLayout,
+  RequestError,
+  Skeleton,
+  SkeletonText,
+} from '@/components/agents/astrology/ui/observatory-state';
+
+/** Mirrors the reports page: a column of report cards beside the two side panels. */
 export function ReportLoadingState() {
   return (
-    <div
-      role="status"
-      className="obs-card flex min-h-[240px] items-center justify-center gap-3 p-6"
+    <LoadingLayout
+      label="Loading your reports…"
+      className="grid gap-6 lg:grid-cols-5"
     >
-      <Loader2 className="h-5 w-5 animate-spin text-primary-400 motion-reduce:animate-none" />
-      <p className="text-sm text-muted-foreground">Loading your reports…</p>
-    </div>
+      <div className="flex flex-col gap-4 lg:col-span-3">
+        {[0, 1].map((row) => (
+          <div
+            key={row}
+            aria-hidden="true"
+            className="obs-card min-w-0 space-y-5 p-5 sm:p-6"
+          >
+            <div className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
+              <div className="flex min-w-0 items-start gap-3">
+                <Skeleton className="h-11 w-11 shrink-0" rounded="rounded-xl" />
+                <div className="min-w-0 space-y-2">
+                  <Skeleton className="h-4 w-44 max-w-full" rounded="rounded-md" />
+                  <Skeleton className="h-3 w-32 max-w-full" rounded="rounded-md" />
+                </div>
+              </div>
+              <Skeleton className="h-7 w-24 shrink-0" rounded="rounded-full" />
+            </div>
+            <SkeletonText lines={3} />
+            <div className="flex flex-wrap gap-2">
+              <Skeleton className="h-10 w-36" rounded="rounded-xl" />
+              <Skeleton className="h-10 w-28" rounded="rounded-xl" />
+            </div>
+          </div>
+        ))}
+      </div>
+      <div className="flex flex-col gap-4 lg:col-span-2">
+        {[0, 1].map((row) => (
+          <div key={row} aria-hidden="true" className="obs-card space-y-4 p-5">
+            <Skeleton className="h-4 w-40 max-w-full" rounded="rounded-md" />
+            <SkeletonText lines={4} />
+          </div>
+        ))}
+      </div>
+    </LoadingLayout>
   );
 }
 
 interface ReportErrorStateProps {
   onRetry: () => void;
+  retrying?: boolean;
 }
-export function ReportErrorState({ onRetry }: ReportErrorStateProps) {
+export function ReportErrorState({
+  onRetry,
+  retrying = false,
+}: ReportErrorStateProps) {
   return (
-    <div
-      role="alert"
-      className="obs-card flex min-h-[200px] flex-col items-center justify-center gap-4 p-6 text-center"
-    >
-      <XCircle className="h-8 w-8 text-red-400" />
-      <p className="text-sm text-muted-foreground">
-        Failed to load reports. Please try again.
-      </p>
-      <button
-        type="button"
-        onClick={onRetry}
-        className="obs-control flex items-center gap-2 px-4 text-sm"
-      >
-        <RefreshCw className="h-4 w-4" /> Retry
-      </button>
-    </div>
+    <RequestError
+      title="Your reports could not be loaded"
+      message="Purchases and generated files stay on your account. The service did not answer, so this list is empty rather than partly wrong."
+      onRetry={onRetry}
+      retrying={retrying}
+    />
   );
 }
 

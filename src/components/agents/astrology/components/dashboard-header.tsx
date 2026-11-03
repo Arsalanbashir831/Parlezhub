@@ -5,6 +5,7 @@ import { ROUTES } from '@/constants/routes';
 import { Menu } from 'lucide-react';
 
 import { Logo } from '@/components/ui/logo';
+import { OBS_ANCHORS } from '@/constants/tour-steps';
 
 export function DashboardHeader({
   children,
@@ -28,6 +29,7 @@ export function DashboardHeader({
         href={ROUTES.AGENT.ASTROLOGY.ROOT}
         className="shrink-0"
         aria-label="Shakti Wheel dashboard"
+        data-tour={OBS_ANCHORS.brand}
       >
         <Logo size="sm" />
       </Link>

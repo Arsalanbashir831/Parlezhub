@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
+import type { UserRole } from '@/types/user';
 import {
   dashboardFor,
   evaluateRoleGuard,
@@ -8,7 +9,6 @@ import {
   rolesNeedRecheck,
   type GuardInput,
 } from '@/lib/guard-rules';
-import type { UserRole } from '@/types/user';
 
 function guard(overrides: Partial<GuardInput> = {}): GuardInput {
   const userRoles: UserRole[] = overrides.userRoles ?? [];
@@ -36,12 +36,17 @@ describe('evaluateRoleGuard', () => {
 
   it('sends an anonymous visitor to sign-in with the intended path preserved', () => {
     const decision = evaluateRoleGuard(
-      guard({ isAuthenticated: false, pathname: '/student/chat', search: '?teacherId=9' })
+      guard({
+        isAuthenticated: false,
+        pathname: '/student/chat',
+        search: '?teacherId=9',
+      })
     );
 
     expect(decision.render).toBe(false);
     expect(decision.redirect).toBe(
-      '/auth/sign-in?redirect=' + encodeURIComponent('/student/chat?teacherId=9')
+      '/auth/sign-in?redirect=' +
+        encodeURIComponent('/student/chat?teacherId=9')
     );
   });
 
@@ -55,20 +60,26 @@ describe('evaluateRoleGuard', () => {
 
   it('renders for BOTH when only students are allowed', () => {
     expect(
-      evaluateRoleGuard(guard({ userRoles: ['TEACHER', 'STUDENT', 'BOTH'], activeRole: 'BOTH' }))
+      evaluateRoleGuard(
+        guard({ userRoles: ['TEACHER', 'STUDENT', 'BOTH'], activeRole: 'BOTH' })
+      )
     ).toMatchObject({ render: true, redirect: null });
   });
 
   it('waits instead of bouncing while the roles are unknown', () => {
     // A live session whose role lookup is still pending must not be thrown at
     // sign-in or onboarding — that was the refresh-to-see-the-dashboard bug.
-    const decision = evaluateRoleGuard(guard({ userRoles: [], rolesUnknown: true }));
+    const decision = evaluateRoleGuard(
+      guard({ userRoles: [], rolesUnknown: true })
+    );
 
     expect(decision).toEqual({ pending: true, redirect: null, render: false });
   });
 
   it('sends a resolved roleless account to onboarding', () => {
-    const decision = evaluateRoleGuard(guard({ userRoles: [], rolesUnknown: false }));
+    const decision = evaluateRoleGuard(
+      guard({ userRoles: [], rolesUnknown: false })
+    );
 
     expect(decision).toEqual({
       pending: false,
@@ -77,7 +88,7 @@ describe('evaluateRoleGuard', () => {
     });
   });
 
-  it('sends a teacher on a student screen to the teacher dashboard', () => {
+  it('sends a teacher on a student screen to the astrology workspace', () => {
     const decision = evaluateRoleGuard(
       guard({
         userRoles: ['TEACHER'],
@@ -88,14 +99,18 @@ describe('evaluateRoleGuard', () => {
 
     expect(decision).toEqual({
       pending: false,
-      redirect: '/consultant/dashboard',
+      redirect: '/astrology',
       render: false,
     });
   });
 
   it('honours an explicit fallback path over the dashboard', () => {
     const decision = evaluateRoleGuard(
-      guard({ userRoles: ['TEACHER'], activeRole: 'TEACHER', fallbackPath: '/placeholders' })
+      guard({
+        userRoles: ['TEACHER'],
+        activeRole: 'TEACHER',
+        fallbackPath: '/placeholders',
+      })
     );
 
     expect(decision.redirect).toBe('/placeholders');
@@ -103,29 +118,38 @@ describe('evaluateRoleGuard', () => {
 
   it('falls back to the first held role when no active role is set', () => {
     const decision = evaluateRoleGuard(
-      guard({ userRoles: ['TEACHER'], activeRole: null, allowedRoles: ['STUDENT'] })
+      guard({
+        userRoles: ['TEACHER'],
+        activeRole: null,
+        allowedRoles: ['STUDENT'],
+      })
     );
 
-    expect(decision.redirect).toBe('/consultant/dashboard');
+    expect(decision.redirect).toBe('/astrology');
   });
 
   it('signs the redirect requirement before it looks at roles', () => {
     const decision = evaluateRoleGuard(
-      guard({ userRoles: ['STUDENT'], allowedRoles: ['TEACHER'], isAuthenticated: false })
+      guard({
+        userRoles: ['STUDENT'],
+        allowedRoles: ['TEACHER'],
+        isAuthenticated: false,
+      })
     );
 
     expect(decision.redirect).toBe(
       '/auth/sign-in?redirect=' + encodeURIComponent('/student/dashboard')
     );
-  });});
+  });
+});
 
 describe('dashboardFor', () => {
-  it('routes only teachers to the consultant home', () => {
-    expect(dashboardFor('TEACHER')).toBe('/consultant/dashboard');
-    expect(dashboardFor('STUDENT')).toBe('/student/dashboard');
-    expect(dashboardFor('BOTH')).toBe('/student/dashboard');
-    expect(dashboardFor(null)).toBe('/student/dashboard');
-    expect(dashboardFor(undefined)).toBe('/student/dashboard');
+  it('routes every role to the shared astrology workspace', () => {
+    expect(dashboardFor('TEACHER')).toBe('/astrology');
+    expect(dashboardFor('STUDENT')).toBe('/astrology');
+    expect(dashboardFor('BOTH')).toBe('/astrology');
+    expect(dashboardFor(null)).toBe('/astrology');
+    expect(dashboardFor(undefined)).toBe('/astrology');
   });
 });
 
@@ -143,7 +167,11 @@ describe('rolesNeedRecheck', () => {
 
   it('re-checks an empty answer, which can lag the backend profile row', () => {
     expect(
-      rolesNeedRecheck({ isAuthenticated: true, userRoles: [], activeRole: null })
+      rolesNeedRecheck({
+        isAuthenticated: true,
+        userRoles: [],
+        activeRole: null,
+      })
     ).toBe(true);
   });
 
@@ -170,19 +198,27 @@ describe('rolesNeedRecheck', () => {
 
   it('says nothing for an anonymous snapshot', () => {
     expect(
-      rolesNeedRecheck({ isAuthenticated: false, userRoles: [], activeRole: null })
+      rolesNeedRecheck({
+        isAuthenticated: false,
+        userRoles: [],
+        activeRole: null,
+      })
     ).toBe(false);
   });
 });
 
 describe('landingPathFor', () => {
-  it('honours the page the user came for', () => {
+  it('always lands authenticated users in the shared workspace', () => {
     expect(
       landingPathFor(
-        { isAuthenticated: true, userRoles: ['STUDENT'], activeRole: 'STUDENT' },
+        {
+          isAuthenticated: true,
+          userRoles: ['STUDENT'],
+          activeRole: 'STUDENT',
+        },
         '/student/chat?teacherId=4'
       )
-    ).toBe('/student/chat?teacherId=4');
+    ).toBe('/astrology');
   });
 
   it('sends a roleless account to onboarding instead of a dashboard', () => {
@@ -193,7 +229,11 @@ describe('landingPathFor', () => {
 
   it('lands a teacher on the astrology workspace', () => {
     expect(
-      landingPathFor({ isAuthenticated: true, userRoles: ['TEACHER'], activeRole: 'TEACHER' })
+      landingPathFor({
+        isAuthenticated: true,
+        userRoles: ['TEACHER'],
+        activeRole: 'TEACHER',
+      })
     ).toBe('/astrology');
   });
 
@@ -219,7 +259,11 @@ describe('landingPathFor', () => {
 
   it('keeps the astrology workspace as home when no role is active', () => {
     expect(
-      landingPathFor({ isAuthenticated: true, userRoles: ['TEACHER'], activeRole: null })
+      landingPathFor({
+        isAuthenticated: true,
+        userRoles: ['TEACHER'],
+        activeRole: null,
+      })
     ).toBe(HOME_PATH);
   });
 });

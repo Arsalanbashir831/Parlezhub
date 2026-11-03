@@ -5,14 +5,14 @@ import { usePathname } from 'next/navigation';
 import { ROUTES } from '@/constants/routes';
 import { Calendar } from 'lucide-react';
 
-import { useMeetings } from '@/hooks/useMeetings';
+import { useMeetingsView } from '@/contexts/meetings-context';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function MeetingEmptyCard() {
   const pathname = usePathname();
   const isConsultant = pathname?.includes('/consultant/');
-  const { filteredMeetings, activeTab } = useMeetings();
+  const { filteredMeetings, activeTab } = useMeetingsView();
   if (filteredMeetings.length > 0) return null;
 
   const getEmptyMessage = () => {
@@ -51,14 +51,14 @@ export default function MeetingEmptyCard() {
           return {
             title: 'No upcoming meetings',
             description:
-              "You don't have any upcoming meetings. Book a lesson with a consultant!",
+              "You don't have any upcoming consultations. Find an astrologer to get started.",
             showButton: true,
           };
         case 'completed':
           return {
             title: 'No completed meetings',
             description:
-              "You haven't completed any lessons yet. Start learning with your first session!",
+              "You haven't completed a consultation yet. Explore astrologers to book your first session.",
             showButton: true,
           };
         case 'cancelled':
@@ -95,9 +95,9 @@ export default function MeetingEmptyCard() {
             </p>
           </div>
           {showButton && (
-            <Link href={ROUTES.STUDENT.TEACHERS}>
+            <Link href={ROUTES.AGENT.ASTROLOGY.ASTROLOGERS}>
               <Button className="h-11 rounded-xl bg-primary-500 px-12 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95">
-                Find Consultants
+                Find Astrologer
               </Button>
             </Link>
           )}

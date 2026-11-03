@@ -2,12 +2,12 @@
 
 import { Search } from 'lucide-react';
 
-import { useMeetings } from '@/hooks/useMeetings';
+import { useMeetingsView } from '@/contexts/meetings-context';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 
 export default function MeetingFilters() {
-  const { searchQuery, setSearchQuery } = useMeetings();
+  const { searchQuery, setSearchQuery } = useMeetingsView();
 
   return (
     <Card className="rounded-2xl border-white/5 bg-white/[0.03] shadow-xl backdrop-blur-md">

@@ -2,12 +2,12 @@
 
 import { Calendar, Clock, Video } from 'lucide-react';
 
-import { useMeetings } from '@/hooks/useMeetings';
+import { useMeetingsView } from '@/contexts/meetings-context';
 import { Card, CardContent } from '@/components/ui/card';
 
 export default function MeetingStats() {
   const { counts, nextUpcomingLabel, totalCompletedHours, userRole } =
-    useMeetings();
+    useMeetingsView();
   return (
     <div className="grid grid-cols-1 gap-6 md:grid-cols-3">
       {/* Upcoming Meetings Card */}

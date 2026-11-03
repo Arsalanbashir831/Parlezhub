@@ -43,6 +43,7 @@ export default function AstrologyReportsPage() {
     data: reports,
     isLoading,
     isError,
+    isFetching,
     refetch,
   } = useReports(guestId ? Number(guestId) : undefined);
 
@@ -153,7 +154,7 @@ export default function AstrologyReportsPage() {
       {isLoading ? (
         <ReportLoadingState />
       ) : isError ? (
-        <ReportErrorState onRetry={refetch} />
+        <ReportErrorState onRetry={refetch} retrying={isFetching} />
       ) : (
         <div className="grid gap-6 lg:grid-cols-5">
           {/* Left column — report card(s) */}

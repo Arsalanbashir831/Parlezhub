@@ -123,10 +123,10 @@ export default function ServicesPage() {
       <div className="flex flex-col items-start justify-between gap-6 sm:flex-row sm:items-center">
         <div>
           <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
-            My <span className="text-primary-500">Services</span>
+            My <span className="text-primary-500">Gigs</span>
           </h1>
           <p className="mt-2 text-primary-100/60 font-medium">
-            Manage your service offerings and track performance
+            Everything you offer, with its bookings, earnings and status
           </p>
         </div>
 
@@ -137,12 +137,12 @@ export default function ServicesPage() {
               className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
             >
               <Plus className="mr-2 h-5 w-5" />
-              Create New Service
+              Create a Gig
             </Button>
           )}
           {availableServiceTypes.length === 0 && (
             <div className="rounded-xl border border-white/5 bg-white/5 px-4 py-2 text-sm font-medium text-primary-100/40">
-              All service types created
+              All gig types created
             </div>
           )}
         </div>
@@ -185,11 +185,11 @@ export default function ServicesPage() {
             <div className="mb-6 flex h-20 w-20 items-center justify-center rounded-3xl border border-primary-500/20 bg-primary-500/10 text-primary-500">
               <Briefcase className="h-10 w-10 text-primary-500" />
             </div>
-            <h3 className="mb-2 font-serif text-2xl font-bold text-white">No services found</h3>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-white">No gigs yet</h3>
             <p className="mb-8 max-w-sm text-primary-100/60 font-medium">
               {filters.searchQuery || filters.type || filters.status
-                ? 'Try adjusting your filters to see more results and find what you are looking for.'
-                : 'Create your first service to start offering your expertise to your students.'}
+                ? 'Try adjusting the filters above — every gig is still there.'
+                : 'Publish your first gig and it appears on your profile for students to book.'}
             </p>
             {availableServiceTypes.length > 0 && (
               <Button
@@ -197,7 +197,7 @@ export default function ServicesPage() {
                 className="h-12 rounded-2xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
               >
                 <Plus className="mr-2 h-5 w-5" />
-                Create Your First Service
+                Create Your First Gig
               </Button>
             )}
           </CardContent>

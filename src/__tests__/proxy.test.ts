@@ -1,4 +1,5 @@
 import { NextRequest } from 'next/server';
+import { config, proxy } from '@/proxy';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 const { getUser } = vi.hoisted(() => ({ getUser: vi.fn() }));
@@ -7,9 +8,10 @@ vi.mock('@supabase/ssr', () => ({
   createServerClient: vi.fn(() => ({ auth: { getUser } })),
 }));
 
-import { config, proxy } from '@/proxy';
-
-function request(path = '/student/dashboard', cookies: Record<string, string> = {}) {
+function request(
+  path = '/student/dashboard',
+  cookies: Record<string, string> = {}
+) {
   const cookieHeader = Object.entries(cookies)
     .map(([name, value]) => `${name}=${value}`)
     .join('; ');
@@ -50,7 +52,9 @@ describe('sign-in link interception', () => {
   it('moves a password-recovery link onto the reset route', async () => {
     const res = await proxy(request('/?type=recovery'));
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/auth/reset-password');
+    expect(new URL(res.headers.get('location')!).pathname).toBe(
+      '/auth/reset-password'
+    );
   });
 });
 
@@ -68,7 +72,12 @@ describe('unauthenticated visitors', () => {
   it('leaves public routes alone', async () => {
     signedOut();
 
-    for (const path of ['/auth/sign-in', '/auth/signup', '/terms', '/ai-session/setup']) {
+    for (const path of [
+      '/auth/sign-in',
+      '/auth/signup',
+      '/terms',
+      '/ai-session/setup',
+    ]) {
       const res = await proxy(request(path));
       expect(res.headers.get('location')).toBeNull();
     }
@@ -79,8 +88,12 @@ describe('unauthenticated visitors', () => {
 
     const res = await proxy(request('/', {}));
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/auth/sign-in');
-    expect(new URL(res.headers.get('location')!).searchParams.has('redirect')).toBe(false);
+    expect(new URL(res.headers.get('location')!).pathname).toBe(
+      '/auth/sign-in'
+    );
+    expect(
+      new URL(res.headers.get('location')!).searchParams.has('redirect')
+    ).toBe(false);
   });
 });
 
@@ -96,7 +109,9 @@ describe('role resolution', () => {
   it('sends a resolved roleless account to onboarding', async () => {
     const res = await proxy(request('/student/dashboard', ROLES([])));
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/onboarding/choose-role');
+    expect(new URL(res.headers.get('location')!).pathname).toBe(
+      '/onboarding/choose-role'
+    );
   });
 
   it('lets a roleless account reach the onboarding screen itself', async () => {
@@ -107,7 +122,10 @@ describe('role resolution', () => {
 
   it('bounces an already-assigned user out of onboarding', async () => {
     const res = await proxy(
-      request('/onboarding/choose-role', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
+      request('/onboarding/choose-role', {
+        ...ROLES(['TEACHER']),
+        active_role: 'TEACHER',
+      })
     );
 
     expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
@@ -122,13 +140,17 @@ describe('role resolution', () => {
   });
 
   it('sends a teacher on the root to the astrology workspace', async () => {
-    const res = await proxy(request('/', { ...ROLES(['TEACHER']), active_role: 'TEACHER' }));
+    const res = await proxy(
+      request('/', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
+    );
 
     expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('falls back to the active role when the roles list is missing', async () => {
-    const res = await proxy(request('/onboarding/choose-role', { active_role: 'BOTH' }));
+    const res = await proxy(
+      request('/onboarding/choose-role', { active_role: 'BOTH' })
+    );
 
     // BOTH still counts as an assigned role, so onboarding lets go of them.
     expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
@@ -136,55 +158,94 @@ describe('role resolution', () => {
 });
 
 describe('role-based route gating', () => {
-  it('redirects a teacher on a student route to the teacher dashboard', async () => {
+  it('redirects a teacher on a student route to the astrology workspace', async () => {
     const res = await proxy(
-      request('/student/settings', { ...ROLES(['TEACHER', 'STUDENT', 'BOTH']), active_role: 'TEACHER' })
+      request('/student/settings', {
+        ...ROLES(['TEACHER', 'STUDENT', 'BOTH']),
+        active_role: 'TEACHER',
+      })
     );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/consultant/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
-  it('redirects a student on a consultant route to the student dashboard', async () => {
+  it('redirects a student on a consultant route to the astrology workspace', async () => {
     const res = await proxy(
-      request('/consultant/services', { ...ROLES(['TEACHER', 'STUDENT', 'BOTH']), active_role: 'STUDENT' })
+      request('/consultant/services', {
+        ...ROLES(['TEACHER', 'STUDENT', 'BOTH']),
+        active_role: 'STUDENT',
+      })
     );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/student/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('keeps a shared route open for both roles', async () => {
     const res = await proxy(
-      request('/astrology/navatara', { ...ROLES(['TEACHER', 'STUDENT', 'BOTH']), active_role: 'TEACHER' })
+      request('/astrology/navatara', {
+        ...ROLES(['TEACHER', 'STUDENT', 'BOTH']),
+        active_role: 'TEACHER',
+      })
     );
 
     expect(res.headers.get('location')).toBeNull();
   });
 
-  it('blocks a student from a consultant-only route', async () => {
-    const res = await proxy(request('/consultant/services', ROLES(['STUDENT'])));
+  it('keeps hire astrologer pages in the student role inside astrology', async () => {
+    for (const path of [
+      '/astrology/astrologers',
+      '/astrology/hire/chat',
+      '/astrology/hire/meetings',
+    ]) {
+      const student = await proxy(
+        request(path, { ...ROLES(['STUDENT']), active_role: 'STUDENT' })
+      );
+      expect(student.headers.get('location')).toBeNull();
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/student/dashboard');
+      const teacher = await proxy(
+        request(path, {
+          ...ROLES(['TEACHER', 'STUDENT']),
+          active_role: 'TEACHER',
+        })
+      );
+      expect(new URL(teacher.headers.get('location')!).pathname).toBe(
+        '/astrology'
+      );
+    }
+  });
+
+  it('blocks a student from a consultant-only route', async () => {
+    const res = await proxy(
+      request('/consultant/services', ROLES(['STUDENT']))
+    );
+
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('blocks a teacher from a student-only route', async () => {
     const res = await proxy(
-      request('/student/ai-chirologist', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
+      request('/student/ai-chirologist', {
+        ...ROLES(['TEACHER']),
+        active_role: 'TEACHER',
+      })
     );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/consultant/dashboard');
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('lets an authorised pair through', async () => {
     const res = await proxy(request('/student/dashboard', ROLES(['STUDENT'])));
 
-    expect(res.headers.get('location')).toBeNull();
-    expect(res.status).toBe(200);
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
+    expect(res.status).toBe(307);
   });
 
   it('ignores a forged role list in an unknown-role request', async () => {
     // Corrupt cookie JSON parses to nothing, and the request stays relaxed rather
     // than gating on attacker-controlled roles.
-    const res = await proxy(request('/consultant/services', { user_roles: '%7Bbroken' }));
+    const res = await proxy(
+      request('/consultant/services', { user_roles: '%7Bbroken' })
+    );
 
     expect(res.headers.get('location')).toBeNull();
   });
@@ -193,14 +254,19 @@ describe('role-based route gating', () => {
 describe('authenticated visitors on auth pages', () => {
   it('pushes a logged-in teacher away from sign-in', async () => {
     const res = await proxy(
-      request('/auth/sign-in', { ...ROLES(['TEACHER']), active_role: 'TEACHER' })
+      request('/auth/sign-in', {
+        ...ROLES(['TEACHER']),
+        active_role: 'TEACHER',
+      })
     );
 
     expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
   });
 
   it('lets a logged-in user open password recovery', async () => {
-    const res = await proxy(request('/auth/reset-password', ROLES(['STUDENT'])));
+    const res = await proxy(
+      request('/auth/reset-password', ROLES(['STUDENT']))
+    );
 
     expect(res.headers.get('location')).toBeNull();
   });

@@ -8,7 +8,6 @@ import {
   Clock,
   Filter,
   Info,
-  Loader2,
   MapPin,
   Moon,
   MoonStar,
@@ -27,6 +26,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  LoadingLayout,
+  Refreshing,
+  RequestError,
+  Skeleton,
+  SkeletonText,
+} from '@/components/agents/astrology/ui/observatory-state';
 import { cn } from '@/lib/utils';
 
 const YEARS = Array.from({ length: 16 }, (_, i) => 2020 + i);
@@ -467,29 +473,12 @@ export default function FestivalCalendarPage() {
       </section>
 
       {isError && (
-        <div role="alert" className="obs-card space-y-3 p-5">
-          <h2 className="font-semibold">Calendar could not be loaded</h2>
-          <p className="text-sm text-muted-foreground">
-            Try again or adjust the filters. No empty calendar should be
-            interpreted as a confirmed absence of festivals.
-          </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="obs-control obs-accent"
-          >
-            Try again
-          </button>
-        </div>
-      )}
-      {isLoading && (
-        <p
-          role="status"
-          className="flex items-center gap-2 text-sm text-muted-foreground"
-        >
-          <Loader2 className="h-4 w-4 animate-spin motion-reduce:animate-none" />{' '}
-          Loading calendar dates…
-        </p>
+        <RequestError
+          title="Calendar could not be loaded"
+          message="Try again or adjust the filters. An empty calendar is not a confirmed absence of festivals."
+          onRetry={() => refetch()}
+          retrying={isLoading}
+        />
       )}
 
       <div className="grid min-w-0 items-start gap-6 lg:grid-cols-[minmax(0,2.4fr)_minmax(280px,1fr)]">
@@ -504,11 +493,17 @@ export default function FestivalCalendarPage() {
                 {MONTHS[activeMonth]}{' '}
                 <span className="text-muted-foreground">{year}</span>
               </h2>
-              <p className="mt-1 text-sm text-muted-foreground">
-                {monthEvents.length} observance
-                {monthEvents.length === 1 ? '' : 's'} this month · select a day
-                for its details
-              </p>
+              <div className="mt-1 text-sm text-muted-foreground">
+                {isLoading ? (
+                  <Refreshing label="Loading this month’s observances…" />
+                ) : (
+                  <p>
+                    {monthEvents.length} observance
+                    {monthEvents.length === 1 ? '' : 's'} this month · select a
+                    day for its details
+                  </p>
+                )}
+              </div>
             </div>
             <div className="flex gap-2">
               <button
@@ -665,10 +660,28 @@ export default function FestivalCalendarPage() {
             <h2 className="obs-label">
               {MONTHS[activeMonth]} observances
             </h2>
-            <span className="obs-chip">{monthEvents.length}</span>
+            {isLoading ? (
+              <Skeleton className="h-5 w-9" rounded="rounded-full" />
+            ) : (
+              <span className="obs-chip">{monthEvents.length}</span>
+            )}
           </div>
           {isLoading ? (
-            <p className="text-sm text-muted-foreground">Loading observances…</p>
+            <LoadingLayout label="Loading observances this month">
+              {Array.from({ length: 6 }, (_, index) => (
+                <div
+                  key={index}
+                  className="obs-card flex min-w-0 items-start gap-3 p-3"
+                  aria-hidden="true"
+                >
+                  <Skeleton className="h-10 w-9 shrink-0" rounded="rounded-lg" />
+                  <div className="min-w-0 flex-1 space-y-2">
+                    <Skeleton className="h-4 w-2/3 max-w-full" rounded="rounded-md" />
+                    <Skeleton className="h-3 w-1/2 max-w-full" rounded="rounded-md" />
+                  </div>
+                </div>
+              ))}
+            </LoadingLayout>
           ) : isError ? (
             <p className="text-sm text-muted-foreground">
               The day list is unavailable until the calendar loads.
@@ -769,7 +782,9 @@ export default function FestivalCalendarPage() {
             </h2>
           </div>
           <div className="flex flex-wrap items-center gap-2">
-            {selectedCount > 0 ? (
+            {isLoading ? (
+              <Skeleton className="h-5 w-32" rounded="rounded-full" />
+            ) : selectedCount > 0 ? (
               (Object.keys(EVENT_LABEL) as EventType[]).map((type) => {
                 const countForType = selectedDateEvents
                   ? type === 'festival'
@@ -799,10 +814,24 @@ export default function FestivalCalendarPage() {
         </div>
 
         {isLoading ? (
-          <p className="text-sm text-muted-foreground">Loading date details…</p>
+          <LoadingLayout label="Loading details for the selected date">
+            <div className="grid min-w-0 gap-4 md:grid-cols-2 2xl:grid-cols-3">
+              {Array.from({ length: 3 }, (_, index) => (
+                <div
+                  key={index}
+                  className="obs-card min-w-0 space-y-3 p-4"
+                  aria-hidden="true"
+                >
+                  <Skeleton className="h-5 w-1/2 max-w-full" rounded="rounded-md" />
+                  <Skeleton className="h-4 w-1/3 max-w-full" rounded="rounded-md" />
+                  <SkeletonText lines={3} />
+                </div>
+              ))}
+            </div>
+          </LoadingLayout>
         ) : isError ? (
           <p className="text-sm text-muted-foreground">
-            Date details are currently unavailable.
+            Date details are unavailable while the calendar is offline.
           </p>
         ) : !selectedDay || !selectedCount ? (
           <p className="text-sm leading-relaxed text-muted-foreground">

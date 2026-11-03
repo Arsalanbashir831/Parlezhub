@@ -245,6 +245,72 @@ describe('gateway credential handling', () => {
     expect(jar.some((c) => c.startsWith('user_roles=') && c.includes('Max-Age=0'))).toBe(true);
     expect(jar.some((c) => c.startsWith('active_role=') && c.includes('Max-Age=0'))).toBe(true);
   });
+
+  it('gives the chat server its send credential as a query token', async () => {
+    // Regression: the FastAPI chat server reads `token` from the query, not the
+    // Authorization header, so a header-only forward answered every send with 422.
+    await forwardToUpstream(
+      gatewayRequest({
+        url: 'http://app.test/api/chat/send-message/chat-1',
+        headers: { 'x-upstream-path': '/send-message/chat-1' },
+      }),
+      'chat',
+      ['send-message', 'chat-1']
+    );
+
+    expect(upstreamCall()[0]).toBe(
+      'http://chat.test/send-message/chat-1?token=token-1'
+    );
+  });
+
+  it('keeps the credential off chat reads, which need no auth', async () => {
+    await forwardToUpstream(
+      gatewayRequest({
+        url: 'http://app.test/api/chat/messages/chat-1',
+        method: 'GET',
+        headers: { 'x-upstream-path': '/messages/chat-1' },
+      }),
+      'chat',
+      ['messages', 'chat-1']
+    );
+
+    expect(upstreamCall()[0]).toBe('http://chat.test/messages/chat-1');
+  });
+
+  it('credentials every chat write, not just sends', async () => {
+    // Mark-read is a POST that authenticates from the same `token` query
+    // parameter, so a rule keyed on the send path alone would 422 it.
+    await forwardToUpstream(
+      gatewayRequest({
+        url: 'http://app.test/api/chat/messages/chat-1/read',
+        headers: { 'x-upstream-path': '/messages/chat-1/read' },
+      }),
+      'chat',
+      ['messages', 'chat-1', 'read']
+    );
+
+    expect(upstreamCall()[0]).toBe(
+      'http://chat.test/messages/chat-1/read?token=token-1'
+    );
+  });
+
+  it('credentials presence while leaving message history credential-free', async () => {
+    // Presence answers "who holds a socket", so the server has to know whose
+    // thread it is reporting on; the history read stays anonymous.
+    await forwardToUpstream(
+      gatewayRequest({
+        url: 'http://app.test/api/chat/presence/chat-1',
+        method: 'GET',
+        headers: { 'x-upstream-path': '/presence/chat-1' },
+      }),
+      'chat',
+      ['presence', 'chat-1']
+    );
+
+    expect(upstreamCall()[0]).toBe(
+      'http://chat.test/presence/chat-1?token=token-1'
+    );
+  });
 });
 
 describe('gateway response handling', () => {

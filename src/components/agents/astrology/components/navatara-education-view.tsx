@@ -1,9 +1,14 @@
 'use client';
 
-import { AlertCircle, Info, Loader2, Sparkles, Star } from 'lucide-react';
+import { AlertCircle, Info, Sparkles, Star } from 'lucide-react';
 
 import { useNakshatraPredictions } from '@/hooks/useAstrology';
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert';
+import {
+  EmptyNotice,
+  LoadingLayout,
+  RequestError,
+  Skeleton,
+} from '@/components/agents/astrology/ui/observatory-state';
 import { Badge } from '@/components/ui/badge';
 import {
   Card,
@@ -108,26 +113,28 @@ export function NavataraEducationView({
   guestProfileId,
   onClose,
 }: NavataraEducationViewProps) {
-  const { data, isLoading, error } = useNakshatraPredictions(true, studentId, guestProfileId);
+  const { data, isLoading, isError, isFetching, refetch } = useNakshatraPredictions(true, studentId, guestProfileId);
 
   return (
-    <div className="mx-auto max-w-5xl space-y-8 px-4 pb-12 text-foreground sm:px-6">
+    <div className="w-full max-w-none space-y-8 pb-12 text-foreground">
       {/* Header Section */}
-      <div className="space-y-4 border-b border-primary-500/20 pb-6">
+      <div className="relative overflow-hidden border-b border-border pb-7">
+        <div className="obs-orbit" aria-hidden="true" />
         <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h1 className="flex items-center gap-2 font-serif text-2xl text-primary-500 sm:text-3xl">
-              <Sparkles className="h-6 w-6 text-primary-500 sm:h-7 sm:w-7" />
+            <p className="obs-label mb-3">Your lunar observatory</p>
+            <h1 className="obs-title flex items-center gap-3 text-3xl sm:text-4xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--solar-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_12%,transparent)]"><Sparkles className="h-5 w-5 text-[var(--solar-gold)]" /></span>
               Navatara: The Cycle of Nine Stars
             </h1>
-            <p className="mt-2 text-sm text-primary-100/70 sm:text-base">
+            <p className="obs-muted mt-3 max-w-2xl text-sm sm:text-base">
               Your Personal Energy Map across the 27 Nakshatras
             </p>
           </div>
           {onClose && (
             <button
               onClick={onClose}
-              className="self-start text-sm font-medium text-primary-500/70 transition-colors hover:text-primary-500 sm:self-auto"
+              className="obs-control self-start text-xs sm:self-auto"
             >
               Back to Overview
             </button>
@@ -136,12 +143,12 @@ export function NavataraEducationView({
         <div className="mt-4 flex items-center gap-2 pt-2">
           <Badge
             variant="outline"
-            className="border-primary-500/30 bg-primary-500/10 text-primary-300"
+            className="border-[color-mix(in_srgb,var(--solar-gold)_32%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_10%,transparent)] text-[var(--solar-gold)]"
           >
             System Badge: [Parashari Logic: Tara Bala Analysis]
           </Badge>
         </div>
-        <p className="mt-4 max-w-3xl leading-relaxed text-primary-100/80">
+        <p className="obs-muted mt-4 max-w-3xl text-sm leading-relaxed">
           The Navatara system categorizes all 27 Nakshatras into nine functional
           groups based on their relationship to your Janma Nakshatra (Birth
           Star). This analysis reveals which stars bring prosperity, which
@@ -151,74 +158,82 @@ export function NavataraEducationView({
 
       {/* Dynamic API Insight Section */}
       <section>
-        <h2 className="mb-4 flex items-center gap-2 font-serif text-xl text-primary-400">
-          <Star className="h-5 w-5 text-primary-500" />
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-medium">
+          <Star className="h-5 w-5 text-[var(--solar-orange)]" />
           Your Transit Tara of the Day
         </h2>
 
         {isLoading ? (
-          <Card className="flex h-40 items-center justify-center">
-            <Loader2 className="h-8 w-8 animate-spin text-primary-500" />
-          </Card>
-        ) : error ? (
-          <Alert variant="destructive">
-            <AlertCircle className="h-4 w-4" />
-            <AlertTitle>Error</AlertTitle>
-            <AlertDescription>
-              Failed to load daily Nakshatra predictions. Please try again
-              later.
-            </AlertDescription>
-          </Alert>
+          <LoadingLayout label="Loading today’s Tara Bala…" className="grid gap-6 md:grid-cols-2">
+            <div className="obs-card space-y-4 p-6" aria-hidden="true">
+              <Skeleton className="h-3 w-40" rounded="rounded-md" />
+              <Skeleton className="h-3.5 w-56 max-w-full" rounded="rounded-md" />
+              <Skeleton className="h-9 w-48 max-w-full" rounded="rounded-md" />
+              <Skeleton className="h-14 w-full" rounded="rounded-lg" />
+              <Skeleton className="h-3 w-44 max-w-full" rounded="rounded-md" />
+            </div>
+            <div className="obs-card space-y-5 p-6" aria-hidden="true">
+              <div className="space-y-2"><Skeleton className="h-3 w-44" rounded="rounded-md" /><div className="flex flex-wrap gap-2">{[0, 1, 2].map(index => <Skeleton key={index} className="h-6 w-28" rounded="rounded-full" />)}</div></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-40" rounded="rounded-md" /><div className="flex flex-wrap gap-2">{[0, 1, 2].map(index => <Skeleton key={index} className="h-6 w-24" rounded="rounded-full" />)}</div></div>
+            </div>
+          </LoadingLayout>
+        ) : isError ? (
+          <RequestError
+            title="Today's transit Tara is unavailable"
+            message="Daily predictions come from the calculation service. Your birth star and the reference table below are unaffected."
+            onRetry={() => refetch()}
+            retrying={isFetching}
+          />
         ) : data ? (
           <div className="grid gap-6 md:grid-cols-2">
-            <Card className="bg-white/1 border-primary-500/20 shadow-sm shadow-sm">
+            <Card data-tone="gold" className="obs-card border-border bg-transparent shadow-none">
               <CardHeader className="pb-3">
-                <CardTitle className="flex items-center justify-between text-lg text-primary-500">
+                <CardTitle className="flex items-center justify-between text-lg text-foreground">
                   <span>Today&apos;s Tara Bala</span>
                   {data.ai_guidance && (
-                    <Badge variant="outline" className="border-primary-500/30 bg-primary-500/10 text-xs text-primary-400">
+                    <Badge variant="outline" className="border-[color-mix(in_srgb,var(--solar-gold)_32%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_10%,transparent)] text-xs text-[var(--solar-gold)]">
                       {data.ai_guidance.status.nature}
                     </Badge>
                   )}
                 </CardTitle>
-                <CardDescription className="text-primary-100/60">
+                <CardDescription className="text-muted-foreground">
                   Based on the Moon transiting {data.current_moon.nakshatra}
                 </CardDescription>
               </CardHeader>
               <CardContent>
                 <div className="space-y-4">
                   <div className="flex items-end gap-3">
-                    <span className="font-serif text-4xl font-bold text-primary-500">
+                    <span className="text-4xl font-semibold tracking-tight text-[var(--solar-gold)]">
                       {data.tarabala.name}
                     </span>
-                    <span className="pb-1 text-sm font-medium text-primary-500/50">
+                    <span className="pb-1 text-sm text-muted-foreground">
                       (Tara #{data.tarabala.count})
                     </span>
                   </div>
 
                   {data.ai_guidance ? (
-                    <div className="rounded-lg border border-primary-500/20 bg-primary-500/10 p-4">
-                      <p className="font-medium italic leading-relaxed text-primary-100">
+                    <div className="rounded-xl border border-[color-mix(in_srgb,var(--solar-gold)_22%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_8%,transparent)] p-4">
+                      <p className="font-medium italic leading-relaxed text-foreground">
                         &quot;{data.ai_guidance.guidance.summary}&quot;
                       </p>
                     </div>
                   ) : (
-                    <div className="rounded-lg border border-primary-500/20 bg-primary-500/10 p-4">
-                      <p className="font-medium text-primary-100">
+                    <div className="rounded-xl border border-border bg-secondary/60 p-4">
+                      <p className="font-medium text-foreground">
                         {data.tarabala.effect}
                       </p>
                     </div>
                   )}
 
                   <div className="flex flex-wrap items-center gap-3 pt-2">
-                    <span className="text-sm text-primary-500/70">
+                    <span className="text-sm text-muted-foreground">
                       Favorability Score:
                     </span>
                     <Badge
                       className={
                         (data.overall_score || parseInt(data.ai_guidance?.status.favorability_score || '0')) > 60
                           ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
-                          : 'bg-primary-500/10 text-primary-300'
+                          : 'bg-secondary text-muted-foreground'
                       }
                     >
                       {data.ai_guidance?.status.favorability_score || `${data.overall_score}%`}
@@ -228,12 +243,12 @@ export function NavataraEducationView({
               </CardContent>
             </Card>
 
-            <Card className="bg-white/1 border-primary-500/20 shadow-sm shadow-sm">
+            <Card data-tone="nebula" className="obs-card border-border bg-transparent shadow-none">
               <CardHeader className="pb-3">
-                <CardTitle className="text-lg text-primary-500">
+                <CardTitle className="text-lg text-foreground">
                   Daily Guidance
                 </CardTitle>
-                <CardDescription className="text-primary-100/60">
+                <CardDescription className="text-muted-foreground">
                   AI-Powered Recommendations
                 </CardDescription>
               </CardHeader>
@@ -276,24 +291,24 @@ export function NavataraEducationView({
             </Card>
 
             {data.ai_guidance && (
-              <Card className="md:col-span-2 bg-gradient-to-br from-primary-950/40 to-transparent border-primary-500/20 shadow-lg">
+              <Card className="obs-card md:col-span-2 border-border bg-secondary/30 shadow-none">
                 <CardContent className="pt-6">
                   <div className="grid gap-8 md:grid-cols-2">
                     <div className="space-y-4">
-                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-primary-500/70">
+                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[var(--solar-gold)]/80">
                         <Info className="h-4 w-4" />
                         Planning Tip
                       </h4>
-                      <p className="text-lg font-medium text-primary-100 leading-relaxed">
+                      <p className="text-lg font-medium leading-relaxed text-foreground">
                         {data.ai_guidance.planning_tip}
                       </p>
                     </div>
-                    <div className="relative space-y-4 rounded-xl bg-primary-500/5 p-6 border border-primary-500/10">
-                      <Sparkles className="absolute -top-3 -right-3 h-8 w-8 text-primary-500/20" />
-                      <h4 className="text-sm font-bold uppercase tracking-widest text-primary-500/70">
+                    <div className="relative space-y-4 rounded-xl border border-border bg-background/60 p-6">
+                      <Sparkles className="absolute -right-3 -top-3 h-8 w-8 text-[var(--solar-gold)]/25" />
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-[var(--solar-gold)]/80">
                         Cosmic Affirmation
                       </h4>
-                      <p className="font-serif text-xl italic text-primary-200 leading-loose">
+                      <p className="text-xl italic leading-loose text-foreground">
                         {data.ai_guidance.motivational_message.split('\n').map((line, i) => (
                           <span key={i} className="block">{line}</span>
                         ))}
@@ -304,18 +319,23 @@ export function NavataraEducationView({
               </Card>
             )}
           </div>
-        ) : null}
+        ) : (
+          <EmptyNotice
+            title="No daily prediction available"
+            message="The calculation service returned no Tara Bala for today. The nine-category reference table below still explains how Navatara works."
+          />
+        )}
       </section>
 
       {/* Educational Context */}
-      <section className="bg-white/1 rounded-xl border border-primary-500/20 p-6 shadow-sm">
-        <h2 className="mb-4 flex items-center gap-2 font-serif text-xl text-primary-400">
-          <Info className="h-5 w-5 text-primary-500" />
+      <section className="obs-card border-border p-6 shadow-none">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-medium">
+          <Info className="h-5 w-5 text-[var(--solar-orange)]" />
           Educational Context: How it Works
         </h2>
-        <div className="space-y-4 text-primary-100/80">
-          <div className="rounded-lg border border-primary-500/10 bg-primary-500/5 p-4">
-            <h3 className="mb-2 font-semibold text-primary-300">
+        <div className="obs-muted space-y-4 text-sm leading-relaxed">
+          <div className="rounded-xl border border-border bg-secondary/40 p-4">
+            <h3 className="mb-2 font-semibold text-foreground">
               The Triple Cycle (The Rule of Nine)
             </h3>
             <p>
@@ -326,8 +346,8 @@ export function NavataraEducationView({
               will always fall under the Sampat (Wealth) category.
             </p>
           </div>
-          <div className="rounded-lg border border-primary-500/10 bg-primary-500/5 p-4">
-            <h3 className="mb-2 font-semibold text-primary-300">
+          <div className="rounded-xl border border-border bg-secondary/40 p-4">
+            <h3 className="mb-2 font-semibold text-foreground">
               The Purpose of Navatara
             </h3>
             <ul className="list-inside list-disc space-y-1">
@@ -351,18 +371,18 @@ export function NavataraEducationView({
 
       {/* The Legend Table */}
       <section>
-        <h2 className="mb-4 font-serif text-xl text-primary-400">
+        <h2 className="mb-4 text-xl font-medium">
           The Navatara Legend: The Nine Categories
         </h2>
-        <p className="mb-6 text-sm text-primary-100/60">
+        <p className="obs-muted mb-6 text-sm">
           Reference this table to understand the core meaning behind each Tara
           Bala rating.
         </p>
 
-        <div className="rounded-xl border border-primary-500/20 bg-primary-900/10 shadow-sm shadow-sm">
+        <div className="obs-card overflow-hidden border-border bg-transparent shadow-none">
           <div className="w-full max-w-sm md:max-w-full overflow-x-auto overflow-y-hidden [webkit-overflow-scrolling:touch]">
-            <table className="w-full min-w-[800px] text-left text-sm text-primary-100/80">
-              <thead className="border-b border-primary-500/20 bg-primary-950/30 text-xs uppercase text-primary-300">
+            <table className="w-full min-w-[800px] text-left text-sm text-muted-foreground">
+              <thead className="border-b border-border bg-secondary/50 text-xs uppercase tracking-[0.16em] text-[var(--solar-gold)]">
                 <tr>
                   <th
                     scope="col"
@@ -381,27 +401,27 @@ export function NavataraEducationView({
                   </th>
                 </tr>
               </thead>
-              <tbody className="bg-white/1 divide-y divide-primary-500/10">
+              <tbody className="divide-y divide-border bg-transparent">
                 {TARA_CATEGORIES.map((tara, index) => (
                   <tr
                     key={index}
-                    className="transition-colors hover:bg-primary-500/10"
+                    className="transition-colors hover:bg-secondary/70"
                   >
-                    <td className="whitespace-nowrap px-6 py-4 text-center text-lg font-bold text-primary-500">
+                    <td className="whitespace-nowrap px-6 py-4 text-center text-lg font-semibold text-[var(--solar-gold)]">
                       {tara.category}
                     </td>
                     <td className="px-6 py-4">
                       <Badge variant="outline" className={tara.color}>
                         {tara.name}
                       </Badge>
-                      <div className="mt-1 text-[10px] font-bold uppercase tracking-tighter text-primary-500/50">
+                      <div className="mt-1 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
                         ({tara.meaning})
                       </div>
                     </td>
                     <td className="px-6 py-4 font-medium leading-relaxed">
                       {tara.description}
                     </td>
-                    <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-primary-500/40">
+                    <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-muted-foreground">
                       {tara.count}
                     </td>
                   </tr>

@@ -12,11 +12,11 @@ import { ROUTES } from '@/constants/routes';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
+import type { SessionSnapshot } from '@/types/auth';
+import type { User, UserRole } from '@/types/user';
 import { getErrorMessage } from '@/lib/error-utils';
 import { landingPathFor, rolesNeedRecheck } from '@/lib/guard-rules';
 
-import type { SessionSnapshot } from '@/types/auth';
-import type { User, UserRole } from '@/types/user';
 import {
   authApi,
   BecomeRoleResponse,
@@ -37,6 +37,7 @@ interface AuthContextType {
   becomeConsultant: () => Promise<BecomeRoleResponse>;
   becomeStudent: () => Promise<BecomeRoleResponse>;
   isLoading: boolean;
+  isRoleSwitching: boolean;
   error: string | null;
   isAuthenticated: boolean;
   userRoles: UserRole[];
@@ -59,7 +60,9 @@ const ROLE_RECHECK_DELAY_MS = 500;
  * bounded re-read keeps that window on a loading state instead of flashing the
  * role picker at somebody who already has a role.
  */
-async function settleRoles(snapshot: SessionSnapshot): Promise<SessionSnapshot> {
+async function settleRoles(
+  snapshot: SessionSnapshot
+): Promise<SessionSnapshot> {
   let current = snapshot;
 
   for (
@@ -83,6 +86,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // Session and roles come from /api/auth/session, so the first paint is
   // identical on server and client — no cookie peeking, no hydration mismatch.
   const [isLoading, setIsLoading] = useState(true);
+  const [isRoleSwitching, setIsRoleSwitching] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userRoles, setUserRolesState] = useState<UserRole[]>([]);
@@ -149,10 +153,17 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!canAccessRole(role)) {
       throw new Error(`You don't have access to ${role} role`);
     }
-    const snapshot = await authApi.setActiveRole(role);
-    applySession(snapshot);
-    router.push(role === 'STUDENT' ? ROUTES.STUDENT.DASHBOARD : ROUTES.TEACHER.DASHBOARD);
-    toast.success(`Switched to ${role.toLowerCase()} mode`);
+    setIsRoleSwitching(true);
+    try {
+      const snapshot = await authApi.setActiveRole(role);
+      applySession(snapshot);
+      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
+      toast.success(`Switched to ${role.toLowerCase()} mode`);
+      window.setTimeout(() => setIsRoleSwitching(false), 800);
+    } catch (error) {
+      setIsRoleSwitching(false);
+      throw error;
+    }
   };
 
   // ── Auth actions ───────────────────────────────────────────────────────────
@@ -187,7 +198,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await authApi.signup(userData.email!, password, userData.username || '');
 
       toast.success('Account Created Successfully!', {
-        description: 'Please check your email to verify your account before signing in.',
+        description:
+          'Please check your email to verify your account before signing in.',
       });
 
       const emailParam = userData.email
@@ -210,7 +222,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const signInWithGoogle = async (redirectTo?: string) => {
     const { url } = await authApi.googleOAuthStart(redirectTo);
     if (!url) {
-      toast.error('Google Sign-In Failed', { description: 'No authorization URL returned' });
+      toast.error('Google Sign-In Failed', {
+        description: 'No authorization URL returned',
+      });
       return;
     }
     window.location.href = url;
@@ -272,7 +286,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: async () => {
       await refreshUserProfile();
       applySession(await authApi.setActiveRole('TEACHER'));
-      router.push(ROUTES.TEACHER.DASHBOARD);
+      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
       toast.success('Consultant profile created!');
     },
     onError: (err: unknown) => {
@@ -287,7 +301,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: async () => {
       await refreshUserProfile();
       applySession(await authApi.setActiveRole('STUDENT'));
-      router.push(ROUTES.STUDENT.DASHBOARD);
+      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
       toast.success('Student profile created!');
     },
     onError: (err: unknown) => {
@@ -337,6 +351,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         becomeConsultant,
         becomeStudent,
         isLoading: isLoading || isMutationLoading,
+        isRoleSwitching,
         error,
         isAuthenticated,
         userRoles,

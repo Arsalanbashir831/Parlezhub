@@ -10,7 +10,8 @@ import {
 } from 'lucide-react';
 
 import { cn } from '@/lib/utils';
-import { Meeting, MeetingStatus, useMeetings } from '@/hooks/useMeetings';
+import { Meeting, MeetingStatus } from '@/hooks/useMeetings';
+import { useMeetingsView } from '@/contexts/meetings-context';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
@@ -46,7 +47,7 @@ export default function MeetingTabs() {
     setActiveTab,
     approveBooking,
     userRole,
-  } = useMeetings();
+  } = useMeetingsView();
 
   const openCancel = (id: string) => {
     setCancelTargetId(id);
@@ -210,8 +211,8 @@ export default function MeetingTabs() {
             <CardTitle className="font-serif text-xl font-bold tracking-tight text-white">
               {meeting.subject ||
                 (userRole === 'student'
-                  ? `Lesson with ${meeting.consultantName ?? ''}`
-                  : `Lesson with ${meeting.studentName ?? ''}`)}
+                  ? `Session with ${meeting.consultantName ?? ''}`
+                  : `Session with ${meeting.studentName ?? ''}`)}
             </CardTitle>
           </div>
           {getStatusBadge(meeting.status, overrideLabel)}
@@ -372,7 +373,9 @@ export default function MeetingTabs() {
               No upcoming meetings
             </h3>
             <p className="mx-auto max-w-sm text-sm tracking-wide text-primary-100/40">
-              Schedule a session to continue your language learning journey.
+              {userRole === 'student'
+                ? 'Book a consultation with an astrologer to see it here.'
+                : 'Your upcoming student sessions will appear here.'}
             </p>
           </CardContent>
         </Card>

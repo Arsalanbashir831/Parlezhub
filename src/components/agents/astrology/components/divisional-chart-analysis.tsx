@@ -6,6 +6,7 @@ import remarkGfm from 'remark-gfm';
 import { AlertTriangle, RefreshCw, Sparkles } from 'lucide-react';
 import { useAstrologicalInsight } from '@/hooks/useAstrology';
 import { analysisTopicTone } from '@/lib/astrology-navigation';
+import { LoadingLayout, Skeleton, SkeletonText } from '../ui/observatory-state';
 
 interface DivisionalChartAnalysisProps {
   chartType: string;
@@ -54,21 +55,21 @@ export default function DivisionalChartAnalysis({
         </button>
       </div>
 
-      {isLoading ? (
-        <p role="status" className="flex min-h-40 items-center justify-center gap-3 text-sm text-muted-foreground">
-          <Sparkles className="h-5 w-5 animate-pulse text-[var(--glass-tone)]" aria-hidden="true" />
-          Reading this divisional chart…
-        </p>
-      ) : isGenerating ? (
-        <p role="status" className="flex min-h-40 flex-col items-center justify-center gap-3 text-center text-sm text-muted-foreground">
-          <RefreshCw className="h-5 w-5 animate-spin text-[var(--glass-tone)]" aria-hidden="true" />
-          This reading is being written. The page checks back every few seconds.
-        </p>
+      {isLoading || isGenerating ? (
+        <LoadingLayout label={isGenerating ? 'Waiting for this reading to finish…' : 'Reading this divisional chart…'} className="mt-5 gap-4">
+          <Skeleton className="h-4 w-48 max-w-full" rounded="rounded-md" />
+          <SkeletonText lines={6} />
+          {isGenerating && <p className="text-xs text-muted-foreground">This reading is being written. The page checks back every few seconds.</p>}
+        </LoadingLayout>
       ) : isError || !data ? (
         <div role="alert" className="flex min-h-40 flex-col items-center justify-center gap-3 text-center">
           <AlertTriangle className="h-5 w-5 text-[var(--danger)]" aria-hidden="true" />
           <p className="text-sm font-medium">No reading available for this chart</p>
-          <p className="obs-muted max-w-md text-xs leading-relaxed">{failureMessage}</p>
+          <p className="obs-muted max-w-md text-xs leading-relaxed">{failureMessage || 'The analysis service did not return a reading. Your chart data is unchanged.'}</p>
+          <button type="button" className="obs-control obs-accent gap-2 text-xs" onClick={() => refetch()} disabled={busy}>
+            <RefreshCw className={`h-3.5 w-3.5 ${busy ? 'animate-spin' : ''}`} aria-hidden="true" />
+            {busy ? 'Trying again…' : 'Try again'}
+          </button>
         </div>
       ) : (
         <article className="ai-chat-markdown mt-5 max-w-[80ch] text-sm leading-relaxed">

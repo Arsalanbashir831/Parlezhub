@@ -10,8 +10,9 @@ interface MessageInputProps {
   onSend: () => void;
   disabled?: boolean;
   draftFiles?: File[];
-  onAddFiles?: (files: FileList) => void;
+  onAddFiles?: (files: FileList | File[]) => void;
   onRemoveFile?: (index: number) => void;
+  onTyping?: () => void;
   isSending?: boolean;
 }
 
@@ -24,20 +25,24 @@ const MessageInput = memo(
     draftFiles = [],
     onAddFiles,
     onRemoveFile,
+    onTyping,
     isSending = false,
   }: MessageInputProps) => {
     return (
-      <div className="border-t border-primary-500/10 bg-background/95 p-6">
-        <MessageComposer
-          value={value}
-          onChange={onChange}
-          onSend={onSend}
-          disabled={disabled}
-          draftFiles={draftFiles}
-          onAddFiles={onAddFiles}
-          onRemoveFile={onRemoveFile}
-          isSending={isSending}
-        />
+      <div className="shrink-0 border-t border-border bg-card px-4 py-3 sm:px-6">
+        <div className="mx-auto w-full max-w-3xl">
+          <MessageComposer
+            value={value}
+            onChange={onChange}
+            onSend={onSend}
+            disabled={disabled}
+            draftFiles={draftFiles}
+            onAddFiles={onAddFiles}
+            onRemoveFile={onRemoveFile}
+            onTyping={onTyping}
+            isSending={isSending}
+          />
+        </div>
       </div>
     );
   }

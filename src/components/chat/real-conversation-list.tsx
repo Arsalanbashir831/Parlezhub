@@ -5,7 +5,12 @@ import { Search } from 'lucide-react';
 
 import { ChatRoom } from '@/types/chat';
 import { Input } from '@/components/ui/input';
-import { ScrollArea } from '@/components/ui/scroll-area';
+import { resolveChatPeer } from '@/lib/chat-peer';
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
+import {
+  LoadingLayout,
+  Skeleton,
+} from '@/components/agents/astrology/ui/observatory-state';
 
 import RealConversationItem from './real-conversation-item';
 
@@ -14,6 +19,8 @@ interface RealConversationListProps {
   selectedChatId: string;
   searchQuery: string;
   currentUserRole: 'student' | 'consultant';
+  currentUserId?: string;
+  isLoading?: boolean;
   onSearchChange: (query: string) => void;
   onChatSelect: (chat: ChatRoom) => void;
 }
@@ -24,47 +31,64 @@ const RealConversationList = memo(
     selectedChatId,
     searchQuery,
     currentUserRole,
+    currentUserId,
+    isLoading = false,
     onSearchChange,
     onChatSelect,
   }: RealConversationListProps) => {
     const filteredChats = useMemo(() => {
-      return chats.filter((chat) => {
-        const searchName =
-          currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
-        return searchName?.toLowerCase().includes(searchQuery.toLowerCase());
-      });
-    }, [chats, searchQuery, currentUserRole]);
+      const query = searchQuery.trim().toLowerCase();
+      if (!query) return chats;
+      return chats.filter((chat) =>
+        resolveChatPeer(chat, currentUserRole, currentUserId)
+          .name.toLowerCase()
+          .includes(query)
+      );
+    }, [chats, searchQuery, currentUserRole, currentUserId]);
 
     return (
-      <div className="w-full min-w-0 overflow-hidden border-r border-primary-500/10 bg-background md:w-80 md:min-w-80 md:max-w-80">
-        <div className="border-b border-primary-500/10 bg-background p-6">
-          <div className="mb-4">
-            <h2 className="text-sm font-bold uppercase tracking-[0.2em] text-primary-500">
-              Messages
-            </h2>
-          </div>
+      <div className="flex h-full w-full min-w-0 flex-col border-r border-border bg-card">
+        <div className="shrink-0 space-y-3 border-b border-border p-4">
+          <p className="obs-label">Conversations</p>
           <div className="group relative">
-            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 transform text-primary-500/50 transition-colors group-focus-within:text-primary-500" />
+            <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted-foreground transition-colors group-focus-within:text-[var(--solar-orange)]" />
             <Input
-              placeholder="Seek a consultant..."
+              aria-label="Search conversations"
+              placeholder="Search…"
               value={searchQuery}
               onChange={(e) => onSearchChange(e.target.value)}
-              className="w-full rounded-xl border-primary-500/10 bg-white/[0.03] pl-10 text-primary-100 placeholder:text-primary-100/30 focus-visible:ring-primary-500/30"
+              className="h-10 rounded-xl border-border bg-[var(--surface-2)] pl-9 text-sm text-foreground placeholder:text-muted-foreground focus-visible:ring-[color-mix(in_srgb,var(--solar-orange)_30%,transparent)]"
             />
           </div>
         </div>
 
-        <ScrollArea className="h-[calc(100%-5rem)]">
-          <div className="space-y-1 p-2">
-            {filteredChats.length === 0 ? (
+        <ScrollArea className="min-h-0 flex-1">
+          <div className="flex flex-col gap-1 p-2">
+            {isLoading ? (
+              <LoadingLayout label="Loading conversations…" className="gap-1">
+                {[0, 1, 2].map((row) => (
+                  <div
+                    key={row}
+                    aria-hidden="true"
+                    className="flex items-center gap-3 rounded-xl border border-transparent p-3"
+                  >
+                    <Skeleton className="h-10 w-10 shrink-0" rounded="rounded-full" />
+                    <div className="min-w-0 flex-1 space-y-2">
+                      <Skeleton className="h-3.5 w-32 max-w-full" rounded="rounded-md" />
+                      <Skeleton className="h-3 w-40 max-w-full" rounded="rounded-md" />
+                    </div>
+                  </div>
+                ))}
+              </LoadingLayout>
+            ) : filteredChats.length === 0 ? (
               <div className="flex h-48 items-center justify-center p-6 text-center">
-                <div>
-                  <p className="text-sm font-bold text-primary-300">
+                <div className="space-y-1.5">
+                  <p className="text-sm font-medium text-foreground">
                     No conversations found
                   </p>
-                  <p className="mt-1 text-[10px] uppercase tracking-wider text-primary-100/40">
+                  <p className="obs-label">
                     {currentUserRole === 'student'
-                      ? 'Start a conversation with a consultant from their service details'
+                      ? 'Start one from an astrologer profile'
                       : 'Students will start conversations with you'}
                   </p>
                 </div>
@@ -75,12 +99,14 @@ const RealConversationList = memo(
                   key={chat.id}
                   chat={chat}
                   currentUserRole={currentUserRole}
+                  currentUserId={currentUserId}
                   isSelected={selectedChatId === chat.id}
                   onSelect={onChatSelect}
                 />
               ))
             )}
           </div>
+          <ScrollBar orientation="vertical" />
         </ScrollArea>
       </div>
     );

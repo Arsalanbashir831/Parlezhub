@@ -257,7 +257,7 @@ export function useMeetings() {
         router.push(ROUTES.TEACHER.CHAT + '?student=' + personId);
       } else {
         // Student messaging a consultant
-        router.push(ROUTES.STUDENT.CHAT + '?consultant=' + personId);
+        router.push(ROUTES.AGENT.ASTROLOGY.HIRE.CHAT + '?consultant=' + personId);
       }
     },
     [router, user?.role]

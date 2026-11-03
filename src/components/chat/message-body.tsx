@@ -36,11 +36,11 @@ export default function MessageBody({ content }: { content: string }) {
     fields['Payment Status']?.includes('UNPAID');
 
   return (
-    <div className="relative my-2 overflow-hidden rounded-2xl border border-primary-500/10 bg-white/[0.04] p-5 shadow-xl transition-colors hover:bg-white/[0.07]">
+    <div className="relative my-2 overflow-hidden rounded-2xl border border-border bg-[var(--surface-2)] p-5">
       {/* Accent bar */}
-      <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.3)]" />
+      <div className="absolute bottom-0 left-0 top-0 w-0.5 bg-[var(--solar-orange)]" />
 
-      <p className="mb-4 text-sm font-bold uppercase tracking-widest text-primary-500">
+      <p className="obs-label mb-4 text-[var(--solar-orange)]">
         {isBookingApproved || isBookingConfirmed
           ? 'Booking Confirmed'
           : 'Booking Requested'}
@@ -49,17 +49,17 @@ export default function MessageBody({ content }: { content: string }) {
       <div className="space-y-2.5">
         {fields['Service'] && (
           <div className="group flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Service
             </span>
-            <span className="text-right text-xs font-bold text-primary-100">
+            <span className="text-right text-xs font-bold foreground">
               {fields['Service']}
             </span>
           </div>
         )}
         {fields['Status'] && (
           <div className="group flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Status
             </span>
             <span
@@ -67,8 +67,8 @@ export default function MessageBody({ content }: { content: string }) {
                 'rounded-md border px-2 py-0.5 text-[10px] font-extrabold uppercase tracking-widest',
                 fields['Status'].includes('CONFIRMED') ||
                   fields['Status'].includes('APPROVED')
-                  ? 'border-primary-500/30 bg-primary-500/10 text-primary-500'
-                  : 'border-white/10 bg-white/5 text-primary-100/60'
+                  ? 'border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)] bg-[color-mix(in_srgb,var(--solar-orange)_12%,transparent)] text-[var(--solar-orange)]'
+                  : 'border-white/10 bg-white/5 text-muted-foreground'
               )}
             >
               {fields['Status']}
@@ -77,27 +77,27 @@ export default function MessageBody({ content }: { content: string }) {
         )}
         {fields['Start'] && (
           <div className="group flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Start
             </span>
-            <span className="text-right text-xs font-bold text-primary-100">
+            <span className="text-right text-xs font-bold foreground">
               {fields['Start']}
             </span>
           </div>
         )}
         {fields['End'] && (
           <div className="group flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               End
             </span>
-            <span className="text-right text-xs font-bold text-primary-100">
+            <span className="text-right text-xs font-bold foreground">
               {fields['End']}
             </span>
           </div>
         )}
         {fields['Payment Status'] && (
           <div className="group flex items-center justify-between gap-4">
-            <span className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
+            <span className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground">
               Payment
             </span>
             <span
@@ -105,7 +105,7 @@ export default function MessageBody({ content }: { content: string }) {
                 'text-[10px] font-extrabold uppercase tracking-widest',
                 fields['Payment Status'] === 'UNPAID'
                   ? 'text-destructive drop-shadow-[0_0_8px_rgba(239,68,68,0.2)]'
-                  : 'text-primary-500 drop-shadow-[0_0_8px_rgba(212,175,55,0.2)]'
+                  : 'text-[var(--solar-orange)]'
               )}
             >
               {fields['Payment Status']}

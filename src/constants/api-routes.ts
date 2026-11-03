@@ -51,7 +51,11 @@ export const API_ROUTES = {
     CREATE_CHAT: '/chats/start/',
     SEND_MESSAGE: (chatId: string) => `/send-message/${chatId}`,
     GET_CHATS: `/accounts/supabase/chats/`,
-    GET_CHAT_MESSAGES: (chatId: string) => `/messages/${chatId}/`,
+    // Slashless: Django needs its trailing slash, the FastAPI chat server has
+    // none, and a slash here 307s back through the gateway in a loop.
+    GET_CHAT_MESSAGES: (chatId: string) => `/messages/${chatId}`,
+    MARK_CHAT_READ: (chatId: string) => `/messages/${chatId}/read`,
+    CHAT_PRESENCE: (chatId: string) => `/presence/${chatId}`,
     WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}/ws/chat/`,
   },
   VOICE: {

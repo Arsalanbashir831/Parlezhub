@@ -34,6 +34,7 @@ import {
   CommandList,
 } from '@/components/ui/command';
 import * as React from 'react';
+import { LoadingLayout, RequestError, Skeleton } from '@/components/agents/astrology/ui/observatory-state';
 
 const formSchema = z.object({
   guest_name: z.string().optional(),
@@ -66,6 +67,16 @@ const formSchema = z.object({
 
 type FormValues = z.infer<typeof formSchema>;
 
+/** Ghost of the birth-details form: paired fields, then the save row. */
+function BirthProfileFormSkeleton() {
+  return <LoadingLayout label="Loading birth details…" className="obs-card w-full gap-6 p-5 sm:p-8">
+    <div className="space-y-3"><Skeleton className="h-7 w-56 max-w-full" rounded="rounded-md" /><Skeleton className="h-4 w-72 max-w-full" rounded="rounded-md" /></div>
+    {[0, 1].map(row => <div key={row} className="grid gap-6 sm:grid-cols-2">{[0, 1].map(index => <div key={index} className="space-y-2"><Skeleton className="h-3 w-24" rounded="rounded-md" /><Skeleton className="h-11 w-full" rounded="rounded-xl" /></div>)}</div>)}
+    <div className="space-y-2"><Skeleton className="h-3 w-24" rounded="rounded-md" /><Skeleton className="h-11 w-full" rounded="rounded-xl" /></div>
+    <div className="flex flex-wrap gap-3 pt-2"><Skeleton className="h-11 w-40" rounded="rounded-xl" /><Skeleton className="h-11 w-32" rounded="rounded-xl" /></div>
+  </LoadingLayout>;
+}
+
 export default function BirthProfileForm({
   readOnly = false,
   studentId,
@@ -85,7 +96,7 @@ export default function BirthProfileForm({
 }) {
   // Only fetch existing profile if updating or viewing student
   const shouldFetchProfile = type !== 'guest' || !!guestProfileId;
-  const { data: existingProfile, isLoading, isError, refetch } = useBirthProfile(
+  const { data: existingProfile, isLoading, isError, isFetching, refetch } = useBirthProfile(
     type === 'student' ? studentId : undefined,
     type === 'guest' ? guestProfileId : undefined,
     shouldFetchProfile
@@ -185,8 +196,8 @@ export default function BirthProfileForm({
     }
   };
 
-  if (shouldFetchProfile && isLoading) return <div role="status" className="obs-card w-full p-8 text-sm text-muted-foreground">Loading birth details…</div>;
-  if (isError && shouldFetchProfile) return <div role="alert" className="obs-card w-full p-8"><p>Could not load birth details.</p><button className="obs-control mt-4" onClick={() => refetch()}>Retry</button></div>;
+  if (shouldFetchProfile && isLoading) return <BirthProfileFormSkeleton />;
+  if (isError && shouldFetchProfile) return <RequestError className="w-full" title="Could not load your birth details" message="Nothing has been changed. We simply could not read the saved details, so the form is empty rather than showing the wrong values." onRetry={() => refetch()} retrying={isFetching} />;
 
   return (
     <div className="w-full">

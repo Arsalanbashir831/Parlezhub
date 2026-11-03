@@ -68,21 +68,21 @@ export default function EditServicePage() {
             className="flex items-center gap-2 h-10 rounded-xl border-primary-500/10 bg-white/5 text-white px-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Services
+            Back to My Gigs
           </Button>
         </div>
 
         <Card className="overflow-hidden rounded-3xl border-white/5 bg-white/[0.03] shadow-2xl backdrop-blur-md">
           <CardContent className="py-16 text-center">
-            <h3 className="mb-2 font-serif text-2xl font-bold text-white">Service Not Found</h3>
+            <h3 className="mb-2 font-serif text-2xl font-bold text-white">Gig Not Found</h3>
             <p className="mb-8 max-w-sm mx-auto text-primary-100/60 font-medium">
-              The service you&apos;re trying to edit doesn&apos;t exist or may have been deleted.
+              The gig you&apos;re trying to edit doesn&apos;t exist or may have been deleted.
             </p>
             <Button
               onClick={handleCancel}
               className="h-12 rounded-xl bg-primary-500 px-8 text-sm font-bold uppercase tracking-widest text-white shadow-xl transition-all hover:bg-primary-600 active:scale-95"
             >
-              Back to Services
+              Back to My Gigs
             </Button>
           </CardContent>
         </Card>
@@ -101,7 +101,7 @@ export default function EditServicePage() {
             className="flex items-center gap-2 h-10 rounded-xl border-primary-500/10 bg-white/5 text-white px-4"
           >
             <ArrowLeft className="h-4 w-4" />
-            Back to Services
+            Back to My Gigs
           </Button>
         </div>
         <ServiceFormSkeleton />
@@ -137,10 +137,10 @@ export default function EditServicePage() {
 
       <div>
         <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
-          Edit <span className="text-primary-500">Service</span>
+          Edit <span className="text-primary-500">Gig</span>
         </h1>
         <p className="mt-2 text-primary-100/60 font-medium">
-          Update your service offering details to reflect your evolving expertise.
+          Changes go live for students the moment you save them.
         </p>
       </div>
 
@@ -152,6 +152,7 @@ export default function EditServicePage() {
         error={error}
         mode="edit"
         availableTypes={[service.type]}
+        showPreview
       />
     </div>
   );

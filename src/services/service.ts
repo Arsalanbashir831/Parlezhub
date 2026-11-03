@@ -256,8 +256,7 @@ export const serviceApi = {
       return data;
     } else {
       // Invalid response structure
-      console.error('Invalid API response structure:', data);
-      return [];
+      throw new Error('Invalid public services response');
     }
   },
 
@@ -296,7 +295,6 @@ export const serviceApi = {
     }
   },
 };
-
 
 // Utility functions to convert between frontend and API formats
 export const serviceUtils = {
@@ -349,37 +347,46 @@ export const serviceUtils = {
   publicApiResponseToService: (
     apiResponse: PublicServiceResponse
   ): PublicService => {
+    const teacher = apiResponse.teacher_details;
+    const name =
+      teacher?.full_name?.trim() ||
+      [teacher?.first_name, teacher?.last_name].filter(Boolean).join(' ') ||
+      'Astrologer';
+    const location = [teacher?.city, teacher?.country]
+      .filter(Boolean)
+      .join(', ');
     return {
       id: apiResponse.id.toString(),
-      teacherId: apiResponse.teacher_details.id,
-      consultantName: apiResponse.teacher_details.full_name,
-      consultantAvatar: apiResponse.teacher_details.profile_picture,
-      consultantQualification: apiResponse.teacher_details.qualification,
-      consultantExperience: apiResponse.teacher_details.experience_years,
-      consultantBio: apiResponse.teacher_details.bio,
-      consultantLocation:
-        `${apiResponse.teacher_details.city}, ${apiResponse.teacher_details.country}`
-          .replace(/^,\s*/, '')
-          .replace(/,\s*$/, ''),
-      consultantEmail: apiResponse.teacher_details.email,
+      teacherId: String(teacher?.id ?? apiResponse.consultant ?? ''),
+      consultantName: name,
+      consultantAvatar: teacher?.profile_picture || null,
+      consultantQualification: teacher?.qualification || '',
+      consultantExperience: teacher?.experience_years || 0,
+      consultantBio: teacher?.bio || teacher?.about || '',
+      consultantLocation: location,
+      consultantEmail: teacher?.email || '',
       type: apiResponse.category as ServiceType,
-      title: apiResponse.service_title,
-      description: apiResponse.full_description,
-      shortDescription: apiResponse.short_description,
+      title: apiResponse.service_title || 'Astrology consultation',
+      description: apiResponse.full_description || '',
+      shortDescription: apiResponse.short_description || '',
       price: parseFloat(apiResponse.price_per_session),
       duration: apiResponse.session_duration,
-      tags: apiResponse.tags,
-      whatYouProvide: apiResponse.what_you_provide_in_session
-        .split(', ')
+      tags: Array.isArray(apiResponse.tags) ? apiResponse.tags : [],
+      whatYouProvide: (apiResponse.what_you_provide_in_session || '')
+        .split(/,\s*/)
         .filter(Boolean),
-      status: apiResponse.status as ServiceStatus,
+      status: (apiResponse.status || 'active') as ServiceStatus,
       createdAt: apiResponse.created_at,
       updatedAt: apiResponse.updated_at,
-      pricingMetadata: apiResponse.pricing_metadata ? {
-        platformFeePercentage: apiResponse.pricing_metadata.platform_fee_percentage,
-        minimumPlatformFeeDollars: apiResponse.pricing_metadata.minimum_platform_fee_dollars,
-        currency: apiResponse.pricing_metadata.currency,
-      } : undefined,
+      pricingMetadata: apiResponse.pricing_metadata
+        ? {
+            platformFeePercentage:
+              apiResponse.pricing_metadata.platform_fee_percentage,
+            minimumPlatformFeeDollars:
+              apiResponse.pricing_metadata.minimum_platform_fee_dollars,
+            currency: apiResponse.pricing_metadata.currency,
+          }
+        : undefined,
     };
   },
 };

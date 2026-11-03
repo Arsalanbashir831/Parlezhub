@@ -72,7 +72,7 @@ export function ServiceDetailsDrawer({
       if (newChat) {
         toast.success(`Chat started with ${consultantName}`);
         // Navigate to the chat page with chatId param
-        router.push(`${ROUTES.STUDENT.CHAT}?chatId=${newChat.id}`);
+        router.push(`${ROUTES.AGENT.ASTROLOGY.HIRE.CHAT}?chatId=${newChat.id}`);
         onClose();
       }
     } catch (error) {

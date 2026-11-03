@@ -1,22 +1,17 @@
-import MeetingFilters from '@/components/meetings/meeting-filters';
-import MeetingHeader from '@/components/meetings/meeting-header';
-import MeetingStats from '@/components/meetings/meeting-stats';
-import MeetingTabs from '@/components/meetings/meeting-tabs';
+import { redirect } from 'next/navigation';
+import { ROUTES } from '@/constants/routes';
 
-export default function MeetingsPage() {
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <MeetingHeader />
-
-      {/* Quick Stats */}
-      <MeetingStats />
-
-      {/* Filters */}
-      <MeetingFilters />
-
-      {/* Meetings Tabs */}
-      <MeetingTabs />
-    </div>
+export default async function LegacyMeetingsPage({
+  searchParams,
+}: {
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
+}) {
+  const params = new URLSearchParams();
+  for (const [key, value] of Object.entries(await searchParams)) {
+    if (Array.isArray(value)) value.forEach((item) => params.append(key, item));
+    else if (value !== undefined) params.set(key, value);
+  }
+  redirect(
+    `${ROUTES.AGENT.ASTROLOGY.HIRE.MEETINGS}${params.size ? `?${params}` : ''}`
   );
 }

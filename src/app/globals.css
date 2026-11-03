@@ -538,6 +538,32 @@ input[type='time']::-webkit-calendar-picker-indicator {
 .obs-cal-cell:hover {
   border-color: color-mix(in srgb, var(--tile-tone) 55%, var(--border-subtle));
 }
+/* Fetching: hold the real content's shape, then sweep a soft ember light across it. */
+.obs-skeleton {
+  background-color: var(--surface-2);
+  background-image: linear-gradient(
+    100deg,
+    transparent 18%,
+    color-mix(in srgb, var(--solar-orange) 11%, transparent) 44%,
+    rgb(255 255 255 / 0.08) 52%,
+    transparent 82%
+  );
+  background-repeat: no-repeat;
+  background-size: 220% 100%;
+  background-position: 150% 0;
+  animation: obs-skeleton-sweep 1.5s ease-in-out infinite;
+}
+@keyframes obs-skeleton-sweep {
+  to {
+    background-position: -60% 0;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .obs-skeleton {
+    animation: none;
+    background-image: none;
+  }
+}
 .obs-glass {
   --glass-tone: var(--solar-orange);
   position: relative;
@@ -706,6 +732,40 @@ a.obs-glass:hover {
   outline: 2px solid var(--solar-orange);
   outline-offset: 3px;
 }
+/* Chat composers also render outside the observatory shell, where the cosmic
+   tokens are never declared, so the composer carries its own. It owns its focus
+   state as well: the shell-wide 2px outline landed as a hard rectangle around
+   the square textarea and clipped through the send pill. */
+.obs-composer {
+  --cosmos-950: hsl(var(--background));
+  --surface-1: hsl(var(--card));
+  --surface-2: hsl(var(--secondary));
+  --border-subtle: hsl(var(--border));
+  --solar-orange: theme('colors.ember.DEFAULT');
+  --solar-gold: theme('colors.ember.soft');
+  display: flex;
+  align-items: flex-end;
+  gap: 6px;
+  border: 1px solid var(--border-subtle);
+  border-radius: 20px;
+  background: var(--surface-2);
+  padding: 6px;
+  transition:
+    border-color 180ms,
+    box-shadow 180ms;
+}
+.obs-composer:focus-within {
+  border-color: color-mix(in srgb, var(--solar-orange) 55%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--solar-orange) 12%, transparent);
+}
+.observatory-shell .obs-composer :is(textarea, input):focus-visible,
+.observatory-theme .obs-composer :is(textarea, input):focus-visible {
+  outline: none;
+}
+.obs-composer button:focus-visible {
+  outline: 2px solid color-mix(in srgb, var(--solar-orange) 75%, transparent);
+  outline-offset: 2px;
+}
 .observatory-shell .ai-chat-markdown :is(p, li),
 .observatory-theme .ai-chat-markdown :is(p, li) {
   color: var(--text-secondary);
@@ -749,6 +809,26 @@ a.obs-glass:hover {
   border: inherit;
   border-radius: inherit;
 }
+/* Chat owns the viewport: the shell fills the page instead of guessing the
+   header height, so the composer stays pinned and the thread scrolls itself. */
+.obs-chat-shell {
+  display: grid;
+  grid-template-rows: minmax(0, 1fr);
+  flex: 1 1 auto;
+  height: 100%;
+  min-height: 0;
+}
+/* WhatsApp-style thread: the page is the background, the bubbles are the cards.
+   The cosmic tokens only exist inside the observatory shell, so the thread
+   colour falls back to the workspace background when it is used there. */
+.chat-thread {
+  background-color: var(--cosmos-950, hsl(var(--background)));
+  background-image: radial-gradient(
+    ellipse 70% 45% at 50% 0%,
+    color-mix(in srgb, var(--solar-orange) 4%, transparent),
+    transparent 70%
+  );
+}
 @media (min-width: 768px) {
   .obs-page {
     padding: 32px;
@@ -757,5 +837,226 @@ a.obs-glass:hover {
 @media (min-width: 1440px) {
   .obs-page {
     padding: 36px 40px 48px;
+  }
+}
+/* After the breakpoint padding so it wins over the responsive .obs-page rules. */
+.obs-page--bleed {
+  display: flex;
+  height: 100%;
+  flex-direction: column;
+  padding: 0;
+}
+
+/* --------------------------------------------------------------
+   Guided tour (driver.js) - Observatory theme
+   -------------------------------------------------------------- */
+
+.shakti-guide-trigger {
+  display: inline-flex;
+  min-height: 40px;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 8px 14px;
+  border-radius: 12px;
+  border: 1px solid color-mix(in srgb, theme('colors.ember.DEFAULT') 26%, transparent);
+  background: color-mix(in srgb, theme('colors.ember.DEFAULT') 8%, transparent);
+  color: theme('colors.ember.soft');
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  transition:
+    background-color 180ms,
+    border-color 180ms,
+    color 180ms;
+}
+
+.shakti-guide-trigger:hover {
+  border-color: color-mix(in srgb, theme('colors.ember.DEFAULT') 55%, transparent);
+  background: color-mix(in srgb, theme('colors.ember.DEFAULT') 16%, transparent);
+  color: theme('colors.ember.DEFAULT');
+}
+
+.shakti-guide-prompt {
+  position: fixed;
+  z-index: 999;
+  right: 20px;
+  bottom: 20px;
+  width: min(320px, calc(100vw - 40px));
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, theme('colors.ember.DEFAULT') 20%, hsl(var(--border)));
+  background: hsl(var(--card));
+  box-shadow: 0 24px 60px -24px rgb(0 0 0 / 0.9);
+  color: hsl(var(--foreground));
+}
+
+.shakti-guide-prompt-dismiss {
+  position: absolute;
+  top: 10px;
+  right: 10px;
+  display: inline-flex;
+  height: 28px;
+  width: 28px;
+  align-items: center;
+  justify-content: center;
+  border-radius: 8px;
+  color: hsl(var(--muted-foreground));
+  transition: color 160ms, background-color 160ms;
+}
+
+.shakti-guide-prompt-dismiss:hover {
+  background: color-mix(in srgb, theme('colors.ember.DEFAULT') 12%, transparent);
+  color: theme('colors.ember.soft');
+}
+
+.shakti-guide-prompt-title {
+  font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  padding-right: 28px;
+  color: theme('colors.ember.soft');
+}
+
+.shakti-guide-prompt-body {
+  margin-top: 6px;
+  font-size: 13px;
+  line-height: 1.55;
+  color: hsl(var(--muted-foreground));
+}
+
+.shakti-guide-prompt-actions {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+}
+
+.shakti-guide-prompt-ghost,
+.shakti-guide-prompt-primary {
+  min-height: 36px;
+  padding: 0 14px;
+  border-radius: 10px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  transition: background-color 160ms, border-color 160ms, color 160ms;
+}
+
+.shakti-guide-prompt-ghost {
+  border: 1px solid hsl(var(--border));
+  background: transparent;
+  color: hsl(var(--muted-foreground));
+}
+
+.shakti-guide-prompt-ghost:hover {
+  color: hsl(var(--foreground));
+  background: hsl(var(--secondary));
+}
+
+.shakti-guide-prompt-primary {
+  border: 1px solid color-mix(in srgb, theme('colors.ember.DEFAULT') 60%, transparent);
+  background: theme('colors.ember.DEFAULT');
+  color: #201205;
+}
+
+.shakti-guide-prompt-primary:hover {
+  background: theme('colors.ember.soft');
+}
+
+.driver-popover.shakti-guide-popover {
+  box-sizing: border-box;
+  width: max-content;
+  max-width: min(340px, calc(100vw - 32px));
+  min-width: 260px;
+  padding: 18px;
+  border-radius: 16px;
+  border: 1px solid color-mix(in srgb, theme('colors.ember.DEFAULT') 22%, hsl(var(--border)));
+  background-color: hsl(var(--card));
+  color: hsl(var(--foreground));
+  box-shadow: 0 24px 60px -20px rgb(0 0 0 / 0.9);
+}
+
+.shakti-guide-popover .driver-popover-title {
+  font-family: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.35;
+  color: theme('colors.ember.soft');
+}
+
+.shakti-guide-popover .driver-popover-description {
+  margin-top: 8px;
+  font-size: 13px;
+  line-height: 1.6;
+  color: hsl(var(--muted-foreground));
+}
+
+.shakti-guide-popover .driver-popover-close-btn {
+  color: hsl(var(--muted-foreground));
+}
+
+.shakti-guide-popover .driver-popover-close-btn:hover,
+.shakti-guide-popover .driver-popover-close-btn:focus-visible {
+  color: theme('colors.ember.DEFAULT');
+}
+
+.shakti-guide-popover .driver-popover-progress-text {
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: color-mix(in srgb, hsl(var(--muted-foreground)) 80%, transparent);
+}
+
+.shakti-guide-popover .driver-popover-footer {
+  margin-top: 16px;
+}
+
+.shakti-guide-popover .driver-popover-footer-btn {
+  min-height: 34px;
+  padding: 0 12px;
+  border-radius: 10px;
+  border: 1px solid hsl(var(--border));
+  background-color: transparent;
+  color: hsl(var(--foreground));
+  font-size: 12px;
+  font-weight: 600;
+  transition: background-color 160ms, border-color 160ms, color 160ms;
+}
+
+.shakti-guide-popover .driver-popover-footer-btn:hover,
+.shakti-guide-popover .driver-popover-footer-btn:focus-visible {
+  background-color: hsl(var(--secondary));
+  color: hsl(var(--foreground));
+}
+
+.shakti-guide-popover .driver-popover-next-btn,
+.shakti-guide-popover .driver-popover-done-btn {
+  border-color: color-mix(in srgb, theme('colors.ember.DEFAULT') 60%, transparent);
+  background-color: color-mix(in srgb, theme('colors.ember.DEFAULT') 92%, transparent);
+  color: #201205;
+}
+
+.shakti-guide-popover .driver-popover-next-btn:hover,
+.shakti-guide-popover .driver-popover-done-btn:hover {
+  background-color: theme('colors.ember.DEFAULT');
+  color: #201205;
+}
+
+.shakti-guide-popover .driver-popover-btn-disabled {
+  opacity: 0.45;
+}
+
+.shakti-guide-popover .driver-popover-arrow {
+  border-color: hsl(var(--card));
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .driver-fade .driver-popover,
+  .driver-fade .driver-overlay {
+    animation: none;
   }
 }

@@ -29,7 +29,7 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
             <CardTitle className="font-serif text-xl font-bold text-primary-500">
               Upcoming Meetings
             </CardTitle>
-            <Link href={ROUTES.STUDENT.MEETINGS}>
+            <Link href={ROUTES.AGENT.ASTROLOGY.HIRE.MEETINGS}>
               <Button
                 variant="ghost"
                 size="sm"
@@ -87,7 +87,7 @@ export default function UpcomingMeetings({ meetings }: UpcomingMeetingsProps) {
             </div>
           )}
 
-          <Link href={ROUTES.STUDENT.MEETINGS}>
+          <Link href={ROUTES.AGENT.ASTROLOGY.HIRE.MEETINGS}>
             <Button
               variant="outline"
               className="mt-4 h-12 w-full rounded-2xl border-primary-500/10 bg-transparent text-[10px] font-bold uppercase tracking-widest text-primary-500 transition-all hover:bg-primary-500/10 active:scale-95"

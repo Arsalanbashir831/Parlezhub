@@ -1,8 +1,9 @@
+import { NextResponse, type NextRequest } from 'next/server';
 import { createServerClient } from '@supabase/ssr';
-import { type NextRequest, NextResponse } from 'next/server';
 
 import { readRoleCookies } from '@/lib/auth-cookies';
 import { HOME_PATH } from '@/lib/guard-rules';
+
 import { ROUTES } from './constants/routes';
 
 /**
@@ -19,6 +20,11 @@ const STUDENT_ROUTES = [
   ROUTES.STUDENT.SESSION_REPORT,
   ROUTES.STUDENT.SETTINGS,
   ROUTES.AGENT.ASTROLOGY.ROOT,
+];
+
+const STUDENT_ONLY_ASTROLOGY_ROUTES = [
+  ROUTES.AGENT.ASTROLOGY.ASTROLOGERS,
+  ROUTES.AGENT.ASTROLOGY.HIRE.ROOT,
 ];
 
 const TEACHER_ROUTES = [
@@ -129,13 +135,13 @@ export async function proxy(request: NextRequest) {
   } = await supabase.auth.getUser();
 
   // Read roles from cookies
-  const {
-    rolesKnown,
-    userRoles,
-    activeRole,
-  } = readRoleCookies(request.cookies);
+  const { rolesKnown, userRoles, activeRole } = readRoleCookies(
+    request.cookies
+  );
 
-  const isPublicRoute = PUBLIC_ROUTES.some((route) => pathname.startsWith(route));
+  const isPublicRoute = PUBLIC_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
 
   // ── Unauthenticated Users ───────────────────────────────────────────────
   if (!user) {
@@ -148,17 +154,32 @@ export async function proxy(request: NextRequest) {
   // ── Authenticated Users ──────────────────────────────────────────────────
 
   // 1. Prevent access to auth pages (login/signup) if already logged in
-  if (isPublicRoute && (pathname.startsWith(ROUTES.AUTH.LOGIN) || pathname.startsWith(ROUTES.AUTH.SIGNUP))) {
+  if (
+    isPublicRoute &&
+    (pathname.startsWith(ROUTES.AUTH.LOGIN) ||
+      pathname.startsWith(ROUTES.AUTH.SIGNUP))
+  ) {
     return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // 2. If the server resolved NO roles, send the user to onboarding
-  if (rolesKnown && userRoles.length === 0 && !isPublicRoute && !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) && pathname !== '/') {
-    return NextResponse.redirect(new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url));
+  if (
+    rolesKnown &&
+    userRoles.length === 0 &&
+    !isPublicRoute &&
+    !pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE) &&
+    pathname !== '/'
+  ) {
+    return NextResponse.redirect(
+      new URL(ROUTES.ONBOARDING.CHOOSE_ROLE, request.url)
+    );
   }
 
   // 3. If user ALREADY has roles but is trying to access onboarding, send them home
-  if (userRoles.length > 0 && pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)) {
+  if (
+    userRoles.length > 0 &&
+    pathname.startsWith(ROUTES.ONBOARDING.CHOOSE_ROLE)
+  ) {
     return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
@@ -172,27 +193,58 @@ export async function proxy(request: NextRequest) {
   // RoleGuard enforces immediately, so the next navigation is fully gated.
   if (!rolesKnown) return supabaseResponse;
 
-  const isStudentRoute = STUDENT_ROUTES.some((route) => pathname.startsWith(route));
-  const isTeacherRoute = TEACHER_ROUTES.some((route) => pathname.startsWith(route));
+  // The role dashboards remain available in source for the next routing phase,
+  // but are no longer public destinations. Keep old bookmarks canonical by
+  // sending both legacy dashboard paths to the shared observatory.
+  if (
+    pathname === ROUTES.STUDENT.DASHBOARD ||
+    pathname === ROUTES.TEACHER.DASHBOARD
+  ) {
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
+  }
+
+  const isStudentRoute = STUDENT_ROUTES.some((route) =>
+    pathname.startsWith(route)
+  );
+  const isStudentOnlyAstrologyRoute = STUDENT_ONLY_ASTROLOGY_ROUTES.some(
+    (route) => pathname === route || pathname.startsWith(`${route}/`)
+  );
+  const isTeacherRoute =
+    !isStudentOnlyAstrologyRoute &&
+    TEACHER_ROUTES.some((route) => pathname.startsWith(route));
 
   // If on a student route but active role is TEACHER (and it's NOT also a teacher route)
-  if (isStudentRoute && !isTeacherRoute && activeRole === 'TEACHER' && userRoles.includes('TEACHER')) {
-    return NextResponse.redirect(new URL(ROUTES.TEACHER.DASHBOARD, request.url));
+  if (
+    isStudentRoute &&
+    !isTeacherRoute &&
+    activeRole === 'TEACHER' &&
+    userRoles.includes('TEACHER')
+  ) {
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // If on a teacher route but active role is STUDENT (and it's NOT also a student route)
-  if (isTeacherRoute && !isStudentRoute && activeRole === 'STUDENT' && userRoles.includes('STUDENT')) {
-    return NextResponse.redirect(new URL(ROUTES.STUDENT.DASHBOARD, request.url));
+  if (
+    isTeacherRoute &&
+    !isStudentRoute &&
+    activeRole === 'STUDENT' &&
+    userRoles.includes('STUDENT')
+  ) {
+    return NextResponse.redirect(new URL(HOME_PATH, request.url));
   }
 
   // Basic access check (if they don't even have the required role)
   if (isStudentRoute && !isTeacherRoute && !userRoles.includes('STUDENT')) {
-    const target = userRoles.includes('TEACHER') ? ROUTES.TEACHER.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
+    const target = userRoles.includes('TEACHER')
+      ? HOME_PATH
+      : ROUTES.ONBOARDING.CHOOSE_ROLE;
     return NextResponse.redirect(new URL(target, request.url));
   }
 
   if (isTeacherRoute && !isStudentRoute && !userRoles.includes('TEACHER')) {
-    const target = userRoles.includes('STUDENT') ? ROUTES.STUDENT.DASHBOARD : ROUTES.ONBOARDING.CHOOSE_ROLE;
+    const target = userRoles.includes('STUDENT')
+      ? HOME_PATH
+      : ROUTES.ONBOARDING.CHOOSE_ROLE;
     return NextResponse.redirect(new URL(target, request.url));
   }
 

@@ -54,9 +54,12 @@ export default function CreateServicePage() {
       </div>
 
       <div>
-        <h1 className="text-3xl font-bold font-serif text-primary-500">Create New Service</h1>
+        <h1 className="font-serif text-4xl font-bold tracking-tight text-white">
+          Create a <span className="text-primary-500">Gig</span>
+        </h1>
         <p className="mt-2 text-primary-100/60 font-medium">
-          Set up your service offering and start earning from your expertise
+          Price one offering, say exactly what the session covers, and it lands
+          on your profile and in every chat booking card
         </p>
       </div>
 
@@ -68,6 +71,7 @@ export default function CreateServicePage() {
         error={error}
         mode="create"
         availableTypes={availableTypes}
+        showPreview
       />
     </div>
   );

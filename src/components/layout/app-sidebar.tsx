@@ -7,6 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import {
   ChevronDown,
   ChevronRight,
+  Compass,
   GraduationCap,
   Home,
   LogOut,
@@ -16,6 +17,8 @@ import {
 
 import type { NavItem } from '@/types/nav';
 import { cn } from '@/lib/utils';
+import { WORKSPACE_ANCHORS } from '@/constants/tour-steps';
+import { GuideTourTrigger } from '@/components/guide/guide-tour-provider';
 import { Button } from '@/components/ui/button';
 import {
   Collapsible,
@@ -29,6 +32,7 @@ import {
   SidebarFooter,
   SidebarGroup,
   SidebarGroupContent,
+  SidebarGroupLabel,
   SidebarHeader,
   SidebarMenu,
   SidebarMenuButton,
@@ -48,6 +52,21 @@ interface AppSidebarProps {
   onLogout: () => void;
 }
 
+/** Consecutive items sharing a `section` collapse into one labelled group;
+ *  items without one fall into an unlabelled leading group. */
+const groupNavBySection = (nav: NavItem[]) => {
+  const groups: { section: string | undefined; items: NavItem[] }[] = [];
+  nav.forEach((item) => {
+    const last = groups[groups.length - 1];
+    if (last && last.section === item.section) last.items.push(item);
+    else groups.push({ section: item.section, items: [item] });
+  });
+  return groups;
+};
+
+const badgeLabel = (badge: number | string) =>
+  typeof badge === 'number' && badge > 99 ? '99+' : badge;
+
 export const AppSidebar: React.FC<AppSidebarProps> = ({
   nav,
   activeTab,
@@ -65,6 +84,12 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
   } = useAuth();
   const { state } = useSidebar();
   const isCollapsed = state === 'collapsed';
+
+  // A nav that already lists the observatory (the consultant's My Observatory
+  // section) does not also need the single door in the footer.
+  const navHasObservatory = nav.some(
+    (item) => item.href === ROUTES.AGENT.ASTROLOGY.ROOT
+  );
 
   // Initialize dropdown state based on active tab
   const [openDropdowns, setOpenDropdowns] = React.useState<Set<string>>(() => {
@@ -115,7 +140,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     action: () => void
   ) => {
     return (
-      <SidebarMenuItem>
+      <SidebarMenuItem data-tour={WORKSPACE_ANCHORS.roleSwitch}>
         <SidebarMenuButton
           tooltip={isCollapsed ? label : undefined}
           className={cn(
@@ -150,7 +175,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           open={isDropdownOpen}
           onOpenChange={() => toggleDropdown(item.id)}
         >
-          <SidebarMenuItem>
+          <SidebarMenuItem data-tour={WORKSPACE_ANCHORS.nav(item.id)}>
             <CollapsibleTrigger asChild>
               <SidebarMenuButton
                 tooltip={isCollapsed ? item.label : undefined}
@@ -178,7 +203,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                   {item.subItems?.map((subItem) => {
                     const isSubActive = activeTab === subItem.id;
                     return (
-                      <SidebarMenuSubItem key={subItem.id}>
+                      <SidebarMenuSubItem key={subItem.id} data-tour={WORKSPACE_ANCHORS.nav(subItem.id)}>
                         <SidebarMenuSubButton
                           asChild
                           isActive={isSubActive}
@@ -205,8 +230,11 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     }
 
     // Regular menu item without sub-items
+    const hasBadge =
+      item.badge !== undefined && item.badge !== 0 && item.badge !== '';
+
     return (
-      <SidebarMenuItem key={item.id}>
+      <SidebarMenuItem key={item.id} data-tour={WORKSPACE_ANCHORS.nav(item.id)}>
         <SidebarMenuButton
           asChild
           isActive={isActive}
@@ -224,8 +252,30 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           >
             <item.icon className={cn("shrink-0 h-5 w-5", isActive ? "text-primary-950" : "text-primary-500/60")} />
             {!isCollapsed && <span>{item.label}</span>}
+            {!isCollapsed && hasBadge && (
+              <span
+                className={cn(
+                  'ml-auto inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded-full px-1.5 text-[10px] font-bold tabular-nums',
+                  isActive
+                    ? 'bg-primary-950/25 text-primary-950'
+                    : 'bg-primary-500/20 text-primary-300'
+                )}
+                aria-hidden="true"
+              >
+                {badgeLabel(item.badge!)}
+              </span>
+            )}
+            {!isCollapsed && hasBadge && typeof item.badge === 'number' && (
+              <span className="sr-only">{item.badge} unread</span>
+            )}
           </Link>
         </SidebarMenuButton>
+        {isCollapsed && hasBadge && (
+          <span
+            className="pointer-events-none absolute right-1 top-1 h-2 w-2 rounded-full bg-primary-500 ring-2 ring-background"
+            aria-hidden="true"
+          />
+        )}
       </SidebarMenuItem>
     );
   };
@@ -236,6 +286,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
       className="border-r border-white/5 bg-background shadow-2xl"
     >
       <SidebarHeader
+        data-tour={WORKSPACE_ANCHORS.brand}
         className={cn(
           'border-b border-white/5 bg-background',
           isCollapsed ? 'py-4' : 'p-6'
@@ -250,11 +301,29 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
           !isCollapsed ? 'px-3' : ''
         )}
       >
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu className="gap-2">{nav.map(renderMenuItem)}</SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {groupNavBySection(nav).map((group) => (
+          <SidebarGroup
+            key={group.section ?? '_'}
+            className={cn('py-0', !group.section && 'pt-2')}
+          >
+            {group.section &&
+              (isCollapsed ? (
+                <span
+                  className="mx-auto my-3 block h-px w-8 bg-white/10"
+                  aria-hidden="true"
+                />
+              ) : (
+                <SidebarGroupLabel className="px-5 pb-2 pt-7 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-100/40">
+                  {group.section}
+                </SidebarGroupLabel>
+              ))}
+            <SidebarGroupContent>
+              <SidebarMenu className="gap-2">
+                {group.items.map(renderMenuItem)}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-primary-300/10 bg-background">
@@ -305,15 +374,33 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
                       becomeStudent
                     )}
                 </SidebarMenu>
-                <SidebarMenu>
-                  {renderMenuItem({
-                    id: 'astrology',
-                    label: 'Astrology Dashboard',
-                    href: ROUTES.AGENT.ASTROLOGY.ROOT,
-                    icon: Home,
-                  })}
-                </SidebarMenu>
-                <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+                {!navHasObservatory && (
+                  <SidebarMenu>
+                    {renderMenuItem({
+                      id: 'astrology',
+                      label: 'Astrology Dashboard',
+                      href: ROUTES.AGENT.ASTROLOGY.ROOT,
+                      icon: Home,
+                    })}
+                  </SidebarMenu>
+                )}
+                <GuideTourTrigger
+                  anchor={WORKSPACE_ANCHORS.guide}
+                  className="w-full"
+                  aria-label="Start the guided tour"
+                >
+                  {isCollapsed ? (
+                    <Compass className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  ) : (
+                    <>
+                      <Compass className="h-4 w-4 shrink-0" aria-hidden="true" />
+                      Guided tour
+                    </>
+                  )}
+                </GuideTourTrigger>
+                <div data-tour={WORKSPACE_ANCHORS.userCard}>
+                  <UserMiniCard roleLabel={roleLabel} collapsed={isCollapsed} />
+                </div>
               </div>
             ) : (
               <SidebarMenu>
@@ -326,6 +413,7 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
               </SidebarMenu>
             )}
             <Button
+              data-tour={WORKSPACE_ANCHORS.signOut}
               variant="ghost"
               className={cn(
                 'w-full justify-start gap-3 text-red-400 hover:bg-red-500/10 hover:text-red-300',

@@ -5,6 +5,10 @@ import { Hourglass } from 'lucide-react';
 
 import { useDasha } from '@/hooks/useAstrology';
 import {
+  EmptyNotice,
+  RequestError,
+} from '@/components/agents/astrology/ui/observatory-state';
+import {
   DashaView,
   DashaViewSkeleton,
 } from '@/components/agents/astrology/components/dasha-view';
@@ -13,11 +17,14 @@ export default function DashaPage() {
   const searchParams = useSearchParams();
   const studentId = searchParams.get('student_id') || undefined;
   const guestId = searchParams.get('guest_id') || undefined;
-  const { data, isLoading, isError, refetch } = useDasha(
+  const { data, isLoading, isError, isFetching, refetch } = useDasha(
     true,
     studentId,
     guestId
   );
+  // Read the cached shape before the loading branch narrows `data` away.
+  const cachedSequence = data?.mahadasha_sequence ?? [];
+  const cachedAntardashas = data?.current_antardashas ?? [];
 
   return (
     <div className="flex min-w-0 flex-col gap-6 text-foreground">
@@ -32,31 +39,33 @@ export default function DashaPage() {
           periods, with dates from the existing Vimshottari Dasha calculation.
         </p>
       </header>
-      {isLoading && <DashaViewSkeleton />}
+      {isLoading && (
+        <DashaViewSkeleton
+          sequence={cachedSequence}
+          antardashas={cachedAntardashas}
+        />
+      )}
       {isError && !isLoading && (
-        <div role="alert" className="obs-card space-y-3 p-6">
-          <h2 className="text-lg font-semibold">
-            Unable to load planetary periods
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            Check that this profile has complete birth details, then try again.
-          </p>
-          <button
-            type="button"
-            onClick={() => refetch()}
-            className="obs-control px-4"
-          >
-            Try again
-          </button>
-        </div>
+        <RequestError
+          title="Unable to load planetary periods"
+          message="Dasha dates come from your birth time and place, so this profile needs complete birth details. Nothing has been changed on your chart."
+          onRetry={() => refetch()}
+          retrying={isFetching}
+        />
       )}
       {data && !isLoading && !isError && (
-        <DashaView key={`${studentId ?? ''}-${guestId ?? ''}`} data={data} />
+        <DashaView
+          key={`${studentId ?? ''}-${guestId ?? ''}`}
+          data={data}
+          onRefresh={() => refetch()}
+          refreshing={isFetching && !isLoading}
+        />
       )}
       {!data && !isLoading && !isError && (
-        <p className="obs-card p-6 text-sm text-muted-foreground">
-          No Dasha data is available for this profile yet.
-        </p>
+        <EmptyNotice
+          title="No planetary periods yet"
+          message="The calculation service returned no Dasha data for this profile. Confirm the birth details are complete, then reopen this page."
+        />
       )}
     </div>
   );

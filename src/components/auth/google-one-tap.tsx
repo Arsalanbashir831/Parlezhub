@@ -154,20 +154,19 @@ export function GoogleOneTap() {
       };
     }
 
-    const id = 'gsi-client-script';
-    let script = document.getElementById(id) as HTMLScriptElement | null;
-    if (!script) {
-      script = document.createElement('script');
-      script.id = id;
-      script.src = 'https://accounts.google.com/gsi/client';
-      script.async = true;
-      document.head.appendChild(script);
-    }
-
-    script.addEventListener('load', start);
+    let attempts = 0;
+    const poll = window.setInterval(() => {
+      attempts += 1;
+      if (window.google?.accounts?.id) {
+        window.clearInterval(poll);
+        start();
+      } else if (attempts >= 100) {
+        window.clearInterval(poll);
+      }
+    }, 100);
     return () => {
       cancelled = true;
-      script?.removeEventListener('load', start);
+      window.clearInterval(poll);
     };
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);

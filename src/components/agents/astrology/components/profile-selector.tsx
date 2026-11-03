@@ -18,11 +18,13 @@ import {
 import { toast } from 'sonner';
 
 import { ROUTES } from '@/constants/routes';
+import { OBS_ANCHORS } from '@/constants/tour-steps';
 import { useAuth } from '@/contexts/auth-context';
 import { useUser } from '@/contexts/user-context';
 import { useConsultantSharedStudents, useGuestProfiles } from '@/hooks/useAstrology';
 import { useDebounce } from '@/hooks/use-debounce';
 import { cn } from '@/lib/utils';
+import { LoadingLayout, Skeleton } from '@/components/agents/astrology/ui/observatory-state';
 import { Dialog, DialogContent, DialogDescription, DialogTitle } from '@/components/ui/dialog';
 
 export type ProfileType = 'me' | 'student' | 'guest';
@@ -57,6 +59,21 @@ function SectionTitle({ children, hint }: { children: React.ReactNode; hint?: st
     <h3 className="obs-label">{children}</h3>
     {hint && <span className="text-[11px] text-muted-foreground">{hint}</span>}
   </div>;
+}
+
+/** Placeholder rows in the exact shape of ProfileRow, so the list does not jump. */
+function ProfileRowSkeleton({ rows = 2 }: { rows?: number }) {
+  return <LoadingLayout label="Loading profiles…" className="gap-1 py-1">
+    {Array.from({ length: rows }, (_, index) => (
+      <div key={index} aria-hidden="true" className="flex items-center gap-3 rounded-xl px-2 py-2">
+        <Skeleton className="h-9 w-9 shrink-0" rounded="rounded-xl" />
+        <div className="min-w-0 flex-1 space-y-2">
+          <Skeleton className="h-3.5 w-36 max-w-full" rounded="rounded-md" />
+          <Skeleton className="h-3 w-24 max-w-full" rounded="rounded-md" />
+        </div>
+      </div>
+    ))}
+  </LoadingLayout>;
 }
 
 interface ProfileRowProps {
@@ -114,6 +131,7 @@ export function ProfileSelector({ selectedProfile, onSelect, onAddGuest, onEditG
         type="button"
         onClick={() => setOpen(true)}
         aria-haspopup="dialog"
+        data-tour={OBS_ANCHORS.profileSelector}
         className="group flex min-h-14 w-full max-w-80 items-center gap-3 rounded-2xl border border-[color-mix(in_srgb,var(--solar-orange)_22%,transparent)] bg-[color-mix(in_srgb,var(--solar-orange)_7%,var(--surface-1))] py-2 pl-2 pr-3 text-left transition-colors hover:border-[color-mix(in_srgb,var(--solar-orange)_55%,transparent)] hover:bg-[color-mix(in_srgb,var(--solar-orange)_12%,var(--surface-1))]"
       >
         <Avatar name={selectedProfile.name} tone="ember" />
@@ -166,8 +184,8 @@ export function ProfileSelector({ selectedProfile, onSelect, onAddGuest, onEditG
             </SectionTitle>
 
             {isTeacher && <>
-              {studentsQuery.isLoading && <p role="status" className="py-3 text-sm text-muted-foreground">Loading shared profiles…</p>}
-              {studentsQuery.isError && <button type="button" className="obs-control my-2" onClick={() => studentsQuery.refetch()}>Retry shared profiles</button>}
+              {studentsQuery.isLoading && <ProfileRowSkeleton rows={2} />}
+              {studentsQuery.isError && !studentsQuery.isLoading && <div role="alert" className="flex flex-wrap items-center justify-between gap-2 py-3 text-xs"><p className="text-[var(--danger)]">Shared profiles could not be loaded.</p><button type="button" className="obs-control text-xs" onClick={() => studentsQuery.refetch()} disabled={studentsQuery.isFetching}>{studentsQuery.isFetching ? 'Retrying…' : 'Retry'}</button></div>}
               {studentsQuery.data?.results.map(access => (
                 <ProfileRow
                   key={access.student.id}
@@ -179,8 +197,8 @@ export function ProfileSelector({ selectedProfile, onSelect, onAddGuest, onEditG
               ))}
             </>}
 
-            {guestsQuery.isLoading && <p role="status" className="py-3 text-sm text-muted-foreground">Loading guest profiles…</p>}
-            {guestsQuery.isError && <div role="alert" className="flex flex-wrap items-center justify-between gap-3 py-3 text-sm"><p className="text-[var(--danger)]">Could not load guest profiles.</p><button type="button" className="obs-control" onClick={() => guestsQuery.refetch()}>Retry</button></div>}
+            {guestsQuery.isLoading && <ProfileRowSkeleton rows={3} />}
+            {guestsQuery.isError && !guestsQuery.isLoading && <div role="alert" className="flex flex-wrap items-center justify-between gap-2 py-3 text-xs"><p className="text-[var(--danger)]">Guest profiles could not be loaded.</p><button type="button" className="obs-control text-xs" onClick={() => guestsQuery.refetch()} disabled={guestsQuery.isFetching}>{guestsQuery.isFetching ? 'Retrying…' : 'Retry'}</button></div>}
             {guestsQuery.data?.results.length === 0 && !debouncedSearch && <p className="py-3 text-sm text-muted-foreground">No guest profiles yet — add one to explore another chart.</p>}
             {guestsQuery.data?.results.length === 0 && debouncedSearch && <p className="py-3 text-sm text-muted-foreground">No profile matches “{debouncedSearch}”.</p>}
             {guestsQuery.data?.results.map(guest => {

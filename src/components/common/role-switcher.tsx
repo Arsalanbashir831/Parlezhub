@@ -1,11 +1,16 @@
 'use client';
 
-import { UserRole } from '@/types/user';
-
 import { useState } from 'react';
 import { useAuth } from '@/contexts/auth-context';
-import { Check, ChevronDown, GraduationCap, Users } from 'lucide-react';
+import {
+  Check,
+  ChevronDown,
+  GraduationCap,
+  Loader2,
+  Users,
+} from 'lucide-react';
 
+import { UserRole } from '@/types/user';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import {
@@ -18,6 +23,7 @@ import {
 interface RoleSwitcherProps {
   className?: string;
   showLabel?: boolean;
+  showCount?: boolean;
   variant?: 'default' | 'outline' | 'ghost';
   size?: 'default' | 'sm' | 'lg';
 }
@@ -25,6 +31,7 @@ interface RoleSwitcherProps {
 export function RoleSwitcher({
   className = '',
   showLabel = true,
+  showCount = true,
   variant = 'outline',
   size = 'default',
 }: RoleSwitcherProps) {
@@ -35,6 +42,7 @@ export function RoleSwitcher({
     hasTeacherRole,
     hasStudentRole,
     isLoading,
+    isRoleSwitching,
   } = useAuth();
   const [isSwitching, setIsSwitching] = useState(false);
 
@@ -74,7 +82,7 @@ export function RoleSwitcher({
 
   const getRoleLabel = (role: UserRole) => {
     if (role === 'BOTH') return 'Dual Role';
-    return role === 'TEACHER' ? 'Consultant' : 'Student';
+    return role === 'TEACHER' ? 'Consultant' : 'End User';
   };
 
   const getRoleColor = (role: UserRole) => {
@@ -93,18 +101,24 @@ export function RoleSwitcher({
           variant={variant}
           size={size}
           className={`gap-2 ${className}`}
-          disabled={isLoading || isSwitching}
+          disabled={isLoading || isSwitching || isRoleSwitching}
         >
-          {activeRole && getRoleIcon(activeRole)}
+          {isRoleSwitching ? (
+            <Loader2 className="h-4 w-4 animate-spin" />
+          ) : (
+            activeRole && getRoleIcon(activeRole)
+          )}
           {showLabel && activeRole && (
             <span className="hidden sm:inline">{getRoleLabel(activeRole)}</span>
           )}
-          <Badge
-            variant="secondary"
-            className={`ml-1 px-1.5 py-0.5 text-xs ${activeRole ? getRoleColor(activeRole) : ''}`}
-          >
-            {userRoles.length}
-          </Badge>
+          {showCount && (
+            <Badge
+              variant="secondary"
+              className={`ml-1 px-1.5 py-0.5 text-xs ${activeRole ? getRoleColor(activeRole) : ''}`}
+            >
+              {userRoles.length}
+            </Badge>
+          )}
           <ChevronDown className="h-4 w-4" />
         </Button>
       </DropdownMenuTrigger>
@@ -119,7 +133,7 @@ export function RoleSwitcher({
             className="gap-2"
           >
             <GraduationCap className="h-4 w-4" />
-            <span>Student</span>
+            <span>End User</span>
             {activeRole === 'STUDENT' && <Check className="ml-auto h-4 w-4" />}
           </DropdownMenuItem>
         )}

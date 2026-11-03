@@ -2,9 +2,11 @@ import type React from 'react';
 import type { Metadata } from 'next';
 import { Geist, Geist_Mono } from 'next/font/google';
 
+import 'driver.js/dist/driver.css';
 import './globals.css';
 
 import { Providers } from '@/providers/providers';
+import Script from 'next/script';
 
 const geistSans = Geist({
   subsets: ['latin'],
@@ -33,6 +35,11 @@ export default function RootLayout({
       <body
         className={`${geistSans.variable} ${geistMono.variable} font-sans`}
       >
+        <Script
+          id="gsi-client-script"
+          src="https://accounts.google.com/gsi/client"
+          strategy="afterInteractive"
+        />
         <Providers>{children}</Providers>
       </body>
     </html>

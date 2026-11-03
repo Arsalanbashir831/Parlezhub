@@ -3,7 +3,7 @@ import { API_ROUTES } from '@/constants/api-routes';
 import apiCaller, { chatApiCaller } from '@/lib/api-caller';
 import { authApi } from '@/services/auth';
 
-import { Attachment } from '@/types/chat';
+import { Attachment, WebSocketMessage } from '@/types/chat';
 
 export interface ChatMessage {
   id: string;
@@ -13,6 +13,8 @@ export interface ChatMessage {
   timestamp: string;
   type: string;
   attachments?: Attachment[];
+  is_read?: boolean;
+  read_at?: string | null;
 }
 
 export interface ChatRoom {
@@ -25,6 +27,9 @@ export interface ChatRoom {
   consultant_avatar?: string;
   last_message?: string;
   last_message_timestamp?: string;
+  last_message_sender_id?: string;
+  last_message_read?: boolean;
+  unread_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -34,13 +39,8 @@ export type CreateChatRequest = {
   teacher_id: string;
 };
 
-export interface WebSocketMessage {
-  type: 'message' | 'typing' | 'read' | 'error';
-  content?: string;
-  sender_id?: string;
-  is_typing?: boolean;
-  timestamp: string;
-}
+// The wire format has one definition, in @/types/chat — this used to be a copy of it.
+export type { WebSocketMessage };
 
 class ChatService {
   private ws: WebSocket | null = null;
@@ -95,6 +95,36 @@ class ChatService {
     return response.data;
   }
 
+  /**
+   * Tell the chat server the requester has opened this thread, so it can mark the
+   * peer's messages read and notify the sender. A chat server without the
+   * endpoint answers 404 — read receipts are an enhancement, not a requirement,
+   * so the caller is never shown an error for it.
+   */
+  async markChatRead(chatId: string): Promise<void> {
+    await chatApiCaller(API_ROUTES.CHAT.MARK_CHAT_READ(chatId), 'POST', {});
+  }
+
+  /**
+   * Which participants currently hold a live socket for this chat. An unknown
+   * answer (endpoint missing, or the request failed) is `null` rather than an
+   * empty list: "nobody is online" and "presence is not reported" are different
+   * facts and only the first one may be shown to the user.
+   */
+  async getChatPresence(chatId: string): Promise<string[] | null> {
+    try {
+      const response = await chatApiCaller(
+        API_ROUTES.CHAT.CHAT_PRESENCE(chatId),
+        'GET'
+      );
+      const online = (response.data as { online?: unknown })?.online;
+      return Array.isArray(online) ? online.map(String) : [];
+    } catch (error) {
+      console.debug('Chat presence unavailable:', error);
+      return null;
+    }
+  }
+
   // WebSocket Methods
   connect(chatId: string): Promise<void> {
     return new Promise(async (resolve, reject) => {
@@ -114,15 +144,16 @@ class ChatService {
       const wsUrl = `${API_ROUTES.CHAT.WEBSOCKET_URL}${chatId}?token=${token}`;
 
       try {
-        this.ws = new WebSocket(wsUrl);
+        const socket = new WebSocket(wsUrl);
+        this.ws = socket;
 
-        this.ws.onopen = () => {
+        socket.onopen = () => {
           this.reconnectAttempts = 0;
           this.notifyConnectionHandlers(true);
           resolve();
         };
 
-        this.ws.onmessage = (event) => {
+        socket.onmessage = (event) => {
           try {
             const message: WebSocketMessage = JSON.parse(event.data);
             this.handleMessage(message);
@@ -131,7 +162,10 @@ class ChatService {
           }
         };
 
-        this.ws.onclose = (event) => {
+        socket.onclose = (event) => {
+          // A disconnect()/re-connect race must not let the dying socket of the
+          // previous chat schedule a reconnect over the current one.
+          if (this.ws !== socket && this.ws !== null) return;
           this.notifyConnectionHandlers(false);
 
           // Attempt to reconnect if not a normal closure
@@ -146,7 +180,7 @@ class ChatService {
           }
         };
 
-        this.ws.onerror = (error) => {
+        socket.onerror = (error) => {
           console.error('WebSocket error:', error);
           reject(error);
         };

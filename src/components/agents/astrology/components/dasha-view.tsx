@@ -7,13 +7,23 @@ import {
   PLANET_INSIGHTS,
   PLANET_META,
 } from '@/constants/astrology';
-import { MessageSquareText } from 'lucide-react';
+import { MessageSquareText, RefreshCw } from 'lucide-react';
 
 import { DashaResponse, SubPeriod } from '@/types/astrology';
-import { formatDate, getVimshottariSubdivisions } from '@/lib/astrology-utils';
+import {
+  formatDate,
+  getDurationLabel,
+  getVimshottariSubdivisions,
+} from '@/lib/astrology-utils';
 import { planetTone } from '@/lib/astrology-navigation';
 import { cn } from '@/lib/utils';
 import ConversationPanel from '../chat/conversation-panel';
+import {
+  LoadingLayout,
+  Refreshing,
+  Skeleton,
+  SkeletonText,
+} from '../ui/observatory-state';
 import {
   Sheet,
   SheetContent,
@@ -145,9 +155,16 @@ function PlanetMark({
 interface DashaViewProps {
   data: DashaResponse;
   className?: string;
+  onRefresh?: () => void;
+  refreshing?: boolean;
 }
 
-export function DashaView({ data, className }: DashaViewProps) {
+export function DashaView({
+  data,
+  className,
+  onRefresh,
+  refreshing = false,
+}: DashaViewProps) {
   const searchParams = useSearchParams();
   const { current_period, current_antardashas, mahadasha_sequence } = data;
   const activeMahaName = current_period.mahadasha;
@@ -260,6 +277,32 @@ export function DashaView({ data, className }: DashaViewProps) {
         className
       )}
     >
+      {onRefresh && (
+        <div className="flex min-w-0 flex-wrap items-center justify-between gap-3">
+          {refreshing ? (
+            <Refreshing label="Updating planetary periods…" />
+          ) : (
+            <p className="text-xs text-muted-foreground">
+              Dates come from the calculation service for this birth profile.
+            </p>
+          )}
+          <button
+            type="button"
+            className="obs-control gap-2 text-xs"
+            onClick={onRefresh}
+            disabled={refreshing}
+          >
+            <RefreshCw
+              className={cn(
+                'h-3.5 w-3.5',
+                refreshing && 'animate-spin motion-reduce:animate-none'
+              )}
+              aria-hidden="true"
+            />
+            Refresh
+          </button>
+        </div>
+      )}
       <section
         data-tone={planetTone(activeMahaName)}
         className="obs-glass grid min-w-0 gap-6 p-5 sm:p-7 xl:grid-cols-[minmax(0,1fr)_minmax(240px,320px)] xl:items-center"
@@ -591,23 +634,127 @@ export function DashaView({ data, className }: DashaViewProps) {
   );
 }
 
-export function DashaViewSkeleton() {
+export function DashaViewSkeleton({
+  sequence,
+  antardashas,
+}: {
+  sequence: DashaResponse['mahadasha_sequence'];
+  antardashas: DashaResponse['current_antardashas'];
+}) {
+  const now = new Date();
   return (
-    <div
-      role="status"
-      className="grid min-w-0 gap-6 motion-safe:animate-pulse lg:grid-cols-3"
-    >
-      <span className="sr-only">Loading planetary periods…</span>
-      <div className="flex flex-col gap-4 lg:col-span-2">
-        <div className="obs-card h-44" />
-        <div className="grid gap-3 sm:grid-cols-3">
-          {[0, 1, 2].map((i) => (
-            <div key={i} className="obs-card h-40" />
-          ))}
+    <LoadingLayout label="Loading planetary periods…">
+      <div className="obs-card grid min-w-0 gap-6 p-5 sm:p-7 xl:grid-cols-[minmax(0,1fr)_minmax(240px,320px)] xl:items-center">
+        <div className="flex min-w-0 items-center gap-4">
+          <Skeleton className="h-14 w-14" rounded="rounded-[20px]" />
+          <div className="min-w-0 flex-1 space-y-2">
+            <Skeleton className="h-3 w-40" rounded="rounded-md" />
+            <Skeleton className="h-7 w-64 max-w-full" rounded="rounded-lg" />
+            <Skeleton className="h-4 w-52 max-w-full" rounded="rounded-md" />
+          </div>
         </div>
-        <div className="obs-card h-64" />
+        <div className="space-y-3">
+          <Skeleton className="h-1.5 w-full" rounded="rounded-full" />
+          <Skeleton className="h-11 w-full" rounded="rounded-xl" />
+        </div>
       </div>
-      <div className="obs-card h-80" />
-    </div>
+
+      <div className="grid min-w-0 gap-3 md:grid-cols-3">
+        {[0, 1, 2].map((index) => (
+          <div
+            key={index}
+            className="obs-card min-w-0 space-y-3 p-4"
+            aria-hidden="true"
+          >
+            <Skeleton className="h-3 w-32" rounded="rounded-md" />
+            <div className="flex items-center gap-2">
+              <Skeleton className="h-9 w-9" rounded="rounded-[16px]" />
+              <Skeleton className="h-5 w-24" rounded="rounded-md" />
+            </div>
+            <Skeleton className="h-4 w-full" rounded="rounded-md" />
+            <Skeleton className="h-1.5 w-full" rounded="rounded-full" />
+            <Skeleton className="h-9 w-full" rounded="rounded-xl" />
+          </div>
+        ))}
+      </div>
+
+      <div className="grid min-w-0 gap-6 xl:grid-cols-[minmax(0,2fr)_minmax(300px,1fr)]">
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="space-y-3">
+            <Skeleton className="h-6 w-56 max-w-full" rounded="rounded-md" />
+            <div className="flex gap-3 overflow-hidden pb-1">
+              {(sequence.length
+                ? sequence
+                : Array.from({ length: 5 }, (_, index) => ({
+                    planet: 'Sun',
+                    start_date: now.toISOString(),
+                    end_date: now.toISOString(),
+                    is_current: false,
+                  }))
+              )
+                .slice(0, 6)
+                .map((item, index) => (
+                  <div
+                    key={`${item.planet}-${index}`}
+                    className="obs-tile flex w-[168px] shrink-0 flex-col gap-2 p-4"
+                    aria-hidden="true"
+                  >
+                    <Skeleton className="h-4 w-16" rounded="rounded-full" />
+                    <Skeleton className="h-5 w-24" rounded="rounded-md" />
+                    <Skeleton className="h-4 w-full" rounded="rounded-md" />
+                    <Skeleton
+                      className="h-3 w-20"
+                      rounded="rounded-md"
+                    />
+                    <span className="text-[11px] text-muted-foreground/60">
+                      {getDurationLabel(item.start_date, item.end_date)}
+                    </span>
+                  </div>
+                ))}
+            </div>
+          </div>
+
+          <div className="obs-card min-w-0 divide-y divide-border overflow-hidden">
+            {(antardashas.length
+              ? antardashas
+              : Array.from({ length: 5 }, () => ({
+                  planet: 'Sun',
+                  start_date: now.toISOString(),
+                  end_date: now.toISOString(),
+                  is_current: false,
+                }))
+            )
+              .slice(0, 6)
+              .map((item, index) => (
+                <div
+                  key={`${item.planet}-${index}`}
+                  className="flex min-w-0 items-center gap-4 p-4"
+                  aria-hidden="true"
+                >
+                  <Skeleton className="h-4 w-24 shrink-0" rounded="rounded-md" />
+                  <Skeleton className="h-5 w-20 shrink-0" rounded="rounded-full" />
+                  <Skeleton className="hidden h-4 w-28 shrink-0 sm:block" rounded="rounded-md" />
+                  <Skeleton className="hidden h-4 w-28 shrink-0 sm:block" rounded="rounded-md" />
+                  <Skeleton className="h-4 w-16 shrink-0" rounded="rounded-md" />
+                  <Skeleton className="ml-auto h-9 w-20 shrink-0" rounded="rounded-xl" />
+                </div>
+              ))}
+          </div>
+
+          <Skeleton className="h-[132px] w-full" rounded="rounded-[20px]" />
+        </div>
+
+        <div className="flex min-w-0 flex-col gap-6">
+          <div className="obs-card min-w-0 space-y-4 p-5">
+            <Skeleton className="h-3 w-28" rounded="rounded-md" />
+            <Skeleton className="h-6 w-48 max-w-full" rounded="rounded-md" />
+            <SkeletonText lines={4} />
+            <Skeleton className="h-11 w-full" rounded="rounded-xl" />
+          </div>
+          <Skeleton className="h-44 w-full" rounded="rounded-[20px]" />
+          <Skeleton className="h-80 w-full" rounded="rounded-[20px]" />
+        </div>
+      </div>
+    </LoadingLayout>
   );
 }

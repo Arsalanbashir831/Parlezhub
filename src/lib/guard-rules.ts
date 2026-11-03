@@ -1,4 +1,5 @@
 import { ROUTES } from '@/constants/routes';
+
 import type { SessionSnapshot } from '@/types/auth';
 import type { UserRole } from '@/types/user';
 
@@ -32,9 +33,10 @@ export interface GuardDecision {
  */
 export const HOME_PATH = ROUTES.AGENT.ASTROLOGY.ROOT;
 
-/** The dashboard matching a role, used whenever a guard has to pick a home. */
+/** Legacy dashboard paths remain in source, but the shared astrology workspace is now home. */
 export function dashboardFor(role: UserRole | null | undefined): string {
-  return role === 'TEACHER' ? ROUTES.TEACHER.DASHBOARD : ROUTES.STUDENT.DASHBOARD;
+  void role;
+  return HOME_PATH;
 }
 
 /**
@@ -59,7 +61,9 @@ export function landingPathFor(
   snapshot: SessionSnapshot,
   redirectTo?: string | null
 ): string {
-  if (redirectTo) return redirectTo;
+  // Authentication always lands in the shared observatory. Protected deep links
+  // can still be opened after the role/session has been resolved.
+  void redirectTo;
   if (snapshot.userRoles.length === 0) return ROUTES.ONBOARDING.CHOOSE_ROLE;
   return HOME_PATH;
 }
@@ -92,7 +96,8 @@ export function evaluateRoleGuard(input: GuardInput): GuardDecision {
   if (input.userRoles.length === 0) {
     return {
       pending: input.rolesUnknown !== false,
-      redirect: input.rolesUnknown === false ? ROUTES.ONBOARDING.CHOOSE_ROLE : null,
+      redirect:
+        input.rolesUnknown === false ? ROUTES.ONBOARDING.CHOOSE_ROLE : null,
       render: false,
     };
   }
@@ -101,7 +106,8 @@ export function evaluateRoleGuard(input: GuardInput): GuardDecision {
   return {
     pending: false,
     redirect:
-      input.fallbackPath ?? dashboardFor(input.activeRole ?? input.userRoles[0]),
+      input.fallbackPath ??
+      dashboardFor(input.activeRole ?? input.userRoles[0]),
     render: false,
   };
 }

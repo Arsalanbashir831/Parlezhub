@@ -4,12 +4,13 @@ import { memo, useCallback } from 'react';
 
 import { ChatRoom } from '@/types/chat';
 import { cn, formatMessageTime } from '@/lib/utils';
+import { initialsOf, resolveChatPeer } from '@/lib/chat-peer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 
 interface RealConversationItemProps {
   chat: ChatRoom;
   currentUserRole: 'student' | 'consultant';
+  currentUserId?: string;
   isSelected: boolean;
   onSelect: (chat: ChatRoom) => void;
 }
@@ -18,6 +19,7 @@ const RealConversationItem = memo(
   ({
     chat,
     currentUserRole,
+    currentUserId,
     isSelected,
     onSelect,
   }: RealConversationItemProps) => {
@@ -25,75 +27,80 @@ const RealConversationItem = memo(
       onSelect(chat);
     }, [chat, onSelect]);
 
-    // Determine the other participant's name and avatar
-    const otherParticipantName =
-      currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
-
-    const otherParticipantAvatar =
-      currentUserRole === 'student' ? chat.consultant_avatar : chat.student_avatar;
-
-    // Determine the role badge
-    const roleBadge = currentUserRole === 'student' ? 'consultant' : 'student';
+    const peer = resolveChatPeer(chat, currentUserRole, currentUserId);
+    const initials = initialsOf(peer.name);
+    const unread = chat.unread_count ?? 0;
+    const preview = chat.last_message
+      ? chat.last_message_sender_id === currentUserId
+        ? `You: ${chat.last_message}`
+        : chat.last_message
+      : 'No messages yet';
 
     return (
-      <div
+      <button
+        type="button"
         onClick={handleClick}
+        aria-pressed={isSelected}
         className={cn(
-          'group relative flex w-full max-w-full cursor-pointer items-center gap-3 overflow-hidden rounded-2xl p-4 transition-all duration-300',
+          'group relative flex w-full max-w-full items-start gap-3 rounded-xl border p-3 text-left transition-colors',
           isSelected
-            ? 'border border-primary-500/20 bg-white/[0.08] shadow-[0_0_20px_rgba(212,175,55,0.05)]'
-            : 'border border-transparent hover:border-primary-500/10 hover:bg-white/[0.04]'
+            ? 'border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)] bg-[color-mix(in_srgb,var(--solar-orange)_8%,transparent)]'
+            : 'border-transparent hover:border-border hover:bg-[var(--surface-2)]'
         )}
       >
         {isSelected && (
-          <div className="absolute left-0 top-1/2 h-8 w-1 -translate-y-1/2 rounded-r-full bg-primary-500 shadow-[0_0_10px_rgba(212,175,55,0.5)]" />
+          <span
+            aria-hidden="true"
+            className="absolute left-0 top-1/2 h-8 w-0.5 -translate-y-1/2 rounded-full bg-[var(--solar-orange)]"
+          />
         )}
 
-        <div className="relative flex-shrink-0">
-          <Avatar className="h-12 w-12 border border-primary-500/20 shadow-lg transition-transform group-hover:scale-105">
-            <AvatarImage
-              src={otherParticipantAvatar || '/placeholders/avatar.jpg'}
-            />
-            <AvatarFallback className="bg-primary-500/10 font-bold text-primary-400">
-              {otherParticipantName
-                .split(' ')
-                .map((n) => n[0])
-                .join('')}
-            </AvatarFallback>
-          </Avatar>
-        </div>
+        <Avatar className="h-10 w-10 shrink-0 border border-border">
+          <AvatarImage src={peer.avatar || ''} alt={peer.name || ''} />
+          <AvatarFallback className="bg-[var(--surface-2)] text-xs font-medium text-foreground">
+            {initials}
+          </AvatarFallback>
+        </Avatar>
 
-        <div className="min-w-0 flex-1 overflow-hidden">
-          <div className="flex items-center justify-between gap-2">
+        <div className="min-w-0 flex-1">
+          <div className="flex items-baseline justify-between gap-2">
             <p
               className={cn(
-                'flex-1 truncate text-sm font-bold transition-colors',
+                'truncate text-sm',
+                unread > 0 ? 'font-semibold' : 'font-medium',
                 isSelected
-                  ? 'text-primary-500'
-                  : 'text-primary-100 group-hover:text-white'
+                  ? 'text-[var(--solar-orange)]'
+                  : 'text-foreground group-hover:text-foreground'
               )}
             >
-              {otherParticipantName}
+              {peer.name || 'Astrologer'}
             </p>
-            <span className="flex-shrink-0 text-[10px] font-bold uppercase tracking-wider text-primary-100/30">
+            <span className="shrink-0 text-[10px] text-muted-foreground">
               {chat.last_message_timestamp
                 ? formatMessageTime(chat.last_message_timestamp)
                 : formatMessageTime(chat.created_at)}
             </span>
           </div>
-          <p className="mt-1 line-clamp-1 text-xs leading-relaxed text-primary-100/50">
-            {chat.last_message || 'The stars are silent...'}
-          </p>
-          <div className="mt-2 flex items-center justify-between gap-2">
-            <Badge
-              variant="outline"
-              className="flex-shrink-0 border-primary-500/20 bg-primary-500/5 px-2 py-0 text-[9px] font-bold uppercase tracking-[0.1em] text-primary-400"
+          <div className="mt-0.5 flex items-center gap-2">
+            <p
+              className={cn(
+                'line-clamp-1 flex-1 text-xs leading-relaxed',
+                unread > 0 ? 'text-foreground' : 'text-muted-foreground'
+              )}
             >
-              {roleBadge}
-            </Badge>
+              {preview}
+            </p>
+            {unread > 0 && (
+              <span
+                className="shrink-0 rounded-full bg-[color:var(--solar-orange,#ffa35a)] px-1.5 py-0.5 text-[10px] font-semibold leading-none text-black"
+                aria-label={`${unread} unseen message${unread === 1 ? '' : 's'}`}
+              >
+                {unread > 99 ? '99+' : unread}
+              </span>
+            )}
           </div>
         </div>
-      </div>
+      </button>
     );
   }
 );

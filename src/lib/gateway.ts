@@ -84,10 +84,26 @@ export async function forwardToUpstream(
 
   const omitCredentials = request.headers.get('x-gateway-no-auth') === '1';
   const accessToken = omitCredentials ? null : await getValidAccessToken();
-
-  const upstreamUrl = `${trimmedBase}${path}${request.nextUrl.search}`;
-
   const method = request.method.toUpperCase();
+
+  // The chat server authenticates from a `token` query parameter rather than the
+  // Authorization header. It needs it on its writes (send, mark-read) and on
+  // presence, which reports who holds a socket; message history stays
+  // credential-free. The token lands in the upstream URL only — the browser keeps
+  // calling the same-origin gateway path.
+  const upstreamSearch = new URLSearchParams(request.nextUrl.search);
+  if (
+    target === 'chat' &&
+    accessToken &&
+    (method !== 'GET' || path.startsWith('/presence/'))
+  ) {
+    upstreamSearch.set('token', accessToken);
+  }
+
+  const upstreamUrl = `${trimmedBase}${path}${
+    upstreamSearch.toString() ? `?${upstreamSearch}` : ''
+  }`;
+
   const payload =
     method === 'GET' || method === 'HEAD' ? undefined : await request.arrayBuffer();
 

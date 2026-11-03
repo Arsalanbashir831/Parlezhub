@@ -1,8 +1,10 @@
 'use client';
 
 import { useMemo } from 'react';
+import { useQuery } from '@tanstack/react-query';
 import { agentNav, studentNav, consultantNav } from '@/lib/nav-config';
 import { useServices } from '@/hooks/useServices';
+import { chatService } from '@/services/chat';
 
 import { AppShell } from './app-shell';
 
@@ -13,20 +15,51 @@ export default function AppShellClient({
   role: 'consultant' | 'student' | 'agent';
   children: React.ReactNode;
 }) {
-  const { services } = useServices({ enabled: role === 'consultant' });
+  const { services } = useServices({
+    enabled: role === 'consultant',
+  });
+
+  // The sidebar badge is the only chat data the whole workspace needs, and the
+  // conversation list already carries it — one cheap request, no socket.
+  const chatRole =
+    role === 'student' ? 'student' : role === 'consultant' ? 'teacher' : null;
+  const { data: chatRooms } = useQuery({
+    queryKey: ['chat-unread-badge', chatRole],
+    queryFn: () => chatService.getChats(chatRole ?? undefined),
+    enabled: chatRole !== null,
+    staleTime: 30_000,
+  });
+
+  const unreadTotal = useMemo(
+    () =>
+      (chatRooms ?? []).reduce(
+        (total, chat) => total + (chat.unread_count ?? 0),
+        0
+      ),
+    [chatRooms]
+  );
 
   const nav = useMemo(() => {
-    if (role === 'student') return studentNav;
+    const withBadge = (items: typeof studentNav) =>
+      items.map((item) =>
+        item.id === 'chat' && unreadTotal > 0
+          ? { ...item, badge: unreadTotal }
+          : item
+      );
+
+    if (role === 'student') return withBadge(studentNav);
     if (role === 'agent') return agentNav;
 
     // Role is consultant
-    const hasAstrologyGig = services.some(s => s.type === 'astrology');
+    const hasAstrologyGig = services.some((s) => s.type === 'astrology');
 
-    if (hasAstrologyGig) return consultantNav;
+    if (hasAstrologyGig) return withBadge(consultantNav);
 
     // Filter out astrology-students if no astrology gig
-    return consultantNav.filter(item => item.id !== 'astrology-students');
-  }, [role, services]);
+    return withBadge(
+      consultantNav.filter((item) => item.id !== 'astrology-students')
+    );
+  }, [role, services, unreadTotal]);
 
   return (
     <AppShell
@@ -35,7 +68,7 @@ export default function AppShellClient({
         role === 'consultant'
           ? 'Consultant'
           : role === 'student'
-            ? 'Student'
+            ? 'End User'
             : 'Agent'
       }
     >

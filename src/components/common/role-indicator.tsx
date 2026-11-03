@@ -1,9 +1,9 @@
 'use client';
 
-import { UserRole } from '@/types/user';
-
 import { useAuth } from '@/contexts/auth-context';
 import { GraduationCap, Users } from 'lucide-react';
+
+import { UserRole } from '@/types/user';
 
 import { RoleSwitcher } from './role-switcher';
 
@@ -42,7 +42,7 @@ export function RoleIndicator({
 
   const getRoleLabel = (role: UserRole) => {
     if (role === 'BOTH') return 'Dual Role';
-    return role === 'TEACHER' ? 'Consultant' : 'Student';
+    return role === 'TEACHER' ? 'Consultant' : 'End User';
   };
 
   const getRoleColor = (role: UserRole) => {

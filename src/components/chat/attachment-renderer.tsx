@@ -27,10 +27,16 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
     return type.split('/')[1]?.toUpperCase() || 'FILE';
   };
 
-  // 1. Image Formats (jpg, png, gif, webp)
+  const fileIcon = (
+    <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-lg border border-border bg-[color-mix(in_srgb,var(--solar-orange)_10%,transparent)] text-[var(--solar-orange)]">
+      <FileText className="h-4 w-4" />
+    </div>
+  );
+
+  // 1. Images
   if (file_type.startsWith('image/')) {
     return (
-      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-border bg-black/20 transition-colors hover:border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)]">
         <div className="relative max-h-72 overflow-hidden">
           <Image
             src={file_url}
@@ -38,26 +44,26 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
             width={0}
             height={0}
             sizes="100vw"
-            className="w-full h-auto object-cover will-change-transform transition-transform duration-300 group-hover:scale-105"
+            className="h-auto w-full object-cover transition-transform duration-300 group-hover:scale-[1.02]"
             unoptimized
           />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover:opacity-100 flex items-end p-3">
+          <div className="absolute inset-0 flex items-end bg-gradient-to-t from-black/60 via-transparent to-transparent p-3 opacity-0 transition-opacity duration-300 group-hover:opacity-100">
             <a
               href={file_url}
               target="_blank"
               rel="noopener noreferrer"
-              className="flex items-center gap-1.5 rounded-lg bg-background/80 px-2.5 py-1 text-xs font-bold text-primary-500 hover:bg-primary-500 hover:text-primary-950 transition-colors"
+              className="flex items-center gap-1.5 rounded-lg bg-card/90 px-2.5 py-1 text-xs font-medium text-foreground transition-colors hover:text-[var(--solar-orange)]"
             >
               <Eye className="h-3.5 w-3.5" />
-              View Full
+              View full
             </a>
           </div>
         </div>
-        <div className="flex items-center justify-between border-t border-primary-500/10 bg-background/60 p-2.5">
-          <span className="truncate text-xs font-medium text-primary-100 max-w-[70%]">
+        <div className="flex items-center justify-between border-t border-border bg-card/60 p-2.5">
+          <span className="max-w-[70%] truncate text-xs text-foreground">
             {file_name}
           </span>
-          <span className="text-[10px] text-primary-100/40">
+          <span className="text-[10px] text-muted-foreground">
             {formatFileSize(file_size)}
           </span>
         </div>
@@ -65,10 +71,10 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
     );
   }
 
-  // 2. Video Formats (mp4, mov)
+  // 2. Video
   if (file_type.startsWith('video/')) {
     return (
-      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/30 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group relative my-1.5 overflow-hidden rounded-xl border border-border bg-black/30 transition-colors hover:border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)]">
         <div className="relative aspect-video w-full overflow-hidden">
           <video
             src={file_url}
@@ -77,13 +83,13 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
             preload="metadata"
           />
         </div>
-        <div className="flex items-center gap-2.5 border-t border-primary-500/10 bg-background/40 p-2.5 backdrop-blur-sm">
-          <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-lg bg-primary-500/10 text-primary-500">
+        <div className="flex items-center gap-2.5 border-t border-border bg-card/60 p-2.5 backdrop-blur-sm">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-[color-mix(in_srgb,var(--solar-orange)_10%,transparent)] text-[var(--solar-orange)]">
             <Video className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-medium text-primary-100">{file_name}</p>
-            <p className="text-[9px] font-bold text-primary-100/40 uppercase">
+            <p className="truncate text-xs text-foreground">{file_name}</p>
+            <p className="text-[10px] text-muted-foreground">
               {getFileExtension(file_name, file_type)} • {formatFileSize(file_size)}
             </p>
           </div>
@@ -92,52 +98,53 @@ const AttachmentRenderer = memo(function AttachmentRenderer({ attachment }: Atta
     );
   }
 
-  // 3. Audio Formats (mp3, wav, m4a, ogg)
+  // 3. Audio
   if (file_type.startsWith('audio/')) {
     return (
-      <div className="group my-1.5 overflow-hidden rounded-xl border border-primary-500/10 bg-black/20 p-3 shadow-md transition-[border-color,box-shadow] duration-300 hover:border-primary-500/30 hover:shadow-primary-500/5">
+      <div className="group my-1.5 overflow-hidden rounded-xl border border-border bg-black/20 p-3 transition-colors hover:border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)]">
         <div className="mb-2 flex items-center gap-2.5">
-          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-primary-500/15 text-primary-500 shadow-[0_0_8px_rgba(212,175,55,0.1)]">
+          <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-[color-mix(in_srgb,var(--solar-orange)_12%,transparent)] text-[var(--solar-orange)]">
             <Music className="h-4 w-4" />
           </div>
           <div className="min-w-0 flex-1">
-            <p className="truncate text-xs font-semibold text-primary-100">{file_name}</p>
-            <p className="text-[9px] font-bold text-primary-100/40 uppercase">
+            <p className="truncate text-xs font-medium text-foreground">{file_name}</p>
+            <p className="text-[10px] text-muted-foreground">
               {getFileExtension(file_name, file_type)} • {formatFileSize(file_size)}
             </p>
           </div>
         </div>
-        <audio src={file_url} controls className="h-8 w-full accent-primary-500" />
+        <audio
+          src={file_url}
+          controls
+          className="h-8 w-full accent-[var(--solar-orange)]"
+        />
       </div>
     );
   }
 
-  // 4. Document / Generic Formats (PDFs, doc, xlsx, etc.)
+  // 4. Documents (PDF, doc, xlsx, etc.)
   return (
     <a
       href={file_url}
       target="_blank"
       rel="noopener noreferrer"
-      className="group relative my-1.5 flex items-center justify-between gap-4 overflow-hidden rounded-xl border border-primary-500/10 bg-white/[0.04] p-3 shadow-md transition-all duration-300 hover:border-primary-500/30 hover:bg-white/[0.08] hover:shadow-primary-500/5"
+      className="group relative my-1.5 flex items-center justify-between gap-4 overflow-hidden rounded-xl border border-border bg-[var(--surface-2)] p-3 transition-colors hover:border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)]"
     >
-      {/* Decorative vertical color strip */}
-      <div className="absolute bottom-0 left-0 top-0 w-1 bg-primary-500 shadow-[0_0_8px_rgba(212,175,55,0.3)]" />
+      <div className="absolute bottom-0 left-0 top-0 w-0.5 bg-[var(--solar-orange)]" />
 
-      <div className="flex items-center gap-3 min-w-0">
-        <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-primary-500/10 text-primary-500 border border-primary-500/20 group-hover:bg-primary-500/20 transition-all duration-300">
-          <FileText className="h-5 w-5" />
-        </div>
+      <div className="flex min-w-0 items-center gap-3">
+        {fileIcon}
         <div className="min-w-0">
-          <p className="truncate text-xs font-semibold text-primary-100 group-hover:text-primary-400 transition-colors">
+          <p className="truncate text-xs font-medium text-foreground transition-colors group-hover:text-[var(--solar-orange)]">
             {file_name}
           </p>
-          <p className="text-[9px] font-extrabold uppercase tracking-widest text-primary-100/30">
+          <p className="text-[10px] text-muted-foreground">
             {getFileExtension(file_name, file_type)} • {formatFileSize(file_size)}
           </p>
         </div>
       </div>
-      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg bg-white/5 text-primary-100/50 group-hover:bg-primary-500 group-hover:text-primary-950 group-hover:scale-105 active:scale-95 will-change-transform transition-[background-color,color,transform] duration-300">
-        <Download className="h-4 w-4 group-hover:animate-bounce" />
+      <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border border-border bg-card/40 text-muted-foreground transition-colors group-hover:text-[var(--solar-orange)]">
+        <Download className="h-4 w-4" />
       </div>
     </a>
   );

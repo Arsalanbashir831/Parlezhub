@@ -32,6 +32,10 @@ export interface ChatMessage {
   content: string;
   timestamp: string;
   attachments?: Attachment[];
+  /** Undefined means the server predates read receipts — never render a
+   *  receipt for a state the backend has not actually reported. */
+  is_read?: boolean;
+  read_at?: string | null;
 }
 
 export interface ChatRoom {
@@ -44,6 +48,11 @@ export interface ChatRoom {
   consultant_avatar?: string;
   last_message?: string;
   last_message_timestamp?: string;
+  last_message_sender_id?: string;
+  /** Whether the requester's own last message has been seen by the peer. */
+  last_message_read?: boolean;
+  /** Messages in this chat from the peer that the requester has not opened. */
+  unread_count?: number;
   created_at: string;
   updated_at: string;
 }
@@ -54,11 +63,22 @@ export interface CreateChatRequest {
 }
 
 export interface WebSocketMessage {
-  type: 'message' | 'typing' | 'read' | 'error';
+  type: 'message' | 'typing' | 'read' | 'presence' | 'error';
   content?: string;
   sender_id?: string;
   is_typing?: boolean;
   timestamp: string;
+  /** `read` and `presence` frames name the conversation they belong to. */
+  chat_id?: string;
+  /** `read`: the participant who opened the thread. `presence`: everyone online. */
+  reader_id?: string;
+  online?: string[];
+  /** A `message` frame is the persisted row, so it carries the stored identity
+   *  and receipt columns too. */
+  id?: string;
+  attachments?: Attachment[];
+  is_read?: boolean;
+  read_at?: string | null;
 }
 
 // Backend response types for chats list
@@ -74,6 +94,11 @@ export interface BackendChat {
   student_details: BackendUserDetails;
   teacher_details: BackendUserDetails;
   created_at: string;
+  last_message?: string | null;
+  last_message_timestamp?: string | null;
+  last_message_sender_id?: string | null;
+  last_message_read?: boolean | null;
+  unread_count?: number | null;
 }
 
 export interface BackendChatMessage {
@@ -82,4 +107,6 @@ export interface BackendChatMessage {
   content: string;
   timestamp: string;
   attachments?: Attachment[];
+  is_read?: boolean;
+  read_at?: string | null;
 }

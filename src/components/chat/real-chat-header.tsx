@@ -5,14 +5,17 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 
 import { ChatRoom } from '@/types/chat';
 import { cn } from '@/lib/utils';
+import { initialsOf, resolveChatPeer } from '@/lib/chat-peer';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 
 interface RealChatHeaderProps {
   chat: ChatRoom;
   currentUserRole: 'student' | 'consultant';
-  isConnected: boolean;
+  currentUserId?: string;
+  /** null while the chat server has not reported presence — say nothing rather
+   *  than pass our own socket state off as the peer being online. */
+  peerOnline: boolean | null;
   isTyping: boolean;
   onBookCall?: () => void;
   onBack?: () => void;
@@ -23,116 +26,94 @@ const RealChatHeader = memo(
   ({
     chat,
     currentUserRole,
-    isConnected,
+    currentUserId,
+    peerOnline,
     isTyping,
     onBookCall,
     onBack,
     showBackButton = false,
   }: RealChatHeaderProps) => {
-    // Determine the other participant's name and avatar
-    const otherParticipantName =
-      currentUserRole === 'student' ? chat.consultant_name : chat.student_name;
+    const peer = resolveChatPeer(chat, currentUserRole, currentUserId);
 
-    const otherParticipantAvatar =
-      currentUserRole === 'student' ? chat.consultant_avatar : chat.student_avatar;
+    const initials = initialsOf(peer.name);
+
+    const statusLabel = isTyping
+      ? 'Writing…'
+      : peerOnline === null
+        ? null
+        : peerOnline
+          ? 'Online'
+          : 'Offline';
 
     return (
-      <>
+      <header className="flex shrink-0 items-center gap-3 border-b border-border bg-card px-4 py-3 sm:px-6">
         {showBackButton && (
-          <div className="flex items-center justify-between border-b border-primary-500/10 bg-background/95 px-4 py-3 md:hidden">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="items-center text-primary-400 hover:bg-primary-500/10 hover:text-primary-300"
-            >
-              <ArrowLeft className="mr-2 h-4 w-4" />
-              <span className="text-xs font-bold uppercase tracking-widest">
-                Back
-              </span>
-            </Button>
-
-            <div className="flex items-center gap-2">
-              {currentUserRole === 'student' && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={onBookCall}
-                  className="h-9 rounded-xl border-none bg-primary-500 px-4 font-bold text-primary-950 shadow-lg shadow-primary-500/20 hover:bg-primary-600"
-                >
-                  <Calendar className="mr-2 h-4 w-4" />
-                  Book Call
-                </Button>
-              )}
-            </div>
-          </div>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={onBack}
+            aria-label="Back to conversations"
+            className="-ml-1 h-9 w-9 shrink-0 text-muted-foreground hover:text-foreground md:hidden"
+          >
+            <ArrowLeft className="h-4 w-4" />
+          </Button>
         )}
-        <div className="flex flex-col justify-between border-b border-primary-500/10 bg-background/95 px-6 py-4 md:flex-row md:items-center">
-          <div className="flex w-full items-center gap-4">
-            <div className="relative">
-              <Avatar className="h-12 w-12 border-2 border-primary-500/20 p-0.5">
-                <AvatarImage
-                  src={otherParticipantAvatar || '/placeholders/avatar.jpg'}
-                  className="rounded-full"
-                />
-                <AvatarFallback className="bg-primary-500/10 font-bold text-primary-400">
-                  {otherParticipantName
-                    .split(' ')
-                    .map((n) => n[0])
-                    .join('')}
-                </AvatarFallback>
-              </Avatar>
-              <div
-                className={cn(
-                  'absolute -bottom-0.5 -right-0.5 h-3.5 w-3.5 rounded-full border-2 border-background shadow-sm',
-                  isConnected ? 'bg-green-500' : 'bg-gray-500'
-                )}
-              />
-            </div>
-            <div className="min-w-0 flex-1">
-              <div className="flex items-center gap-3">
-                <h3 className="truncate text-lg font-bold text-white">
-                  {otherParticipantName}
-                </h3>
-                <Badge
-                  variant="outline"
-                  className="hidden border-primary-500/30 bg-primary-500/5 text-[10px] font-bold uppercase tracking-widest text-primary-400 sm:inline-flex"
-                >
-                  {currentUserRole === 'student' ? 'Consultant' : 'Student'}
-                </Badge>
-              </div>
-              <div className="mt-0.5 flex items-center gap-2">
-                <p
-                  className={cn(
-                    'text-[10px] font-bold uppercase tracking-widest transition-colors',
-                    isTyping
-                      ? 'animate-pulse text-primary-400'
-                      : isConnected
-                        ? 'text-green-500/80'
-                        : 'text-primary-100/30'
-                  )}
-                >
-                  {isTyping ? 'Writing...' : isConnected ? 'Online' : 'Offline'}
-                </p>
-              </div>
-            </div>
-          </div>
 
-          <div className="hidden shrink-0 items-center gap-4 self-center md:flex">
-            {currentUserRole === 'student' && (
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={onBookCall}
-                className="h-10 rounded-xl border-none bg-primary-500 px-6 font-bold text-primary-950 shadow-lg shadow-primary-500/20 transition-all hover:bg-primary-600 active:scale-95"
-              >
-                <Calendar className="mr-2 h-4 w-4" />
-                Schedule Consultation
-              </Button>
-            )}
-          </div>
+        <div className="relative shrink-0">
+          <Avatar className="h-11 w-11 border border-border">
+            <AvatarImage src={peer.avatar || ''} alt={peer.name || ''} />
+            <AvatarFallback className="bg-[var(--surface-2)] text-sm text-foreground">
+              {initials}
+            </AvatarFallback>
+          </Avatar>
+          {peerOnline !== null && (
+            <span
+              aria-hidden="true"
+              className={cn(
+                'absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full border-2 border-card',
+                // --success only exists inside the observatory shell, so the dot
+                // carries its own colour for the workspace route.
+                peerOnline
+                  ? 'bg-[color:var(--success,#75c6a8)]'
+                  : 'bg-muted-foreground/50'
+              )}
+            />
+          )}
         </div>
-      </>
+
+        <div className="min-w-0 flex-1">
+          <h2 className="truncate text-sm font-semibold text-foreground">
+            {peer.name || 'Astrologer'}
+          </h2>
+          {statusLabel && (
+            <p
+              className={cn(
+                'obs-label mt-0.5',
+                isTyping &&
+                  'animate-pulse text-[var(--solar-orange)] motion-reduce:animate-none',
+                !isTyping &&
+                  peerOnline &&
+                  'text-[color:var(--success,#75c6a8)]'
+              )}
+            >
+              {statusLabel}
+            </p>
+          )}
+        </div>
+
+        {currentUserRole === 'student' && onBookCall && (
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={onBookCall}
+            className="obs-control shrink-0 gap-2"
+          >
+            <Calendar className="h-4 w-4" />
+            <span className="hidden sm:inline">Schedule consultation</span>
+            <span className="sm:hidden">Book</span>
+          </Button>
+        )}
+      </header>
     );
   }
 );

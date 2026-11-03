@@ -1,15 +1,21 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { useQuery, useQueryClient } from '@tanstack/react-query';
 import {
   serviceApi,
   serviceUtils,
   type PublicService,
 } from '@/services/service';
+import { useQuery, useQueryClient } from '@tanstack/react-query';
 
+import {
+  buildAstrologerProfiles,
+  filterAstrologerProfiles,
+  type AstrologerProfile,
+} from '@/lib/astrologer-directory';
 import { getErrorMessage } from '@/lib/error-utils';
 
+// Kept for legacy service cards that are not used by the profile directory.
 export interface ServiceCardData {
   id: string;
   service: PublicService;
@@ -25,101 +31,58 @@ export interface ServiceCardData {
 export const useConsultants = () => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedLanguage, setSelectedLanguage] = useState('all');
-  const [priceRange, setPriceRange] = useState([0, 100]);
+  const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedService, setSelectedService] =
-    useState<ServiceCardData | null>(null);
-  const [isDetailsPanelOpen, setIsDetailsPanelOpen] = useState(false);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedProfile, setSelectedProfile] =
+    useState<AstrologerProfile | null>(null);
 
-  const { data: services = [], isLoading, error: queryError } = useQuery({
+  const {
+    data: services = [],
+    isLoading,
+    error: queryError,
+  } = useQuery({
     queryKey: ['public-services'],
-    queryFn: async () => {
-      const apiResponse = await serviceApi.getPublicServices();
-      return apiResponse.map(serviceUtils.publicApiResponseToService);
-    },
-    staleTime: 10 * 60 * 1000, // Keep data fresh for 10 minutes
-    gcTime: 30 * 60 * 1000, // Keep in cache for 30 minutes
+    queryFn: async () =>
+      (await serviceApi.getPublicServices()).map(
+        serviceUtils.publicApiResponseToService
+      ),
+    staleTime: 10 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
   });
 
-  const error = useMemo(() => {
-    if (!queryError) return null;
-    return getErrorMessage(queryError, 'fetch-public-services');
-  }, [queryError]);
-
-  // Convert services to service card data format
-  const serviceCards = useMemo(() => {
-    return services.map((service) => ({
-      id: service.id,
-      service,
-      consultantName: service.consultantName,
-      consultantAvatar: service.consultantAvatar,
-      consultantQualification: service.consultantQualification,
-      consultantExperience: service.consultantExperience,
-      consultantBio: service.consultantBio,
-      consultantLocation: service.consultantLocation,
-      consultantEmail: service.consultantEmail || '',
-    }));
-  }, [services]);
-
-  // Get available languages from services
-  const availableLanguages = useMemo(() => {
-    const languages = new Set<string>();
-    services.forEach((service) => {
-      languages.add(service.type === 'language' ? 'Language' : 'Astrology');
-    });
-    return Array.from(languages).sort();
-  }, [services]);
-
-  // Filter services based on search criteria
-  const filteredServices = useMemo(() => {
-    return serviceCards.filter((serviceCard) => {
-      const { service } = serviceCard;
-
-      const matchesSearch =
-        service.consultantName.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        service.shortDescription
-          .toLowerCase()
-          .includes(searchQuery.toLowerCase()) ||
-        service.tags.some((tag) =>
-          tag.toLowerCase().includes(searchQuery.toLowerCase())
-        );
-
-      const matchesLanguage =
-        selectedLanguage === 'all' ||
-        (selectedLanguage === 'Language' && service.type === 'language') ||
-        (selectedLanguage === 'Astrology' && service.type === 'astrology');
-
-      const matchesPrice =
-        service.price >= priceRange[0] && service.price <= priceRange[1];
-
-      return matchesSearch && matchesLanguage && matchesPrice;
-    });
-  }, [serviceCards, searchQuery, selectedLanguage, priceRange]);
-
-  // Handlers
-  const handleSearchChange = useCallback((value: string) => {
-    setSearchQuery(value);
-  }, []);
-
-  const handleLanguageChange = useCallback((value: string) => {
-    setSelectedLanguage(value);
-  }, []);
-
-  const handlePriceRangeChange = useCallback((value: number[]) => {
-    setPriceRange(value);
-  }, []);
-
-  const handleToggleFilters = useCallback(() => {
-    setShowFilters((prev) => !prev);
-  }, []);
+  const profiles = useMemo(() => buildAstrologerProfiles(services), [services]);
+  const maxPrice = useMemo(
+    () =>
+      Math.max(
+        100,
+        ...profiles.flatMap((profile) =>
+          profile.services.map((service) =>
+            Number.isFinite(service.price)
+              ? Math.ceil(service.price / 10) * 10
+              : 0
+          )
+        )
+      ),
+    [profiles]
+  );
+  const effectivePriceRange = useMemo<[number, number]>(
+    () =>
+      priceRange
+        ? [Math.min(priceRange[0], maxPrice), Math.min(priceRange[1], maxPrice)]
+        : [0, maxPrice],
+    [priceRange, maxPrice]
+  );
+  const filteredProfiles = useMemo(
+    () => filterAstrologerProfiles(profiles, searchQuery, effectivePriceRange),
+    [profiles, searchQuery, effectivePriceRange]
+  );
+  const error = queryError
+    ? getErrorMessage(queryError, 'fetch-public-services')
+    : null;
 
   const handleClearFilters = useCallback(() => {
     setSearchQuery('');
-    setSelectedLanguage('all');
-    setPriceRange([0, 100]);
+    setPriceRange(null);
     setShowFilters(false);
   }, []);
 
@@ -127,49 +90,23 @@ export const useConsultants = () => {
     await queryClient.invalidateQueries({ queryKey: ['public-services'] });
   }, [queryClient]);
 
-  const handleSelectService = useCallback((serviceCard: ServiceCardData) => {
-    setSelectedService(serviceCard);
-    setIsDetailsPanelOpen(true);
-    setIsModalOpen(true);
-  }, []);
-
-  const handleCloseDetailsPanel = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedService(null);
-  }, []);
-
-  const handleCloseModal = useCallback(() => {
-    setIsModalOpen(false);
-    setSelectedService(null);
-  }, []);
-
   return {
-    // Data
-    services: filteredServices,
-    availableLanguages,
+    profiles: filteredProfiles,
+    totalProfiles: profiles.length,
+    searchQuery,
+    priceRange: effectivePriceRange,
+    maxPrice,
+    showFilters,
+    selectedProfile,
     isLoading,
     error,
-
-    // Filter states
-    searchQuery,
-    selectedLanguage,
-    priceRange,
-    showFilters,
-
-    // Service details panel
-    selectedService,
-    isDetailsPanelOpen,
-    isModalOpen,
-
-    // Handlers
-    handleSearchChange,
-    handleLanguageChange,
-    handlePriceRangeChange,
-    handleToggleFilters,
+    handleSearchChange: setSearchQuery,
+    handlePriceRangeChange: (value: number[]) =>
+      setPriceRange([value[0] ?? 0, value[1] ?? maxPrice]),
+    handleToggleFilters: () => setShowFilters((current) => !current),
     handleClearFilters,
-    handleSelectService,
-    handleCloseDetailsPanel,
-    handleCloseModal,
+    handleSelectProfile: setSelectedProfile,
+    handleCloseDetailsPanel: () => setSelectedProfile(null),
     refreshConsultants,
   };
 };
