@@ -8,7 +8,7 @@ export const dynamic = 'force-dynamic';
 
 const ACTIONS = Object.keys(authActions) as AuthAction[];
 
-/** URLs are kebab-case (`/api/auth/sync-roles`), keys are camelCase (`syncRoles`). */
+
 function resolveAction(name: string): AuthAction | null {
   const normalized = name.replace(/-/g, '').toLowerCase();
   return ACTIONS.find((action) => action.replace(/-/g, '').toLowerCase() === normalized) ?? null;
