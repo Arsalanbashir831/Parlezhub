@@ -6,8 +6,8 @@ import { createClient, getValidAccessToken } from '@/lib/supabase/server';
 export type GatewayTarget = 'backend' | 'chat';
 
 const BASE_URLS: Record<GatewayTarget, () => string | undefined> = {
-  backend: () => process.env.NEXT_PUBLIC_BACKEND_URL,
-  chat: () => process.env.NEXT_PUBLIC_CHAT_SERVER_URL,
+  backend: () => process.env.BACKEND_URL,
+  chat: () => process.env.CHAT_SERVER_URL,
 };
 
 // Response headers worth mirroring; everything else (content-length,
