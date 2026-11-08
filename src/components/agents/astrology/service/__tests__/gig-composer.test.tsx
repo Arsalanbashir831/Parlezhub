@@ -43,8 +43,11 @@ describe('the observatory gig composer', () => {
   it('suggests astrology vocabulary, not language-tutor vocabulary', () => {
     renderComposer();
 
-    const typeGroup = screen.getByRole('group', { name: 'Type of session' });
-    expect(within(typeGroup).getByRole('button', { name: 'Astrology Reading' }).getAttribute('aria-pressed')).toBe('true');
+    // New gigs are astrology readings only: the type is shown, not offered.
+    expect(screen.queryByRole('group', { name: 'Type of session' })).toBeNull();
+    expect(screen.getAllByText('Astrology Reading').length).toBeGreaterThan(0);
+    expect(screen.queryByRole('button', { name: 'Language Consultation' })).toBeNull();
+    expect(screen.queryByRole('button', { name: 'General Consultancy' })).toBeNull();
     expect(screen.getByPlaceholderText(/map the next five years/)).not.toBeNull();
     expect(screen.queryByRole('button', { name: '+ Kundli' })).not.toBeNull();
     expect(screen.queryByRole('button', { name: '+ Pronunciation' })).toBeNull();

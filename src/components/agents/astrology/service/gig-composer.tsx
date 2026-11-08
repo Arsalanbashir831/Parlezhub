@@ -130,7 +130,8 @@ export function GigComposerSkeleton() {
 export default function GigComposer({
   mode,
   initialData,
-  availableTypes = ['astrology', 'language', 'general'],
+  // New gigs are astrology readings only; editing passes the gig's own type.
+  availableTypes = ['astrology'],
   onSubmit,
   onCancel,
   isSubmitting = false,
@@ -241,13 +242,23 @@ export default function GigComposer({
         <Section step="01 · The offer" title="What a student is booking" note="The title and the summary are what somebody compares you against before they read a word of the description.">
           <div className="space-y-2">
             <span className="obs-label">Type of session</span>
-            <div className="flex flex-wrap gap-2" role="group" aria-label="Type of session">
-              {availableTypes.map(type => (
-                <button key={type} type="button" className="obs-control text-xs" aria-pressed={values.type === type} onClick={() => setValue('type', type, { shouldValidate: true })}>
-                  {getServiceTypeLabel(type)}
-                </button>
-              ))}
-            </div>
+            {availableTypes.length === 1 ? (
+              // One type on offer: show it as settled rather than as a choice.
+              <p className="flex">
+                <span data-selected="true" className="obs-control pointer-events-none gap-2 text-xs">
+                  <Check className="h-3.5 w-3.5" aria-hidden="true" />
+                  {getServiceTypeLabel(values.type)}
+                </span>
+              </p>
+            ) : (
+              <div className="flex flex-wrap gap-2" role="group" aria-label="Type of session">
+                {availableTypes.map(type => (
+                  <button key={type} type="button" className="obs-control text-xs" aria-pressed={values.type === type} onClick={() => setValue('type', type, { shouldValidate: true })}>
+                    {getServiceTypeLabel(type)}
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
 
           <label className="block space-y-2">

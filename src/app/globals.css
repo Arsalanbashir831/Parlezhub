@@ -706,7 +706,8 @@ a.obs-glass:hover {
 .obs-control:hover {
   border-color: var(--text-muted);
 }
-.obs-control[aria-pressed='true'] {
+/* data-selected: a fixed, non-interactive choice shown in the selected style. */
+.obs-control:is([aria-pressed='true'], [data-selected='true']) {
   background: color-mix(in srgb, var(--solar-orange) 12%, transparent);
   border-color: var(--solar-orange);
   color: var(--solar-gold);
