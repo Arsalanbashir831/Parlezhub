@@ -254,7 +254,7 @@ export function useMeetings() {
     (personId: string) => {
       if (user?.role === 'TEACHER') {
         // Consultant messaging a student
-        router.push(ROUTES.TEACHER.CHAT + '?student=' + personId);
+        router.push(ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT + '?student=' + personId);
       } else {
         // Student messaging a consultant
         router.push(ROUTES.AGENT.ASTROLOGY.HIRE.CHAT + '?consultant=' + personId);

@@ -195,42 +195,12 @@ export const consultantNav: NavItem[] = [
     href: ROUTES.AGENT.ASTROLOGY.ROOT,
   },
 
-  // The same four sections the observatory offers, from the workspace shell.
-  {
-    id: 'create-gig',
-    label: 'Create Gig',
-    icon: PlusCircle,
-    href: ROUTES.TEACHER.CREATE_SERVICE,
+  // The same four sections the observatory offers; they open the observatory
+  // pages, which are the only home these sections have.
+  ...astrologerServiceNav.map((item) => ({
+    ...item,
     section: 'Astrologer Service',
-  },
-  {
-    id: 'services',
-    label: 'My Gigs',
-    icon: Briefcase,
-    href: ROUTES.TEACHER.SERVICES,
-    section: 'Astrologer Service',
-  },
-  {
-    id: 'chat',
-    label: 'Chats',
-    icon: MessageCircle,
-    href: ROUTES.TEACHER.CHAT,
-    section: 'Astrologer Service',
-  },
-  {
-    id: 'meetings',
-    label: 'Meetings',
-    icon: Calendar,
-    href: ROUTES.TEACHER.MEETINGS,
-    section: 'Astrologer Service',
-  },
-  {
-    id: 'astrology-students',
-    label: 'Astro Students',
-    icon: Star,
-    href: ROUTES.TEACHER.ASTROLOGY_STUDENTS,
-    section: 'Astrologer Service',
-  },
+  })),
 
   // The astrologer's own readings. These open the observatory workspace, which
   // brings its own sidebar once one of them is open.
@@ -263,13 +233,6 @@ export const consultantNav: NavItem[] = [
     section: 'My Observatory',
   },
 
-  {
-    id: 'blogs',
-    label: 'Blogs',
-    icon: FileText,
-    href: ROUTES.TEACHER.BLOGS,
-    section: 'Content',
-  },
   {
     id: 'settings',
     label: 'Settings',

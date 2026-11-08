@@ -9,7 +9,7 @@ vi.mock('@supabase/ssr', () => ({
 }));
 
 function request(
-  path = '/student/dashboard',
+  path = '/student/settings',
   cookies: Record<string, string> = {}
 ) {
   const cookieHeader = Object.entries(cookies)
@@ -76,7 +76,8 @@ describe('unauthenticated visitors', () => {
       '/auth/sign-in',
       '/auth/signup',
       '/terms',
-      '/ai-session/setup',
+      '/privacy',
+      '/language',
     ]) {
       const res = await proxy(request(path));
       expect(res.headers.get('location')).toBeNull();
@@ -101,13 +102,13 @@ describe('role resolution', () => {
   it('never sends a user with unknown roles to onboarding', async () => {
     // No user_roles cookie means the server has not checked yet; treating that
     // as "roleless" bounced every fresh login into choose-role.
-    const res = await proxy(request('/student/dashboard'));
+    const res = await proxy(request('/student/settings'));
 
     expect(res.headers.get('location')).toBeNull();
   });
 
   it('sends a resolved roleless account to onboarding', async () => {
-    const res = await proxy(request('/student/dashboard', ROLES([])));
+    const res = await proxy(request('/student/settings', ROLES([])));
 
     expect(new URL(res.headers.get('location')!).pathname).toBe(
       '/onboarding/choose-role'
@@ -171,7 +172,7 @@ describe('role-based route gating', () => {
 
   it('redirects a student on a consultant route to the astrology workspace', async () => {
     const res = await proxy(
-      request('/consultant/services', {
+      request('/consultant/settings', {
         ...ROLES(['TEACHER', 'STUDENT', 'BOTH']),
         active_role: 'STUDENT',
       })
@@ -216,7 +217,7 @@ describe('role-based route gating', () => {
 
   it('blocks a student from a consultant-only route', async () => {
     const res = await proxy(
-      request('/consultant/services', ROLES(['STUDENT']))
+      request('/consultant/settings', ROLES(['STUDENT']))
     );
 
     expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
@@ -224,7 +225,7 @@ describe('role-based route gating', () => {
 
   it('blocks a teacher from a student-only route', async () => {
     const res = await proxy(
-      request('/student/ai-chirologist', {
+      request('/student/history', {
         ...ROLES(['TEACHER']),
         active_role: 'TEACHER',
       })
@@ -234,17 +235,21 @@ describe('role-based route gating', () => {
   });
 
   it('lets an authorised pair through', async () => {
-    const res = await proxy(request('/student/dashboard', ROLES(['STUDENT'])));
+    const res = await proxy(
+      request('/student/settings', {
+        ...ROLES(['STUDENT']),
+        active_role: 'STUDENT',
+      })
+    );
 
-    expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology');
-    expect(res.status).toBe(307);
+    expect(res.headers.get('location')).toBeNull();
   });
 
   it('ignores a forged role list in an unknown-role request', async () => {
     // Corrupt cookie JSON parses to nothing, and the request stays relaxed rather
     // than gating on attacker-controlled roles.
     const res = await proxy(
-      request('/consultant/services', { user_roles: '%7Bbroken' })
+      request('/consultant/settings', { user_roles: '%7Bbroken' })
     );
 
     expect(res.headers.get('location')).toBeNull();
@@ -278,12 +283,62 @@ describe('middleware matcher', () => {
     const pattern = new RegExp(`^${config.matcher[0]}$`);
     const guarded = (path: string) => pattern.test(path);
 
-    expect(guarded('/student/dashboard')).toBe(true);
+    expect(guarded('/student/settings')).toBe(true);
     expect(guarded('/onboarding/choose-role')).toBe(true);
     expect(guarded('/api/backend/auth/set-role/')).toBe(false);
     expect(guarded('/api/auth/session')).toBe(false);
     expect(guarded('/_next/static/chunks/app.js')).toBe(false);
     expect(guarded('/_next/image?url=%2Fx.png')).toBe(false);
     expect(guarded('/favicon.ico')).toBe(false);
+  });
+});
+
+describe('legacy workspace URLs', () => {
+  it('sends each retired page to its home in the observatory', async () => {
+    const cases: [string, string][] = [
+      ['/student/dashboard', '/astrology'],
+      ['/consultant/dashboard', '/astrology'],
+      ['/student/consultants', '/astrology/astrologers'],
+      ['/student/chat', '/astrology/hire/chat'],
+      ['/student/meetings', '/astrology/hire/meetings'],
+      ['/consultant/services', '/astrology/service/gigs'],
+      ['/consultant/services/edit/12', '/astrology/service/gigs'],
+      ['/consultant/chat', '/astrology/service/chat'],
+      ['/consultant/meetings', '/astrology/service/meetings'],
+    ];
+
+    for (const [from, to] of cases) {
+      const res = await proxy(request(from, ROLES(['STUDENT', 'TEACHER'])));
+      expect(new URL(res.headers.get('location')!).pathname).toBe(to);
+    }
+  });
+
+  it('keeps the query string, so links from sent emails still open the right thread', async () => {
+    const res = await proxy(request('/consultant/chat?student=42'));
+
+    const location = new URL(res.headers.get('location')!);
+    expect(location.pathname).toBe('/astrology/service/chat');
+    expect(location.searchParams.get('student')).toBe('42');
+  });
+
+  it('redirects before the sign-in check, so a signed-out visitor lands on sign-in for the new page', async () => {
+    signedOut();
+
+    const res = await proxy(request('/student/meetings'));
+
+    expect(new URL(res.headers.get('location')!).pathname).toBe(
+      '/astrology/hire/meetings'
+    );
+  });
+
+  it('does not catch a kept page that only shares a prefix', async () => {
+    const res = await proxy(
+      request('/student/settings', {
+        ...ROLES(['STUDENT']),
+        active_role: 'STUDENT',
+      })
+    );
+
+    expect(res.headers.get('location')).toBeNull();
   });
 });

@@ -3,7 +3,6 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { agentNav, studentNav, consultantNav } from '@/lib/nav-config';
-import { useServices } from '@/hooks/useServices';
 import { chatService } from '@/services/chat';
 
 import { AppShell } from './app-shell';
@@ -15,10 +14,6 @@ export default function AppShellClient({
   role: 'consultant' | 'student' | 'agent';
   children: React.ReactNode;
 }) {
-  const { services } = useServices({
-    enabled: role === 'consultant',
-  });
-
   // The sidebar badge is the only chat data the whole workspace needs, and the
   // conversation list already carries it — one cheap request, no socket.
   const chatRole =
@@ -49,17 +44,8 @@ export default function AppShellClient({
 
     if (role === 'student') return withBadge(studentNav);
     if (role === 'agent') return agentNav;
-
-    // Role is consultant
-    const hasAstrologyGig = services.some((s) => s.type === 'astrology');
-
-    if (hasAstrologyGig) return withBadge(consultantNav);
-
-    // Filter out astrology-students if no astrology gig
-    return withBadge(
-      consultantNav.filter((item) => item.id !== 'astrology-students')
-    );
-  }, [role, services, unreadTotal]);
+    return withBadge(consultantNav);
+  }, [role, unreadTotal]);
 
   return (
     <AppShell

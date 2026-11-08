@@ -250,11 +250,6 @@ const WORKSPACE_NAV_COPY: Record<string, GuideCopy> = {
     description:
       'Profile, birth details and notification preferences live here.',
   },
-  'astrology-students': {
-    title: 'Astro Students',
-    description:
-      'Students who granted you chart access. Open one to read their chart, then reply in Chat or book a session.',
-  },
   'create-gig': {
     title: 'Create Gig',
     description:
@@ -265,11 +260,6 @@ const WORKSPACE_NAV_COPY: Record<string, GuideCopy> = {
     description:
       'Everything you offer, with its bookings, earnings and status. Pause a gig and it stops appearing on your profile without deleting its history.',
   },
-  blogs: {
-    title: 'Blogs',
-    description:
-      'Write and publish articles; this is where you draft, edit and track posts that bring readers to your profile.',
-  },
   'obs-chart': {
     title: 'My Chart',
     description:
@@ -278,7 +268,7 @@ const WORKSPACE_NAV_COPY: Record<string, GuideCopy> = {
   'obs-analysis': {
     title: 'Chart Analysis',
     description:
-      'House-by-house readings of a chart. Open it here, or from Astro Students to read a student’s chart.',
+      'House-by-house readings of a chart. Open it here, or pick a student who shared their chart from the profile switcher.',
   },
   'obs-dasha': {
     title: 'Dasha Timeline',
@@ -289,44 +279,6 @@ const WORKSPACE_NAV_COPY: Record<string, GuideCopy> = {
     title: 'My Reports',
     description:
       'Every reading generated for your own chart, kept so you can compare against what you tell a student.',
-  },
-};
-
-const WORKSPACE_PAGE_COPY: Record<string, GuideCopy> = {
-  [ROUTES.TEACHER.SERVICES]: {
-    title: 'This is My Gigs',
-    description:
-      'Add a gig with price, duration and availability. Students book it from your profile and the booking card lands in Chat.',
-  },
-  [ROUTES.TEACHER.CREATE_SERVICE]: {
-    title: 'This is Create Gig',
-    description:
-      'Fill the left column and the card on the right updates live — that card is what a student compares you against.',
-  },
-  [ROUTES.TEACHER.CHAT]: {
-    title: 'This is your inbox',
-    description:
-      'Every student conversation, with unseen counts in the rail, an online dot in the header, and the booking request you approve or decline inline.',
-  },
-  [ROUTES.TEACHER.MEETINGS]: {
-    title: 'This is your schedule',
-    description:
-      'Requests waiting on you, sessions coming up, and completed ones with their earnings. Approving a booking here also confirms it in Chat.',
-  },
-  [ROUTES.TEACHER.ASTROLOGY_STUDENTS]: {
-    title: 'This is your student list',
-    description:
-      'Only students who granted access from Share Access appear here — open one to read their chart.',
-  },
-  [ROUTES.STUDENT.DASHBOARD]: {
-    title: 'This is your dashboard',
-    description:
-      'Upcoming sessions, recent activity and shortcuts. The Observatory link in the sidebar footer opens your own chart.',
-  },
-  [ROUTES.TEACHER.DASHBOARD]: {
-    title: 'This is your dashboard',
-    description:
-      'Bookings, new student requests and earnings at a glance. Everything else is one sidebar click away.',
   },
 };
 
@@ -416,7 +368,6 @@ export const buildObservatorySteps = (
 export const buildWorkspaceSteps = (
   role: GuideRole,
   nav: NavItem[],
-  pathname: string,
 ): DriveStep[] => {
   const steps: DriveStep[] = [
     step(WORKSPACE_ANCHORS.brand, {
@@ -485,7 +436,7 @@ export const buildWorkspaceSteps = (
   }
 
   steps.push(
-    step(WORKSPACE_ANCHORS.content, WORKSPACE_PAGE_COPY[pathname] ?? {
+    step(WORKSPACE_ANCHORS.content, {
       title: 'This is the page area',
       description:
         'Whatever section you pick opens here. The tour can be restarted any time from the sidebar footer.',

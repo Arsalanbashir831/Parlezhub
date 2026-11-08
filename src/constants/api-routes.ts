@@ -29,12 +29,6 @@ export const API_ROUTES = {
     RESCHEDULE_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/reschedule/`,
     REFUND_BOOKING: '/payments/refund/request/',
-    // Blogs
-    BLOGS: '/blogs/teacher/blogs/',
-    BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
-    CREATE_BLOG: '/blogs/teacher/blogs/',
-    UPDATE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
-    DELETE_BLOG: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
@@ -84,14 +78,6 @@ export const API_ROUTES = {
     REPORT_PURCHASE: '/astrology/reports/purchase/',
     REPORT_CONFIRM_PAYMENT: '/astrology/reports/confirm-payment/',
     REPORT_DOWNLOAD: (reportType: string) => `/astrology/reports/${reportType}/download/`,
-  },
-  FAMILY_TREE: {
-    BASE: '/family-tree/',
-    MEMBERS: '/family-tree/members/',
-    MEMBER: (uuid: string) => `/family-tree/members/${uuid}/`,
-    RELATIONSHIPS: '/family-tree/relationships/',
-    REMOVE_RELATIONSHIP: '/family-tree/relationships/remove/',
-    USERS: '/family-tree/users/',
   },
   GEMINI: {
     GENERATE_CONTENT: "/api/gemini/generate-content/",

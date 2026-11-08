@@ -19,7 +19,7 @@ type Props = {
 export default function AiSessionHeader({
   children,
   backButtonText = 'Back to AI Tutor',
-  backButtonHref = ROUTES.STUDENT.DASHBOARD,
+  backButtonHref = ROUTES.AGENT.LANGUAGE,
   showBackButton = true,
   onBackClick,
   sessionActive = false,

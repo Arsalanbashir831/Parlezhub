@@ -50,14 +50,13 @@ const WorkspaceGuideTour: React.FC<{
   children: React.ReactNode;
 }> = ({ role, nav, children }) => {
   const { setOpen } = useSidebar();
-  const pathname = usePathname();
 
   // Stable so the tour callback (and the context value) does not change
   // identity on every shell re-render.
   const prepare = React.useCallback(() => setOpen(true), [setOpen]);
   const buildSteps = React.useCallback(
-    () => buildWorkspaceSteps(role, nav, pathname),
-    [role, nav, pathname],
+    () => buildWorkspaceSteps(role, nav),
+    [role, nav],
   );
 
   return (

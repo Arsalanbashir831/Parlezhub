@@ -11,13 +11,7 @@ import { ROUTES } from './constants/routes';
  * against the Supabase JWT session instead of a manual access_token cookie.
  */
 const STUDENT_ROUTES = [
-  ROUTES.STUDENT.DASHBOARD,
-  ROUTES.STUDENT.TEACHERS,
-  ROUTES.STUDENT.AI_CHIROLOGIST,
-  ROUTES.STUDENT.CHAT,
-  ROUTES.STUDENT.MEETINGS,
   ROUTES.STUDENT.HISTORY,
-  ROUTES.STUDENT.SESSION_REPORT,
   ROUTES.STUDENT.SETTINGS,
   ROUTES.AGENT.ASTROLOGY.ROOT,
 ];
@@ -27,15 +21,22 @@ const STUDENT_ONLY_ASTROLOGY_ROUTES = [
   ROUTES.AGENT.ASTROLOGY.HIRE.ROOT,
 ];
 
-const TEACHER_ROUTES = [
-  ROUTES.TEACHER.DASHBOARD,
-  ROUTES.TEACHER.CHAT,
-  ROUTES.TEACHER.MEETINGS,
-  ROUTES.TEACHER.SERVICES,
-  ROUTES.TEACHER.SETTINGS,
-  ROUTES.TEACHER.BLOGS,
-  ROUTES.AGENT.ASTROLOGY.ROOT,
-  ROUTES.TEACHER.ASTROLOGY_STUDENTS,
+const TEACHER_ROUTES = [ROUTES.TEACHER.SETTINGS, ROUTES.AGENT.ASTROLOGY.ROOT];
+
+/**
+ * Workspace pages that moved into the observatory. Old bookmarks and links in
+ * sent emails keep working: the path (and its sub-paths) is rewritten to the
+ * new home, the query string is kept.
+ */
+const LEGACY_REDIRECTS: [from: string, to: string][] = [
+  ['/student/dashboard', HOME_PATH],
+  ['/consultant/dashboard', HOME_PATH],
+  ['/student/consultants', ROUTES.AGENT.ASTROLOGY.ASTROLOGERS],
+  ['/student/chat', ROUTES.AGENT.ASTROLOGY.HIRE.CHAT],
+  ['/student/meetings', ROUTES.AGENT.ASTROLOGY.HIRE.MEETINGS],
+  ['/consultant/services', ROUTES.AGENT.ASTROLOGY.SERVICE.GIGS],
+  ['/consultant/chat', ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT],
+  ['/consultant/meetings', ROUTES.AGENT.ASTROLOGY.SERVICE.MEETINGS],
 ];
 
 const PUBLIC_ROUTES = [
@@ -46,7 +47,6 @@ const PUBLIC_ROUTES = [
   ROUTES.AUTH.VERIFY_EMAIL,
   ROUTES.AUTH.CALLBACK,
   ROUTES.AUTH.AUTH_CODE_ERROR,
-  ROUTES.AI_SESSION.ROOT,
   ROUTES.AGENT.LANGUAGE,
   ROUTES.TERMS,
   ROUTES.PRIVACY,
@@ -85,6 +85,15 @@ export async function proxy(request: NextRequest) {
       });
       return NextResponse.redirect(resetUrl);
     }
+  }
+
+  const legacy = LEGACY_REDIRECTS.find(
+    ([from]) => pathname === from || pathname.startsWith(`${from}/`)
+  );
+  if (legacy) {
+    const target = new URL(legacy[1], request.url);
+    target.search = request.nextUrl.search;
+    return NextResponse.redirect(target);
   }
 
   // Create a response object we can mutate (needed for cookie writes)
@@ -192,16 +201,6 @@ export async function proxy(request: NextRequest) {
   // the guard is relaxed: /api/auth/session resolves them and the client-side
   // RoleGuard enforces immediately, so the next navigation is fully gated.
   if (!rolesKnown) return supabaseResponse;
-
-  // The role dashboards remain available in source for the next routing phase,
-  // but are no longer public destinations. Keep old bookmarks canonical by
-  // sending both legacy dashboard paths to the shared observatory.
-  if (
-    pathname === ROUTES.STUDENT.DASHBOARD ||
-    pathname === ROUTES.TEACHER.DASHBOARD
-  ) {
-    return NextResponse.redirect(new URL(HOME_PATH, request.url));
-  }
 
   const isStudentRoute = STUDENT_ROUTES.some((route) =>
     pathname.startsWith(route)

@@ -3,7 +3,6 @@ export const ROUTES = {
   HOME: '/',
   TERMS: '/terms',
   PRIVACY: '/privacy',
-  FAMILY_TREE: '/family-tree',
   AUTH: {
     LOGIN: '/auth/sign-in',
     SIGNUP: '/auth/signup',
@@ -46,34 +45,13 @@ export const ROUTES = {
   ONBOARDING: {
     CHOOSE_ROLE: '/onboarding/choose-role',
   },
+  // What remains of the role workspaces: everything else moved into the
+  // observatory (/astrology). Old URLs are redirected in proxy.ts.
   STUDENT: {
-    DASHBOARD: '/student/dashboard',
-    TEACHERS: '/student/consultants',
-    AI_CHIROLOGIST: '/student/ai-chirologist',
-    CHAT: '/student/chat',
-    TEACHER_CHAT: (teacherId: string) => `/student/chat?teacherId=${teacherId}`,
-    MEETINGS: '/student/meetings',
     HISTORY: '/student/history',
-    SESSION_REPORT: '/student/session-report',
     SETTINGS: '/student/settings',
   },
   TEACHER: {
-    DASHBOARD: '/consultant/dashboard',
-    CHAT: '/consultant/chat',
-    STUDENT_CHAT: (userId: string) => `/consultant/chat?userId=${userId}`,
-    MEETINGS: '/consultant/meetings',
-    SERVICES: '/consultant/services',
-    CREATE_SERVICE: '/consultant/services/create',
-    EDIT_SERVICE: (serviceId: string) => `/consultant/services/edit/${serviceId}`,
     SETTINGS: '/consultant/settings',
-    BLOGS: '/consultant/blogs',
-    CREATE_BLOG: '/consultant/blogs/create',
-    EDIT_BLOG: (blogId: string | number) => `/consultant/blogs/edit/${blogId}`,
-    ASTROLOGY_STUDENTS: '/consultant/astrology-students',
-  },
-  AI_SESSION: {
-    ROOT: '/ai-session',
-    START: '/ai-session/start',
-    SETUP: '/ai-session/setup',
   },
 };

@@ -93,22 +93,16 @@ describe('consultantNav', () => {
       consultantNav
         .filter((item) => item.section === 'Astrologer Service')
         .map((item) => item.label)
-    ).toEqual([
-      'Create Gig',
-      'My Gigs',
-      'Chats',
-      'Meetings',
-      'Astro Students',
-    ]);
+    ).toEqual(['Create Gig', 'My Gigs', 'Chats', 'Meetings']);
   });
 
   it('keeps the section contiguous so it renders as a single group', () => {
     const sections = consultantNav.map((item) => item.section);
     const first = sections.indexOf('Astrologer Service');
     const last = sections.lastIndexOf('Astrologer Service');
-    expect(last - first).toBe(4);
+    expect(last - first).toBe(3);
     expect(sections.slice(first, last + 1)).toEqual(
-      Array.from({ length: 5 }, () => 'Astrologer Service')
+      Array.from({ length: 4 }, () => 'Astrologer Service')
     );
   });
 
@@ -143,31 +137,30 @@ describe('consultantNav', () => {
 describe('resolveActiveNav', () => {
   it('highlights Create Gig on its own route, not the gig list it nests under', () => {
     expect(
-      resolveActiveNav(consultantNav, '/consultant/services/create')
+      resolveActiveNav(consultantNav, '/astrology/service/gigs/new')
     ).toBe('create-gig');
   });
 
   it('falls back to My Gigs for the list and its edit screens', () => {
-    expect(resolveActiveNav(consultantNav, '/consultant/services')).toBe(
+    expect(resolveActiveNav(consultantNav, '/astrology/service/gigs')).toBe(
       'services'
     );
     expect(
-      resolveActiveNav(consultantNav, '/consultant/services/edit/12')
+      resolveActiveNav(consultantNav, '/astrology/service/gigs/12/edit')
     ).toBe('services');
   });
 
   it('matches each remaining section entry to its route', () => {
-    expect(resolveActiveNav(consultantNav, '/consultant/chat')).toBe('chat');
-    expect(resolveActiveNav(consultantNav, '/consultant/meetings')).toBe(
-      'meetings'
+    expect(resolveActiveNav(consultantNav, '/astrology/service/chat')).toBe(
+      'chat'
     );
     expect(
-      resolveActiveNav(consultantNav, '/consultant/astrology-students')
-    ).toBe('astrology-students');
+      resolveActiveNav(consultantNav, '/astrology/service/meetings')
+    ).toBe('meetings');
   });
 
   it('says nothing for a route the sidebar does not own', () => {
-    expect(resolveActiveNav(consultantNav, '/family-tree')).toBeUndefined();
+    expect(resolveActiveNav(consultantNav, '/language')).toBeUndefined();
   });
 
   it('keeps an observatory entry lit while inside the observatory', () => {
@@ -189,16 +182,9 @@ describe('AppSidebar', () => {
     renderSidebar(consultantNav);
 
     expect(screen.queryByText('Astrologer Service')).not.toBeNull();
-    expect(screen.queryByText('Content')).not.toBeNull();
     expect(screen.queryByText('Account')).not.toBeNull();
 
-    [
-      'Create Gig',
-      'My Gigs',
-      'Chats',
-      'Meetings',
-      'Astro Students',
-    ].forEach((label) => {
+    ['Create Gig', 'My Gigs', 'Chats', 'Meetings'].forEach((label) => {
       expect(link(label)).toBeTruthy();
     });
   });
