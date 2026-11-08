@@ -7,7 +7,7 @@ import { useAuth } from '@/contexts/auth-context';
 import { useUser } from '@/contexts/user-context';
 
 import type { NavItem } from '@/types/nav';
-import { resolveActiveNav } from '@/lib/nav-config';
+import { resolveActiveNav, workspaceMobileTabs } from '@/lib/nav-config';
 import { cn } from '@/lib/utils';
 // import ToggleThemeBtn from "@/components/common/toggle-theme-btn";
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -27,6 +27,7 @@ import {
 } from '@/constants/tour-steps';
 
 import { AppSidebar } from './app-sidebar';
+import { MobileTabBar, type MobileTab } from './mobile-tab-bar';
 
 interface AppShellProps {
   children: React.ReactNode;
@@ -72,6 +73,51 @@ const WorkspaceGuideTour: React.FC<{
     >
       {children}
     </GuideTourProvider>
+  );
+};
+
+/** Below md the sidebar becomes a sheet; this bar is the way into it ("More")
+ *  and to the four sections people use most. Lives under SidebarProvider. */
+const WorkspaceMobileNav: React.FC<{
+  role: GuideRole;
+  nav: NavItem[];
+  activeTab: string;
+}> = ({ role, nav, activeTab }) => {
+  const { openMobile, setOpenMobile } = useSidebar();
+  const pathname = usePathname();
+
+  // A link in the sheet navigates but does not close it on its own.
+  React.useEffect(() => {
+    setOpenMobile(false);
+  }, [pathname, setOpenMobile]);
+
+  // The agent shell has a single destination: nothing to tab between.
+  if (role === 'agent') return null;
+
+  const tabs: MobileTab[] = workspaceMobileTabs[role].flatMap(({ id, label }) => {
+    const item = nav.find((entry) => entry.id === id);
+    if (!item?.href) return [];
+    return [
+      {
+        id,
+        label,
+        href: item.href,
+        icon: item.icon,
+        badge: item.badge,
+        active: activeTab === id,
+      },
+    ];
+  });
+
+  return (
+    <MobileTabBar
+      tone="workspace"
+      tabs={tabs}
+      onMore={() => setOpenMobile(true)}
+      moreActive={!tabs.some((tab) => tab.active)}
+      moreExpanded={openMobile}
+      className="fixed inset-x-0 bottom-0 z-40 md:hidden"
+    />
   );
 };
 
@@ -155,17 +201,18 @@ export const AppShell: React.FC<AppShellProps> = ({
             data-tour={WORKSPACE_ANCHORS.header}
             className="sticky top-0 z-50 shrink-0 border-b border-white/5 bg-background/95"
           >
-            <div className="flex h-20 shrink-0 items-center gap-4 px-8">
-              <SidebarTrigger data-tour={WORKSPACE_ANCHORS.toggle} className="-ml-2 h-10 w-10 rounded-xl text-primary-50 transition-all hover:bg-white/5" />
-              <h1 className="font-serif text-2xl font-bold capitalize tracking-tight text-white">
+            <div className="flex h-14 shrink-0 items-center gap-3 px-4 sm:h-16 sm:px-6 md:h-20 md:gap-4 md:px-8">
+              {/* Phones reach the sidebar through the tab bar's "More". */}
+              <SidebarTrigger data-tour={WORKSPACE_ANCHORS.toggle} className="-ml-2 hidden h-10 w-10 rounded-xl text-primary-50 transition-all hover:bg-white/5 md:inline-flex" />
+              <h1 className="min-w-0 truncate font-serif text-lg font-bold capitalize tracking-tight text-white sm:text-xl md:text-2xl">
                 {pageTitle}
               </h1>
-              <div className="ml-auto flex items-center gap-4">
-                <div className="flex flex-col items-end gap-1.5">
-                  <p className="text-sm font-bold text-white leading-none">{user?.first_name} {user?.last_name}</p>
+              <div className="ml-auto flex shrink-0 items-center gap-3 md:gap-4">
+                <div className="hidden flex-col items-end gap-1.5 sm:flex">
+                  <p className="max-w-[12rem] truncate text-sm font-bold leading-none text-white">{user?.first_name} {user?.last_name}</p>
                   <RoleBadge roleLabel={roleLabel} />
                 </div>
-                <Avatar className="h-10 w-10 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10">
+                <Avatar className="h-9 w-9 border-2 border-primary-500/20 shadow-lg shadow-primary-500/10 md:h-10 md:w-10">
                   <AvatarImage src={user?.profile_picture ?? undefined} />
                   <AvatarFallback className="bg-primary-500/10 font-serif text-lg font-bold text-primary-500">
                     {user?.first_name?.charAt(0).toUpperCase()}
@@ -182,12 +229,20 @@ export const AppShell: React.FC<AppShellProps> = ({
             data-tour={WORKSPACE_ANCHORS.content}
             className={cn(
               'flex min-h-0 flex-1 flex-col gap-4 bg-background',
-              roleLabel === 'Agent' ? '' : 'p-4 sm:p-6'
+              roleLabel === 'Agent'
+                ? ''
+                : // Bottom padding clears the fixed phone tab bar (h-16 + home indicator).
+                  'px-4 pb-[calc(5rem+env(safe-area-inset-bottom))] pt-4 sm:px-6 sm:pt-6 md:pb-6'
             )}
           >
             <div className="flex min-h-0 flex-1 flex-col">{children}</div>
           </main>
         </SidebarInset>
+        <WorkspaceMobileNav
+          role={guideRoleForLabel(roleLabel)}
+          nav={nav}
+          activeTab={activeTab}
+        />
       </WorkspaceGuideTour>
     </SidebarProvider>
   );

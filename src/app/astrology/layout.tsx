@@ -11,7 +11,19 @@ import {
   type GuideRole,
 } from '@/constants/tour-steps';
 import { useAuth } from '@/contexts/auth-context';
-import { ChevronRight, Eye, GraduationCap, Users } from 'lucide-react';
+import {
+  Briefcase,
+  ChevronRight,
+  Compass,
+  Eye,
+  GraduationCap,
+  Hourglass,
+  LayoutDashboard,
+  MessageCircle,
+  Sparkles,
+  Star,
+  Users,
+} from 'lucide-react';
 import { toast } from 'sonner';
 
 import {
@@ -38,6 +50,137 @@ import { PrimarySidebar } from '@/components/agents/astrology/layout/primary-sid
 import { ConfirmationDialog } from '@/components/common/confirmation-dialog';
 import { RoleSwitcher } from '@/components/common/role-switcher';
 import { GuideTourProvider } from '@/components/guide/guide-tour-provider';
+import {
+  MobileTabBar,
+  type MobileTab,
+} from '@/components/layout/mobile-tab-bar';
+
+const OBS = ROUTES.AGENT.ASTROLOGY;
+
+/** Four tabs per account type for phones and tablets; the full sidebar opens
+ *  from "More". Observatory links carry the chart params (whose chart is in view),
+ *  hire and service links are workspace routes and are used as-is. */
+function observatoryTabs(
+  pathname: string,
+  search: string,
+  account: 'consultant' | 'hire' | 'reader'
+): MobileTab[] {
+  const home: MobileTab = {
+    id: 'home',
+    label: 'Home',
+    href: astrologyHref(OBS.ROOT, search),
+    icon: LayoutDashboard,
+    active: pathname === OBS.ROOT,
+  };
+  const analysis: MobileTab = {
+    id: 'analysis',
+    label: 'Analysis',
+    href: astrologyHref(OBS.ANALYSIS, search),
+    icon: Compass,
+    active:
+      pathname === OBS.ANALYSIS ||
+      pathname.includes('/insights/') ||
+      pathname === OBS.NAVATARA,
+  };
+  const askAi: MobileTab = {
+    id: 'ask-ai',
+    label: 'Ask AI',
+    href: astrologyHref(OBS.CHAT, search),
+    icon: Sparkles,
+    active: pathname === OBS.CHAT,
+  };
+
+  if (account === 'consultant') {
+    return [
+      home,
+      analysis,
+      {
+        id: 'chats',
+        label: 'Chats',
+        href: OBS.SERVICE.CHAT,
+        icon: MessageCircle,
+        active: pathname === OBS.SERVICE.CHAT,
+      },
+      {
+        id: 'gigs',
+        label: 'Gigs',
+        href: OBS.SERVICE.GIGS,
+        icon: Briefcase,
+        active: pathname.startsWith(OBS.SERVICE.GIGS),
+      },
+    ];
+  }
+  if (account === 'hire') {
+    return [
+      home,
+      analysis,
+      askAi,
+      {
+        id: 'astrologers',
+        label: 'Astrologers',
+        href: OBS.ASTROLOGERS,
+        icon: Star,
+        active:
+          pathname === OBS.ASTROLOGERS ||
+          pathname.startsWith(`${OBS.HIRE.ROOT}/`),
+      },
+    ];
+  }
+  return [
+    home,
+    analysis,
+    {
+      id: 'dasha',
+      label: 'Dasha',
+      href: astrologyHref(OBS.DASHA, search),
+      icon: Hourglass,
+      active: pathname === OBS.DASHA,
+    },
+    askAi,
+  ];
+}
+
+/** Which account type is active, with the switcher beside it. Sits centred in
+ *  the header on desktop and at the top of the "More" sheet below lg. */
+function AccountTypeSwitch({
+  isTeacher,
+  className,
+}: {
+  isTeacher: boolean;
+  className?: string;
+}) {
+  return (
+    <div
+      className={cn(
+        'border-[var(--solar-gold)]/25 bg-[var(--cosmos-800)]/95 flex w-fit items-center gap-2 rounded-full border px-3 py-1.5',
+        className
+      )}
+      aria-label="Active account type"
+    >
+      <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
+        {isTeacher ? (
+          <Users className="h-3.5 w-3.5 text-[var(--solar-gold)]" />
+        ) : (
+          <GraduationCap className="h-3.5 w-3.5 text-[var(--solar-gold)]" />
+        )}
+        Active account
+      </span>
+      <span className="h-4 w-px bg-border" aria-hidden="true" />
+      <span className="text-xs font-semibold text-foreground">
+        {isTeacher ? 'Consultant' : 'End User'}
+      </span>
+      {/* Always offered: switches between the account types held, or adds
+          the missing one. */}
+      <RoleSwitcher
+        variant="ghost"
+        size="sm"
+        showLabel={false}
+        showCount={false}
+        className="-mr-2 h-8 w-10 rounded-full p-0 text-muted-foreground hover:bg-secondary hover:text-foreground"
+      />
+    </div>
+  );
+}
 
 const pageTitles: Record<string, string> = {
   [ROUTES.AGENT.ASTROLOGY.ANALYSIS]: 'Chart Analysis',
@@ -117,6 +260,11 @@ export default function AstrologyLayout({
   const isTeacher = activeRole === 'TEACHER';
   const guideRole: GuideRole = isTeacher ? 'consultant' : 'student';
   const showHireNav = hasStudentRole && !isTeacher;
+  const mobileTabs = observatoryTabs(
+    pathname,
+    search,
+    isTeacher ? 'consultant' : showHireNav ? 'hire' : 'reader'
+  );
 
   useEffect(() => {
     const openChat = () => router.push(astrologyChatHref(search, chatCategory));
@@ -147,44 +295,17 @@ export default function AstrologyLayout({
         >
           Skip to content
         </a>
-        <DashboardHeader
-          onToggleNavigation={() => setMobileOpen((value) => !value)}
-        >
+        <DashboardHeader>
+          {/* Centred between brand and profile only where there is room for
+              all three; below lg it moves to the top of the "More" sheet. */}
           <div
-            className="border-[var(--solar-gold)]/25 bg-[var(--cosmos-800)]/95 pointer-events-auto absolute left-1/2 top-1/2 flex -translate-x-1/2 -translate-y-1/2 items-center gap-2 rounded-full border px-2.5 py-1.5 shadow-[0_8px_30px_rgba(0,0,0,0.25)] backdrop-blur sm:px-3"
+            className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
             data-tour="ws-role-switch"
-            aria-label="Active account type"
           >
-            <span className="flex items-center gap-1.5 text-[10px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-              {isTeacher ? (
-                <Users className="h-3.5 w-3.5 text-[var(--solar-gold)]" />
-              ) : (
-                <GraduationCap className="h-3.5 w-3.5 text-[var(--solar-gold)]" />
-              )}
-              <span className="hidden md:inline">Active account</span>
-            </span>
-            <span className="h-4 w-px bg-border" aria-hidden="true" />
-            <span className="text-xs font-semibold text-foreground">
-              {isTeacher ? 'Consultant' : 'End User'}
-            </span>
-            {hasStudentRole && isTeacher && (
-              <RoleSwitcher
-                variant="ghost"
-                size="sm"
-                showLabel={false}
-                showCount={false}
-                className="-mr-2 h-8 w-10 rounded-full p-0 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              />
-            )}
-            {!isTeacher && (
-              <RoleSwitcher
-                variant="ghost"
-                size="sm"
-                showLabel={false}
-                showCount={false}
-                className="-mr-2 h-8 w-10 rounded-full p-0 text-muted-foreground hover:bg-secondary hover:text-foreground"
-              />
-            )}
+            <AccountTypeSwitch
+              isTeacher={isTeacher}
+              className="shadow-[0_8px_30px_rgba(0,0,0,0.25)]"
+            />
           </div>
           {showsProfileContext && (
             <ProfileSelector
@@ -337,14 +458,25 @@ export default function AstrologyLayout({
             </div>
           </main>
         </div>
+        {/* In the shell's flex column rather than fixed, so full-viewport
+            chats shrink above it instead of hiding their composer behind it. */}
+        <MobileTabBar
+          tone="observatory"
+          tabs={mobileTabs}
+          onMore={() => setMobileOpen(true)}
+          moreActive={!mobileTabs.some((tab) => tab.active)}
+          moreExpanded={mobileOpen}
+          className="relative z-30 shrink-0 lg:hidden"
+        />
         <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
           <SheetContent
             side="left"
             className="observatory-theme flex w-[min(300px,90vw)] flex-col gap-0 border-border p-0"
           >
             <SheetTitle className="sr-only">Shakti Wheel navigation</SheetTitle>
-            <div className="px-7 pb-0 pt-7">
+            <div className="space-y-4 px-7 pb-0 pt-7">
               <Logo size="sm" href={ROUTES.AGENT.ASTROLOGY.ROOT} />
+              <AccountTypeSwitch isTeacher={isTeacher} />
             </div>
             <SheetDescription className="sr-only">
               Navigate your personal observatory.

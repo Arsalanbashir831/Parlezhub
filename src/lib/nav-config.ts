@@ -52,6 +52,29 @@ export const resolveActiveNav = (
   return match?.id;
 };
 
+/**
+ * The workspace sections that earn a tab in the phone tab bar, by nav id, with
+ * labels short enough for one. Everything else stays under "More" (the full
+ * sidebar sheet). Ids missing from a role's nav are skipped.
+ */
+export const workspaceMobileTabs: Record<
+  'student' | 'consultant',
+  { id: string; label: string }[]
+> = {
+  student: [
+    { id: 'dashboard', label: 'Home' },
+    { id: 'language', label: 'AI Tutors' },
+    { id: 'chat', label: 'Chat' },
+    { id: 'meetings', label: 'Meetings' },
+  ],
+  consultant: [
+    { id: 'dashboard', label: 'Home' },
+    { id: 'services', label: 'Gigs' },
+    { id: 'chat', label: 'Chats' },
+    { id: 'meetings', label: 'Meetings' },
+  ],
+};
+
 export const agentNav: NavItem[] = [
   {
     id: 'language',

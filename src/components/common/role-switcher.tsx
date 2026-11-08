@@ -7,6 +7,7 @@ import {
   ChevronDown,
   GraduationCap,
   Loader2,
+  Plus,
   Users,
 } from 'lucide-react';
 
@@ -17,8 +18,14 @@ import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu';
+
+import { ConfirmationDialog } from './confirmation-dialog';
+
+type SwitchableRole = 'TEACHER' | 'STUDENT';
 
 interface RoleSwitcherProps {
   className?: string;
@@ -28,6 +35,47 @@ interface RoleSwitcherProps {
   size?: 'default' | 'sm' | 'lg';
 }
 
+const ROLE_COPY: Record<
+  SwitchableRole,
+  {
+    label: string;
+    icon: typeof Users;
+    addLabel: string;
+    addHint: string;
+    confirmTitle: string;
+    confirmBody: string;
+    confirmText: string;
+  }
+> = {
+  TEACHER: {
+    label: 'Consultant',
+    icon: Users,
+    addLabel: 'Become a consultant',
+    addHint: 'Offer readings and publish gigs',
+    confirmTitle: 'Add a consultant profile?',
+    confirmBody:
+      'Your end-user account stays exactly as it is. We will add a consultant profile to the same login and switch you to it, so you can publish gigs and take bookings. You can switch back at any time from this menu.',
+    confirmText: 'Create consultant profile',
+  },
+  STUDENT: {
+    label: 'End User',
+    icon: GraduationCap,
+    addLabel: 'Become an end user',
+    addHint: 'Hire astrologers and book sessions',
+    confirmTitle: 'Add an end-user profile?',
+    confirmBody:
+      'Your consultant account stays exactly as it is. We will add an end-user profile to the same login and switch you to it, so you can hire astrologers and book sessions. You can switch back at any time from this menu.',
+    confirmText: 'Create end-user profile',
+  },
+};
+
+const ROLE_ORDER: SwitchableRole[] = ['STUDENT', 'TEACHER'];
+
+/**
+ * Switches between the account types a user holds and, for the one they do not
+ * hold yet, offers to add it — the same login can be an end user and a
+ * consultant. Adding asks for confirmation first, since it creates a profile.
+ */
 export function RoleSwitcher({
   className = '',
   showLabel = true,
@@ -39,19 +87,28 @@ export function RoleSwitcher({
     userRoles,
     activeRole,
     switchRole,
+    becomeConsultant,
+    becomeStudent,
     hasTeacherRole,
     hasStudentRole,
     isLoading,
     isRoleSwitching,
   } = useAuth();
   const [isSwitching, setIsSwitching] = useState(false);
+  const [roleToAdd, setRoleToAdd] = useState<SwitchableRole | null>(null);
+  const [isAdding, setIsAdding] = useState(false);
 
-  // Don't show if user only has one role
-  if (userRoles.length <= 1) {
+  // Nothing to switch from until the session has resolved an account type.
+  if (!activeRole || userRoles.length === 0) {
     return null;
   }
 
-  const handleRoleSwitch = async (role: 'TEACHER' | 'STUDENT') => {
+  const owned = ROLE_ORDER.filter((role) =>
+    role === 'TEACHER' ? hasTeacherRole : hasStudentRole
+  );
+  const addable = ROLE_ORDER.filter((role) => !owned.includes(role));
+
+  const handleRoleSwitch = async (role: SwitchableRole) => {
     if (role === activeRole || isSwitching) return;
 
     setIsSwitching(true);
@@ -61,6 +118,22 @@ export function RoleSwitcher({
       console.error('Failed to switch role:', error);
     } finally {
       setIsSwitching(false);
+    }
+  };
+
+  const handleAddRole = async () => {
+    if (!roleToAdd || isAdding) return;
+
+    setIsAdding(true);
+    try {
+      await (roleToAdd === 'TEACHER' ? becomeConsultant() : becomeStudent());
+      setRoleToAdd(null);
+    } catch (error) {
+      // The auth context has already told the user why; keep the dialog open
+      // so they can retry or cancel.
+      console.error('Failed to add role:', error);
+    } finally {
+      setIsAdding(false);
     }
   };
 
@@ -94,61 +167,103 @@ export function RoleSwitcher({
       : 'bg-green-100 text-green-800 dark:bg-green-900 text-green-200';
   };
 
+  const pendingCopy = roleToAdd ? ROLE_COPY[roleToAdd] : null;
+
   return (
-    <DropdownMenu>
-      <DropdownMenuTrigger asChild>
-        <Button
-          variant={variant}
-          size={size}
-          className={`gap-2 ${className}`}
-          disabled={isLoading || isSwitching || isRoleSwitching}
-        >
-          {isRoleSwitching ? (
-            <Loader2 className="h-4 w-4 animate-spin" />
-          ) : (
-            activeRole && getRoleIcon(activeRole)
-          )}
-          {showLabel && activeRole && (
-            <span className="hidden sm:inline">{getRoleLabel(activeRole)}</span>
-          )}
-          {showCount && (
-            <Badge
-              variant="secondary"
-              className={`ml-1 px-1.5 py-0.5 text-xs ${activeRole ? getRoleColor(activeRole) : ''}`}
-            >
-              {userRoles.length}
-            </Badge>
-          )}
-          <ChevronDown className="h-4 w-4" />
-        </Button>
-      </DropdownMenuTrigger>
-      <DropdownMenuContent align="end" className="w-56">
-        <div className="px-2 py-1.5 text-sm font-medium text-muted-foreground">
-          Switch Role
-        </div>
-        {hasStudentRole && (
-          <DropdownMenuItem
-            onClick={() => handleRoleSwitch('STUDENT')}
-            disabled={isSwitching}
-            className="gap-2"
+    <>
+      {/* Non-modal so closing the menu and opening the confirmation in the
+          same tick cannot leave the page with pointer events disabled. */}
+      <DropdownMenu modal={false}>
+        <DropdownMenuTrigger asChild>
+          <Button
+            variant={variant}
+            size={size}
+            className={`gap-2 ${className}`}
+            disabled={isLoading || isSwitching || isRoleSwitching}
+            aria-label="Switch or add account type"
           >
-            <GraduationCap className="h-4 w-4" />
-            <span>End User</span>
-            {activeRole === 'STUDENT' && <Check className="ml-auto h-4 w-4" />}
-          </DropdownMenuItem>
-        )}
-        {hasTeacherRole && (
-          <DropdownMenuItem
-            onClick={() => handleRoleSwitch('TEACHER')}
-            disabled={isSwitching}
-            className="gap-2"
-          >
-            <Users className="h-4 w-4" />
-            <span>Consultant</span>
-            {activeRole === 'TEACHER' && <Check className="ml-auto h-4 w-4" />}
-          </DropdownMenuItem>
-        )}
-      </DropdownMenuContent>
-    </DropdownMenu>
+            {isRoleSwitching ? (
+              <Loader2 className="h-4 w-4 animate-spin" />
+            ) : (
+              getRoleIcon(activeRole)
+            )}
+            {showLabel && (
+              <span className="hidden sm:inline">
+                {getRoleLabel(activeRole)}
+              </span>
+            )}
+            {showCount && (
+              <Badge
+                variant="secondary"
+                className={`ml-1 px-1.5 py-0.5 text-xs ${getRoleColor(activeRole)}`}
+              >
+                {userRoles.length}
+              </Badge>
+            )}
+            <ChevronDown className="h-4 w-4" />
+          </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end" className="w-64">
+          <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+            {owned.length > 1 ? 'Switch account type' : 'Your account type'}
+          </DropdownMenuLabel>
+          {owned.map((role) => {
+            const { label, icon: Icon } = ROLE_COPY[role];
+            return (
+              <DropdownMenuItem
+                key={role}
+                onSelect={() => handleRoleSwitch(role)}
+                disabled={isSwitching}
+                className="gap-2"
+              >
+                <Icon className="h-4 w-4" />
+                <span>{label}</span>
+                {activeRole === role && <Check className="ml-auto h-4 w-4" />}
+              </DropdownMenuItem>
+            );
+          })}
+
+          {addable.length > 0 && (
+            <>
+              <DropdownMenuSeparator />
+              <DropdownMenuLabel className="text-xs font-medium text-muted-foreground">
+                Add an account type
+              </DropdownMenuLabel>
+              {addable.map((role) => {
+                const { addLabel, addHint } = ROLE_COPY[role];
+                return (
+                  <DropdownMenuItem
+                    key={role}
+                    onSelect={() => setRoleToAdd(role)}
+                    className="items-start gap-2"
+                  >
+                    <Plus className="mt-0.5 h-4 w-4 shrink-0" />
+                    <span className="flex flex-col">
+                      <span>{addLabel}</span>
+                      <span className="text-xs text-muted-foreground">
+                        {addHint}
+                      </span>
+                    </span>
+                  </DropdownMenuItem>
+                );
+              })}
+            </>
+          )}
+        </DropdownMenuContent>
+      </DropdownMenu>
+
+      <ConfirmationDialog
+        isOpen={!!roleToAdd}
+        onClose={() => {
+          if (!isAdding) setRoleToAdd(null);
+        }}
+        onConfirm={handleAddRole}
+        title={pendingCopy?.confirmTitle ?? ''}
+        description={pendingCopy?.confirmBody ?? ''}
+        confirmText={pendingCopy?.confirmText}
+        variant="default"
+        isLoading={isAdding}
+      />
+    </>
   );
 }

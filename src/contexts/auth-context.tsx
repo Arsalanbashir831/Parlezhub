@@ -326,8 +326,24 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { message: 'Verification email has been resent.' };
   };
 
-  const becomeConsultant = async () => becomeConsultantMutation.mutateAsync();
-  const becomeStudent = async () => becomeStudentMutation.mutateAsync();
+  /** Adding a role ends in a switch to it, so it holds the same full-screen
+   *  "switching" state as switchRole while the profile is created and opened. */
+  const addRole = async (
+    mutation: typeof becomeConsultantMutation
+  ): Promise<BecomeRoleResponse> => {
+    setIsRoleSwitching(true);
+    try {
+      const result = await mutation.mutateAsync();
+      window.setTimeout(() => setIsRoleSwitching(false), 800);
+      return result;
+    } catch (error) {
+      setIsRoleSwitching(false);
+      throw error;
+    }
+  };
+
+  const becomeConsultant = () => addRole(becomeConsultantMutation);
+  const becomeStudent = () => addRole(becomeStudentMutation);
 
   const isMutationLoading =
     forgotPasswordMutation.isPending ||

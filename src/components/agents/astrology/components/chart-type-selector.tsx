@@ -9,7 +9,7 @@ export default function ChartTypeSelector() {
   const searchParams = useSearchParams();
   const requested = searchParams.get('chart_type') || 'd1';
   const chartType = ASTRO_CHART_TYPES.some(chart => chart.id === requested) ? requested : 'd1';
-  return <label className="flex min-w-0 flex-col gap-2 text-xs text-muted-foreground">Chart
+  return <label className="flex w-full min-w-0 flex-col gap-2 text-xs text-muted-foreground sm:w-auto">Chart
     <select aria-label="Chart type" className="obs-control w-full max-w-full sm:w-60" value={chartType} onChange={event => {
       const params = new URLSearchParams(searchParams.toString());
       params.set('chart_type', event.target.value);

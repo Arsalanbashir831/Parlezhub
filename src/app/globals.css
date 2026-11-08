@@ -847,6 +847,13 @@ a.obs-glass:hover {
   flex-direction: column;
   padding: 0;
 }
+/* iOS Safari zooms the page into any focused field under 16px; on phones the
+   observatory's 14px fields would do that on every tap. */
+@media (max-width: 639px) {
+  :is(input, select, textarea).obs-control {
+    font-size: 16px;
+  }
+}
 
 /* --------------------------------------------------------------
    Guided tour (driver.js) - Observatory theme

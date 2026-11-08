@@ -82,8 +82,10 @@ export const AppSidebar: React.FC<AppSidebarProps> = ({
     becomeStudent,
     switchRole,
   } = useAuth();
-  const { state } = useSidebar();
-  const isCollapsed = state === 'collapsed';
+  const { state, isMobile } = useSidebar();
+  // On phones the sidebar is a full-width sheet; the desktop collapsed state
+  // (remembered in a cookie) must not shrink it to bare icons.
+  const isCollapsed = !isMobile && state === 'collapsed';
 
   // A nav that already lists the observatory (the consultant's My Observatory
   // section) does not also need the single door in the footer.
