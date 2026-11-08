@@ -44,7 +44,7 @@ describe('sign-in link interception', () => {
 
     expect(res.status).toBe(307);
     const location = new URL(res.headers.get('location')!);
-    expect(location.pathname).toBe('/auth/callback');
+    expect(location.pathname).toBe('/astrology/auth/callback');
     expect(location.searchParams.get('code')).toBe('abc123');
     expect(location.searchParams.get('state')).toBe('xy');
   });
@@ -53,7 +53,7 @@ describe('sign-in link interception', () => {
     const res = await proxy(request('/?type=recovery'));
 
     expect(new URL(res.headers.get('location')!).pathname).toBe(
-      '/auth/reset-password'
+      '/astrology/auth/reset-password'
     );
   });
 });
@@ -65,7 +65,7 @@ describe('unauthenticated visitors', () => {
     const res = await proxy(request('/astrology/dasha'));
 
     const location = new URL(res.headers.get('location')!);
-    expect(location.pathname).toBe('/auth/sign-in');
+    expect(location.pathname).toBe('/astrology/auth/sign-in');
     expect(location.searchParams.get('redirect')).toBe('/astrology/dasha');
   });
 
@@ -73,8 +73,8 @@ describe('unauthenticated visitors', () => {
     signedOut();
 
     for (const path of [
-      '/auth/sign-in',
-      '/auth/signup',
+      '/astrology/auth/sign-in',
+      '/astrology/auth/signup',
       '/terms',
       '/privacy',
     ]) {
@@ -89,7 +89,7 @@ describe('unauthenticated visitors', () => {
     const res = await proxy(request('/', {}));
 
     expect(new URL(res.headers.get('location')!).pathname).toBe(
-      '/auth/sign-in'
+      '/astrology/auth/sign-in'
     );
     expect(
       new URL(res.headers.get('location')!).searchParams.has('redirect')
@@ -110,19 +110,19 @@ describe('role resolution', () => {
     const res = await proxy(request('/astrology/dasha', ROLES([])));
 
     expect(new URL(res.headers.get('location')!).pathname).toBe(
-      '/onboarding/choose-role'
+      '/astrology/onboarding'
     );
   });
 
   it('lets a roleless account reach the onboarding screen itself', async () => {
-    const res = await proxy(request('/onboarding/choose-role', ROLES([])));
+    const res = await proxy(request('/astrology/onboarding', ROLES([])));
 
     expect(res.headers.get('location')).toBeNull();
   });
 
   it('bounces an already-assigned user out of onboarding', async () => {
     const res = await proxy(
-      request('/onboarding/choose-role', {
+      request('/astrology/onboarding', {
         ...ROLES(['TEACHER']),
         active_role: 'TEACHER',
       })
@@ -149,7 +149,7 @@ describe('role resolution', () => {
 
   it('falls back to the active role when the roles list is missing', async () => {
     const res = await proxy(
-      request('/onboarding/choose-role', { active_role: 'BOTH' })
+      request('/astrology/onboarding', { active_role: 'BOTH' })
     );
 
     // BOTH still counts as an assigned role, so onboarding lets go of them.
@@ -252,7 +252,7 @@ describe('role-based route gating', () => {
 describe('authenticated visitors on auth pages', () => {
   it('pushes a logged-in teacher away from sign-in', async () => {
     const res = await proxy(
-      request('/auth/sign-in', {
+      request('/astrology/auth/sign-in', {
         ...ROLES(['TEACHER']),
         active_role: 'TEACHER',
       })
@@ -263,7 +263,7 @@ describe('authenticated visitors on auth pages', () => {
 
   it('lets a logged-in user open password recovery', async () => {
     const res = await proxy(
-      request('/auth/reset-password', ROLES(['STUDENT']))
+      request('/astrology/auth/reset-password', ROLES(['STUDENT']))
     );
 
     expect(res.headers.get('location')).toBeNull();
@@ -277,12 +277,16 @@ describe('middleware matcher', () => {
     const guarded = (path: string) => pattern.test(path);
 
     expect(guarded('/astrology')).toBe(true);
-    expect(guarded('/onboarding/choose-role')).toBe(true);
+    expect(guarded('/astrology/onboarding')).toBe(true);
     expect(guarded('/api/backend/auth/set-role/')).toBe(false);
     expect(guarded('/api/auth/session')).toBe(false);
     expect(guarded('/_next/static/chunks/app.js')).toBe(false);
     expect(guarded('/_next/image?url=%2Fx.png')).toBe(false);
     expect(guarded('/favicon.ico')).toBe(false);
+    // Images under an app prefix must reach signed-out visitors of its sign-in page.
+    expect(guarded('/parlezhub/auth-showcase.webp')).toBe(false);
+    expect(guarded('/placeholders/avatar.png')).toBe(false);
+    expect(guarded('/parlezhub/auth/sign-in')).toBe(true);
   });
 });
 
@@ -339,5 +343,83 @@ describe('legacy workspace URLs', () => {
     );
 
     expect(res.headers.get('location')).toBeNull();
+  });
+});
+
+describe('per-app routing', () => {
+  it('sends a signed-out Parlezhub visitor to Parlezhub’s sign-in', async () => {
+    signedOut();
+
+    const res = await proxy(request('/parlezhub'));
+
+    const location = new URL(res.headers.get('location')!);
+    expect(location.pathname).toBe('/parlezhub/auth/sign-in');
+    expect(location.searchParams.get('redirect')).toBe('/parlezhub');
+  });
+
+  it('leaves every app’s auth pages public', async () => {
+    signedOut();
+
+    for (const path of ['/parlezhub/auth/sign-in', '/parlezhub/auth/callback', '/astrology/auth/verify-email']) {
+      const res = await proxy(request(path));
+      expect(res.headers.get('location')).toBeNull();
+    }
+  });
+
+  it('sends a roleless Parlezhub account to Parlezhub’s onboarding', async () => {
+    const res = await proxy(request('/parlezhub', ROLES([])));
+
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/parlezhub/onboarding');
+  });
+
+  it('sends a signed-in user on an app’s sign-in to that app’s home', async () => {
+    const res = await proxy(
+      request('/parlezhub/auth/sign-in', { ...ROLES(['STUDENT']), active_role: 'STUDENT' })
+    );
+
+    expect(new URL(res.headers.get('location')!).pathname).toBe('/parlezhub');
+  });
+
+  it('lets one account with roles into both apps', async () => {
+    for (const path of ['/parlezhub', '/astrology/dasha']) {
+      const res = await proxy(
+        request(path, { ...ROLES(['STUDENT']), active_role: 'STUDENT' })
+      );
+      expect(res.headers.get('location')).toBeNull();
+    }
+  });
+
+  it('moves the pre-split auth URLs into the astrology app, keeping the sub-path and query', async () => {
+    signedOut();
+
+    const callback = new URL(
+      (await proxy(request('/auth/callback?code=abc'))).headers.get('location')!
+    );
+    expect(callback.pathname).toBe('/astrology/auth/callback');
+    expect(callback.searchParams.get('code')).toBe('abc');
+
+    const onboarding = await proxy(request('/onboarding/choose-role', ROLES([])));
+    expect(new URL(onboarding.headers.get('location')!).pathname).toBe('/astrology/onboarding');
+  });
+});
+
+describe('sign-in codes that land on "/" (Supabase Site URL fallback)', () => {
+  it('hands the code to the app the Google sign-in started from', async () => {
+    signedOut();
+
+    const res = await proxy(request('/?code=abc', { auth_app: 'parlezhub' }));
+
+    const location = new URL(res.headers.get('location')!);
+    expect(location.pathname).toBe('/parlezhub/auth/callback');
+    expect(location.searchParams.get('code')).toBe('abc');
+  });
+
+  it('falls back to the default app without a valid app cookie', async () => {
+    signedOut();
+
+    for (const cookies of [{}, { auth_app: 'evil' }]) {
+      const res = await proxy(request('/?code=abc', cookies));
+      expect(new URL(res.headers.get('location')!).pathname).toBe('/astrology/auth/callback');
+    }
   });
 });

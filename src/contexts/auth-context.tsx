@@ -7,8 +7,8 @@ import React, {
   useEffect,
   useState,
 } from 'react';
-import { useRouter, useSearchParams } from 'next/navigation';
-import { ROUTES } from '@/constants/routes';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { appFromPath, authRoutes } from '@/lib/apps';
 import { useMutation } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -95,6 +95,10 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const router = useRouter();
   const searchParams = useSearchParams();
+  // One provider serves every app: the URL says which app's pages, emails and
+  // home this session's redirects belong to.
+  const app = appFromPath(usePathname());
+  const routes = authRoutes(app);
 
   const applySession = useCallback((snapshot: SessionSnapshot) => {
     setIsAuthenticated(snapshot.isAuthenticated);
@@ -157,7 +161,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     try {
       const snapshot = await authApi.setActiveRole(role);
       applySession(snapshot);
-      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
+      router.push(routes.home);
       toast.success(`Switched to ${role.toLowerCase()} mode`);
       window.setTimeout(() => setIsRoleSwitching(false), 800);
     } catch (error) {
@@ -181,7 +185,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       applySession(snapshot);
       toast.success('Welcome back!');
 
-      router.push(landingPathFor(snapshot, searchParams.get('redirect')));
+      router.push(landingPathFor(snapshot, searchParams.get('redirect'), app));
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'login');
       setError(msg);
@@ -195,7 +199,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setError(null);
     setIsLoading(true);
     try {
-      await authApi.signup(userData.email!, password, userData.username || '');
+      await authApi.signup(userData.email!, password, userData.username || '', app);
 
       toast.success('Account Created Successfully!', {
         description:
@@ -205,7 +209,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const emailParam = userData.email
         ? `?email=${encodeURIComponent(userData.email)}`
         : '';
-      router.push(ROUTES.AUTH.VERIFY_EMAIL + emailParam);
+      router.push(routes.verifyEmail + emailParam);
     } catch (err: unknown) {
       const msg = getErrorMessage(err, 'signup');
       setError(msg);
@@ -220,7 +224,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
    * all handled by /auth/callback on the server.
    */
   const signInWithGoogle = async (redirectTo?: string) => {
-    const { url } = await authApi.googleOAuthStart(redirectTo);
+    const { url } = await authApi.googleOAuthStart(app, redirectTo);
     if (!url) {
       toast.error('Google Sign-In Failed', {
         description: 'No authorization URL returned',
@@ -235,12 +239,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     clearSession();
     setError(null);
     toast.success('Logged Out Successfully');
-    router.push(ROUTES.AUTH.LOGIN);
+    router.push(routes.login);
   };
 
   // ── Password flows ────────────────────────────────────────────────────────
   const forgotPasswordMutation = useMutation({
-    mutationFn: (data: ForgotPasswordRequest) => authApi.forgotPassword(data),
+    mutationFn: (data: ForgotPasswordRequest) =>
+      authApi.forgotPassword(data, app),
     onSuccess: () => {
       toast.success('Reset Email Sent!', {
         description: 'Please check your email for password reset instructions.',
@@ -259,7 +264,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toast.success('Password Reset Successful!', {
         description: 'You can now sign in with your new password.',
       });
-      router.push(ROUTES.AUTH.LOGIN);
+      router.push(routes.login);
     },
     onError: (err: unknown) => {
       const msg = getErrorMessage(err, 'reset-password');
@@ -270,7 +275,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const resendVerificationEmailMutation = useMutation({
     mutationFn: (data: ResendVerificationEmailRequest) =>
-      authApi.resendVerificationEmail(data),
+      authApi.resendVerificationEmail(data, app),
     onSuccess: () => {
       toast.success('Verification Email Sent!');
     },
@@ -286,7 +291,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: async () => {
       await refreshUserProfile();
       applySession(await authApi.setActiveRole('TEACHER'));
-      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
+      router.push(routes.home);
       toast.success('Consultant profile created!');
     },
     onError: (err: unknown) => {
@@ -301,7 +306,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     onSuccess: async () => {
       await refreshUserProfile();
       applySession(await authApi.setActiveRole('STUDENT'));
-      router.push(ROUTES.AGENT.ASTROLOGY.ROOT);
+      router.push(routes.home);
       toast.success('Student profile created!');
     },
     onError: (err: unknown) => {

@@ -45,7 +45,7 @@ describe('evaluateRoleGuard', () => {
 
     expect(decision.render).toBe(false);
     expect(decision.redirect).toBe(
-      '/auth/sign-in?redirect=' +
+      '/astrology/auth/sign-in?redirect=' +
         encodeURIComponent('/student/chat?teacherId=9')
     );
   });
@@ -83,7 +83,7 @@ describe('evaluateRoleGuard', () => {
 
     expect(decision).toEqual({
       pending: false,
-      redirect: '/onboarding/choose-role',
+      redirect: '/astrology/onboarding',
       render: false,
     });
   });
@@ -138,7 +138,7 @@ describe('evaluateRoleGuard', () => {
     );
 
     expect(decision.redirect).toBe(
-      '/auth/sign-in?redirect=' + encodeURIComponent('/student/dashboard')
+      '/astrology/auth/sign-in?redirect=' + encodeURIComponent('/student/dashboard')
     );
   });
 });
@@ -224,7 +224,7 @@ describe('landingPathFor', () => {
   it('sends a roleless account to onboarding instead of a dashboard', () => {
     expect(
       landingPathFor({ isAuthenticated: true, userRoles: [], activeRole: null })
-    ).toBe('/onboarding/choose-role');
+    ).toBe('/astrology/onboarding');
   });
 
   it('lands a teacher on the astrology workspace', () => {
@@ -265,5 +265,37 @@ describe('landingPathFor', () => {
         activeRole: null,
       })
     ).toBe(HOME_PATH);
+  });
+});
+
+describe('per-app routing', () => {
+  it('sends a signed-out visitor to the sign-in of the app they were in', () => {
+    const decision = evaluateRoleGuard(
+      guard({ isAuthenticated: false, pathname: '/parlezhub', search: '?tab=1' })
+    );
+    expect(decision.redirect).toBe(
+      `/parlezhub/auth/sign-in?redirect=${encodeURIComponent('/parlezhub?tab=1')}`
+    );
+  });
+
+  it('sends a roleless account to that app’s onboarding', () => {
+    const decision = evaluateRoleGuard(
+      guard({ pathname: '/parlezhub', userRoles: [], rolesUnknown: false })
+    );
+    expect(decision.redirect).toBe('/parlezhub/onboarding');
+  });
+
+  it('lands a fresh session on the home of the app it signed in to', () => {
+    const roled = { isAuthenticated: true, userRoles: ['STUDENT' as const], activeRole: 'STUDENT' as const };
+    expect(landingPathFor(roled, null, 'parlezhub')).toBe('/parlezhub');
+    expect(landingPathFor({ ...roled, userRoles: [], activeRole: null }, null, 'parlezhub')).toBe(
+      '/parlezhub/onboarding'
+    );
+    expect(landingPathFor(roled)).toBe(HOME_PATH);
+  });
+
+  it('defaults to the astrology app for the home of a role', () => {
+    expect(dashboardFor('TEACHER')).toBe('/astrology');
+    expect(dashboardFor('TEACHER', 'parlezhub')).toBe('/parlezhub');
   });
 });

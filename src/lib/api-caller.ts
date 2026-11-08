@@ -1,4 +1,4 @@
-import { ROUTES } from '@/constants/routes';
+import { appFromPath, authRoutes } from '@/lib/apps';
 import axios, { AxiosError, AxiosInstance, AxiosRequestConfig, AxiosResponse } from 'axios';
 import { toast } from 'sonner';
 
@@ -14,10 +14,12 @@ function rejectWhenSessionIsDead(instance: AxiosInstance) {
     (response) => response,
     async (error: AxiosError) => {
       if (error.response?.status === 401 && typeof window !== 'undefined') {
-        if (!window.location.pathname.startsWith(ROUTES.AUTH.LOGIN)) {
+        // Sign in again inside the app the session died in.
+        const login = authRoutes(appFromPath(window.location.pathname)).login;
+        if (!window.location.pathname.startsWith(login)) {
           toast.error('Session Expired', { description: 'Please sign in again.' });
           const currentPath = window.location.pathname + window.location.search;
-          window.location.href = `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(currentPath)}`;
+          window.location.href = `${login}?redirect=${encodeURIComponent(currentPath)}`;
         }
       }
 

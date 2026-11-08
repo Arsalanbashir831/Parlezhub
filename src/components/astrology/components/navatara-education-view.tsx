@@ -1,0 +1,436 @@
+'use client';
+
+import { AlertCircle, Info, Sparkles, Star } from 'lucide-react';
+
+import { useNakshatraPredictions } from '@/hooks/useAstrology';
+import {
+  EmptyNotice,
+  LoadingLayout,
+  RequestError,
+  Skeleton,
+} from '@/components/astrology/ui/observatory-state';
+import { Badge } from '@/components/ui/badge';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+
+interface NavataraEducationViewProps {
+  studentId?: string;
+  guestProfileId?: string;
+  onClose?: () => void;
+}
+
+const TARA_CATEGORIES = [
+  {
+    count: '1st, 10th, 19th',
+    name: 'Janma',
+    meaning: 'Birth',
+    category: '1',
+    description:
+      'Represents the self, health, and mind. A time for reflection and self-care.',
+    color: 'bg-amber-500/20 text-amber-400 border-amber-500/30',
+  },
+  {
+    count: '2nd, 11th, 20th',
+    name: 'Sampat',
+    meaning: 'Wealth',
+    category: '2',
+    description:
+      'Auspicious. Focuses on financial gains, prosperity, and material success.',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    count: '3rd, 12th, 21st',
+    name: 'Vipat',
+    meaning: 'Danger',
+    category: '3',
+    description:
+      'Inauspicious. Indicates potential hurdles or unexpected "speed bumps." Proceed with caution.',
+    color: 'bg-red-500/20 text-red-400 border-red-500/30',
+  },
+  {
+    count: '4th, 13th, 22nd',
+    name: 'Kshema',
+    meaning: 'Safety / Well-being',
+    category: '4',
+    description:
+      'Auspicious. Brings comfort, protection, and overall security to your endeavors.',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    count: '5th, 14th, 23rd',
+    name: 'Pratyari',
+    meaning: 'Obstacle / Opposition',
+    category: '5',
+    description:
+      'Challenging. Represents enemies or obstacles. Best for internal work rather than external battles.',
+    color: 'bg-red-500/20 text-red-400 border-red-500/30',
+  },
+  {
+    count: '6th, 15th, 24th',
+    name: 'Sadhaka',
+    meaning: 'Achievement / Success',
+    category: '6',
+    description:
+      'Highly Auspicious. The "Achievement" star. Perfect for major tasks and fulfilling goals.',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    count: '7th, 16th, 25th',
+    name: 'Vadha',
+    meaning: 'Destruction',
+    category: '7',
+    description:
+      'Critical. The most challenging Tara. Indicates a need for transformation or extreme caution in new ventures.',
+    color: 'bg-red-500/20 text-red-400 border-red-500/30',
+  },
+  {
+    count: '8th, 17th, 26th',
+    name: 'Mitra',
+    meaning: 'Friend',
+    category: '8',
+    description:
+      'Benefic. Friendly energy that aids in social connections and ease of work.',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+  {
+    count: '9th, 18th, 27th',
+    name: 'Ati-Mitra',
+    meaning: 'Great Friend / Best Friend',
+    category: '9',
+    description:
+      'Highly Benefic. Deeply supportive energy; ideal for long-term commitments and partnerships.',
+    color: 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30',
+  },
+];
+
+export function NavataraEducationView({
+  studentId,
+  guestProfileId,
+  onClose,
+}: NavataraEducationViewProps) {
+  const { data, isLoading, isError, isFetching, refetch } = useNakshatraPredictions(true, studentId, guestProfileId);
+
+  return (
+    <div className="w-full max-w-none space-y-8 pb-12 text-foreground">
+      {/* Header Section */}
+      <div className="relative overflow-hidden border-b border-border pb-7">
+        <div className="obs-orbit" aria-hidden="true" />
+        <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+          <div>
+            <p className="obs-label mb-3">Your lunar observatory</p>
+            <h1 className="obs-title flex items-center gap-3 text-3xl sm:text-4xl">
+              <span className="flex h-10 w-10 items-center justify-center rounded-full border border-[color-mix(in_srgb,var(--solar-gold)_35%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_12%,transparent)]"><Sparkles className="h-5 w-5 text-[var(--solar-gold)]" /></span>
+              Navatara: The Cycle of Nine Stars
+            </h1>
+            <p className="obs-muted mt-3 max-w-2xl text-sm sm:text-base">
+              Your Personal Energy Map across the 27 Nakshatras
+            </p>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="obs-control self-start text-xs sm:self-auto"
+            >
+              Back to Overview
+            </button>
+          )}
+        </div>
+        <div className="mt-4 flex items-center gap-2 pt-2">
+          <Badge
+            variant="outline"
+            className="border-[color-mix(in_srgb,var(--solar-gold)_32%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_10%,transparent)] text-[var(--solar-gold)]"
+          >
+            System Badge: [Parashari Logic: Tara Bala Analysis]
+          </Badge>
+        </div>
+        <p className="obs-muted mt-4 max-w-3xl text-sm leading-relaxed">
+          The Navatara system categorizes all 27 Nakshatras into nine functional
+          groups based on their relationship to your Janma Nakshatra (Birth
+          Star). This analysis reveals which stars bring prosperity, which
+          demand caution, and which act as your cosmic allies.
+        </p>
+      </div>
+
+      {/* Dynamic API Insight Section */}
+      <section>
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-medium">
+          <Star className="h-5 w-5 text-[var(--solar-orange)]" />
+          Your Transit Tara of the Day
+        </h2>
+
+        {isLoading ? (
+          <LoadingLayout label="Loading today’s Tara Bala…" className="grid gap-6 md:grid-cols-2">
+            <div className="obs-card space-y-4 p-6" aria-hidden="true">
+              <Skeleton className="h-3 w-40" rounded="rounded-md" />
+              <Skeleton className="h-3.5 w-56 max-w-full" rounded="rounded-md" />
+              <Skeleton className="h-9 w-48 max-w-full" rounded="rounded-md" />
+              <Skeleton className="h-14 w-full" rounded="rounded-lg" />
+              <Skeleton className="h-3 w-44 max-w-full" rounded="rounded-md" />
+            </div>
+            <div className="obs-card space-y-5 p-6" aria-hidden="true">
+              <div className="space-y-2"><Skeleton className="h-3 w-44" rounded="rounded-md" /><div className="flex flex-wrap gap-2">{[0, 1, 2].map(index => <Skeleton key={index} className="h-6 w-28" rounded="rounded-full" />)}</div></div>
+              <div className="space-y-2"><Skeleton className="h-3 w-40" rounded="rounded-md" /><div className="flex flex-wrap gap-2">{[0, 1, 2].map(index => <Skeleton key={index} className="h-6 w-24" rounded="rounded-full" />)}</div></div>
+            </div>
+          </LoadingLayout>
+        ) : isError ? (
+          <RequestError
+            title="Today's transit Tara is unavailable"
+            message="Daily predictions come from the calculation service. Your birth star and the reference table below are unaffected."
+            onRetry={() => refetch()}
+            retrying={isFetching}
+          />
+        ) : data ? (
+          <div className="grid gap-6 md:grid-cols-2">
+            <Card data-tone="gold" className="obs-card border-border bg-transparent shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="flex items-center justify-between text-lg text-foreground">
+                  <span>Today&apos;s Tara Bala</span>
+                  {data.ai_guidance && (
+                    <Badge variant="outline" className="border-[color-mix(in_srgb,var(--solar-gold)_32%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_10%,transparent)] text-xs text-[var(--solar-gold)]">
+                      {data.ai_guidance.status.nature}
+                    </Badge>
+                  )}
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  Based on the Moon transiting {data.current_moon.nakshatra}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="space-y-4">
+                  <div className="flex items-end gap-3">
+                    <span className="text-4xl font-semibold tracking-tight text-[var(--solar-gold)]">
+                      {data.tarabala.name}
+                    </span>
+                    <span className="pb-1 text-sm text-muted-foreground">
+                      (Tara #{data.tarabala.count})
+                    </span>
+                  </div>
+
+                  {data.ai_guidance ? (
+                    <div className="rounded-xl border border-[color-mix(in_srgb,var(--solar-gold)_22%,transparent)] bg-[color-mix(in_srgb,var(--solar-gold)_8%,transparent)] p-4">
+                      <p className="font-medium italic leading-relaxed text-foreground">
+                        &quot;{data.ai_guidance.guidance.summary}&quot;
+                      </p>
+                    </div>
+                  ) : (
+                    <div className="rounded-xl border border-border bg-secondary/60 p-4">
+                      <p className="font-medium text-foreground">
+                        {data.tarabala.effect}
+                      </p>
+                    </div>
+                  )}
+
+                  <div className="flex flex-wrap items-center gap-3 pt-2">
+                    <span className="text-sm text-muted-foreground">
+                      Favorability Score:
+                    </span>
+                    <Badge
+                      className={
+                        (data.overall_score || parseInt(data.ai_guidance?.status.favorability_score || '0')) > 60
+                          ? 'border-emerald-500/30 bg-emerald-500/20 text-emerald-400'
+                          : 'bg-secondary text-muted-foreground'
+                      }
+                    >
+                      {data.ai_guidance?.status.favorability_score || `${data.overall_score}%`}
+                    </Badge>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            <Card data-tone="nebula" className="obs-card border-border bg-transparent shadow-none">
+              <CardHeader className="pb-3">
+                <CardTitle className="text-lg text-foreground">
+                  Daily Guidance
+                </CardTitle>
+                <CardDescription className="text-muted-foreground">
+                  AI-Powered Recommendations
+                </CardDescription>
+              </CardHeader>
+              <CardContent className="space-y-6">
+                <div>
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-emerald-400">
+                    <Sparkles className="h-4 w-4" />
+                    Recommended Actions
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(data.ai_guidance?.guidance.dos || data.guidance.favorable_activities).map((activity, i) => (
+                      <Badge
+                        key={i}
+                        variant="outline"
+                        className="border-emerald-500/30 bg-emerald-500/10 text-emerald-400"
+                      >
+                        {activity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <h4 className="mb-2 flex items-center gap-2 text-sm font-semibold text-red-400">
+                    <AlertCircle className="h-4 w-4" />
+                    Areas of Caution
+                  </h4>
+                  <div className="flex flex-wrap gap-2">
+                    {(data.ai_guidance?.guidance.donts || data.guidance.avoid_activities).map((activity, i) => (
+                      <Badge
+                        key={i}
+                        variant="outline"
+                        className="border-red-500/30 bg-red-500/10 text-red-300"
+                      >
+                        {activity}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+
+            {data.ai_guidance && (
+              <Card className="obs-card md:col-span-2 border-border bg-secondary/30 shadow-none">
+                <CardContent className="pt-6">
+                  <div className="grid gap-8 md:grid-cols-2">
+                    <div className="space-y-4">
+                      <h4 className="flex items-center gap-2 text-sm font-bold uppercase tracking-widest text-[var(--solar-gold)]/80">
+                        <Info className="h-4 w-4" />
+                        Planning Tip
+                      </h4>
+                      <p className="text-lg font-medium leading-relaxed text-foreground">
+                        {data.ai_guidance.planning_tip}
+                      </p>
+                    </div>
+                    <div className="relative space-y-4 rounded-xl border border-border bg-background/60 p-6">
+                      <Sparkles className="absolute -right-3 -top-3 h-8 w-8 text-[var(--solar-gold)]/25" />
+                      <h4 className="text-sm font-bold uppercase tracking-widest text-[var(--solar-gold)]/80">
+                        Cosmic Affirmation
+                      </h4>
+                      <p className="text-xl italic leading-loose text-foreground">
+                        {data.ai_guidance.motivational_message.split('\n').map((line, i) => (
+                          <span key={i} className="block">{line}</span>
+                        ))}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+          </div>
+        ) : (
+          <EmptyNotice
+            title="No daily prediction available"
+            message="The calculation service returned no Tara Bala for today. The nine-category reference table below still explains how Navatara works."
+          />
+        )}
+      </section>
+
+      {/* Educational Context */}
+      <section className="obs-card border-border p-6 shadow-none">
+        <h2 className="mb-4 flex items-center gap-2 text-xl font-medium">
+          <Info className="h-5 w-5 text-[var(--solar-orange)]" />
+          Educational Context: How it Works
+        </h2>
+        <div className="obs-muted space-y-4 text-sm leading-relaxed">
+          <div className="rounded-xl border border-border bg-secondary/40 p-4">
+            <h3 className="mb-2 font-semibold text-foreground">
+              The Triple Cycle (The Rule of Nine)
+            </h3>
+            <p>
+              The 27 Nakshatras are divided into three cycles of nine stars
+              each. The counting always starts from your Birth Star (Janma
+              Nakshatra = 1). The cycle repeats every 9 stars. For example:
+              whether a star is the 2nd, 11th, or 20th from your birth star, it
+              will always fall under the Sampat (Wealth) category.
+            </p>
+          </div>
+          <div className="rounded-xl border border-border bg-secondary/40 p-4">
+            <h3 className="mb-2 font-semibold text-foreground">
+              The Purpose of Navatara
+            </h3>
+            <ul className="list-inside list-disc space-y-1">
+              <li>
+                <strong>Daily Planning:</strong> Use it to see if today&apos;s
+                Moon Nakshatra is favorable for you.
+              </li>
+              <li>
+                <strong>Compatibility:</strong> Check if a partner&apos;s
+                Nakshatra falls in a &apos;Mitra&apos; or &apos;Sadhaka&apos;
+                zone for you.
+              </li>
+              <li>
+                <strong>Dasha Strength:</strong> Determine the quality of the
+                results you will get during a specific Nakshatra-based Dasha.
+              </li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
+      {/* The Legend Table */}
+      <section>
+        <h2 className="mb-4 text-xl font-medium">
+          The Navatara Legend: The Nine Categories
+        </h2>
+        <p className="obs-muted mb-6 text-sm">
+          Reference this table to understand the core meaning behind each Tara
+          Bala rating.
+        </p>
+
+        <div className="obs-card overflow-hidden border-border bg-transparent shadow-none">
+          <div className="w-full max-w-sm md:max-w-full overflow-x-auto overflow-y-hidden [webkit-overflow-scrolling:touch]">
+            <table className="w-full min-w-[800px] text-left text-sm text-muted-foreground">
+              <thead className="border-b border-border bg-secondary/50 text-xs uppercase tracking-[0.16em] text-[var(--solar-gold)]">
+                <tr>
+                  <th
+                    scope="col"
+                    className="px-6 py-4 text-center font-semibold"
+                  >
+                    Category
+                  </th>
+                  <th scope="col" className="px-6 py-4 font-semibold">
+                    Tara Name
+                  </th>
+                  <th scope="col" className="px-6 py-4 font-semibold">
+                    Meaning & Influence
+                  </th>
+                  <th scope="col" className="px-6 py-4 font-semibold">
+                    Sequence
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-border bg-transparent">
+                {TARA_CATEGORIES.map((tara, index) => (
+                  <tr
+                    key={index}
+                    className="transition-colors hover:bg-secondary/70"
+                  >
+                    <td className="whitespace-nowrap px-6 py-4 text-center text-lg font-semibold text-[var(--solar-gold)]">
+                      {tara.category}
+                    </td>
+                    <td className="px-6 py-4">
+                      <Badge variant="outline" className={tara.color}>
+                        {tara.name}
+                      </Badge>
+                      <div className="mt-1 text-[10px] font-bold uppercase tracking-tighter text-muted-foreground">
+                        ({tara.meaning})
+                      </div>
+                    </td>
+                    <td className="px-6 py-4 font-medium leading-relaxed">
+                      {tara.description}
+                    </td>
+                    <td className="whitespace-nowrap px-6 py-4 font-mono text-xs text-muted-foreground">
+                      {tara.count}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+    </div>
+  );
+}

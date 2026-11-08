@@ -1,9 +1,6 @@
 'use client';
 
-import { useState } from 'react';
-import { useSearchParams } from 'next/navigation';
-import { useAuth } from '@/contexts/auth-context';
-import { toast } from 'sonner';
+import { useGoogleSignIn } from '@/features/auth/use-google-sign-in';
 
 import { Button } from '@/components/ui/button';
 
@@ -12,36 +9,18 @@ interface GoogleOAuthButtonProps {
   className?: string;
 }
 
+/** Google sign-in in the shared button style (Shakti Wheel's auth pages). */
 export function GoogleOAuthButton({
   disabled = false,
   className,
 }: GoogleOAuthButtonProps) {
-  const [isLoading, setIsLoading] = useState(false);
-  const { signInWithGoogle } = useAuth();
-  const searchParams = useSearchParams();
-
-  const handleGoogleAuth = async () => {
-    setIsLoading(true);
-    try {
-      const redirectTo = searchParams.get('redirect') || undefined;
-      await signInWithGoogle(redirectTo);
-
-      // We don't set isLoading(false) here because the page will redirect to Google
-    } catch (error) {
-      console.error('Google OAuth initiation failed:', error);
-      toast.error('Failed to start Google authentication', {
-        description:
-          error instanceof Error ? error.message : 'Please try again later',
-      });
-      setIsLoading(false);
-    }
-  };
+  const { start, isLoading } = useGoogleSignIn();
 
   return (
     <Button
       type="button"
       variant="outline"
-      onClick={handleGoogleAuth}
+      onClick={start}
       disabled={disabled || isLoading}
       className={className}
     >

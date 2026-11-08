@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useSearchParams } from 'next/navigation';
 
-import { ROUTES } from '@/constants/routes';
+import { appFromPath, authRoutes } from '@/lib/apps';
 import { landingPathFor } from '@/lib/guard-rules';
 import { getErrorMessage } from '@/lib/error-utils';
 import { authApi } from '@/services/auth';
@@ -80,10 +80,16 @@ export function GoogleOneTap() {
     const [nonce, hashedNonce] = await generateNonce();
     if (isCancelled()) return;
 
-    const onboardingUrl = (redirectTo: string | null) =>
-      redirectTo
-        ? `${ROUTES.ONBOARDING.CHOOSE_ROLE}?redirect=${encodeURIComponent(redirectTo)}`
-        : ROUTES.ONBOARDING.CHOOSE_ROLE;
+    // One Tap is mounted once for the whole site; the app is whichever one the
+    // user is on when they pick an account.
+    const currentApp = () => appFromPath(window.location.pathname);
+
+    const onboardingUrl = (redirectTo: string | null) => {
+      const onboarding = authRoutes(currentApp()).onboarding;
+      return redirectTo
+        ? `${onboarding}?redirect=${encodeURIComponent(redirectTo)}`
+        : onboarding;
+    };
 
     window.google.accounts.id.initialize({
       client_id: clientId,
@@ -103,8 +109,8 @@ export function GoogleOneTap() {
               : snapshot.rolesUnknown
                 ? // Roles haven't resolved yet; middleware and the guard finish
                   // the job instead of offering a choice this user may already have.
-                  redirectTo || '/'
-                : landingPathFor(snapshot, redirectTo);
+                  redirectTo || authRoutes(currentApp()).home
+                : landingPathFor(snapshot, redirectTo, currentApp());
 
           // Hard navigation, not router.push: the session cookies are brand new
           // while this page's in-memory auth state still says "signed out". A

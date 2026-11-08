@@ -2,7 +2,8 @@ import type { NextRequest } from 'next/server';
 import { cookies } from 'next/headers';
 
 import { API_ROUTES } from '@/constants/api-routes';
-import { ROUTES } from '@/constants/routes';
+import { DEFAULT_APP, authRoutes, isAppId } from '@/lib/apps';
+import { publicOrigin } from '@/lib/request-origin';
 import {
   fetchRoles,
   pickActiveRole,
@@ -22,13 +23,16 @@ function failure(status: number, error: string): SessionSnapshot {
   return { status, error, isAuthenticated: false, userRoles: [], activeRole: null };
 }
 
-function getOrigin(request: NextRequest) {
-  if (process.env.NODE_ENV !== 'development') {
-    const forwardedHost = request.headers.get('x-forwarded-host');
-    if (forwardedHost) return `https://${forwardedHost.split(',')[0].trim()}`;
-  }
-  return new URL(request.url).origin;
+/**
+ * Routes of the app a request came from. Clients send their app id with every
+ * action that builds an email link; an unknown or missing id falls back to the
+ * default app rather than trusting the value.
+ */
+function routesFor(body: { app?: unknown }) {
+  return authRoutes(isAppId(body.app) ? body.app : DEFAULT_APP);
 }
+
+const getOrigin = publicOrigin;
 
 /**
  * Django creates/updates its local user row from the verified Supabase identity.
@@ -102,7 +106,10 @@ export const authActions = {
     return requiresRoleSelection ? { ...result, requiresRoleSelection } : result;
   },
 
-  async signup(request: NextRequest, body: { email?: string; password?: string; full_name?: string }) {
+  async signup(
+    request: NextRequest,
+    body: { email?: string; password?: string; full_name?: string; app?: unknown }
+  ) {
     if (!body.email || !body.password) {
       return failure(400, 'Email and password are required');
     }
@@ -118,7 +125,7 @@ export const authActions = {
           first_name: first,
           last_name: rest.join(' '),
         },
-        emailRedirectTo: `${getOrigin(request)}${ROUTES.AUTH.CALLBACK}`,
+        emailRedirectTo: `${getOrigin(request)}${routesFor(body).callback}`,
       },
     });
 
@@ -181,11 +188,11 @@ export const authActions = {
     return { isAuthenticated: true, userRoles: roles, activeRole: body.role };
   },
 
-  async forgotPassword(request: NextRequest, body: { email?: string }) {
+  async forgotPassword(request: NextRequest, body: { email?: string; app?: unknown }) {
     if (!body.email) return failure(400, 'Email is required');
     const supabase = await createClient();
     const { error } = await supabase.auth.resetPasswordForEmail(body.email, {
-      redirectTo: `${getOrigin(request)}${ROUTES.AUTH.RESET_PASSWORD}`,
+      redirectTo: `${getOrigin(request)}${routesFor(body).resetPassword}`,
     });
     if (error) return failure(400, error.message);
     return { isAuthenticated: false, userRoles: [], activeRole: null };
@@ -202,13 +209,13 @@ export const authActions = {
     return { isAuthenticated: false, userRoles: [], activeRole: null };
   },
 
-  async resendVerification(request: NextRequest, body: { email?: string }) {
+  async resendVerification(request: NextRequest, body: { email?: string; app?: unknown }) {
     if (!body.email) return failure(400, 'Email is required');
     const supabase = await createClient();
     const { error } = await supabase.auth.resend({
       type: 'signup',
       email: body.email,
-      options: { emailRedirectTo: `${getOrigin(request)}${ROUTES.AUTH.CALLBACK}` },
+      options: { emailRedirectTo: `${getOrigin(request)}${routesFor(body).callback}` },
     });
     if (error) return failure(400, error.message);
     return { isAuthenticated: false, userRoles: [], activeRole: null };
@@ -247,12 +254,15 @@ export const authActions = {
     return { isAuthenticated: false, userRoles: [], activeRole: null };
   },
 
-  async googleOAuthStart(request: NextRequest, body: { redirectTo?: string }) {
+  async googleOAuthStart(
+    request: NextRequest,
+    body: { redirectTo?: string; app?: unknown }
+  ) {
     const supabase = await createClient();
     const { data, error } = await supabase.auth.signInWithOAuth({
       provider: 'google',
       options: {
-        redirectTo: `${getOrigin(request)}${ROUTES.AUTH.CALLBACK}`,
+        redirectTo: `${getOrigin(request)}${routesFor(body).callback}`,
         queryParams: { access_type: 'offline', prompt: 'consent' },
       },
     });

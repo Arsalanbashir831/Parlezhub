@@ -1,4 +1,4 @@
-import { ROUTES } from '@/constants/routes';
+import { APPS, DEFAULT_APP, appFromPath, authRoutes, type AppId } from '@/lib/apps';
 
 import type { SessionSnapshot } from '@/types/auth';
 import type { UserRole } from '@/types/user';
@@ -27,16 +27,22 @@ export interface GuardDecision {
 }
 
 /**
- * Where a signed-in user belongs. Every role starts in the astrology workspace;
- * the role dashboards stay reachable but are no longer anybody's landing page.
- * Shared with proxy.ts so the server and client can never disagree.
+ * Where a signed-in user with a role belongs in an app: its home, whatever the
+ * role (each app is one workspace for both roles). Shared with proxy.ts so the
+ * server and client can never disagree.
  */
-export const HOME_PATH = ROUTES.AGENT.ASTROLOGY.ROOT;
+export const homePath = (app: AppId = DEFAULT_APP): string => APPS[app].home;
 
-/** Legacy dashboard paths remain in source, but the shared astrology workspace is now home. */
-export function dashboardFor(role: UserRole | null | undefined): string {
+/** Home of the default app, which "/" and retired URLs fall back to. */
+export const HOME_PATH = homePath(DEFAULT_APP);
+
+/** The dashboard for a role in an app. Both roles share one home today. */
+export function dashboardFor(
+  role: UserRole | null | undefined,
+  app: AppId = DEFAULT_APP
+): string {
   void role;
-  return HOME_PATH;
+  return homePath(app);
 }
 
 /**
@@ -59,13 +65,14 @@ export function rolesNeedRecheck(snapshot: SessionSnapshot): boolean {
  */
 export function landingPathFor(
   snapshot: SessionSnapshot,
-  redirectTo?: string | null
+  redirectTo?: string | null,
+  app: AppId = DEFAULT_APP
 ): string {
-  // Authentication always lands in the shared observatory. Protected deep links
-  // can still be opened after the role/session has been resolved.
+  // Authentication always lands on the app's home. Protected deep links can
+  // still be opened after the role/session has been resolved.
   void redirectTo;
-  if (snapshot.userRoles.length === 0) return ROUTES.ONBOARDING.CHOOSE_ROLE;
-  return HOME_PATH;
+  if (snapshot.userRoles.length === 0) return authRoutes(app).onboarding;
+  return homePath(app);
 }
 
 /**
@@ -77,11 +84,14 @@ export function evaluateRoleGuard(input: GuardInput): GuardDecision {
     return { pending: true, redirect: null, render: false };
   }
 
+  // The guarded page's own app decides where sign-in and onboarding are.
+  const app = appFromPath(input.pathname);
+
   if (!input.isAuthenticated) {
     const current = input.pathname + input.search;
     return {
       pending: false,
-      redirect: `${ROUTES.AUTH.LOGIN}?redirect=${encodeURIComponent(current)}`,
+      redirect: `${authRoutes(app).login}?redirect=${encodeURIComponent(current)}`,
       render: false,
     };
   }
@@ -97,7 +107,7 @@ export function evaluateRoleGuard(input: GuardInput): GuardDecision {
     return {
       pending: input.rolesUnknown !== false,
       redirect:
-        input.rolesUnknown === false ? ROUTES.ONBOARDING.CHOOSE_ROLE : null,
+        input.rolesUnknown === false ? authRoutes(app).onboarding : null,
       render: false,
     };
   }
@@ -107,7 +117,7 @@ export function evaluateRoleGuard(input: GuardInput): GuardDecision {
     pending: false,
     redirect:
       input.fallbackPath ??
-      dashboardFor(input.activeRole ?? input.userRoles[0]),
+      dashboardFor(input.activeRole ?? input.userRoles[0], app),
     render: false,
   };
 }

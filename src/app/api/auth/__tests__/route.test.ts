@@ -360,3 +360,86 @@ describe('OAuth handoff', () => {
     expect(oauth).toContain('HttpOnly');
   });
 });
+
+describe('email links follow the app the user is in', () => {
+  const ORIGIN = 'http://app.test';
+
+  it('points a Parlezhub sign-up confirmation at Parlezhub’s callback', async () => {
+    supabase.signUp.mockResolvedValue({ data: { user: { id: 'u1' } }, error: null });
+
+    await POST(
+      post('signup', { email: 'a@b.test', password: 'secret1', full_name: 'A B', app: 'parlezhub' }),
+      params('signup')
+    );
+
+    expect(supabase.signUp.mock.calls[0][0].options.emailRedirectTo).toBe(
+      `${ORIGIN}/parlezhub/auth/callback`
+    );
+  });
+
+  it('points a reset email at the app’s own reset page', async () => {
+    supabase.resetPasswordForEmail.mockResolvedValue({ error: null });
+
+    await POST(
+      post('forgot-password', { email: 'a@b.test', app: 'parlezhub' }),
+      params('forgot-password')
+    );
+
+    expect(supabase.resetPasswordForEmail.mock.calls[0][1].redirectTo).toBe(
+      `${ORIGIN}/parlezhub/auth/reset-password`
+    );
+  });
+
+  it('sends Google back to the app the sign-in started from', async () => {
+    supabase.signInWithOAuth.mockResolvedValue({ data: { url: 'https://supabase.test/x' }, error: null });
+
+    await POST(post('google-o-auth-start', { app: 'parlezhub' }), params('google-o-auth-start'));
+
+    expect(supabase.signInWithOAuth.mock.calls[0][0].options.redirectTo).toBe(
+      `${ORIGIN}/parlezhub/auth/callback`
+    );
+  });
+
+  it('falls back to the default app for a missing or unknown app id', async () => {
+    supabase.resend.mockResolvedValue({ error: null });
+
+    for (const app of [undefined, 'evil', '../admin']) {
+      supabase.resend.mockClear();
+      await POST(
+        post('resend-verification', { email: 'a@b.test', app }),
+        params('resend-verification')
+      );
+      expect(supabase.resend.mock.calls[0][0].options.emailRedirectTo).toBe(
+        `${ORIGIN}/astrology/auth/callback`
+      );
+    }
+  });
+});
+
+describe('Google sign-in handoff cookies', () => {
+  beforeEach(() => {
+    supabase.signInWithOAuth.mockResolvedValue({ data: { url: 'https://supabase.test/x' }, error: null });
+  });
+
+  const cookie = (res: Response, name: string) =>
+    setCookies(res).find((line) => line.startsWith(`${name}=`));
+
+  it('remembers which app the sign-in started from', async () => {
+    const res = await POST(post('google-o-auth-start', { app: 'parlezhub' }), params('google-o-auth-start'));
+
+    expect(cookie(res, 'auth_app')).toMatch(/^auth_app=parlezhub;/);
+    expect(cookie(res, 'auth_app')).toContain('HttpOnly');
+  });
+
+  it('records the default app for a missing or unknown app id', async () => {
+    const res = await POST(post('google-o-auth-start', { app: 'evil' }), params('google-o-auth-start'));
+
+    expect(cookie(res, 'auth_app')).toMatch(/^auth_app=astrology;/);
+  });
+
+  it('clears a destination left by an earlier attempt when this one has none', async () => {
+    const res = await POST(post('google-o-auth-start', { app: 'parlezhub' }), params('google-o-auth-start'));
+
+    expect(cookie(res, 'oauth_redirect')).toMatch(/^oauth_redirect=;/);
+  });
+});

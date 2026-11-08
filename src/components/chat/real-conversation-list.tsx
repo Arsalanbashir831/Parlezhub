@@ -10,7 +10,7 @@ import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   LoadingLayout,
   Skeleton,
-} from '@/components/agents/astrology/ui/observatory-state';
+} from '@/components/astrology/ui/observatory-state';
 
 import RealConversationItem from './real-conversation-item';
 

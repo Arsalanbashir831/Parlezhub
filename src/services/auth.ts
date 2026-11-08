@@ -1,5 +1,6 @@
 import { API_ROUTES } from '@/constants/api-routes';
 import apiCaller from '@/lib/api-caller';
+import type { AppId } from '@/lib/apps';
 import type { SessionSnapshot } from '@/types/auth';
 import { UserRole } from '@/types/user';
 
@@ -113,8 +114,10 @@ export const authApi = {
   login: (email: string, password: string) =>
     authRequest('login', { email, password }),
 
-  signup: (email: string, password: string, full_name: string) =>
-    authRequest('signup', { email, password, full_name }),
+  // Actions that email a link take the app the user is in, so the link brings
+  // them back to that app's callback and pages.
+  signup: (email: string, password: string, full_name: string, app: AppId) =>
+    authRequest('signup', { email, password, full_name, app }),
 
   logout: () => authRequest('logout', {}),
 
@@ -126,14 +129,14 @@ export const authApi = {
 
   setActiveRole: (role: UserRole) => authRequest('active-role', { role }),
 
-  forgotPassword: (data: ForgotPasswordRequest) =>
-    authRequest('forgot-password', { email: data.email }),
+  forgotPassword: (data: ForgotPasswordRequest, app: AppId) =>
+    authRequest('forgot-password', { email: data.email, app }),
 
   /** Completes a reset on the live recovery session — no token involved. */
   resetPassword: (password: string) => authRequest('reset-password', { password }),
 
-  resendVerificationEmail: (data: ResendVerificationEmailRequest) =>
-    authRequest('resend-verification', { email: data.email }),
+  resendVerificationEmail: (data: ResendVerificationEmailRequest, app: AppId) =>
+    authRequest('resend-verification', { email: data.email, app }),
 
   exchangeCode: (code: string) => authRequest('exchange-code', { code }),
 
@@ -143,8 +146,8 @@ export const authApi = {
       new_password: newPassword,
     }),
 
-  googleOAuthStart: (redirectTo?: string) =>
-    authRequest('google-oauth-start', { redirectTo }),
+  googleOAuthStart: (app: AppId, redirectTo?: string) =>
+    authRequest('google-oauth-start', { redirectTo, app }),
 
   googleIdToken: (credential: string, nonce: string) =>
     authRequest('google-id-token', { credential, nonce }),

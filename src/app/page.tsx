@@ -2,9 +2,12 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { ROUTES } from '@/constants/routes';
-import { HOME_PATH } from '@/lib/guard-rules';
+import { DEFAULT_APP, authRoutes } from '@/lib/apps';
 import { useAuth } from '@/contexts/auth-context';
+
+/** "/" belongs to the default app (Shakti Wheel); the proxy usually redirects
+ *  before this renders, and this covers a client-side visit. */
+const routes = authRoutes(DEFAULT_APP);
 
 export default function HomePage() {
   const { isAuthenticated, userRoles, isLoading } = useAuth();
@@ -14,12 +17,12 @@ export default function HomePage() {
     if (isLoading) return; // Wait for auth check to complete
 
     if (isAuthenticated && userRoles.length > 0) {
-      router.replace(HOME_PATH);
+      router.replace(routes.home);
     } else if (isAuthenticated) {
       // Live session, no role yet: the picker owns the next step.
-      router.replace(ROUTES.ONBOARDING.CHOOSE_ROLE);
+      router.replace(routes.onboarding);
     } else {
-      router.replace(ROUTES.AUTH.LOGIN);
+      router.replace(routes.login);
     }
   }, [isAuthenticated, userRoles, isLoading, router]);
 

@@ -2,8 +2,8 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { usePathname, useRouter, useSearchParams } from 'next/navigation';
-import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
+import { appFromPath, authRoutes } from '@/lib/apps';
 import { evaluateRoleGuard, type GuardInput } from '@/lib/guard-rules';
 import type { UserRole } from '@/types/user';
 
@@ -61,7 +61,7 @@ export default function RoleGuard({
   const decision = gaveUpWaiting
     ? {
         pending: false,
-        redirect: ROUTES.ONBOARDING.CHOOSE_ROLE,
+        redirect: authRoutes(appFromPath(pathname)).onboarding,
         render: false,
       }
     : baseDecision;

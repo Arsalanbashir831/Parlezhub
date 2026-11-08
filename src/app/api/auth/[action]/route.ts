@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 import { authActions, type AuthAction, type SessionSnapshot } from '@/lib/auth-actions';
+import { AUTH_APP_COOKIE, DEFAULT_APP, isAppId } from '@/lib/apps';
 import { clearRoleCookies, writeRoleCookies } from '@/lib/auth-cookies';
 
 export const runtime = 'nodejs';
@@ -58,14 +59,26 @@ async function handle(
     clearRoleCookies(response);
   }
 
-  if (action === 'googleOAuthStart' && result.redirectTo) {
-    response.cookies.set('oauth_redirect', result.redirectTo, {
+  if (action === 'googleOAuthStart' && !result.error) {
+    const handoff = {
       path: '/',
       httpOnly: true,
-      sameSite: 'lax',
+      sameSite: 'lax' as const,
       secure: process.env.NODE_ENV === 'production',
       maxAge: 60 * 10,
-    });
+    };
+    // Every attempt resets both handoff cookies: one left by an abandoned
+    // attempt (possibly in the other app) must never steer this one.
+    if (result.redirectTo) {
+      response.cookies.set('oauth_redirect', result.redirectTo, handoff);
+    } else {
+      response.cookies.delete('oauth_redirect');
+    }
+    response.cookies.set(
+      AUTH_APP_COOKIE,
+      isAppId(body.app) ? body.app : DEFAULT_APP,
+      handoff
+    );
   }
 
   return response;

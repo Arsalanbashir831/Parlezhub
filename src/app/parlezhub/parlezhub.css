@@ -1,0 +1,94 @@
+/* -------------------------------------------------------
+   ParlezHub — AI language tutor theme
+   Violet on lavender: a soft lavender canvas, white cards,
+   a violet primary with a deeper violet for gradients. Scoped
+   to the app, so it never leaks into Shakti Wheel (whose
+   pitch-black theme is the base theme in globals.css).
+
+   The tokens are set on <html> whenever a ParlezHub page is on
+   screen (html:has(...)), not on the wrapper div, because Radix
+   portals (dialogs, dropdowns, toasts) render under <body> and
+   must pick up the same theme. Values are HSL channels, like the
+   base theme, so Tailwind opacity modifiers keep working.
+------------------------------------------------------- */
+html:has([data-app='parlezhub']) {
+  color-scheme: light;
+
+  --background: 258 70% 95%;
+  /* #ece6fc lavender canvas */
+  --foreground: 248 47% 14%;
+  /* #16123a ink */
+
+  --card: 0 0% 100%;
+  --card-foreground: 248 47% 14%;
+
+  --popover: 0 0% 100%;
+  --popover-foreground: 248 47% 14%;
+
+  --primary: 262 83% 58%;
+  /* #7c3aed violet */
+  --primary-foreground: 0 0% 100%;
+  /* Deep end of the primary gradient (buttons, logo). */
+  --primary-deep: 262 69% 42%;
+  /* #5b21b6 */
+
+  --secondary: 258 80% 96%;
+  /* #f1ecfe */
+  --secondary-foreground: 262 58% 38%;
+
+  --muted: 258 50% 96%;
+  --muted-foreground: 248 14% 42%;
+
+  --accent: 258 90% 66%;
+  /* #8b5cf6 */
+  --accent-foreground: 0 0% 100%;
+
+  --destructive: 0 72% 51%;
+  --destructive-foreground: 0 0% 100%;
+
+  --border: 258 45% 89%;
+  --input: 258 42% 85%;
+  --ring: 262 83% 58%;
+  --radius: 1rem;
+}
+
+/* The font variable is defined on the app wrapper (next/font), so the family
+   is set there too; portals fall back to the base sans. */
+[data-app='parlezhub'] {
+  font-family: var(--font-parlezhub), var(--font-geist-sans), system-ui, sans-serif;
+}
+
+html:has([data-app='parlezhub']) ::selection {
+  background: hsl(262 83% 58% / 0.18);
+  color: inherit;
+}
+
+/* The base theme inverts the native date/time icons for its black canvas. */
+[data-app='parlezhub'] input[type='date']::-webkit-calendar-picker-indicator,
+[data-app='parlezhub'] input[type='time']::-webkit-calendar-picker-indicator {
+  filter: none;
+}
+
+/* Primary call to action: the violet gradient pill. */
+.ph-cta {
+  background-image: linear-gradient(
+    90deg,
+    hsl(var(--primary)),
+    hsl(var(--primary-deep))
+  );
+  box-shadow: 0 14px 28px -14px hsl(var(--primary) / 0.75);
+}
+.ph-cta:hover:not(:disabled) {
+  background-image: linear-gradient(
+    90deg,
+    hsl(var(--primary-deep)),
+    hsl(var(--primary-deep))
+  );
+}
+
+/* Soft lift for white pills (social buttons) on the white card. */
+.ph-raised {
+  box-shadow:
+    0 1px 2px hsl(var(--primary) / 0.06),
+    0 10px 24px -14px hsl(var(--primary) / 0.35);
+}

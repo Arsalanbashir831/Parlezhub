@@ -1,17 +1,13 @@
+/**
+ * Page routes. Auth and onboarding URLs are per app and come from
+ * `authRoutes(app)` in src/lib/apps.ts; this file holds the shared pages and
+ * each app's own screens.
+ */
 export const ROUTES = {
   LANDING_PAGE: process.env.NEXT_PUBLIC_LANDING_PAGE_URL || 'https://parlezhub.com',
   HOME: '/',
   TERMS: '/terms',
   PRIVACY: '/privacy',
-  AUTH: {
-    LOGIN: '/auth/sign-in',
-    SIGNUP: '/auth/signup',
-    FORGOT_PASSWORD: '/auth/forgot-password',
-    RESET_PASSWORD: '/auth/reset-password',
-    VERIFY_EMAIL: '/auth/verify-email',
-    CALLBACK: '/auth/callback',
-    AUTH_CODE_ERROR: '/auth/auth-code-error',
-  },
   AGENT: {
     ASTROLOGY: {
       ROOT: '/astrology',
@@ -41,7 +37,7 @@ export const ROUTES = {
       INSIGHTS: (slug: string) => `/astrology/insights/${slug}`,
     },
   },
-  ONBOARDING: {
-    CHOOSE_ROLE: '/onboarding/choose-role',
+  PARLEZHUB: {
+    ROOT: '/parlezhub',
   },
 };

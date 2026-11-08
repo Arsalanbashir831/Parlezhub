@@ -238,12 +238,12 @@ describe('dead-session handling', () => {
       description: 'Please sign in again.',
     });
     expect(location.href).toBe(
-      `/auth/sign-in?redirect=${encodeURIComponent('/student/bookings?tab=upcoming')}`
+      `/astrology/auth/sign-in?redirect=${encodeURIComponent('/student/bookings?tab=upcoming')}`
     );
   });
 
   it('does not redirect when the user is already on sign-in', async () => {
-    const location = stubWindow('/auth/sign-in');
+    const location = stubWindow('/astrology/auth/sign-in');
     await apiCaller('/auth/login/');
 
     const handler = instance('/api/backend').interceptorErrorHandler!;
@@ -282,7 +282,7 @@ describe('dead-session handling', () => {
     const handler = instance('/api/chat').interceptorErrorHandler!;
     await expect(handler({ response: { status: 401 } })).rejects.toBeDefined();
 
-    expect(location.href).toBe('/auth/sign-in?redirect=%2Fstudent%2Fchat');
+    expect(location.href).toBe('/astrology/auth/sign-in?redirect=%2Fstudent%2Fchat');
   });
 
   it('reloads when the caller opted into refresh-on-error', async () => {

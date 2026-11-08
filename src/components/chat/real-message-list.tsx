@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import {
   LoadingLayout,
   Skeleton,
-} from '@/components/agents/astrology/ui/observatory-state';
+} from '@/components/astrology/ui/observatory-state';
 
 import RealMessage, { RenderedChatMessage } from './real-message';
 
