@@ -171,13 +171,15 @@ describe('resolveActiveNav', () => {
   });
 
   it('keeps an observatory entry lit while inside the observatory', () => {
-    expect(resolveActiveNav(consultantNav, '/astrology')).toBe('obs-chart');
+    // Dashboard and My Chart both open the observatory root; the first entry
+    // pointing there (Dashboard, the workspace home) is the one that lights.
+    expect(resolveActiveNav(consultantNav, '/astrology')).toBe('dashboard');
     expect(resolveActiveNav(consultantNav, '/astrology/dasha')).toBe(
       'obs-dasha'
     );
-    // A single reading has no entry of its own, so the section stays lit.
+    // A single reading has no entry of its own, so the root entry stays lit.
     expect(resolveActiveNav(consultantNav, '/astrology/insights/kunda')).toBe(
-      'obs-chart'
+      'dashboard'
     );
   });
 });
@@ -244,10 +246,25 @@ describe('AppSidebar', () => {
     expect(screen.queryByText('Astrology Dashboard')).toBeNull();
   });
 
-  it('keeps the footer door for a nav that has no observatory section', () => {
+  it('keeps the footer door for a nav that has no observatory link', () => {
+    auth.isAuthenticated = true;
+    renderSidebar(
+      studentNav.filter((item) => item.href !== ROUTES.AGENT.ASTROLOGY.ROOT),
+      'history'
+    );
+
+    expect(screen.queryByText('Astrology Dashboard')).not.toBeNull();
+  });
+
+  it('drops the footer door when the nav already opens the observatory', () => {
+    // The student Dashboard entry is the observatory; a second door would
+    // lead to the same page.
     auth.isAuthenticated = true;
     renderSidebar(studentNav, 'dashboard');
 
-    expect(screen.queryByText('Astrology Dashboard')).not.toBeNull();
+    expect(link('Dashboard').getAttribute('href')).toBe(
+      ROUTES.AGENT.ASTROLOGY.ROOT
+    );
+    expect(screen.queryByText('Astrology Dashboard')).toBeNull();
   });
 });

@@ -54,8 +54,8 @@ function upstreamCall(index = 0) {
 describe('gateway upstream path resolution', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', BACKEND);
-    vi.stubEnv('NEXT_PUBLIC_CHAT_SERVER_URL', 'http://chat.test');
+    vi.stubEnv('BACKEND_URL', BACKEND);
+    vi.stubEnv('CHAT_SERVER_URL', 'http://chat.test');
     vi.unstubAllGlobals();
     vi.stubGlobal('fetch', upstreamFetch);
     getValidAccessToken.mockResolvedValue('token-1');
@@ -113,7 +113,7 @@ describe('gateway upstream path resolution', () => {
   });
 
   it('refuses to proxy for an unconfigured upstream', async () => {
-    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', '');
+    vi.stubEnv('BACKEND_URL', '');
 
     const res = await forwardToUpstream(gatewayRequest(), 'backend', ['auth']);
 
@@ -126,8 +126,8 @@ describe('gateway upstream path resolution', () => {
 describe('gateway credential handling', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', BACKEND);
-    vi.stubEnv('NEXT_PUBLIC_CHAT_SERVER_URL', 'http://chat.test');
+    vi.stubEnv('BACKEND_URL', BACKEND);
+    vi.stubEnv('CHAT_SERVER_URL', 'http://chat.test');
     vi.unstubAllGlobals();
     vi.stubGlobal('fetch', upstreamFetch);
     getValidAccessToken.mockResolvedValue('token-1');
@@ -316,8 +316,8 @@ describe('gateway credential handling', () => {
 describe('gateway response handling', () => {
   beforeEach(() => {
     vi.resetAllMocks();
-    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', BACKEND);
-    vi.stubEnv('NEXT_PUBLIC_CHAT_SERVER_URL', 'http://chat.test');
+    vi.stubEnv('BACKEND_URL', BACKEND);
+    vi.stubEnv('CHAT_SERVER_URL', 'http://chat.test');
     vi.unstubAllGlobals();
     vi.stubGlobal('fetch', upstreamFetch);
     getValidAccessToken.mockResolvedValue('token-1');
