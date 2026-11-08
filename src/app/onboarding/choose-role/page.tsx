@@ -59,7 +59,11 @@ export default function ChooseRolePage() {
       const snapshot = await authApi.setActiveRole(role);
       await refreshUserProfile();
 
-      toast.success(`Welcome! You're set up as a ${role.toLowerCase()}.`);
+      toast.success(
+        role === 'TEACHER'
+          ? "Welcome! You're set up as an Astrologer."
+          : "Welcome! You're set up as an End User."
+      );
 
       router.push(landingPathFor(snapshot, searchParams.get('redirect')));
     } catch (err) {
@@ -96,32 +100,12 @@ export default function ChooseRolePage() {
             Welcome to Shakti Wheel!
           </h1>
           <p className="text-muted-foreground">
-            How would you like to use Shakti Wheel?
+            Choose how you’d like to join Shakti Wheel.
           </p>
         </div>
 
         <div className="grid gap-4">
-          {/* Student */}
-          <button
-            onClick={() => handleSelectRole('STUDENT')}
-            disabled={isLoading}
-            className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-6 text-left transition-all
-              ${selected === 'STUDENT'
-                ? 'border-primary bg-primary/10'
-                : 'border-border hover:border-primary/50 hover:bg-primary/5'
-              }
-              disabled:cursor-not-allowed disabled:opacity-60`}
-          >
-            <span className="text-4xl">🎓</span>
-            <div>
-              <p className="text-lg font-semibold">I want to Learn</p>
-              <p className="text-sm text-muted-foreground">
-                Book sessions with expert teachers and language consultants.
-              </p>
-            </div>
-          </button>
-
-          {/* Teacher */}
+          {/* Astrologer */}
           <button
             onClick={() => handleSelectRole('TEACHER')}
             disabled={isLoading}
@@ -134,9 +118,29 @@ export default function ChooseRolePage() {
           >
             <span className="text-4xl">🏫</span>
             <div>
-              <p className="text-lg font-semibold">I want to Teach</p>
+              <p className="text-lg font-semibold">Join as Astrologer</p>
               <p className="text-sm text-muted-foreground">
-                Create your profile, offer sessions, and earn as a consultant.
+                Create your profile and offer astrology consultations.
+              </p>
+            </div>
+          </button>
+
+          {/* End User */}
+          <button
+            onClick={() => handleSelectRole('STUDENT')}
+            disabled={isLoading}
+            className={`flex flex-col items-center gap-3 rounded-2xl border-2 p-6 text-left transition-all
+              ${selected === 'STUDENT'
+                ? 'border-primary bg-primary/10'
+                : 'border-border hover:border-primary/50 hover:bg-primary/5'
+              }
+              disabled:cursor-not-allowed disabled:opacity-60`}
+          >
+            <span className="text-4xl">🎓</span>
+            <div>
+              <p className="text-lg font-semibold">Join as End User</p>
+              <p className="text-sm text-muted-foreground">
+                Explore astrology tools and connect with astrologers.
               </p>
             </div>
           </button>
