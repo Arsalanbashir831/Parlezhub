@@ -300,7 +300,6 @@ export default function AstrologyLayout({
               all three; below lg it moves to the top of the "More" sheet. */}
           <div
             className="pointer-events-auto absolute left-1/2 top-1/2 hidden -translate-x-1/2 -translate-y-1/2 lg:block"
-            data-tour="ws-role-switch"
           >
             <AccountTypeSwitch
               isTeacher={isTeacher}

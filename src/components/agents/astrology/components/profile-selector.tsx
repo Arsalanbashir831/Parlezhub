@@ -1,7 +1,6 @@
 'use client';
 
 import { useState } from 'react';
-import Link from 'next/link';
 import {
   Check,
   ChevronDown,
@@ -10,14 +9,12 @@ import {
   Pencil,
   Plus,
   Search,
-  Settings,
   Star,
   Trash2,
   UserRound,
 } from 'lucide-react';
 import { toast } from 'sonner';
 
-import { ROUTES } from '@/constants/routes';
 import { OBS_ANCHORS } from '@/constants/tour-steps';
 import { useAuth } from '@/contexts/auth-context';
 import { useUser } from '@/contexts/user-context';
@@ -113,7 +110,7 @@ function AddProfileCard({ onClick }: { onClick: () => void }) {
 }
 
 export function ProfileSelector({ selectedProfile, onSelect, onAddGuest, onEditGuest, onDeleteGuest, onEditBirth, onManageProfiles }: ProfileSelectorProps) {
-  const { canAccessRole, activeRole, logout } = useAuth();
+  const { canAccessRole, logout } = useAuth();
   const { user } = useUser();
   const [open, setOpen] = useState(false);
   const [loggingOut, setLoggingOut] = useState(false);
@@ -219,13 +216,6 @@ export function ProfileSelector({ selectedProfile, onSelect, onAddGuest, onEditG
 
             <SectionTitle hint={accountName}>Account</SectionTitle>
             <div className="space-y-1">
-              <Link
-                href={activeRole === 'TEACHER' ? ROUTES.TEACHER.SETTINGS : ROUTES.STUDENT.SETTINGS}
-                onClick={() => setOpen(false)}
-                className="flex min-h-12 items-center gap-3 rounded-xl border border-transparent px-3 text-sm text-foreground transition-colors hover:border-border hover:bg-secondary"
-              >
-                <Settings className="h-4 w-4 shrink-0 text-muted-foreground" />Account settings
-              </Link>
               <button
                 type="button"
                 disabled={loggingOut}

@@ -1,10 +1,9 @@
 import type { DriveStep } from 'driver.js';
 
-import type { NavItem } from '@/types/nav';
 import { ROUTES } from '@/constants/routes';
 
-export type GuideScope = 'observatory' | 'workspace';
-export type GuideRole = 'student' | 'consultant' | 'agent';
+export type GuideScope = 'observatory';
+export type GuideRole = 'student' | 'consultant';
 
 const STORAGE_PREFIX = 'shakti-wheel:guide';
 
@@ -23,18 +22,6 @@ export const OBS_ANCHORS = {
   profileSelector: 'obs-profile-selector',
   guide: 'obs-guide',
   content: 'obs-content',
-} as const;
-
-export const WORKSPACE_ANCHORS = {
-  brand: 'ws-brand',
-  nav: (id: string) => `ws-nav-${id}`,
-  toggle: 'ws-toggle',
-  header: 'ws-header',
-  userCard: 'ws-user-card',
-  roleSwitch: 'ws-role-switch',
-  signOut: 'ws-sign-out',
-  guide: 'ws-guide',
-  content: 'ws-content',
 } as const;
 
 interface ObservatoryNavItem {
@@ -214,74 +201,6 @@ const OBS_PAGE_COPY: Record<string, GuideCopy> = {
   },
 };
 
-const WORKSPACE_NAV_COPY: Record<string, GuideCopy> = {
-  dashboard: {
-    title: 'Dashboard',
-    description:
-      'Your workspace home: activity, upcoming sessions and the numbers that matter for your account.',
-  },
-  language: {
-    title: 'AI-Tutors',
-    description:
-      'Conversational tutors that teach a subject step by step. Useful when you want to learn, not just get a reading.',
-  },
-  consultants: {
-    title: 'Find Astrologer',
-    description:
-      'Browse astrologers and open a profile to message or book one. This is the same directory as the Observatory sidebar.',
-  },
-  chat: {
-    title: 'Chat',
-    description:
-      'Conversations in the left rail, thread on the right. The sidebar badge counts unseen messages, the header dot says whether the other person is connected, and your own last message ticks over to Seen when they open it.',
-  },
-  meetings: {
-    title: 'Meetings',
-    description:
-      'Scheduled sessions with their status. Join when the time arrives and review what happened afterwards.',
-  },
-  history: {
-    title: 'History',
-    description:
-      'A timeline of past readings and sessions — reopen any entry for its chart analysis and notes.',
-  },
-  settings: {
-    title: 'Settings',
-    description:
-      'Profile, birth details and notification preferences live here.',
-  },
-  'create-gig': {
-    title: 'Create Gig',
-    description:
-      'One offering, priced and timed. The preview on the right is exactly what a student reads before booking you.',
-  },
-  services: {
-    title: 'My Gigs',
-    description:
-      'Everything you offer, with its bookings, earnings and status. Pause a gig and it stops appearing on your profile without deleting its history.',
-  },
-  'obs-chart': {
-    title: 'My Chart',
-    description:
-      'Your own observatory — the birth chart every reading on this side is built from.',
-  },
-  'obs-analysis': {
-    title: 'Chart Analysis',
-    description:
-      'House-by-house readings of a chart. Open it here, or pick a student who shared their chart from the profile switcher.',
-  },
-  'obs-dasha': {
-    title: 'Dasha Timeline',
-    description:
-      'The planetary periods and what each one is timed for — useful in any session you take.',
-  },
-  'obs-reports': {
-    title: 'My Reports',
-    description:
-      'Every reading generated for your own chart, kept so you can compare against what you tell a student.',
-  },
-};
-
 /* ------------------------------------------------------------------ *
  * Step builders
  * ------------------------------------------------------------------ */
@@ -357,89 +276,6 @@ export const buildObservatorySteps = (
       title: 'This is the reading area',
       description:
         'Page content renders here, one section at a time. Use the sidebar to move between readings, and the AI astrologer whenever you want a follow-up.',
-      side: 'left',
-      align: 'center',
-    }),
-  );
-
-  return steps;
-};
-
-export const buildWorkspaceSteps = (
-  role: GuideRole,
-  nav: NavItem[],
-): DriveStep[] => {
-  const steps: DriveStep[] = [
-    step(WORKSPACE_ANCHORS.brand, {
-      title: `Welcome to your ${role === 'consultant' ? 'consultant' : role === 'agent' ? 'agent' : 'student'} workspace`,
-      description:
-        'A quick walk through the sidebar, the header and where the important actions live. Next moves forward; Escape ends the tour any time.',
-    }),
-    step(WORKSPACE_ANCHORS.toggle, {
-      title: 'Collapse or open the sidebar',
-      description:
-        'This toggles the sidebar down to icons when you want more room. Your choice is remembered.',
-      side: 'bottom',
-      align: 'start',
-    }),
-    step(WORKSPACE_ANCHORS.header, {
-      title: 'Where you are',
-      description:
-        'The header names the current section and shows your account. Pages always open in the area to the right of the sidebar.',
-      side: 'bottom',
-      align: 'end',
-    }),
-  ];
-
-  for (const item of nav) {
-    if (!item.href) continue;
-    steps.push(
-      step(WORKSPACE_ANCHORS.nav(item.id), WORKSPACE_NAV_COPY[item.id] ?? {
-        title: item.label,
-        description: 'Open this section any time from the sidebar.',
-      }),
-    );
-    for (const sub of item.subItems ?? []) {
-      if (!sub.href) continue;
-      steps.push(
-        step(WORKSPACE_ANCHORS.nav(sub.id), WORKSPACE_NAV_COPY[sub.id] ?? {
-          title: sub.label,
-          description: `Part of ${item.label}.`,
-        }),
-      );
-    }
-  }
-
-  if (role !== 'agent') {
-    steps.push(
-      step(WORKSPACE_ANCHORS.roleSwitch, {
-        title: 'Switch roles without signing out',
-        description:
-          'If you hold both roles, this jumps between the student and consultant workspace instantly.',
-      }),
-      step(WORKSPACE_ANCHORS.nav('astrology'), {
-        title: 'Your own chart lives here',
-        description:
-          'This opens the Observatory — birth chart, Chart Analysis, Dasha timeline, reports and the AI astrologer for your own chart.',
-      }),
-      step(WORKSPACE_ANCHORS.userCard, {
-        title: 'Your account',
-        description:
-          'Name, avatar and role. Settings in the sidebar is where you edit birth details and notifications.',
-      }),
-      step(WORKSPACE_ANCHORS.signOut, {
-        title: 'Sign out',
-        description: 'Ends your session. This tour will not press it for you.',
-        side: 'top',
-      }),
-    );
-  }
-
-  steps.push(
-    step(WORKSPACE_ANCHORS.content, {
-      title: 'This is the page area',
-      description:
-        'Whatever section you pick opens here. The tour can be restarted any time from the sidebar footer.',
       side: 'left',
       align: 'center',
     }),

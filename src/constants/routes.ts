@@ -13,7 +13,6 @@ export const ROUTES = {
     AUTH_CODE_ERROR: '/auth/auth-code-error',
   },
   AGENT: {
-    LANGUAGE: '/language',
     ASTROLOGY: {
       ROOT: '/astrology',
       NAVATARA: '/astrology/navatara',
@@ -44,14 +43,5 @@ export const ROUTES = {
   },
   ONBOARDING: {
     CHOOSE_ROLE: '/onboarding/choose-role',
-  },
-  // What remains of the role workspaces: everything else moved into the
-  // observatory (/astrology). Old URLs are redirected in proxy.ts.
-  STUDENT: {
-    HISTORY: '/student/history',
-    SETTINGS: '/student/settings',
-  },
-  TEACHER: {
-    SETTINGS: '/consultant/settings',
   },
 };

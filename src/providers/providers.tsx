@@ -3,8 +3,6 @@
 import type React from 'react';
 import { Suspense } from 'react';
 import { AuthProvider } from '@/contexts/auth-context';
-import { SessionProvider } from '@/contexts/session-context';
-import { TranscriptProvider } from '@/contexts/transcript-context';
 import { UserProvider } from '@/contexts/user-context';
 import { QueryProvider } from '@/providers/query-provider';
 
@@ -19,11 +17,7 @@ function ProvidersContent({ children }: { children: React.ReactNode }) {
       <QueryProvider>
         <AuthProvider>
           <GoogleOneTap />
-          <UserProvider>
-            <SessionProvider>
-              <TranscriptProvider>{children}</TranscriptProvider>
-            </SessionProvider>
-          </UserProvider>
+          <UserProvider>{children}</UserProvider>
         </AuthProvider>
         <Toaster richColors />
       </QueryProvider>

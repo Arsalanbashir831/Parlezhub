@@ -10,33 +10,31 @@ import { ROUTES } from './constants/routes';
  * Route classification — mirrors the old middleware but now validated
  * against the Supabase JWT session instead of a manual access_token cookie.
  */
-const STUDENT_ROUTES = [
-  ROUTES.STUDENT.HISTORY,
-  ROUTES.STUDENT.SETTINGS,
-  ROUTES.AGENT.ASTROLOGY.ROOT,
-];
+const STUDENT_ROUTES = [ROUTES.AGENT.ASTROLOGY.ROOT];
 
 const STUDENT_ONLY_ASTROLOGY_ROUTES = [
   ROUTES.AGENT.ASTROLOGY.ASTROLOGERS,
   ROUTES.AGENT.ASTROLOGY.HIRE.ROOT,
 ];
 
-const TEACHER_ROUTES = [ROUTES.TEACHER.SETTINGS, ROUTES.AGENT.ASTROLOGY.ROOT];
+const TEACHER_ROUTES = [ROUTES.AGENT.ASTROLOGY.ROOT];
 
 /**
- * Workspace pages that moved into the observatory. Old bookmarks and links in
- * sent emails keep working: the path (and its sub-paths) is rewritten to the
- * new home, the query string is kept.
+ * Retired pages. Old bookmarks and links in sent emails keep working: the path
+ * (and its sub-paths) is rewritten to its home in the observatory, the query
+ * string is kept. The first match wins, so the specific entries come before
+ * the catch-alls for the retired workspaces.
  */
 const LEGACY_REDIRECTS: [from: string, to: string][] = [
-  ['/student/dashboard', HOME_PATH],
-  ['/consultant/dashboard', HOME_PATH],
   ['/student/consultants', ROUTES.AGENT.ASTROLOGY.ASTROLOGERS],
   ['/student/chat', ROUTES.AGENT.ASTROLOGY.HIRE.CHAT],
   ['/student/meetings', ROUTES.AGENT.ASTROLOGY.HIRE.MEETINGS],
   ['/consultant/services', ROUTES.AGENT.ASTROLOGY.SERVICE.GIGS],
   ['/consultant/chat', ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT],
   ['/consultant/meetings', ROUTES.AGENT.ASTROLOGY.SERVICE.MEETINGS],
+  ['/student', HOME_PATH],
+  ['/consultant', HOME_PATH],
+  ['/language', HOME_PATH],
 ];
 
 const PUBLIC_ROUTES = [
@@ -47,7 +45,6 @@ const PUBLIC_ROUTES = [
   ROUTES.AUTH.VERIFY_EMAIL,
   ROUTES.AUTH.CALLBACK,
   ROUTES.AUTH.AUTH_CODE_ERROR,
-  ROUTES.AGENT.LANGUAGE,
   ROUTES.TERMS,
   ROUTES.PRIVACY,
   '/placeholders',

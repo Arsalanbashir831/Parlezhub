@@ -19,8 +19,7 @@ export default function HomePage() {
       // Live session, no role yet: the picker owns the next step.
       router.replace(ROUTES.ONBOARDING.CHOOSE_ROLE);
     } else {
-      // Redirect unauthenticated users to the language agent page
-      router.replace(ROUTES.AGENT.LANGUAGE);
+      router.replace(ROUTES.AUTH.LOGIN);
     }
   }, [isAuthenticated, userRoles, isLoading, router]);
 
