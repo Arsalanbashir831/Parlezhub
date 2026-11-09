@@ -2,6 +2,10 @@ import type { Config } from 'tailwindcss';
 import tailwindAnimate from 'tailwindcss-animate';
 import tailwindTypography from '@tailwindcss/typography';
 
+/** A primary-ramp step that an app theme can override with `--ramp-<step>`. */
+const ramp = (step: number, fallback: string) =>
+  `rgb(var(--ramp-${step}, ${fallback}) / <alpha-value>)`;
+
 const config: Config = {
   darkMode: ['class'],
   content: [
@@ -62,18 +66,21 @@ const config: Config = {
           '5': 'hsl(var(--chart-5))',
         },
         primary: {
-          // Ember ramp: legacy `primary-400/500` gold usages auto-map to the accent
-          50: '#fff8f1',
-          100: '#ffe9d4',
-          200: '#ffd2a8', // ember-soft
-          300: '#ffbc85',
-          400: '#ffb070',
-          500: '#ffa35a', // ember
-          600: '#e2702a', // ember-deep
-          700: '#b8571f',
-          800: '#8f4318',
-          900: '#6b3312',
-          950: '#3e1e0a',
+          // Ember ramp: legacy `primary-400/500` gold usages auto-map to the accent.
+          // Each step reads `--ramp-<step>` (RGB channels) so an app with its own
+          // theme can re-point the shared components that use the ramp; the
+          // fallbacks are the ember values, so Shakti Wheel is unchanged.
+          50: ramp(50, '255 248 241'), // #fff8f1
+          100: ramp(100, '255 233 212'), // #ffe9d4
+          200: ramp(200, '255 210 168'), // #ffd2a8 ember-soft
+          300: ramp(300, '255 188 133'), // #ffbc85
+          400: ramp(400, '255 176 112'), // #ffb070
+          500: ramp(500, '255 163 90'), // #ffa35a ember
+          600: ramp(600, '226 112 42'), // #e2702a ember-deep
+          700: ramp(700, '184 87 31'), // #b8571f
+          800: ramp(800, '143 67 24'), // #8f4318
+          900: ramp(900, '107 51 18'), // #6b3312
+          950: ramp(950, '62 30 10'), // #3e1e0a
           DEFAULT: 'hsl(var(--primary))',
           foreground: 'hsl(var(--primary-foreground))',
         },

@@ -55,7 +55,7 @@ const RealMessage = memo(
             'flex items-end gap-2 px-1',
             isOwnMessage ? 'justify-end' : 'justify-start'
           )}
-          aria-label={`${isOwnMessage ? 'You' : 'Astrologer'}: message`}
+          aria-label={isOwnMessage ? 'Your message' : 'Their message'}
         >
           {!isOwnMessage && avatar && (
             <Avatar className="h-7 w-7 shrink-0 border border-border">

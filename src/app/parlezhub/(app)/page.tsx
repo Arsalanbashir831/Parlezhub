@@ -1,67 +1,170 @@
 'use client';
 
-import { BookOpenCheck, CalendarClock, Mic, Sparkles, Users } from 'lucide-react';
+import Link from 'next/link';
+import {
+  CalendarCheck,
+  CalendarDays,
+  Clock,
+  Handshake,
+  Inbox,
+  LayoutList,
+  MessageCircle,
+  Mic,
+  PlusCircle,
+  Users,
+} from 'lucide-react';
 
+import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
 import { useUser } from '@/contexts/user-context';
+import { useMeetings } from '@/hooks/useMeetings';
+import { useServices } from '@/hooks/useServices';
+import { useVoiceConversations } from '@/hooks/useVoiceConversations';
 import { APPS } from '@/lib/apps';
+import { ActionTile, buttonStyles, PageHeader, StatCard } from '@/components/parlezhub/ui';
+import {
+  FlowSteps,
+  GigsPreview,
+  NextSessionCard,
+  RecentPractice,
+} from '@/components/parlezhub/dashboard/widgets';
 
-const LEARNER_CARDS = [
-  { icon: Mic, title: 'Talk with your AI tutor', body: 'Pick a language and a topic, then just start speaking.' },
-  { icon: Users, title: 'Find a language consultant', body: 'Book a session with a human when you want feedback.' },
-  { icon: BookOpenCheck, title: 'Review past sessions', body: 'Transcripts and corrections from every conversation.' },
-];
+const P = ROUTES.PARLEZHUB;
 
-const CONSULTANT_CARDS = [
-  { icon: Sparkles, title: 'Publish a session', body: 'Describe what you teach, set a price and a length.' },
-  { icon: CalendarClock, title: 'Set your availability', body: 'Choose the hours learners can book you.' },
-  { icon: Users, title: 'Your learners', body: 'Chats and upcoming sessions with the people you teach.' },
-];
+function greeting() {
+  const hour = new Date().getHours();
+  return hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+}
 
-/**
- * Parlezhub home. A placeholder until the tutor features land: it shows the
- * role-aware shape of the workspace so the shared auth, onboarding and role
- * plumbing can be exercised end to end.
- */
-export default function ParlezhubHomePage() {
+/** /parlezhub — the home of either profile: where things stand, what's next. */
+export default function ParlezhubDashboardPage() {
   const { activeRole } = useAuth();
-  const { user } = useUser();
   const isConsultant = activeRole === 'TEACHER';
-  const cards = isConsultant ? CONSULTANT_CARDS : LEARNER_CARDS;
-  const roleLabel = APPS.parlezhub.roleLabels[isConsultant ? 'TEACHER' : 'STUDENT'];
+  return isConsultant ? <ConsultantDashboard /> : <LearnerDashboard />;
+}
+
+function useGreetingTitle() {
+  const { user } = useUser();
+  return user?.first_name ? `${greeting()}, ${user.first_name}` : greeting();
+}
+
+function LearnerDashboard() {
+  const title = useGreetingTitle();
+  const practice = useVoiceConversations();
+  const meetings = useMeetings();
+  const isNew =
+    !practice.isLoading &&
+    !meetings.isLoading &&
+    practice.conversations.length === 0 &&
+    meetings.meetings.length === 0;
 
   return (
-    <div className="space-y-8">
-      <section className="overflow-hidden rounded-3xl bg-primary p-6 text-primary-foreground sm:p-8">
-        <p className="text-xs font-bold uppercase tracking-wider text-primary-foreground/70">
-          {roleLabel}
-        </p>
-        <h1 className="mt-2 text-2xl font-extrabold sm:text-3xl">
-          {user?.first_name ? `Welcome, ${user.first_name}!` : 'Welcome to ParlezHub!'}
-        </h1>
-        <p className="mt-2 max-w-xl text-sm text-primary-foreground/85">
-          {isConsultant
-            ? 'Your consultant workspace is being built. Here is what will live here.'
-            : 'Your AI language tutor is on its way. Here is what you will be able to do.'}
-        </p>
-      </section>
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={APPS.parlezhub.roleLabels.STUDENT}
+        title={title}
+        description="Practise speaking with your AI tutor, then book a language consultant when you want a human touch."
+        actions={
+          <Link href={P.TUTOR} className={buttonStyles.primary}>
+            <Mic className="h-4 w-4" aria-hidden="true" />
+            Start practising
+          </Link>
+        }
+      />
 
-      <section aria-labelledby="coming-soon" className="space-y-3">
-        <h2 id="coming-soon" className="text-sm font-bold uppercase tracking-wider text-muted-foreground">
-          Coming soon
-        </h2>
-        <ul className="grid gap-3 sm:grid-cols-3">
-          {cards.map(({ icon: Icon, title, body }) => (
-            <li key={title} className="rounded-2xl border border-border bg-card p-5">
-              <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-secondary text-primary">
-                <Icon className="h-5 w-5" aria-hidden="true" />
-              </span>
-              <h3 className="mt-3 font-bold text-foreground">{title}</h3>
-              <p className="mt-1 text-sm text-muted-foreground">{body}</p>
-            </li>
-          ))}
-        </ul>
-      </section>
+      {isNew && (
+        <FlowSteps
+          steps={[
+            { icon: Mic, title: 'Practise with the AI tutor', body: 'Pick a language and a topic, then just talk.', href: P.TUTOR },
+            { icon: Users, title: 'Find a language consultant', body: 'Browse consultants and message the one you like.', href: P.CONSULTANTS },
+            { icon: CalendarCheck, title: 'Book and meet', body: 'Book a session from the chat and join it from Meetings.', href: P.MEETINGS },
+          ]}
+        />
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard icon={Mic} label="Practice sessions" value={practice.totals.count} isLoading={practice.isLoading} />
+        <StatCard icon={Clock} label="Minutes practised" value={practice.totals.minutes} isLoading={practice.isLoading} />
+        <StatCard
+          icon={CalendarDays}
+          label="Upcoming sessions"
+          value={meetings.counts.upcoming + meetings.counts.pendingPayment}
+          hint={meetings.counts.pending ? `${meetings.counts.pending} waiting for approval` : undefined}
+          isLoading={meetings.isLoading}
+        />
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+        <RecentPractice conversations={practice.conversations} isLoading={practice.isLoading} />
+        <div className="space-y-6">
+          <NextSessionCard meetings={meetings.meetings} isLoading={meetings.isLoading} isConsultant={false} />
+          <div className="grid gap-3">
+            <ActionTile href={P.CONSULTANTS} icon={Users} title="Find a consultant" body="Browse language consultants." />
+            <ActionTile href={P.CHAT} icon={MessageCircle} title="Messages" body="Talk to your consultants." />
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function ConsultantDashboard() {
+  const title = useGreetingTitle();
+  const { services, stats, isLoading: gigsLoading } = useServices({ category: 'language' });
+  const meetings = useMeetings();
+  const isNew = !gigsLoading && services.length === 0;
+
+  return (
+    <div className="space-y-6">
+      <PageHeader
+        eyebrow={APPS.parlezhub.roleLabels.TEACHER}
+        title={title}
+        description="Your gigs, your bookings and your learners, in one place."
+        actions={
+          <Link href={P.CREATE_GIG} className={buttonStyles.primary}>
+            <PlusCircle className="h-4 w-4" aria-hidden="true" />
+            Create a gig
+          </Link>
+        }
+      />
+
+      {isNew && (
+        <FlowSteps
+          steps={[
+            { icon: PlusCircle, title: 'Create a gig', body: 'Describe a session, set its price and length.', href: P.CREATE_GIG },
+            { icon: MessageCircle, title: 'Learners message you', body: 'They find your gig and start a chat.', href: P.CHAT },
+            { icon: Handshake, title: 'Approve and meet', body: 'Accept bookings and join from Meetings.', href: P.MEETINGS },
+          ]}
+        />
+      )}
+
+      <div className="grid gap-3 sm:grid-cols-3">
+        <StatCard
+          icon={LayoutList}
+          label="Live gigs"
+          value={stats.activeServices}
+          hint={stats.totalServices > stats.activeServices ? `${stats.totalServices - stats.activeServices} paused` : undefined}
+          isLoading={gigsLoading}
+        />
+        <StatCard icon={Inbox} label="Requests to approve" value={meetings.counts.pending} isLoading={meetings.isLoading} />
+        <StatCard
+          icon={CalendarDays}
+          label="Upcoming sessions"
+          value={meetings.counts.upcoming + meetings.counts.pendingPayment}
+          isLoading={meetings.isLoading}
+        />
+      </div>
+
+      <div className="grid items-start gap-6 lg:grid-cols-[minmax(0,1fr)_minmax(0,22rem)]">
+        <GigsPreview gigs={services} isLoading={gigsLoading} />
+        <div className="space-y-6">
+          <NextSessionCard meetings={meetings.meetings} isLoading={meetings.isLoading} isConsultant />
+          <div className="grid gap-3">
+            <ActionTile href={P.MEETINGS} icon={CalendarCheck} title="Meetings" body="Approve requests and join sessions." />
+            <ActionTile href={P.CHAT} icon={MessageCircle} title="Messages" body="Reply to your learners." />
+          </div>
+        </div>
+      </div>
     </div>
   );
 }

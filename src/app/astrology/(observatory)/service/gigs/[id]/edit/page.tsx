@@ -13,7 +13,7 @@ import { EmptyNotice } from '@/components/astrology/ui/observatory-state';
 export default function EditGigPage() {
   const router = useRouter();
   const serviceId = useParams().id as string;
-  const { loadService, updateExistingService, isProcessing, error } = useServices();
+  const { loadService, updateExistingService, isProcessing, error } = useServices({ category: 'astrology' });
 
   const [service, setService] = useState<Service | null>(null);
   const [missing, setMissing] = useState(false);

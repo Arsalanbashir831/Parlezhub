@@ -228,10 +228,15 @@ export const serviceApi = {
     return response.data;
   },
 
-  // Get all public services
-  getPublicServices: async (): Promise<PublicServiceResponse[]> => {
+  // Get all public services, optionally of one category. The server filter is
+  // an optimisation only: callers still check the category of every result.
+  getPublicServices: async (
+    category?: ServiceType
+  ): Promise<PublicServiceResponse[]> => {
     const response = await apiCaller(
-      API_ROUTES.PUBLIC.GET_ALL_SERVICES,
+      category
+        ? `${API_ROUTES.PUBLIC.GET_ALL_SERVICES}?category=${encodeURIComponent(category)}`
+        : API_ROUTES.PUBLIC.GET_ALL_SERVICES,
       'GET',
       undefined,
       {},
@@ -351,7 +356,7 @@ export const serviceUtils = {
     const name =
       teacher?.full_name?.trim() ||
       [teacher?.first_name, teacher?.last_name].filter(Boolean).join(' ') ||
-      'Astrologer';
+      (apiResponse.category === 'language' ? 'Language consultant' : 'Astrologer');
     const location = [teacher?.city, teacher?.country]
       .filter(Boolean)
       .join(', ');
@@ -366,7 +371,11 @@ export const serviceUtils = {
       consultantLocation: location,
       consultantEmail: teacher?.email || '',
       type: apiResponse.category as ServiceType,
-      title: apiResponse.service_title || 'Astrology consultation',
+      title:
+        apiResponse.service_title ||
+        (apiResponse.category === 'language'
+          ? 'Language session'
+          : 'Astrology consultation'),
       description: apiResponse.full_description || '',
       shortDescription: apiResponse.short_description || '',
       price: parseFloat(apiResponse.price_per_session),

@@ -8,6 +8,7 @@ import { toast } from 'sonner';
 
 import { ServiceFormData, ServiceType } from '@/types/service';
 import {
+  COMPOSER_COPY,
   DURATION_CHOICES,
   TAG_SUGGESTIONS,
   TITLE_PLACEHOLDERS,
@@ -269,7 +270,7 @@ export default function GigComposer({
 
           <label className="block space-y-2">
             <FieldLabel count={`${values.shortDescription.length}/160`}>One-line summary</FieldLabel>
-            <Textarea {...register('shortDescription')} rows={2} placeholder="A 60-minute read of your natal chart, with the next five years mapped." className={FIELD} />
+            <Textarea {...register('shortDescription')} rows={2} placeholder={COMPOSER_COPY[values.type].summary} className={FIELD} />
             <FieldError message={errors.shortDescription?.message} fallback="Shows on your profile and in the booking card." />
           </label>
         </Section>
@@ -282,7 +283,7 @@ export default function GigComposer({
               <FieldError message={errors.description?.message} fallback="At least 100 characters." />
               <button type="button" className="obs-control gap-2 text-xs" onClick={generateDescription} disabled={isGenerating}>
                 <Sparkles className="h-4 w-4" aria-hidden="true" />
-                {isGenerating ? 'Drafting…' : 'Draft with the AI astrologer'}
+                {isGenerating ? 'Drafting…' : COMPOSER_COPY[values.type].draft}
               </button>
             </div>
           </div>
@@ -304,7 +305,7 @@ export default function GigComposer({
               </ul>
             )}
             <div className="flex gap-2">
-              <Input value={newItem} onChange={event => setNewItem(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addItem(); } }} placeholder="Written summary of the reading" aria-label="New item the student gets" className={FIELD} />
+              <Input value={newItem} onChange={event => setNewItem(event.target.value)} onKeyDown={event => { if (event.key === 'Enter') { event.preventDefault(); addItem(); } }} placeholder={COMPOSER_COPY[values.type].provides} aria-label="New item the student gets" className={FIELD} />
               <button type="button" className="obs-control shrink-0 gap-2 text-xs" onClick={addItem}><Plus className="h-4 w-4" aria-hidden="true" />Add item</button>
             </div>
           </div>

@@ -32,6 +32,8 @@ export const ROUTES = {
         EDIT_GIG: (serviceId: string) => `/astrology/service/gigs/${serviceId}/edit`,
         CHAT: '/astrology/service/chat',
         MEETINGS: '/astrology/service/meetings',
+        /** Weekly availability (consultant only). */
+        SETTINGS: '/astrology/service/settings',
       },
       PROFILES: '/astrology/profiles',
       INSIGHTS: (slug: string) => `/astrology/insights/${slug}`,
@@ -39,5 +41,21 @@ export const ROUTES = {
   },
   PARLEZHUB: {
     ROOT: '/parlezhub',
+    /** AI language tutor (any role). */
+    TUTOR: '/parlezhub/tutor',
+    /** Past AI tutor conversations (any role). */
+    HISTORY: '/parlezhub/history',
+    /** Directory of language consultants (learners). */
+    CONSULTANTS: '/parlezhub/consultants',
+    /** The consultant's own language gigs. */
+    GIGS: '/parlezhub/gigs',
+    CREATE_GIG: '/parlezhub/gigs/new',
+    EDIT_GIG: (serviceId: string) => `/parlezhub/gigs/${serviceId}/edit`,
+    /** Bookings, for either role. */
+    MEETINGS: '/parlezhub/meetings',
+    /** Learner ↔ consultant messages, for either role. */
+    CHAT: '/parlezhub/chat',
+    /** Weekly availability (consultant only). */
+    SETTINGS: '/parlezhub/settings',
   },
 };

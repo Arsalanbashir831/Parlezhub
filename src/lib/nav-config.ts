@@ -1,7 +1,7 @@
 'use client';
 
 import { ROUTES } from '@/constants/routes';
-import { Briefcase, Calendar, MessageCircle, PlusCircle } from 'lucide-react';
+import { Briefcase, Calendar, MessageCircle, PlusCircle, Settings } from 'lucide-react';
 
 import { NavItem } from '@/types/nav';
 
@@ -38,7 +38,8 @@ export const resolveActiveNav = (
 };
 
 /** Everything an astrologer does with paying students, from inside the
- *  observatory: publishing a gig, the student inbox, and the schedule. */
+ *  observatory: publishing a gig, the student inbox, the schedule, and the
+ *  hours they can be booked. */
 export const astrologerServiceNav: NavItem[] = [
   {
     id: 'create-gig',
@@ -63,5 +64,11 @@ export const astrologerServiceNav: NavItem[] = [
     label: 'Meetings',
     icon: Calendar,
     href: ROUTES.AGENT.ASTROLOGY.SERVICE.MEETINGS,
+  },
+  {
+    id: 'settings',
+    label: 'Settings',
+    icon: Settings,
+    href: ROUTES.AGENT.ASTROLOGY.SERVICE.SETTINGS,
   },
 ];

@@ -3,5 +3,5 @@
 import ConsultationChatView from '@/components/chat/consultation-chat-view';
 
 export default function AstrologerServiceChatPage() {
-  return <ConsultationChatView role="consultant" />;
+  return <ConsultationChatView role="consultant" category="astrology" />;
 }

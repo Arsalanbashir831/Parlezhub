@@ -1,4 +1,5 @@
 import type { PublicService } from '@/services/service';
+import type { ServiceType } from '@/types/service';
 
 export interface AstrologerProfile {
   id: string;
@@ -13,15 +14,25 @@ export interface AstrologerProfile {
   startingPrice: number;
 }
 
+/** A consultant in a public directory: one entry per person, holding their gigs. */
+export type ConsultantProfile = AstrologerProfile;
+
+/**
+ * Groups live public gigs of one category into one profile per consultant. The
+ * category matters: one consultant account can publish astrology and language
+ * gigs, and each app's directory must show only its own kind.
+ */
 export function buildAstrologerProfiles(
-  services: PublicService[]
+  services: PublicService[],
+  category: ServiceType = 'astrology',
+  fallbackName = 'Astrologer'
 ): AstrologerProfile[] {
   const profiles = new Map<string, AstrologerProfile>();
 
   for (const service of services) {
     const id = String(service.teacherId ?? '').trim();
     if (
-      service.type !== 'astrology' ||
+      service.type !== category ||
       service.status !== 'active' ||
       !id ||
       !Number.isFinite(service.price) ||
@@ -48,7 +59,7 @@ export function buildAstrologerProfiles(
 
     profiles.set(id, {
       id,
-      name: service.consultantName?.trim() || 'Astrologer',
+      name: service.consultantName?.trim() || fallbackName,
       avatar: service.consultantAvatar,
       qualification: service.consultantQualification || '',
       experience: service.consultantExperience || 0,

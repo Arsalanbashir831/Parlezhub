@@ -9,7 +9,9 @@ const buttonVariants = cva(
   {
     variants: {
       variant: {
-        default: 'bg-primary-500 text-black hover:bg-primary-600',
+        // Text on the accent: black on ember; an app theme may override it.
+        default:
+          'bg-primary-500 text-[rgb(var(--ramp-on-accent,0_0_0))] hover:bg-primary-600',
         destructive:
           'bg-destructive text-destructive-foreground hover:bg-destructive/90',
         outline:

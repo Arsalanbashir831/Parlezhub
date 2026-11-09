@@ -14,6 +14,7 @@ import {
   type AstrologerProfile,
 } from '@/lib/astrologer-directory';
 import { getErrorMessage } from '@/lib/error-utils';
+import type { ServiceType } from '@/types/service';
 
 // Kept for legacy service cards that are not used by the profile directory.
 export interface ServiceCardData {
@@ -28,7 +29,14 @@ export interface ServiceCardData {
   consultantEmail: string;
 }
 
-export const useConsultants = () => {
+/**
+ * The public directory of one app's consultants. Defaults to astrologers (Shakti
+ * Wheel); ParlezHub passes 'language' so its learners only see language gigs.
+ */
+export const useConsultants = ({
+  category = 'astrology',
+  fallbackName = 'Astrologer',
+}: { category?: ServiceType; fallbackName?: string } = {}) => {
   const queryClient = useQueryClient();
   const [searchQuery, setSearchQuery] = useState('');
   const [priceRange, setPriceRange] = useState<[number, number] | null>(null);
@@ -41,16 +49,19 @@ export const useConsultants = () => {
     isLoading,
     error: queryError,
   } = useQuery({
-    queryKey: ['public-services'],
+    queryKey: ['public-services', category],
     queryFn: async () =>
-      (await serviceApi.getPublicServices()).map(
+      (await serviceApi.getPublicServices(category)).map(
         serviceUtils.publicApiResponseToService
       ),
     staleTime: 10 * 60 * 1000,
     gcTime: 30 * 60 * 1000,
   });
 
-  const profiles = useMemo(() => buildAstrologerProfiles(services), [services]);
+  const profiles = useMemo(
+    () => buildAstrologerProfiles(services, category, fallbackName),
+    [services, category, fallbackName]
+  );
   const maxPrice = useMemo(
     () =>
       Math.max(

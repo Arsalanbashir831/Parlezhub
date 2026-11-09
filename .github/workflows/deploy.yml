@@ -43,8 +43,8 @@ jobs:
             ghcr.io/arsalanbashir831/parlezhub:latest
             ghcr.io/arsalanbashir831/parlezhub:${{ github.sha }}
           build-args: |
-            NEXT_PUBLIC_BACKEND_URL=${{ vars.NEXT_PUBLIC_BACKEND_URL }}
-            NEXT_PUBLIC_CHAT_SERVER_URL=${{ vars.NEXT_PUBLIC_CHAT_SERVER_URL }}
+            BACKEND_URL=${{ vars.BACKEND_URL }}
+            CHAT_SERVER_URL=${{ vars.CHAT_SERVER_URL }}
             NEXT_PUBLIC_VAPI_PUBLIC_KEY=${{ vars.NEXT_PUBLIC_VAPI_PUBLIC_KEY }}
             NEXT_PUBLIC_LANDING_PAGE_URL=${{ vars.NEXT_PUBLIC_LANDING_PAGE_URL }}
             NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY=${{ vars.NEXT_PUBLIC_STRIPE_PUBLISHABLE_KEY }}

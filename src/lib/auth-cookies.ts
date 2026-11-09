@@ -132,7 +132,7 @@ export function pickActiveRole(
  */
 export async function fetchRoles(accessToken: string): Promise<UserRole[]> {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
+    `${process.env.BACKEND_URL}${API_ROUTES.AUTH.ME}`,
     {
       headers: { Authorization: `Bearer ${accessToken}` },
       cache: 'no-store',

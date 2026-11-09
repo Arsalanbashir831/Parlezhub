@@ -132,16 +132,31 @@ class ChatService {
       // cannot proxy WebSockets, so this one credential is fetched per connect and
       // kept in memory only — the durable session stays in httpOnly cookies.
       let token: string;
+      let socketBase: string | null;
 
       try {
-        token = await authApi.wsToken();
+        const credential = await authApi.wsToken();
+        token = credential.token;
+        // The server's runtime address first; the build-time one is a fallback.
+        socketBase = credential.socketUrl ?? API_ROUTES.CHAT.WEBSOCKET_URL;
       } catch (err) {
         console.error('Failed to get credential for Chat WebSocket:', err);
         reject(new Error('No access token available'));
         return;
       }
 
-      const wsUrl = `${API_ROUTES.CHAT.WEBSOCKET_URL}${chatId}?token=${token}`;
+      if (!socketBase) {
+        // Without an address the socket would dial "undefined/ws/chat/…" on the
+        // Next app and fail with an empty error; say what is actually missing.
+        const missing = new Error(
+          'Live chat is unavailable: the chat server address is not configured (set CHAT_SERVER_URL).'
+        );
+        console.warn(missing.message);
+        reject(missing);
+        return;
+      }
+
+      const wsUrl = `${socketBase}${chatId}?token=${encodeURIComponent(token)}`;
 
       try {
         const socket = new WebSocket(wsUrl);

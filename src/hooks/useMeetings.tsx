@@ -1,7 +1,8 @@
 'use client';
 
 import { useCallback, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { usePathname, useRouter } from 'next/navigation';
+import { appFromPath } from '@/lib/apps';
 import { ROUTES } from '@/constants/routes';
 import { useUser } from '@/contexts/user-context';
 import {
@@ -250,17 +251,22 @@ export function useMeetings() {
     if (meeting.meetingLink) window.open(meeting.meetingLink, '_blank');
   }, []);
 
+  // Each app has its own chat pages; stay inside the one the user is in.
+  const app = appFromPath(usePathname());
   const handleMessageConsultant = useCallback(
     (personId: string) => {
-      if (user?.role === 'TEACHER') {
-        // Consultant messaging a student
-        router.push(ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT + '?student=' + personId);
-      } else {
-        // Student messaging a consultant
-        router.push(ROUTES.AGENT.ASTROLOGY.HIRE.CHAT + '?consultant=' + personId);
-      }
+      const isTeacher = user?.role === 'TEACHER';
+      const chatPath =
+        app === 'parlezhub'
+          ? ROUTES.PARLEZHUB.CHAT
+          : isTeacher
+            ? ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT
+            : ROUTES.AGENT.ASTROLOGY.HIRE.CHAT;
+      router.push(
+        `${chatPath}?${isTeacher ? 'student' : 'consultant'}=${personId}`
+      );
     },
-    [router, user?.role]
+    [router, user?.role, app]
   );
 
   const getStatusColor = useCallback((status: MeetingStatus) => {

@@ -152,11 +152,14 @@ export const authApi = {
   googleIdToken: (credential: string, nonce: string) =>
     authRequest('google-id-token', { credential, nonce }),
 
-  /** Short-lived credential for the chat WebSocket handshake. */
-  wsToken: async (): Promise<string> => {
-    const { token } = await authRequest('ws-token', {});
+  /**
+   * Short-lived credential for the chat WebSocket handshake, and where to open
+   * it: the server knows the chat server's runtime address.
+   */
+  wsToken: async (): Promise<{ token: string; socketUrl: string | null }> => {
+    const { token, socketUrl } = await authRequest('ws-token', {});
     if (!token) throw new Error('No credential available');
-    return token;
+    return { token, socketUrl: socketUrl ?? null };
   },
 
   getUnifiedProfile: async (): Promise<UnifiedProfileResponse> => {

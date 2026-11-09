@@ -1,69 +1,96 @@
 'use client';
 
-import { LogOut } from 'lucide-react';
+import { useState } from 'react';
+import { Loader2, Menu } from 'lucide-react';
 
+import { ROUTES } from '@/constants/routes';
 import { useAuth } from '@/contexts/auth-context';
-import { useUser } from '@/contexts/user-context';
 import { APPS } from '@/lib/apps';
 import RoleGuard from '@/components/auth/role-guard';
+import { Sheet, SheetContent, SheetTitle } from '@/components/ui/sheet';
 import { ParlezhubLogo } from '@/components/parlezhub/brand/logo';
+import { SidebarContent } from '@/components/parlezhub/layout/sidebar';
 
 /**
- * The signed-in Parlezhub app. Any role may enter (both share one workspace,
- * like the observatory); the guard sends a signed-out visitor to Parlezhub's
- * sign-in and a roleless account to its onboarding.
+ * The signed-in ParlezHub workspace: a fixed sidebar on desktop, a top bar with
+ * a drawer on phones. Any role may enter; the sidebar shows the active
+ * profile's navigation, and pages that belong to one profile guard themselves.
+ * The guard sends a signed-out visitor to ParlezHub's sign-in and a roleless
+ * account to its onboarding.
+ *
+ * The main area's padding is mirrored by `.ph-fill` in parlezhub.css; change
+ * them together.
  */
 export default function ParlezhubAppShell({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   return (
     <RoleGuard allowedRoles={['STUDENT', 'TEACHER', 'BOTH']}>
-      <div className="flex min-h-screen flex-col">
-        <ParlezhubHeader />
-        <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8 sm:px-6 sm:py-10">
+      <a
+        href="#ph-main"
+        className="sr-only focus:not-sr-only focus:fixed focus:left-4 focus:top-4 focus:z-50 focus:rounded-full focus:bg-card focus:px-4 focus:py-2 focus:text-sm focus:font-bold"
+      >
+        Skip to content
+      </a>
+
+      <aside className="fixed inset-y-0 left-0 z-30 hidden w-64 border-r border-border bg-card lg:block">
+        <SidebarContent />
+      </aside>
+
+      <header className="sticky top-0 z-30 flex h-14 items-center gap-2 border-b border-border bg-card/95 px-3 lg:hidden">
+        <button
+          type="button"
+          onClick={() => setDrawerOpen(true)}
+          aria-label="Open menu"
+          className="flex h-10 w-10 items-center justify-center rounded-xl text-foreground hover:bg-secondary"
+        >
+          <Menu className="h-5 w-5" />
+        </button>
+        <ParlezhubLogo href={ROUTES.PARLEZHUB.ROOT} />
+      </header>
+
+      <Sheet open={drawerOpen} onOpenChange={setDrawerOpen}>
+        <SheetContent side="left" className="w-72 border-r border-border bg-card p-0 sm:max-w-72">
+          <SheetTitle className="sr-only">Menu</SheetTitle>
+          <SidebarContent onNavigate={() => setDrawerOpen(false)} />
+        </SheetContent>
+      </Sheet>
+
+      <div className="lg:pl-64">
+        <main
+          id="ph-main"
+          className="mx-auto w-full max-w-6xl px-4 py-5 sm:px-6 lg:px-10 lg:py-8"
+        >
           {children}
         </main>
       </div>
+
+      <RoleSwitchOverlay />
     </RoleGuard>
   );
 }
 
-function ParlezhubHeader() {
-  const { activeRole, logout } = useAuth();
-  const { user } = useUser();
-  const roleLabel =
-    activeRole === 'TEACHER'
-      ? APPS.parlezhub.roleLabels.TEACHER
-      : APPS.parlezhub.roleLabels.STUDENT;
-  const initial = (user?.first_name || user?.email || '?').charAt(0).toUpperCase();
-
+/** Switching or opening a profile reloads the whole workspace; say so. */
+function RoleSwitchOverlay() {
+  const { isRoleSwitching } = useAuth();
+  if (!isRoleSwitching) return null;
   return (
-    <header className="sticky top-0 z-30 border-b border-border bg-background/95">
-      <div className="mx-auto flex h-16 w-full max-w-5xl items-center gap-3 px-4 sm:px-6">
-        <ParlezhubLogo href={APPS.parlezhub.home} />
-        <div className="ml-auto flex items-center gap-2 sm:gap-3">
-          <span className="hidden rounded-full bg-secondary px-3 py-1 text-xs font-bold text-secondary-foreground sm:inline">
-            {roleLabel}
-          </span>
-          <span
-            aria-hidden="true"
-            className="flex h-9 w-9 items-center justify-center rounded-full bg-primary text-sm font-bold text-primary-foreground"
-          >
-            {initial}
-          </span>
-          <button
-            type="button"
-            onClick={() => void logout()}
-            aria-label="Sign out"
-            className="inline-flex h-10 items-center gap-2 rounded-xl px-3 text-sm font-semibold text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground"
-          >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
-            <span className="hidden sm:inline">Sign out</span>
-          </button>
-        </div>
+    <div
+      role="status"
+      aria-live="polite"
+      className="fixed inset-0 z-[90] flex items-center justify-center bg-background/80 px-6 backdrop-blur-sm"
+    >
+      <div className="flex flex-col items-center gap-3 rounded-2xl border border-border bg-card px-8 py-7 text-center shadow-xl">
+        <Loader2 className="h-8 w-8 animate-spin text-primary" aria-hidden="true" />
+        <p className="font-bold text-foreground">Switching profile</p>
+        <p className="text-sm text-muted-foreground">
+          Opening your {APPS.parlezhub.name} workspace…
+        </p>
       </div>
-    </header>
+    </div>
   );
 }

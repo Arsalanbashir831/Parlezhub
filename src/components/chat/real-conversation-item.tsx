@@ -5,6 +5,7 @@ import { memo, useCallback } from 'react';
 import { ChatRoom } from '@/types/chat';
 import { cn, formatMessageTime } from '@/lib/utils';
 import { initialsOf, resolveChatPeer } from '@/lib/chat-peer';
+import { useCurrentApp } from '@/features/auth/use-current-app';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface RealConversationItemProps {
@@ -28,6 +29,9 @@ const RealConversationItem = memo(
     }, [chat, onSelect]);
 
     const peer = resolveChatPeer(chat, currentUserRole, currentUserId);
+    const { definition } = useCurrentApp();
+    const peerLabel =
+      definition.roleLabels[currentUserRole === 'student' ? 'TEACHER' : 'STUDENT'];
     const initials = initialsOf(peer.name);
     const unread = chat.unread_count ?? 0;
     const preview = chat.last_message
@@ -73,7 +77,7 @@ const RealConversationItem = memo(
                   : 'text-foreground group-hover:text-foreground'
               )}
             >
-              {peer.name || 'Astrologer'}
+              {peer.name || peerLabel}
             </p>
             <span className="shrink-0 text-[10px] text-muted-foreground">
               {chat.last_message_timestamp

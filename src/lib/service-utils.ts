@@ -69,6 +69,29 @@ export const TITLE_PLACEHOLDERS: Record<ServiceType, string> = {
   general: 'I will review your work and give a written summary',
 };
 
+/** Per-type copy for the parts of the composer that would otherwise talk
+ *  about readings and charts to a language consultant. */
+export const COMPOSER_COPY: Record<
+  ServiceType,
+  { summary: string; provides: string; draft: string }
+> = {
+  astrology: {
+    summary: 'A 60-minute read of your natal chart, with the next five years mapped.',
+    provides: 'Written summary of the reading',
+    draft: 'Draft with the AI astrologer',
+  },
+  language: {
+    summary: 'A relaxed 45-minute conversation that builds your speaking confidence.',
+    provides: 'Personal vocabulary list after the session',
+    draft: 'Draft with AI',
+  },
+  general: {
+    summary: 'A focused session on your question, with clear next steps.',
+    provides: 'Written summary with next steps',
+    draft: 'Draft with AI',
+  },
+};
+
 export const DURATION_CHOICES = [30, 45, 60, 90];
 
 export function getServiceTypeLabel(type: ServiceType): string {

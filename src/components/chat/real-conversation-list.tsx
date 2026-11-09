@@ -6,6 +6,7 @@ import { Search } from 'lucide-react';
 import { ChatRoom } from '@/types/chat';
 import { Input } from '@/components/ui/input';
 import { resolveChatPeer } from '@/lib/chat-peer';
+import { useCurrentApp } from '@/features/auth/use-current-app';
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area';
 import {
   LoadingLayout,
@@ -36,6 +37,7 @@ const RealConversationList = memo(
     onSearchChange,
     onChatSelect,
   }: RealConversationListProps) => {
+    const consultantNoun = useCurrentApp().definition.consultantNoun;
     const filteredChats = useMemo(() => {
       const query = searchQuery.trim().toLowerCase();
       if (!query) return chats;
@@ -88,7 +90,7 @@ const RealConversationList = memo(
                   </p>
                   <p className="obs-label">
                     {currentUserRole === 'student'
-                      ? 'Start one from an astrologer profile'
+                      ? `Start one from ${/^[aeiou]/i.test(consultantNoun) ? 'an' : 'a'} ${consultantNoun}’s profile`
                       : 'Students will start conversations with you'}
                   </p>
                 </div>

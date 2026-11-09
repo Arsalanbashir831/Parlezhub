@@ -6,6 +6,7 @@ import { ArrowLeft, Calendar } from 'lucide-react';
 import { ChatRoom } from '@/types/chat';
 import { cn } from '@/lib/utils';
 import { initialsOf, resolveChatPeer } from '@/lib/chat-peer';
+import { useCurrentApp } from '@/features/auth/use-current-app';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 
@@ -34,6 +35,9 @@ const RealChatHeader = memo(
     showBackButton = false,
   }: RealChatHeaderProps) => {
     const peer = resolveChatPeer(chat, currentUserRole, currentUserId);
+    const { definition } = useCurrentApp();
+    const peerLabel =
+      definition.roleLabels[currentUserRole === 'student' ? 'TEACHER' : 'STUDENT'];
 
     const initials = initialsOf(peer.name);
 
@@ -83,7 +87,7 @@ const RealChatHeader = memo(
 
         <div className="min-w-0 flex-1">
           <h2 className="truncate text-sm font-semibold text-foreground">
-            {peer.name || 'Astrologer'}
+            {peer.name || peerLabel}
           </h2>
           {statusLabel && (
             <p

@@ -12,6 +12,7 @@ describe('astrologerServiceNav', () => {
       ['My Gigs', ROUTES.AGENT.ASTROLOGY.SERVICE.GIGS],
       ['Chats', ROUTES.AGENT.ASTROLOGY.SERVICE.CHAT],
       ['Meetings', ROUTES.AGENT.ASTROLOGY.SERVICE.MEETINGS],
+      ['Settings', ROUTES.AGENT.ASTROLOGY.SERVICE.SETTINGS],
     ]);
   });
 

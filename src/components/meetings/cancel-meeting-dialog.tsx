@@ -87,7 +87,7 @@ export default function CancelMeetingDialog({
               value={reason}
               onChange={(e) => setReason(e.target.value)}
               rows={4}
-              className="resize-none rounded-2xl border-primary-500/10 bg-white/5 text-white placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
+              className="resize-none rounded-2xl border-primary-500/10 bg-foreground/5 text-foreground placeholder:text-primary-100/20 focus-visible:ring-primary-500/30"
             />
           </div>
         </div>

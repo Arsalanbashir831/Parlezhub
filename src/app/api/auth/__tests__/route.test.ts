@@ -92,7 +92,7 @@ beforeEach(() => {
   vi.resetAllMocks();
   vi.unstubAllGlobals();
   cookieStore.jar = {};
-  vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', BACKEND);
+  vi.stubEnv('BACKEND_URL', BACKEND);
   supabase.getUser.mockResolvedValue({ data: { user: { id: 'u1', email: 'a@b.test' } } });
   supabase.signOut.mockResolvedValue({ error: null });
 });
@@ -325,6 +325,26 @@ describe('action routing', () => {
 
     expect((await res.json()).token).toBe('token-1');
     expect(setCookies(res)).toEqual([]);
+  });
+
+  it("tells the browser where the chat socket is, from the server's runtime address", async () => {
+    stubBackend();
+    vi.stubEnv('CHAT_SERVER_URL', 'https://chat.example.com/');
+    vi.stubEnv('CHAT_SERVER_URL', '');
+
+    const res = await POST(post('ws-token', {}), params('ws-token'));
+
+    expect((await res.json()).socketUrl).toBe('wss://chat.example.com/ws/chat/');
+  });
+
+  it('sends no socket address when none is configured', async () => {
+    stubBackend();
+    vi.stubEnv('CHAT_SERVER_URL', '');
+    vi.stubEnv('CHAT_SERVER_URL', '');
+
+    const res = await POST(post('ws-token', {}), params('ws-token'));
+
+    expect((await res.json()).socketUrl).toBeUndefined();
   });
 
   it('writes the chosen role only when Django confirms the account holds it', async () => {

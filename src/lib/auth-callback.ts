@@ -104,7 +104,7 @@ export async function handleAuthCallback(request: NextRequest, app: AppId) {
   let requiresRoleSelection = false;
   try {
     const syncRes = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.SYNC}`,
+      `${process.env.BACKEND_URL}${API_ROUTES.AUTH.SYNC}`,
       {
         method: 'POST',
         headers: {
@@ -141,7 +141,7 @@ export async function handleAuthCallback(request: NextRequest, app: AppId) {
   // httpOnly: role decisions are the server's, not something JS can forge.
   try {
     const rolesRes = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.ME}`,
+      `${process.env.BACKEND_URL}${API_ROUTES.AUTH.ME}`,
       {
         headers: {
           Authorization: `Bearer ${accessToken}`,

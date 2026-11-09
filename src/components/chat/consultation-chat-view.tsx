@@ -5,6 +5,8 @@ import { usePathname, useRouter, useSearchParams } from 'next/navigation';
 import { MessageSquare } from 'lucide-react';
 
 import { ChatRoom } from '@/types/chat';
+import type { ServiceType } from '@/types/service';
+import { useCurrentApp } from '@/features/auth/use-current-app';
 import { useUser } from '@/contexts/user-context';
 import { useRealChat } from '@/hooks/useRealChat';
 import { resolveChatPeer } from '@/lib/chat-peer';
@@ -16,11 +18,15 @@ import RealMessageList from '@/components/chat/real-message-list';
 
 interface ConsultationChatViewProps {
   role: 'student' | 'consultant';
+  /** The kind of gig the booking dialog offers in this app. */
+  category: ServiceType;
 }
 
 export default function ConsultationChatView({
   role,
+  category,
 }: ConsultationChatViewProps) {
+  const { app } = useCurrentApp();
   const [isBookingDialogOpen, setIsBookingDialogOpen] = useState(false);
   const [showChatOnMobile, setShowChatOnMobile] = useState(false);
 
@@ -96,7 +102,9 @@ export default function ConsultationChatView({
         role="status"
       >
         <div className="space-y-3 text-center">
-          <p className="obs-label">Aligning the stars…</p>
+          <p className="obs-label">
+            {app === 'astrology' ? 'Aligning the stars…' : 'One moment…'}
+          </p>
           <p className="text-sm text-muted-foreground">
             Fetching your conversations
           </p>
@@ -192,6 +200,7 @@ export default function ConsultationChatView({
 
       <BookingDialog
         teacherId={selectedChat?.teacher_id}
+        category={category}
         isOpen={isBookingDialogOpen}
         onClose={() => setIsBookingDialogOpen(false)}
       />

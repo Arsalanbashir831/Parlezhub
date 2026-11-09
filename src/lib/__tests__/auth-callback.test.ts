@@ -25,7 +25,7 @@ const location = (res: Response) => res.headers.get('location');
 beforeEach(() => {
   vi.resetAllMocks();
   vi.unstubAllGlobals();
-  vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', 'http://backend.test/api');
+  vi.stubEnv('BACKEND_URL', 'http://backend.test/api');
   // Django sync and role lookup: answered, no roles to write.
   vi.stubGlobal(
     'fetch',

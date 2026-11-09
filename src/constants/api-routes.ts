@@ -1,3 +1,5 @@
+import { chatSocketBase } from '@/lib/chat-socket-url';
+
 export const API_ROUTES = {
   AUTH: {
     SYNC: '/auth/sync/',
@@ -50,10 +52,15 @@ export const API_ROUTES = {
     GET_CHAT_MESSAGES: (chatId: string) => `/messages/${chatId}`,
     MARK_CHAT_READ: (chatId: string) => `/messages/${chatId}/read`,
     CHAT_PRESENCE: (chatId: string) => `/presence/${chatId}`,
-    WEBSOCKET_URL: `${process.env.NEXT_PUBLIC_CHAT_SERVER_URL?.replace('http://', 'ws://').replace('https://', 'wss://')}/ws/chat/`,
+    /** Build-time fallback only: the server sends the runtime address with the
+     *  socket credential. Null when CHAT_SERVER_URL is not set. */
+    WEBSOCKET_URL: chatSocketBase(process.env.CHAT_SERVER_URL),
   },
   VOICE: {
     CONVERSATIONS: '/accounts/voice-conversations/',
+    /** The user's conversations of one type: 'language' (AI tutor) or 'astrological'. */
+    BY_TYPE: (type: 'language' | 'astrological') =>
+      `/accounts/voice-conversations/by-type/${type}/`,
   },
   PAYMENTS: {
     PROCESS_BOOKING_PAYMENT: '/payments/process-booking-payment/',

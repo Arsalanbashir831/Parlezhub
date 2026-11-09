@@ -10,6 +10,8 @@ import {
 } from '@/services/availability';
 import chatService from '@/services/chat';
 import { serviceApi, serviceUtils } from '@/services/service';
+import type { ServiceType } from '@/types/service';
+import { filterServicesByCategory } from '@/hooks/useServices';
 import { useQuery } from '@tanstack/react-query';
 import { toast } from 'sonner';
 
@@ -36,10 +38,13 @@ interface BookingDialogProps {
   isOpen: boolean;
   onClose: () => void;
   teacherId?: string;
+  /** Only gigs of this kind can be booked: a consultant who also publishes in
+   *  another app must not have those gigs offered here. */
+  category?: ServiceType;
 }
 
 const BookingDialog = memo(
-  ({ isOpen, onClose, teacherId }: BookingDialogProps) => {
+  ({ isOpen, onClose, teacherId, category }: BookingDialogProps) => {
     const { user } = useUser();
     const { data: weeklyItems, isLoading: loading } = useQuery({
       queryKey: ['weekly-availability', teacherId],
@@ -70,8 +75,11 @@ const BookingDialog = memo(
     // Convert consultant services to frontend format
     const consultantServices = useMemo(() => {
       if (!consultantServicesData) return [];
-      return consultantServicesData.map(serviceUtils.publicApiResponseToService);
-    }, [consultantServicesData]);
+      return filterServicesByCategory(
+        consultantServicesData.map(serviceUtils.publicApiResponseToService),
+        category
+      );
+    }, [consultantServicesData, category]);
 
     const [date, setDate] = useState<string>('');
     const [startTime, setStartTime] = useState<string>('');
@@ -298,7 +306,7 @@ const BookingDialog = memo(
 
           <div className="custom-scrollbar max-h-[70vh] space-y-6 overflow-y-auto px-8 pb-8">
             {/* Weekly schedule overview */}
-            <div className="rounded-2xl border border-primary-500/10 bg-white/[0.03] p-6 backdrop-blur-sm">
+            <div className="rounded-2xl border border-primary-500/10 bg-foreground/[0.03] p-6 backdrop-blur-sm">
               <p className="mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-primary-300">
                 Weekly Availability
               </p>
@@ -356,7 +364,7 @@ const BookingDialog = memo(
                     const val = e.target.value;
                     setDate(val && val < todayStr ? todayStr : val);
                   }}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
+                  className="h-11 rounded-xl border-primary-500/10 bg-foreground/5 text-foreground focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
 
@@ -365,14 +373,14 @@ const BookingDialog = memo(
                   htmlFor="booking-service"
                   className="text-[10px] font-bold uppercase tracking-widest text-primary-100/60"
                 >
-                  Visionary Service
+                  Service
                 </Label>
                 {servicesLoading ? (
-                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
+                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-foreground/5 px-4 text-xs text-primary-100/30">
                     Loading...
                   </div>
                 ) : consultantServices.length === 0 ? (
-                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-white/5 px-4 text-xs text-primary-100/30">
+                  <div className="flex h-11 items-center rounded-xl border border-primary-500/10 bg-foreground/5 px-4 text-xs text-primary-100/30">
                     No services shared
                   </div>
                 ) : (
@@ -382,11 +390,11 @@ const BookingDialog = memo(
                   >
                     <SelectTrigger
                       id="booking-service"
-                      className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white hover:border-primary-500/30 focus:ring-primary-500/30"
+                      className="h-11 rounded-xl border-primary-500/10 bg-foreground/5 text-foreground hover:border-primary-500/30 focus:ring-primary-500/30"
                     >
-                      <SelectValue placeholder="Choose a field" />
+                      <SelectValue placeholder="Choose a session" />
                     </SelectTrigger>
-                    <SelectContent className="rounded-xl border-primary-500/10 bg-background text-white shadow-2xl">
+                    <SelectContent className="rounded-xl border-primary-500/10 bg-background text-foreground shadow-2xl">
                       {consultantServices.map((service) => (
                         <SelectItem
                           key={service.id}
@@ -398,7 +406,7 @@ const BookingDialog = memo(
                               {service.title}
                             </span>
                             <span className="mt-0.5 text-[10px] font-bold uppercase tracking-widest text-primary-400">
-                              ${service.price} • {service.duration}m cycle
+                              ${service.price} • {service.duration} min
                             </span>
                           </div>
                         </SelectItem>
@@ -422,7 +430,7 @@ const BookingDialog = memo(
                   type="time"
                   value={startTime}
                   onChange={(e) => setStartTime(e.target.value)}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
+                  className="h-11 rounded-xl border-primary-500/10 bg-foreground/5 text-foreground focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
               </div>
               <div className="grid gap-2">
@@ -438,7 +446,7 @@ const BookingDialog = memo(
                   value={endTime}
                   onChange={(e) => setEndTime(e.target.value)}
                   min={startTime || undefined}
-                  className="h-11 rounded-xl border-primary-500/10 bg-white/5 text-white focus-visible:ring-primary-500/30 [color-scheme:dark]"
+                  className="h-11 rounded-xl border-primary-500/10 bg-foreground/5 text-foreground focus-visible:ring-primary-500/30 [color-scheme:dark]"
                 />
                 {startTime &&
                   endTime &&

@@ -209,7 +209,7 @@ describe('pickActiveRole', () => {
 
 describe('fetchRoles', () => {
   beforeEach(() => {
-    vi.stubEnv('NEXT_PUBLIC_BACKEND_URL', 'http://backend.test/api');
+    vi.stubEnv('BACKEND_URL', 'http://backend.test/api');
     vi.unstubAllGlobals();
   });
 

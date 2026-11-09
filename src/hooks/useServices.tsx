@@ -48,12 +48,24 @@ interface UseServicesReturn {
   isProcessing: boolean;
 }
 
-export function useServices(options: { enabled?: boolean } = {}): UseServicesReturn {
+interface UseServicesOptions {
+  enabled?: boolean;
+  /**
+   * The only kind of gig this view may see. One consultant account is shared by
+   * every app, and /accounts/gigs/ returns all of its gigs, so each app passes
+   * its own category: Shakti Wheel never lists a language gig and ParlezHub
+   * never lists an astrology reading. Lookups by id honour it too.
+   */
+  category?: ServiceType;
+}
+
+export function useServices(options: UseServicesOptions = {}): UseServicesReturn {
   const queryClient = useQueryClient();
   const [filters, setFiltersState] = useState<ServiceFilters>({});
+  const { category } = options;
 
   const {
-    data: servicesList = [],
+    data: allServices = [],
     isLoading,
     error: queryError,
     refetch,
@@ -66,6 +78,13 @@ export function useServices(options: { enabled?: boolean } = {}): UseServicesRet
     staleTime: 5 * 60 * 1000, // 5 minutes
     enabled: options.enabled ?? true,
   });
+
+  // Filtered here rather than in the query, so both apps share one cache entry
+  // and the mutations below keep updating it in place.
+  const servicesList = useMemo(
+    () => filterServicesByCategory(allServices, category),
+    [allServices, category]
+  );
 
   const services = servicesList;
   const error = queryError ? getErrorMessage(queryError, 'fetch-services') : null;
@@ -228,7 +247,8 @@ export function useServices(options: { enabled?: boolean } = {}): UseServicesRet
     return true; // For now, allow creating any service type
   }, []);
 
-  // Get single service
+  // Get single service. A gig of another category is reported as missing, so
+  // an app's edit page cannot open the other app's gig by its URL.
   const getService = useCallback(
     async (serviceId: string): Promise<Service | null> => {
       const localService = services.find((s) => s.id === serviceId);
@@ -236,13 +256,14 @@ export function useServices(options: { enabled?: boolean } = {}): UseServicesRet
 
       try {
         const apiResponse = await serviceApi.getServiceById(serviceId);
-        return serviceUtils.apiResponseToService(apiResponse) as Service;
+        const service = serviceUtils.apiResponseToService(apiResponse) as Service;
+        return filterServicesByCategory([service], category)[0] ?? null;
       } catch (error) {
         console.error('Failed to fetch service by ID:', error);
         return null;
       }
     },
-    [services]
+    [services, category]
   );
 
   // Load individual service
@@ -289,6 +310,14 @@ export function useServices(options: { enabled?: boolean } = {}): UseServicesRet
       deleteMutation.isPending ||
       statusMutation.isPending,
   };
+}
+
+/** The gigs of one category; every gig when no category is given. */
+export function filterServicesByCategory<T extends { type: ServiceType }>(
+  services: T[],
+  category?: ServiceType
+): T[] {
+  return category ? services.filter((service) => service.type === category) : services;
 }
 
 export default useServices;

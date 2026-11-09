@@ -22,6 +22,8 @@ export interface AppDefinition {
   home: string;
   /** What the two roles are called in this app's UI. */
   roleLabels: { STUDENT: string; TEACHER: string };
+  /** A consultant in running copy, lower case ("chat with an astrologer"). */
+  consultantNoun: string;
 }
 
 export const APPS: Record<AppId, AppDefinition> = {
@@ -31,6 +33,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     basePath: '/astrology',
     home: '/astrology',
     roleLabels: { STUDENT: 'End User', TEACHER: 'Astrologer' },
+    consultantNoun: 'astrologer',
   },
   parlezhub: {
     id: 'parlezhub',
@@ -38,6 +41,7 @@ export const APPS: Record<AppId, AppDefinition> = {
     basePath: '/parlezhub',
     home: '/parlezhub',
     roleLabels: { STUDENT: 'Learner', TEACHER: 'Language Consultant' },
+    consultantNoun: 'language consultant',
   },
 };
 

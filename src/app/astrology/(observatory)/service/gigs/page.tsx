@@ -68,7 +68,7 @@ export default function AstrologerGigsPage() {
     setFilters,
     deleteExistingService,
     toggleServiceStatus,
-  } = useServices();
+  } = useServices({ category: 'astrology' });
 
   const [deleting, setDeleting] = useState<Service | null>(null);
   const [isDeleting, setIsDeleting] = useState(false);

@@ -68,7 +68,7 @@ export default function MessageBody({ content }: { content: string }) {
                 fields['Status'].includes('CONFIRMED') ||
                   fields['Status'].includes('APPROVED')
                   ? 'border-[color-mix(in_srgb,var(--solar-orange)_35%,transparent)] bg-[color-mix(in_srgb,var(--solar-orange)_12%,transparent)] text-[var(--solar-orange)]'
-                  : 'border-white/10 bg-white/5 text-muted-foreground'
+                  : 'border-border bg-foreground/5 text-muted-foreground'
               )}
             >
               {fields['Status']}

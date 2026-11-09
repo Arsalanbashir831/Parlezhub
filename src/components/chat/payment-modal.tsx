@@ -15,6 +15,7 @@ import {
 } from '@stripe/react-stripe-js';
 
 import { cn } from '@/lib/utils';
+import { useCurrentApp } from '@/features/auth/use-current-app';
 import { Button } from '@/components/ui/button';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
@@ -193,17 +194,21 @@ function PaymentModalContent({
 
   const isProcessing =
     savedCardMutation.isPending || newCardMutation.isPending || isStripeProcessing;
+  const currentApp = useCurrentApp().app;
 
+  // Stripe draws the card field in its own iframe, out of reach of CSS
+  // variables, so its ink is chosen per app: light text on Shakti Wheel's black.
+  const isLightTheme = currentApp === 'parlezhub';
   const cardElementOptions = {
     hidePostalCode: true,
     style: {
       base: {
-        color: '#ffffff',
+        color: isLightTheme ? '#16123a' : '#ffffff',
         fontFamily: '"Inter", sans-serif',
         fontSmoothing: 'antialiased',
         fontSize: '16px',
         '::placeholder': {
-          color: 'rgba(255, 255, 255, 0.4)',
+          color: isLightTheme ? 'rgba(22, 18, 58, 0.45)' : 'rgba(255, 255, 255, 0.4)',
         },
       },
       invalid: {
@@ -230,7 +235,7 @@ function PaymentModalContent({
           {/* Payment Method Selection */}
           {paymentMethods.length > 0 && (
             <div className="space-y-4">
-              <div className="flex gap-2 rounded-2xl border border-primary-500/10 bg-white/[0.03] p-1">
+              <div className="flex gap-2 rounded-2xl border border-primary-500/10 bg-foreground/[0.03] p-1">
                 <Button
                   variant={paymentMode === 'saved' ? 'default' : 'ghost'}
                   size="sm"
@@ -269,7 +274,7 @@ function PaymentModalContent({
             <div className="flex flex-col items-center justify-center space-y-4 py-12">
               <div className="h-10 w-10 animate-spin rounded-full border-4 border-primary-500 border-t-transparent shadow-[0_0_15px_rgba(212,175,55,0.2)]"></div>
               <p className="text-[10px] font-bold uppercase tracking-widest text-primary-100/40">
-                Syncing with stars...
+                {isLightTheme ? 'Loading payment options…' : 'Syncing with stars...'}
               </p>
             </div>
           )}
@@ -296,8 +301,8 @@ function PaymentModalContent({
                     className={cn(
                       'group relative cursor-pointer overflow-hidden rounded-2xl border p-4 transition-all duration-300',
                       selectedPaymentMethod === method.stripe_payment_method_id
-                        ? 'border-primary-500/40 bg-white/[0.08] shadow-[0_0_20px_rgba(212,175,55,0.05)]'
-                        : 'border-primary-500/10 bg-white/[0.03] hover:border-primary-500/20 hover:bg-white/[0.05]'
+                        ? 'border-primary-500/40 bg-foreground/[0.08] shadow-[0_0_20px_rgba(212,175,55,0.05)]'
+                        : 'border-primary-500/10 bg-foreground/[0.03] hover:border-primary-500/20 hover:bg-foreground/[0.05]'
                     )}
                     onClick={() =>
                       setSelectedPaymentMethod(method.stripe_payment_method_id)
@@ -311,7 +316,7 @@ function PaymentModalContent({
                             selectedPaymentMethod ===
                               method.stripe_payment_method_id
                               ? 'border-primary-500/30 bg-primary-500/10 text-primary-500'
-                              : 'border-white/10 bg-white/5 text-primary-100/40'
+                              : 'border-border bg-foreground/5 text-primary-100/40'
                           )}
                         >
                           <CreditCard className="h-6 w-6" />
@@ -322,7 +327,7 @@ function PaymentModalContent({
                               'font-bold tracking-wide transition-colors',
                               selectedPaymentMethod ===
                                 method.stripe_payment_method_id
-                                ? 'text-white'
+                                ? 'text-foreground'
                                 : 'text-primary-100/80'
                             )}
                           >
@@ -388,7 +393,7 @@ function PaymentModalContent({
                   >
                     Card Details
                   </Label>
-                  <div className="rounded-xl border border-primary-500/10 bg-white/5 p-4">
+                  <div className="rounded-xl border border-primary-500/10 bg-foreground/5 p-4">
                     <CardElement options={cardElementOptions} id="cardElement" />
                   </div>
                 </div>

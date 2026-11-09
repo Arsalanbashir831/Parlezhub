@@ -17,6 +17,8 @@ export interface SessionSnapshot {
   requiresRoleSelection?: boolean;
   /** WebSocket credential only. */
   token?: string;
+  /** WebSocket credential only: where the chat socket lives (ws(s)://…/ws/chat/). */
+  socketUrl?: string;
   url?: string;
   redirectTo?: string;
   email?: string;

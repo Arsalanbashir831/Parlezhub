@@ -9,7 +9,7 @@ import GigComposer from '@/components/astrology/service/gig-composer';
 
 export default function CreateGigPage() {
   const router = useRouter();
-  const { createNewService, isProcessing, error } = useServices();
+  const { createNewService, isProcessing, error } = useServices({ category: 'astrology' });
   const backToGigs = () => router.push(ROUTES.AGENT.ASTROLOGY.SERVICE.GIGS);
 
   return (

@@ -3,6 +3,7 @@ import { cookies } from 'next/headers';
 
 import { API_ROUTES } from '@/constants/api-routes';
 import { DEFAULT_APP, authRoutes, isAppId } from '@/lib/apps';
+import { chatSocketBase } from '@/lib/chat-socket-url';
 import { publicOrigin } from '@/lib/request-origin';
 import {
   fetchRoles,
@@ -40,7 +41,7 @@ const getOrigin = publicOrigin;
  */
 async function syncUserToBackend(accessToken: string, role?: UserRole) {
   const res = await fetch(
-    `${process.env.NEXT_PUBLIC_BACKEND_URL}${API_ROUTES.AUTH.SYNC}`,
+    `${process.env.BACKEND_URL}${API_ROUTES.AUTH.SYNC}`,
     {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${accessToken}` },
@@ -322,6 +323,12 @@ export const authActions = {
       // role cookies exactly as they are.
       rolesUnknown: true,
       token: accessToken,
+      // Read at request time, so the socket address follows the server's
+      // runtime CHAT_SERVER_URL; NEXT_PUBLIC_* would be frozen at build.
+      socketUrl:
+        chatSocketBase(process.env.CHAT_SERVER_URL) ??
+        chatSocketBase(process.env.CHAT_SERVER_URL) ??
+        undefined,
     };
   },
 };
