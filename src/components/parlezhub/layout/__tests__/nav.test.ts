@@ -31,6 +31,7 @@ describe('ParlezHub navigation', () => {
       'Dashboard',
       'AI Language Tutor',
       'Language Consultant: Create Gig, My Gigs',
+      'Blog: Write Post, My Posts',
       'Meetings',
       'Chat',
       'History',
@@ -44,6 +45,9 @@ describe('ParlezHub navigation', () => {
     [P.CREATE_GIG, 'Create Gig'],
     [P.GIGS, 'My Gigs'],
     [P.EDIT_GIG('7'), 'My Gigs'],
+    [P.CREATE_BLOG, 'Write Post'],
+    [P.BLOGS, 'My Posts'],
+    [P.EDIT_BLOG(7), 'My Posts'],
     [`${P.CHAT}`, 'Chat'],
   ])('marks exactly one link current on %s', (pathname, expected) => {
     const active = links(navFor(true)).filter((link) => isLinkActive(link, pathname));

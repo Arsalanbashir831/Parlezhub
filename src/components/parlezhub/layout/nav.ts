@@ -1,11 +1,14 @@
 import {
   Briefcase,
   CalendarDays,
+  FileText,
   History,
   LayoutDashboard,
   LayoutList,
   MessageCircle,
   Mic,
+  Newspaper,
+  PenSquare,
   PlusCircle,
   Settings,
   Users,
@@ -83,6 +86,25 @@ export const CONSULTANT_NAV: NavEntry[] = [
         icon: LayoutList,
         // Editing a gig is part of My Gigs; creating one is its own entry.
         isActive: (pathname) => under(P.GIGS)(pathname) && pathname !== P.CREATE_GIG,
+      },
+    ],
+  },
+  {
+    label: 'Blog',
+    icon: Newspaper,
+    children: [
+      {
+        label: 'Write Post',
+        href: P.CREATE_BLOG,
+        icon: PenSquare,
+        isActive: (pathname) => pathname === P.CREATE_BLOG,
+      },
+      {
+        label: 'My Posts',
+        href: P.BLOGS,
+        icon: FileText,
+        // Editing a post is part of My Posts; writing one is its own entry.
+        isActive: (pathname) => under(P.BLOGS)(pathname) && pathname !== P.CREATE_BLOG,
       },
     ],
   },

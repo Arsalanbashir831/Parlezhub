@@ -51,6 +51,10 @@ export const ROUTES = {
     GIGS: '/parlezhub/gigs',
     CREATE_GIG: '/parlezhub/gigs/new',
     EDIT_GIG: (serviceId: string) => `/parlezhub/gigs/${serviceId}/edit`,
+    /** The consultant's own blog posts. */
+    BLOGS: '/parlezhub/blogs',
+    CREATE_BLOG: '/parlezhub/blogs/new',
+    EDIT_BLOG: (blogId: string | number) => `/parlezhub/blogs/${blogId}/edit`,
     /** Bookings, for either role. */
     MEETINGS: '/parlezhub/meetings',
     /** Learner ↔ consultant messages, for either role. */

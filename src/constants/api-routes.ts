@@ -31,6 +31,8 @@ export const API_ROUTES = {
     RESCHEDULE_BOOKING: (bookingId: string | number) =>
       `/bookings/bookings/${bookingId}/reschedule/`,
     REFUND_BOOKING: '/payments/refund/request/',
+    BLOGS: '/blogs/teacher/blogs/',
+    BLOG_DETAIL: (blogId: string | number) => `/blogs/teacher/blogs/${blogId}/`,
   },
   USER: {
     UPLOAD_PROFILE_PICTURE: '/user/profile-picture/',
